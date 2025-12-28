@@ -9,13 +9,13 @@ This document outlines the complete documentation structure for bare-metal Ubunt
 ### Core Documentation (`docs/`)
 
 #### 1. Overview & Architecture
-**Location:** `docs/01-overview-architecture.md`
+**Location:** `docs/OVERVIEW_ARCHITECTURE.md`
 - 1.1 Deployment Strategy
 - 1.2 Key Components
 - 1.3 Architecture Benefits
 
 #### 2. Hardware & BIOS Setup
-**Location:** `docs/02-hardware-bios-setup.md`
+**Location:** `docs/HARDWARE_BIOS_SETUP.md`
 - 2.1 Hardware Requirements
 - 2.2 Pre-Installation Hardware Checklist
 - 2.3 BIOS/UEFI Configuration
@@ -29,13 +29,13 @@ This document outlines the complete documentation structure for bare-metal Ubunt
   - BIOS Configuration Checklist
 
 #### 3. Network Configuration Planning
-**Location:** `docs/03-network-planning.md`
+**Location:** `docs/NETWORK_PLANNING.md`
 - 3.1 Network Information Gathering
 - 3.2 Network Topology Considerations
 - 3.3 Network Configuration in Cloud-init
 
 #### 4. Creating Ubuntu Autoinstall Media
-**Location:** `docs/04-autoinstall-media-creation.md`
+**Location:** `docs/AUTOINSTALL_MEDIA_CREATION.md`
 - 4.1 Download Ubuntu Server ISO
 - 4.2 Autoinstall Configuration
 - 4.3 Methods to Create Bootable Media
@@ -43,14 +43,14 @@ This document outlines the complete documentation structure for bare-metal Ubunt
   - Method B: USB with separate autoinstall files
 
 #### 5. Cloud-init Configuration
-**Location:** `docs/05-cloud-init-configuration.md`
+**Location:** `docs/CLOUD_INIT_CONFIGURATION.md`
 - 5.1 Cloud-init Data Sources
 - 5.2 Cloud-init Configuration Structure
 - 5.3 Creating Cloud-init ISO
 - 5.4 Cloud-init Variables and Templating
 
 #### 6. Deployment Process
-**Location:** `docs/06-deployment-process.md`
+**Location:** `docs/DEPLOYMENT_PROCESS.md`
 - 6.1 Pre-Deployment Checklist
 - 6.2 Step-by-Step Deployment
   - Step 1: Boot from Installation Media
@@ -60,29 +60,29 @@ This document outlines the complete documentation structure for bare-metal Ubunt
 - 6.3 Monitoring Cloud-init Progress
 
 #### 7. Post-Deployment Validation
-**Location:** `docs/07-post-deployment-validation.md`
+**Location:** `docs/POST_DEPLOYMENT_VALIDATION.md`
 - 7.1 System Validation Checklist
 - 7.2 Validation Commands
 - 7.3 Cockpit Access and Configuration
 
 #### 8. Troubleshooting
-**Location:** `docs/08-troubleshooting.md`
+**Location:** `docs/TROUBLESHOOTING.md`
 - 8.1 Common Issues
 - 8.2 Logs and Debugging
 
 #### 9. Multiple Server Deployment
-**Location:** `docs/09-multiple-server-deployment.md`
+**Location:** `docs/MULTIPLE_SERVER_DEPLOYMENT.md`
 - 9.1 Templating Strategy
 - 9.2 Automation Considerations
 
 #### 10. Security Hardening
-**Location:** `docs/10-security-hardening.md`
+**Location:** `docs/SECURITY_HARDENING.md`
 - 10.1 Post-Deployment Security
 - 10.2 Firewall Configuration
 - 10.3 Monitoring and Logging
 
 #### 11. Appendix
-**Location:** `docs/11-appendix.md`
+**Location:** `docs/APPENDIX.md`
 - 11.1 Reference Files
 - 11.2 Useful Commands
 - 11.3 Additional Resources
@@ -273,29 +273,29 @@ This document outlines the complete documentation structure for bare-metal Ubunt
 
 ### For First-Time Users:
 1. `README.md` - Start here
-2. `docs/01-overview-architecture.md` - Understand the approach
-3. `docs/02-hardware-bios-setup.md` - Prepare hardware
-4. `docs/03-network-planning.md` - Plan network configuration
-5. `docs/04-autoinstall-media-creation.md` - Create installation media
-6. `docs/05-cloud-init-configuration.md` - Configure cloud-init
-7. `docs/06-deployment-process.md` - Deploy
-8. `docs/07-post-deployment-validation.md` - Validate
+2. `docs/OVERVIEW_ARCHITECTURE.md` - Understand the approach
+3. `docs/HARDWARE_BIOS_SETUP.md` - Prepare hardware
+4. `docs/NETWORK_PLANNING.md` - Plan network configuration
+5. `docs/AUTOINSTALL_MEDIA_CREATION.md` - Create installation media
+6. `docs/CLOUD_INIT_CONFIGURATION.md` - Configure cloud-init
+7. `docs/DEPLOYMENT_PROCESS.md` - Deploy
+8. `docs/POST_DEPLOYMENT_VALIDATION.md` - Validate
 
 ### For Quick Deployment:
 1. `examples/single-server/basic-server/` - Use example as starting point
 2. `scripts/iso-creation/create-autoinstall-iso.sh` - Build ISO
 3. `scripts/iso-creation/create-cloud-init-iso.sh` - Build cloud-init ISO
-4. `docs/06-deployment-process.md` - Deploy
+4. `docs/DEPLOYMENT_PROCESS.md` - Deploy
 5. `scripts/deployment/validate-deployment.sh` - Validate
 
 ### For Multiple Servers:
-1. `docs/09-multiple-server-deployment.md` - Templating strategy
+1. `docs/MULTIPLE_SERVER_DEPLOYMENT.md` - Templating strategy
 2. `examples/multi-server/lab-cluster/` - Review example
 3. `scripts/templates/generate-multiple-hosts.sh` - Generate configs
 4. `ansible/` or `terraform/` - Consider automation
 
 ### For Troubleshooting:
-1. `docs/08-troubleshooting.md` - Common issues
+1. `docs/TROUBLESHOOTING.md` - Common issues
 2. `docs/reference/troubleshooting-flowcharts.md` - Decision trees
 3. `tests/validation/` - Run validation scripts
 
