@@ -1,5 +1,7 @@
 # 3.3 Network Configuration in Cloud-init
 
+**NOTE:** Refer to [network.config.yaml](../../network.config.yaml) for the exact values to be used in the script below.
+
 Network configuration is handled via cloud-init using a secure, hardware-adaptive approach that auto-detects the correct NIC using ARP probes for known network identifiers.
 
 ## Strategy: ARP Probe Detection
