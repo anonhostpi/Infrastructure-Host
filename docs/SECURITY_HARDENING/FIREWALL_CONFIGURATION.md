@@ -27,8 +27,8 @@ sudo ufw allow 80/tcp      # HTTP
 sudo ufw allow 443/tcp     # HTTPS
 sudo ufw allow 9090/tcp    # Cockpit
 
-# Allow from specific IP
-sudo ufw allow from 10.0.1.0/24
+# Allow from specific subnet
+sudo ufw allow from <SUBNET>/<CIDR>
 
 # Deny specific port
 sudo ufw deny 23/tcp

@@ -4,28 +4,31 @@ Before deployment, collect the following information for the server.
 
 ## Host Network Configuration
 
-| Field | Value |
-|-------|-------|
-| Hostname | `lab` |
-| Primary IP Address | `10.0.0.25/24` |
-| Gateway | `10.0.0.1` |
-| DNS Servers | `10.0.0.11`, `1.1.1.1`, `8.8.8.8` |
-| DNS Search Domain | `hostpi.io` |
+See `network.config.yaml` (not tracked in git) for actual values.
+
+| Field | Placeholder |
+|-------|-------------|
+| Hostname | `<HOSTNAME>` |
+| Primary IP Address | `<HOST_IP>/<CIDR>` |
+| Gateway | `<GATEWAY>` |
+| DNS Servers | `<DNS_PRIMARY>`, `<DNS_SECONDARY>`, `<DNS_TERTIARY>` |
+| DNS Search Domain | `<DNS_SEARCH>` |
 | VLAN ID | N/A |
 
-## Network Configuration
+## Network Configuration Template
 
 ```yaml
 # Host Network Configuration
+# Copy to network.config.yaml and fill in values
 host:
-  hostname: lab
-  ip_address: 10.0.0.25/24
-  gateway: 10.0.0.1
+  hostname: <HOSTNAME>
+  ip_address: <HOST_IP>/<CIDR>
+  gateway: <GATEWAY>
   dns_servers:
-    - 10.0.0.11  # Primary (local)
-    - 1.1.1.1       # Cloudflare
-    - 8.8.8.8       # Google
-  dns_search: hostpi.io
+    - <DNS_PRIMARY>    # Primary (local)
+    - <DNS_SECONDARY>  # Secondary
+    - <DNS_TERTIARY>   # Tertiary
+  dns_search: <DNS_SEARCH>
 ```
 
 ## Information Sources

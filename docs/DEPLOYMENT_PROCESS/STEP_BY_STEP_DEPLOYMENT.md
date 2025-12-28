@@ -41,7 +41,7 @@ If using separate cloud-init ISO:
 
 ```bash
 # SSH into server with installer account
-ssh installer@10.0.1.100
+ssh installer@<HOST_IP>
 
 # Become root
 sudo su -

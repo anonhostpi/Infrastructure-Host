@@ -43,9 +43,9 @@ echo "Generated configuration for ${HOSTNAME}"
 ## Usage
 
 ```bash
-./generate-config.sh ubuntu-host-01 10.0.1.101 host-01
-./generate-config.sh ubuntu-host-02 10.0.1.102 host-02
-./generate-config.sh ubuntu-host-03 10.0.1.103 host-03
+./generate-config.sh ubuntu-host-01 <HOST_IP_1> host-01
+./generate-config.sh ubuntu-host-02 <HOST_IP_2> host-02
+./generate-config.sh ubuntu-host-03 <HOST_IP_3> host-03
 ```
 
 ## Template Variables
@@ -69,12 +69,12 @@ Maintain an inventory file for all servers:
 # inventory.yaml
 servers:
   - hostname: ubuntu-host-01
-    ip: 10.0.1.101
+    ip: <HOST_IP_1>
     role: compute
   - hostname: ubuntu-host-02
-    ip: 10.0.1.102
+    ip: <HOST_IP_2>
     role: compute
   - hostname: ubuntu-host-03
-    ip: 10.0.1.103
+    ip: <HOST_IP_3>
     role: storage
 ```

@@ -39,16 +39,16 @@ network:
     ens18:
       dhcp4: false
       addresses:
-        - 10.0.1.100/24
+        - <HOST_IP>/<CIDR>
       routes:
         - to: default
-          via: 10.0.1.1
+          via: <GATEWAY>
       nameservers:
         addresses:
-          - 8.8.8.8
-          - 8.8.4.4
+          - <DNS_PRIMARY>
+          - <DNS_SECONDARY>
         search:
-          - example.local
+          - <DNS_SEARCH>
 
 # Package management
 package_update: true
@@ -114,19 +114,19 @@ runcmd:
   - virsh net-autostart default
   - virsh net-start default || true
 
-  # Set up br0 bridge for VMs (example)
-  - |
-    cat > /etc/netplan/60-bridge.yaml << 'NETPLAN_EOF'
-    network:
-      version: 2
-      bridges:
-        br0:
-          interfaces: []
-          dhcp4: false
-          addresses:
-            - 10.0.100.1/24
-    NETPLAN_EOF
-  - netplan apply || true
+  # Set up br0 bridge for VMs (example - out of scope for this deployment)
+  # - |
+  #   cat > /etc/netplan/60-bridge.yaml << 'NETPLAN_EOF'
+  #   network:
+  #     version: 2
+  #     bridges:
+  #       br0:
+  #         interfaces: []
+  #         dhcp4: false
+  #         addresses:
+  #           - <BRIDGE_IP>/<CIDR>
+  #   NETPLAN_EOF
+  # - netplan apply || true
 
 # Write files
 write_files:
@@ -186,14 +186,14 @@ ethernets:
   ens18:
     dhcp4: false
     addresses:
-      - 10.0.1.100/24
+      - <HOST_IP>/<CIDR>
     routes:
       - to: default
-        via: 10.0.1.1
+        via: <GATEWAY>
     nameservers:
       addresses:
-        - 8.8.8.8
-        - 8.8.4.4
+        - <DNS_PRIMARY>
+        - <DNS_SECONDARY>
       search:
-        - example.local
+        - <DNS_SEARCH>
 ```

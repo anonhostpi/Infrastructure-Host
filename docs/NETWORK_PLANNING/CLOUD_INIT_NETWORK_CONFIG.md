@@ -26,14 +26,14 @@ network:
 
 ## Network Detection and Static Configuration Script
 
-Cloud-init `bootcmd` format:
+Cloud-init `bootcmd` format (replace placeholders with values from `network.config.yaml`):
 
 ```yaml
 bootcmd:
   - |
-    GATEWAY="10.0.0.1"
-    DNS_PRIMARY="10.0.0.11"
-    STATIC_IP="10.0.0.25/24"
+    GATEWAY="<GATEWAY>"
+    DNS_PRIMARY="<DNS_PRIMARY>"
+    STATIC_IP="<HOST_IP>/<CIDR>"
 
     # Skip if already configured (idempotent)
     [ -f /etc/netplan/90-static.yaml ] && exit 0
@@ -73,8 +73,8 @@ bootcmd:
             - to: default
               via: $GATEWAY
           nameservers:
-            addresses: [10.0.0.11, 1.1.1.1, 8.8.8.8]
-            search: [hostpi.io]
+            addresses: [<DNS_PRIMARY>, <DNS_SECONDARY>, <DNS_TERTIARY>]
+            search: [<DNS_SEARCH>]
     EOF
 
     netplan apply
@@ -83,12 +83,12 @@ bootcmd:
 
 ## Known Network Identifiers
 
-| Identifier | Value |
-|------------|-------|
-| Gateway | `10.0.0.1` |
-| Primary DNS | `10.0.0.11` |
-| Static IP | `10.0.0.25/24` |
-| DNS Search | `hostpi.io` |
+| Identifier | Placeholder |
+|------------|-------------|
+| Gateway | `<GATEWAY>` |
+| Primary DNS | `<DNS_PRIMARY>` |
+| Static IP | `<HOST_IP>/<CIDR>` |
+| DNS Search | `<DNS_SEARCH>` |
 
 ## Cloud-init Timing
 

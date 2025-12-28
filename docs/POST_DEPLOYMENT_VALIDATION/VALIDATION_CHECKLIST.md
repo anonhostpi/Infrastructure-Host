@@ -5,7 +5,7 @@
 - [ ] System boots successfully
 - [ ] Hostname configured correctly: `hostnamectl`
 - [ ] Network configured with static IP: `ip addr show`
-- [ ] Default gateway reachable: `ping -c 3 10.0.1.1`
+- [ ] Default gateway reachable: `ping -c 3 <GATEWAY>`
 - [ ] DNS resolution working: `nslookup google.com`
 - [ ] Timezone correct: `timedatectl`
 

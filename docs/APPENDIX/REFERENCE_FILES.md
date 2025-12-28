@@ -60,9 +60,9 @@ network:
   ethernets:
     ens18:
       addresses:
-        - 10.0.1.100/24
-      gateway4: 10.0.1.1
+        - <HOST_IP>/<CIDR>
+      gateway4: <GATEWAY>
       nameservers:
         addresses:
-          - 8.8.8.8
+          - <DNS_PRIMARY>
 ```
