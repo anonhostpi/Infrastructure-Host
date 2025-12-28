@@ -4,15 +4,15 @@ Complete these checks before beginning installation.
 
 ## Checklist
 
-- [ ] Verify CPU supports virtualization extensions
+- [x] Verify CPU supports virtualization extensions
   ```bash
   # On existing Linux system, check CPU flags
   grep -E 'vmx|svm' /proc/cpuinfo
   ```
-- [ ] Test all RAM modules (use memtest86+ if available)
-- [ ] Configure RAID arrays if applicable
-- [ ] Verify all NICs are recognized
-- [ ] Document MAC addresses for network planning
+- [x] Test all RAM modules (use memtest86+ if available)
+- [ ] ~~Configure RAID arrays if applicable~~
+- [x] Verify all NICs are recognized
+- [x] Document MAC addresses for network planning
 
 ## CPU Verification
 
