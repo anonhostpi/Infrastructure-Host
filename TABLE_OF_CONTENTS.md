@@ -10,17 +10,17 @@ This document outlines the complete documentation structure for bare-metal Ubunt
 
 #### 1. Overview & Architecture
 **Directory:** `docs/OVERVIEW_ARCHITECTURE/`
-- [Overview](./docs/OVERVIEW_ARCHITECTURE/OVERVIEW.md)
-- [1.1 Deployment Strategy](./docs/OVERVIEW_ARCHITECTURE/DEPLOYMENT_STRATEGY.md)
-- [1.2 Key Components](./docs/OVERVIEW_ARCHITECTURE/KEY_COMPONENTS.md)
-- [1.3 Architecture Benefits](./docs/OVERVIEW_ARCHITECTURE/ARCHITECTURE_BENEFITS.md)
+- [x] [Overview](./docs/OVERVIEW_ARCHITECTURE/OVERVIEW.md)
+  - [x] [1.1 Deployment Strategy](./docs/OVERVIEW_ARCHITECTURE/DEPLOYMENT_STRATEGY.md)
+  - [x] [1.2 Key Components](./docs/OVERVIEW_ARCHITECTURE/KEY_COMPONENTS.md)
+  - [x] [1.3 Architecture Benefits](./docs/OVERVIEW_ARCHITECTURE/ARCHITECTURE_BENEFITS.md)
 
 #### 2. Hardware & BIOS Setup
 **Directory:** `docs/HARDWARE_BIOS_SETUP/`
-- [Overview](./docs/HARDWARE_BIOS_SETUP/OVERVIEW.md)
-- [2.1 Hardware Requirements](./docs/HARDWARE_BIOS_SETUP/HARDWARE_REQUIREMENTS.md)
-- [2.2 Pre-Installation Hardware Checklist](./docs/HARDWARE_BIOS_SETUP/PRE_INSTALLATION_CHECKLIST.md)
-- [2.3 BIOS/UEFI Configuration](./docs/HARDWARE_BIOS_SETUP/BIOS_UEFI_CONFIGURATION.md)
+- [x] [Overview](./docs/HARDWARE_BIOS_SETUP/OVERVIEW.md)
+  - [x] [2.1 Hardware Requirements](./docs/HARDWARE_BIOS_SETUP/HARDWARE_REQUIREMENTS.md)
+  - [x] [2.2 Pre-Installation Hardware Checklist](./docs/HARDWARE_BIOS_SETUP/PRE_INSTALLATION_CHECKLIST.md)
+  - [x] [2.3 BIOS/UEFI Configuration](./docs/HARDWARE_BIOS_SETUP/BIOS_UEFI_CONFIGURATION.md)
 
 #### 3. Network Configuration Planning
 **Directory:** `docs/NETWORK_PLANNING/`
