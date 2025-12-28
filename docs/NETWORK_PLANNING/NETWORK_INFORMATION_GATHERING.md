@@ -1,43 +1,31 @@
 # 3.1 Network Information Gathering
 
-Before deployment, collect the following information for each server.
+Before deployment, collect the following information for the server.
 
-## Per-Server Network Details
+## Host Network Configuration
 
-| Field | Example | Your Value |
-|-------|---------|------------|
-| Hostname | `host-XX` | |
-| Primary IP Address | `10.0.1.X/24` | |
-| Gateway | `10.0.1.1` | |
-| DNS Servers | `8.8.8.8, 8.8.4.4` | |
-| DNS Search Domain | `example.local` | |
-| VLAN ID (if applicable) | `100` | |
-| NIC MAC Address | `AA:BB:CC:DD:EE:FF` | |
+| Field | Value |
+|-------|-------|
+| Hostname | `lab` |
+| Primary IP Address | `10.0.0.25/24` |
+| Gateway | `10.0.0.1` |
+| DNS Servers | `10.0.0.11`, `1.1.1.1`, `8.8.8.8` |
+| DNS Search Domain | `hostpi.io` |
+| VLAN ID | N/A |
 
-## Network Planning Template
+## Network Configuration
 
 ```yaml
-# Network Planning Document
-servers:
-  - hostname: ubuntu-host-01
-    ip_address: 10.0.1.101/24
-    gateway: 10.0.1.1
-    dns_servers:
-      - 8.8.8.8
-      - 8.8.4.4
-    dns_search: example.local
-    mac_address: AA:BB:CC:DD:EE:01
-    vlan: null
-
-  - hostname: ubuntu-host-02
-    ip_address: 10.0.1.102/24
-    gateway: 10.0.1.1
-    dns_servers:
-      - 8.8.8.8
-      - 8.8.4.4
-    dns_search: example.local
-    mac_address: AA:BB:CC:DD:EE:02
-    vlan: null
+# Host Network Configuration
+host:
+  hostname: lab
+  ip_address: 10.0.0.25/24
+  gateway: 10.0.0.1
+  dns_servers:
+    - 10.0.0.11  # Primary (local)
+    - 1.1.1.1       # Cloudflare
+    - 8.8.8.8       # Google
+  dns_search: hostpi.io
 ```
 
 ## Information Sources
