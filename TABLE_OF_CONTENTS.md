@@ -24,10 +24,10 @@ This document outlines the complete documentation structure for bare-metal Ubunt
 
 #### 3. Network Configuration Planning
 **Directory:** `docs/NETWORK_PLANNING/`
-- [Overview](./docs/NETWORK_PLANNING/OVERVIEW.md)
-- [3.1 Network Information Gathering](./docs/NETWORK_PLANNING/NETWORK_INFORMATION_GATHERING.md)
-- [3.2 Network Topology Considerations](./docs/NETWORK_PLANNING/NETWORK_TOPOLOGY.md)
-- [3.3 Network Configuration in Cloud-init](./docs/NETWORK_PLANNING/CLOUD_INIT_NETWORK_CONFIG.md)
+- [x] [Overview](./docs/NETWORK_PLANNING/OVERVIEW.md)
+  - [x] [3.1 Network Information Gathering](./docs/NETWORK_PLANNING/NETWORK_INFORMATION_GATHERING.md)
+  - [x] [3.2 Network Topology Considerations](./docs/NETWORK_PLANNING/NETWORK_TOPOLOGY.md)
+  - [ ] [3.3 Network Configuration in Cloud-init](./docs/NETWORK_PLANNING/CLOUD_INIT_NETWORK_CONFIG.md)
 
 #### 4. Creating Ubuntu Autoinstall Media
 **Directory:** `docs/AUTOINSTALL_MEDIA_CREATION/`

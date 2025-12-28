@@ -2,7 +2,7 @@
 
 Network configuration is handled via cloud-init using Netplan (Ubuntu's network configuration tool).
 
-## Basic Static IP Configuration
+## Static IP Configuration (Lab Host)
 
 ```yaml
 network:
@@ -11,14 +11,15 @@ network:
     ens18:
       dhcp4: false
       addresses:
-        - 10.0.1.100/24
-      gateway4: 10.0.1.1
+        - 10.0.0.25/24
+      gateway4: 10.0.0.1
       nameservers:
         addresses:
+          - 10.0.0.11
+          - 1.1.1.1
           - 8.8.8.8
-          - 8.8.4.4
         search:
-          - example.local
+          - hostpi.io
 ```
 
 ## DHCP Configuration
@@ -89,12 +90,15 @@ network:
       interfaces:
         - ens18
       addresses:
-        - 10.0.1.100/24
-      gateway4: 10.0.1.1
+        - 10.0.0.25/24
+      gateway4: 10.0.0.1
       nameservers:
         addresses:
+          - 10.0.0.11
+          - 1.1.1.1
           - 8.8.8.8
-          - 8.8.4.4
+        search:
+          - hostpi.io
       parameters:
         stp: false
         forward-delay: 0
