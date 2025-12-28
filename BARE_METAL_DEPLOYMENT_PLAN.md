@@ -23,6 +23,34 @@ Boot & Autoinstall → Cloud-init Execution → Post-Deploy Validation
 - **Rapid Deployment** - Minimal manual intervention required
 - **Consistency** - Eliminates configuration drift
 
+### 1.4 How to Use This Document
+
+**For First-Time Users:**
+1. Start with Section 1 (Overview) to understand the approach
+2. Review Section 2 (Hardware & BIOS Setup) to prepare hardware
+3. Plan network configuration using Section 3
+4. Create installation media per Section 4
+5. Configure cloud-init per Section 5
+6. Follow Section 6 for deployment
+7. Validate with Section 7
+
+**For Quick Deployment:**
+1. Use the cloud-init example in Section 5.2 as a starting point
+2. Modify for your environment
+3. Follow Section 4.3 to create bootable media
+4. Deploy per Section 6.2
+
+**For Multiple Servers:**
+1. Review Section 9 for templating strategy
+2. Create configuration templates
+3. Generate per-host configurations
+4. Consider Ansible or Terraform automation (Section 9.2)
+
+**For Troubleshooting:**
+1. Check Section 8 for common issues
+2. Review logs per Section 8.2
+3. Run validation commands from Section 7.2
+
 ---
 
 ## 2. Hardware & BIOS Setup
@@ -901,9 +929,40 @@ For large-scale deployments, consider:
 - Manage post-deployment configuration
 - Template cloud-init configurations
 
+Example Ansible structure:
+```
+ansible/
+├── playbooks/
+│   ├── create-cloud-init.yml      # Automate cloud-init ISO creation
+│   ├── deploy-bare-metal.yml      # Orchestrate deployment
+│   └── validate-deployment.yml    # Post-deployment validation
+├── roles/
+│   ├── cloud-init-generator/      # Cloud-init generation role
+│   └── iso-builder/               # ISO creation role
+├── inventory/
+│   └── hosts.yaml                 # Inventory file template
+├── group_vars/
+│   └── all.yml                    # Global variables
+└── README.md
+```
+
 **Option 2: Terraform + Cloud-init**
 - Infrastructure as code for bare-metal provisioning
 - Integration with IPMI/Redfish for remote management
+
+Example Terraform structure:
+```
+terraform/
+├── modules/
+│   ├── bare-metal-server/         # Server provisioning module
+│   └── network-config/            # Network configuration module
+├── environments/
+│   ├── dev/                       # Development environment
+│   └── prod/                      # Production environment
+├── variables.tf                   # Input variables
+├── outputs.tf                     # Output values
+└── README.md
+```
 
 **Option 3: PXE Boot Infrastructure**
 - Centralized network-based deployment
@@ -1013,6 +1072,63 @@ virt-host-validate
 - Network card Linux driver support
 - RAID controller compatibility
 - GPU support (if needed for GPU passthrough)
+
+### 11.5 Repository Structure
+
+When splitting this document into a modular repository, use the following structure:
+
+```
+Infrastructure-Host/
+├── README.md
+├── TABLE_OF_CONTENTS.md
+│
+├── docs/                              # Documentation
+│   ├── OVERVIEW_ARCHITECTURE/
+│   ├── HARDWARE_BIOS_SETUP/
+│   ├── NETWORK_PLANNING/
+│   ├── AUTOINSTALL_MEDIA_CREATION/
+│   ├── CLOUD_INIT_CONFIGURATION/
+│   ├── DEPLOYMENT_PROCESS/
+│   ├── POST_DEPLOYMENT_VALIDATION/
+│   ├── TROUBLESHOOTING/
+│   ├── MULTIPLE_SERVER_DEPLOYMENT/
+│   ├── SECURITY_HARDENING/
+│   └── APPENDIX/
+│
+├── config/                            # Configuration templates
+│   ├── autoinstall/                   # user-data.yaml, meta-data.yaml, grub.cfg
+│   ├── cloud-init/                    # Production and minimal configs
+│   ├── network/                       # Netplan templates (static, bonded, VLAN, bridge)
+│   └── services/                      # cockpit.conf, docker-daemon.json, etc.
+│
+├── scripts/                           # Automation scripts
+│   ├── iso-creation/                  # ISO creation and modification
+│   ├── deployment/                    # Config generation, USB writing, validation
+│   ├── templates/                     # Multi-host generation
+│   └── utils/                         # Helper utilities
+│
+├── examples/                          # Example configurations
+│   ├── single-server/                 # basic-server, virtualization-host, cockpit
+│   ├── multi-server/                  # lab-cluster, production-setup
+│   └── network/                       # Network configuration examples
+│
+└── tests/                             # Validation and testing
+    ├── validation/                    # Test scripts
+    └── fixtures/                      # Test data
+```
+
+**File Organization Principles:**
+1. **Modularity** - Each document focuses on a single topic
+2. **Reusability** - Configuration templates can be used independently
+3. **Scalability** - Structure supports both single and multiple server deployments
+4. **Automation-Ready** - Scripts and templates enable CI/CD integration
+5. **Version Control Friendly** - Small, focused files are easier to track and merge
+
+**Naming Conventions:**
+- Documentation directories: `UPPER_UNDERSCORE_CASE`
+- Each section directory contains an `OVERVIEW.md` entry point
+- Config files: lowercase with `.yaml` extension
+- Scripts: lowercase with `.sh` extension
 
 ---
 
