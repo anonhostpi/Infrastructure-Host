@@ -43,14 +43,14 @@ Reboot and press the appropriate key (varies by manufacturer):
 
 ## BIOS Configuration Checklist
 
-- [ ] Boot mode set to UEFI
-- [ ] Virtualization extensions enabled (VT-x/AMD-V)
-- [ ] I/O virtualization enabled (VT-d/AMD-Vi)
-- [ ] Boot order configured (USB first)
-- [ ] Secure Boot configured or disabled
-- [ ] RAID arrays configured (if applicable)
-- [ ] Power management optimized
-- [ ] Save BIOS settings and verify on reboot
+- [x] Boot mode set to UEFI
+- [x] Virtualization extensions enabled (VT-x/AMD-V)
+- [x] I/O virtualization enabled (VT-d/AMD-Vi)
+- [x] Boot order configured (USB first)
+- [x] Secure Boot configured or disabled
+- [ ] ~~RAID arrays configured (if applicable)~~
+- [x] Power management optimized
+- [x] Save BIOS settings and verify on reboot
 
 ## Vendor-Specific Notes
 
