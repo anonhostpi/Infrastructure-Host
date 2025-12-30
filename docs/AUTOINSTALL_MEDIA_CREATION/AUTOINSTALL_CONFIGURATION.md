@@ -1,10 +1,9 @@
 # 4.2 Autoinstall Configuration
 
-Autoinstall uses a `user-data` file for installation automation.
+Autoinstall uses a `user-data` file for installation automation. This configuration is intentionally minimal - it only installs the base OS with cloud-init. User setup, packages, and services are configured via cloud-init (see Chapter 5).
 
 **Configuration Files:** Replace placeholders with values from:
 - [network.config.yaml](../../network.config.yaml) - Hostname, IPs, gateway, DNS
-- [identity.config.yaml](../../identity.config.yaml) - Username, password hash, SSH keys
 
 ## Directory Structure
 
@@ -80,12 +79,12 @@ autoinstall:
       name: zfs
       sizing-policy: all
 
-  # Identity - values from identity.config.yaml
-  # Password is hashed during ISO build (openssl passwd -6)
+  # Temporary installer identity (cloud-init creates the real user)
+  # Password "install" hashed with: openssl passwd -6 -salt xyz install
   identity:
     hostname: <HOSTNAME>
-    username: <USERNAME>
-    password: "<PASSWORD_HASH>"
+    username: installer
+    password: "$6$xyz$AxH4K0XL6J7rLB6x4GjxT1bfF9cXWlVN5dFvLMJ4x3GpZ0vKjG0z6NjUqQpT9s5L4aH8zV7xS2wR4yE6uI8oO0"
 
   # SSH server
   ssh:
@@ -120,16 +119,14 @@ late-commands:
   - echo 'done' > /target/var/log/install.log
 ```
 
-## Password Hashing
+## Installer Account
 
-The plaintext password from `identity.config.yaml` is hashed during ISO build:
+The `installer` user is temporary - only used to bootstrap the system. Cloud-init creates the real admin user on first boot (see [5.1 Configuration Structure](../CLOUD_INIT_CONFIGURATION/CONFIGURATION_STRUCTURE.md)).
 
+To generate a different installer password:
 ```bash
-# Build script hashes password automatically using:
-openssl passwd -6 "$PASSWORD"
+openssl passwd -6 -salt xyz yourpassword
 ```
-
-Store plaintext in `identity.config.yaml` - the build process handles hashing.
 
 ## Storage Layout Options
 
@@ -189,5 +186,3 @@ All other packages (openssh-server, vim, htop, etc.) should be installed via clo
 | `<CIDR>` | network.config.yaml | Network prefix length |
 | `<GATEWAY>` | network.config.yaml | Default gateway IP |
 | `<DNS_PRIMARY>` | network.config.yaml | Primary DNS server |
-| `<USERNAME>` | identity.config.yaml | Admin account username |
-| `<PASSWORD>` | identity.config.yaml | Plaintext password (hashed during build) |

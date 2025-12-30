@@ -1,36 +1,38 @@
 # 5.1 Cloud-init Configuration Structure
 
+**Configuration Files:** Replace placeholders with values from:
+- [network.config.yaml](../../network.config.yaml) - Hostname, IPs, gateway, DNS
+- [identity.config.yaml](../../identity.config.yaml) - Username, password, SSH keys
+
 ## Complete user-data Example
 
 ```yaml
 #cloud-config
 
-# Hostname
-hostname: ubuntu-host-01
-fqdn: ubuntu-host-01.example.local
+# Hostname - from network.config.yaml
+hostname: <HOSTNAME>
+fqdn: <HOSTNAME>.<DNS_SEARCH>
 
 # Manage /etc/hosts
 manage_etc_hosts: true
 
-# Users
+# Users - from identity.config.yaml
 users:
-  - name: admin
-    groups: [sudo, docker]
+  - name: <USERNAME>
+    groups: [sudo, libvirt, kvm]
     shell: /bin/bash
     sudo: ['ALL=(ALL) NOPASSWD:ALL']
     ssh_authorized_keys:
-      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQ... user@workstation
+      - <SSH_AUTHORIZED_KEY>
 
 # Disable root login
 disable_root: true
 
 # SSH configuration
-ssh_pwauth: false
-ssh_authorized_keys:
-  - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQ... user@workstation
+ssh_pwauth: true
 
 # Timezone
-timezone: America/New_York
+timezone: America/Phoenix
 
 # Network configuration
 # NOTE: Do NOT configure network here - use secure ARP probing in bootcmd instead
@@ -52,36 +54,20 @@ package_reboot_if_required: true
 
 # Packages to install
 packages:
-  # System utilities
-  - vim
-  - tmux
-  - htop
-  - curl
-  - wget
-  - git
-  - net-tools
-  - dnsutils
-
   # Virtualization (KVM/QEMU)
   - qemu-kvm
   - libvirt-daemon-system
   - libvirt-clients
-  - bridge-utils
-  - virt-manager
   - virtinst
 
   # Cockpit web interface
   - cockpit
   - cockpit-machines
-  - cockpit-podman
-  - cockpit-networkmanager
 
-  # Container runtime
-  - docker.io
-  - docker-compose
-
-  # Monitoring
-  - prometheus-node-exporter
+# Snap packages
+snap:
+  commands:
+    - snap install multipass
 
 # Systemd services to enable
 runcmd:
@@ -89,9 +75,9 @@ runcmd:
   - systemctl enable libvirtd
   - systemctl start libvirtd
 
-  # Add admin user to libvirt group
-  - usermod -aG libvirt admin
-  - usermod -aG kvm admin
+  # Add user to libvirt group
+  - usermod -aG libvirt <USERNAME>
+  - usermod -aG kvm <USERNAME>
 
   # Enable and start Cockpit
   - systemctl enable cockpit.socket
@@ -100,10 +86,6 @@ runcmd:
   # Configure firewall for Cockpit (port 9090)
   - ufw allow 9090/tcp
   - ufw --force enable
-
-  # Enable and start Docker
-  - systemctl enable docker
-  - systemctl start docker
 
   # Configure libvirt default network
   - virsh net-autostart default
@@ -134,18 +116,6 @@ write_files:
       ========================================
     permissions: '0644'
 
-  # Docker daemon configuration
-  - path: /etc/docker/daemon.json
-    content: |
-      {
-        "log-driver": "json-file",
-        "log-opts": {
-          "max-size": "10m",
-          "max-file": "3"
-        }
-      }
-    permissions: '0644'
-
   # Cockpit configuration
   - path: /etc/cockpit/cockpit.conf
     content: |
@@ -155,7 +125,7 @@ write_files:
     permissions: '0644'
 
 # Final message
-final_message: "Cloud-init deployment complete! System is ready. Cockpit available at https://<host-ip>:9090"
+final_message: "Cloud-init deployment complete! Cockpit available at https://<HOST_IP>:9090"
 
 # Power state
 power_state:
@@ -167,8 +137,8 @@ power_state:
 ## meta-data Example
 
 ```yaml
-instance-id: ubuntu-host-01
-local-hostname: ubuntu-host-01
+instance-id: <HOSTNAME>
+local-hostname: <HOSTNAME>
 ```
 
 ## Network Configuration Approach
@@ -182,3 +152,13 @@ local-hostname: ubuntu-host-01
 - Requires knowing interface name in advance (varies by hardware)
 - Opens attack surface if using DHCP fallback
 - No validation before committing
+
+## Placeholder Reference
+
+| Placeholder | Source | Description |
+|-------------|--------|-------------|
+| `<HOSTNAME>` | network.config.yaml | System hostname |
+| `<HOST_IP>` | network.config.yaml | Static IP address |
+| `<DNS_SEARCH>` | network.config.yaml | DNS search domain |
+| `<USERNAME>` | identity.config.yaml | Admin account username |
+| `<SSH_AUTHORIZED_KEY>` | identity.config.yaml | SSH public key (optional) |
