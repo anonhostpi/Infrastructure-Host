@@ -1,5 +1,5 @@
-# Network configuration (contains internal IPs)
-network.config.yaml
+# Private configuration files (contain internal IPs, credentials, keys)
+*.config.yaml
 
 # Test outputs
 tests/autoinstall/output/

@@ -1,0 +1,24 @@
+# Internal Network Configuration
+# Copy to network.config.yaml and fill in your values
+# THIS FILE IS TRACKED IN GIT - network.config.yaml IS NOT
+
+host:
+  hostname: myserver
+  ip_address: 192.168.1.100/24
+  gateway: 192.168.1.1
+  dns_servers:
+    - 192.168.1.1   # Primary (local router/DNS)
+    - 1.1.1.1       # Cloudflare
+    - 8.8.8.8       # Google
+  dns_search: local.lan
+
+# Placeholder mapping for documentation:
+# <HOSTNAME>      = myserver
+# <HOST_IP>       = 192.168.1.100
+# <CIDR>          = 24
+# <GATEWAY>       = 192.168.1.1
+# <DNS_PRIMARY>   = 192.168.1.1
+# <DNS_SECONDARY> = 1.1.1.1
+# <DNS_TERTIARY>  = 8.8.8.8
+# <DNS_SEARCH>    = local.lan
+# <SUBNET>        = 192.168.1.0
