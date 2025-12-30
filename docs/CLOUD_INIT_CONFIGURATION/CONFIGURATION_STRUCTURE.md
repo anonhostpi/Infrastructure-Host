@@ -1,4 +1,4 @@
-# 5.2 Cloud-init Configuration Structure
+# 5.1 Cloud-init Configuration Structure
 
 ## Complete user-data Example
 

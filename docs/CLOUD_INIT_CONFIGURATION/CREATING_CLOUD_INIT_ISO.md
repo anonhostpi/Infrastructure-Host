@@ -1,4 +1,4 @@
-# 5.3 Creating Cloud-init ISO
+# 5.2 Creating Cloud-init ISO
 
 ## Create Configuration Directory
 

@@ -38,11 +38,10 @@ This document outlines the complete documentation structure for bare-metal Ubunt
 
 #### 5. Cloud-init Configuration
 **Directory:** `docs/CLOUD_INIT_CONFIGURATION/`
-- [Overview](./docs/CLOUD_INIT_CONFIGURATION/OVERVIEW.md)
-- [5.1 Cloud-init Data Sources](./docs/CLOUD_INIT_CONFIGURATION/DATA_SOURCES.md)
-- [5.2 Cloud-init Configuration Structure](./docs/CLOUD_INIT_CONFIGURATION/CONFIGURATION_STRUCTURE.md)
-- [5.3 Creating Cloud-init ISO](./docs/CLOUD_INIT_CONFIGURATION/CREATING_CLOUD_INIT_ISO.md)
-- [5.4 Cloud-init Variables and Templating](./docs/CLOUD_INIT_CONFIGURATION/VARIABLES_AND_TEMPLATING.md)
+- [ ] [Overview](./docs/CLOUD_INIT_CONFIGURATION/OVERVIEW.md)
+  - [5.1 Cloud-init Configuration Structure](./docs/CLOUD_INIT_CONFIGURATION/CONFIGURATION_STRUCTURE.md)
+  - [5.2 Creating Cloud-init ISO](./docs/CLOUD_INIT_CONFIGURATION/CREATING_CLOUD_INIT_ISO.md)
+  - [5.3 Cloud-init Variables and Templating](./docs/CLOUD_INIT_CONFIGURATION/VARIABLES_AND_TEMPLATING.md)
 
 #### 6. Deployment Process
 **Directory:** `docs/DEPLOYMENT_PROCESS/`

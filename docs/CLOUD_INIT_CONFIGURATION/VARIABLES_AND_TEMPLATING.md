@@ -1,4 +1,4 @@
-# 5.4 Cloud-init Variables and Templating
+# 5.3 Cloud-init Variables and Templating
 
 Cloud-init supports Jinja2 templating for dynamic configurations.
 
