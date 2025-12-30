@@ -2,6 +2,10 @@
 
 Autoinstall uses a `user-data` file for installation automation.
 
+**Configuration Files:** Replace placeholders with values from:
+- [network.config.yaml](../../network.config.yaml) - Hostname, IPs, gateway, DNS
+- [identity.config.yaml](../../identity.config.yaml) - Username, password hash, SSH keys
+
 ## Directory Structure
 
 ```bash
@@ -76,12 +80,12 @@ autoinstall:
       name: zfs
       sizing-policy: all
 
-  # Identity (temporary, will be managed by cloud-init)
+  # Identity - values from identity.config.yaml
+  # Password is hashed during ISO build (openssl passwd -6)
   identity:
-    hostname: ubuntu-server
-    username: installer
-    password: "$6$rounds=4096$saltsaltexample$hashedpasswordhere"
-    # Generate with: mkpasswd -m sha-512
+    hostname: <HOSTNAME>
+    username: <USERNAME>
+    password: "<PASSWORD_HASH>"
 
   # SSH server
   ssh:
@@ -116,16 +120,16 @@ late-commands:
   - echo 'done' > /target/var/log/install.log
 ```
 
-## Generate Password Hash
+## Password Hashing
+
+The plaintext password from `identity.config.yaml` is hashed during ISO build:
 
 ```bash
-# Generate a password hash for the identity section
-# Option 1: mkpasswd (if available)
-mkpasswd -m sha-512
-
-# Option 2: openssl (more commonly available)
-openssl passwd -6
+# Build script hashes password automatically using:
+openssl passwd -6 "$PASSWORD"
 ```
+
+Store plaintext in `identity.config.yaml` - the build process handles hashing.
 
 ## Storage Layout Options
 
@@ -175,3 +179,15 @@ packages:
 ```
 
 All other packages (openssh-server, vim, htop, etc.) should be installed via cloud-init configuration. See Chapter 5 for the full package list.
+
+## Placeholder Reference
+
+| Placeholder | Source | Description |
+|-------------|--------|-------------|
+| `<HOSTNAME>` | network.config.yaml | System hostname |
+| `<HOST_IP>` | network.config.yaml | Static IP address |
+| `<CIDR>` | network.config.yaml | Network prefix length |
+| `<GATEWAY>` | network.config.yaml | Default gateway IP |
+| `<DNS_PRIMARY>` | network.config.yaml | Primary DNS server |
+| `<USERNAME>` | identity.config.yaml | Admin account username |
+| `<PASSWORD>` | identity.config.yaml | Plaintext password (hashed during build) |
