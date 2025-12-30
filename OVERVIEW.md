@@ -12,7 +12,7 @@
 **For Quick Deployment:**
 1. Use the cloud-init example in [Configuration Structure](./CLOUD_INIT_CONFIGURATION/CONFIGURATION_STRUCTURE.md) as a starting point
 2. Modify for your environment
-3. Follow [Bootable Media Methods](./AUTOINSTALL_MEDIA_CREATION/BOOTABLE_MEDIA_METHODS.md) to create bootable media
+3. Follow [Tested Bootable Media Creation](./AUTOINSTALL_MEDIA_CREATION/TESTED_BOOTABLE_MEDIA_CREATION.md) to create bootable media
 4. Deploy per [Step-by-Step Deployment](./DEPLOYMENT_PROCESS/STEP_BY_STEP_DEPLOYMENT.md)
 
 **For Multiple Servers:**

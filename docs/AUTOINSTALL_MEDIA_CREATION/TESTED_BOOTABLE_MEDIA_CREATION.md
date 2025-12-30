@@ -1,4 +1,4 @@
-# 4.3 Methods to Create Bootable Media
+# 4.3 Tested Bootable Media Creation
 
 ## Modify ISO In-Place with xorriso
 
