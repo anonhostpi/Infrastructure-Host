@@ -1,8 +1,8 @@
 # 4.3 Methods to Create Bootable Media
 
-## Method A: Modify ISO In-Place with xorriso (Recommended)
+## Modify ISO In-Place with xorriso
 
-This method modifies the original ISO in-place, preserving boot structures.
+This method modifies the original ISO in-place, preserving boot structures. This approach has been verified working in VM testing (see `tests/autoinstall/`).
 
 **Important:** Do NOT extract and rebuild the ISO with `xorriso -as mkisofs` - this corrupts the boot structure. Use in-place modification instead.
 
@@ -66,34 +66,6 @@ ds=nocloud\;s=/cdrom/nocloud/
 Without this parameter, cloud-init won't find the user-data and autoinstall won't trigger.
 
 The `consoleblank=0` parameter prevents screen blanking during installation.
-
-## Method B: USB with Separate Autoinstall Files
-
-This method adds autoinstall files to an existing bootable USB.
-
-```bash
-# Write ISO to USB
-sudo dd if=ubuntu-24.04-live-server-amd64.iso of=/dev/sdX bs=4M status=progress
-sync
-
-# Mount USB and add autoinstall files
-sudo mount /dev/sdX1 /mnt
-sudo mkdir -p /mnt/nocloud
-sudo cp user-data /mnt/nocloud/
-sudo cp meta-data /mnt/nocloud/
-sudo umount /mnt
-```
-
-**Note:** Replace `/dev/sdX` with your actual USB device (check with `lsblk`).
-
-You may also need to modify the GRUB configuration on the USB to include the `ds=nocloud;s=/cdrom/nocloud/` parameter.
-
-## Method Comparison
-
-| Method | Pros | Cons |
-|--------|------|------|
-| Modified ISO (in-place) | Self-contained, preserves boot structure | Requires xorriso |
-| USB + Files | Easy to update config | Requires USB modification and GRUB edit |
 
 ## Verification
 
