@@ -1,10 +1,45 @@
 # 4.1 Download Ubuntu Server ISO
 
-## Download Commands
+## Using ubuntu-cloudimg-query (Recommended)
+
+The `ubuntu-cloudimg-query` tool automatically finds the latest image URL:
 
 ```bash
-# Download Ubuntu 24.04 LTS Server (use latest point release)
-# Check https://releases.ubuntu.com/24.04/ for current version (e.g., 24.04.3)
+# Install cloud-image-utils
+sudo apt install cloud-image-utils
+
+# Query for latest Ubuntu 24.04 live server ISO URL
+ISO_URL=$(ubuntu-cloudimg-query noble live-server amd64 --format "%{url}\n")
+echo "ISO URL: $ISO_URL"
+
+# Download the ISO
+wget -q --show-progress "$ISO_URL" -O ubuntu-live-server.iso
+```
+
+### Query Options
+
+| Release | Codename | Command |
+|---------|----------|---------|
+| 24.04 LTS | noble | `ubuntu-cloudimg-query noble live-server amd64` |
+| 22.04 LTS | jammy | `ubuntu-cloudimg-query jammy live-server amd64` |
+
+### Available Formats
+
+```bash
+# Get just the URL
+ubuntu-cloudimg-query noble live-server amd64 --format "%{url}\n"
+
+# Get filename
+ubuntu-cloudimg-query noble live-server amd64 --format "%{filename}\n"
+
+# Get SHA256 checksum
+ubuntu-cloudimg-query noble live-server amd64 --format "%{sha256}\n"
+```
+
+## Manual Download (Alternative)
+
+```bash
+# Download directly from releases.ubuntu.com
 wget https://releases.ubuntu.com/24.04/ubuntu-24.04.3-live-server-amd64.iso
 
 # Verify checksum
@@ -12,7 +47,7 @@ wget https://releases.ubuntu.com/24.04/SHA256SUMS
 sha256sum -c SHA256SUMS 2>&1 | grep OK
 ```
 
-**Note:** Ubuntu releases point updates (24.04.1, 24.04.2, 24.04.3, etc.) with security patches and updated packages. Always download the latest point release available.
+**Note:** Ubuntu releases point updates (24.04.1, 24.04.2, 24.04.3, etc.). The `ubuntu-cloudimg-query` tool automatically finds the latest.
 
 ## Download Links
 

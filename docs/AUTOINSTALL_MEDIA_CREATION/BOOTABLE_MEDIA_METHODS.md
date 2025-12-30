@@ -8,13 +8,16 @@ This method modifies the original ISO in-place, preserving boot structures.
 
 ```bash
 # Install required tools
-sudo apt install xorriso wget
+sudo apt install xorriso wget cloud-image-utils
 
-# Download Ubuntu Server ISO (if not already present)
-wget https://releases.ubuntu.com/24.04/ubuntu-24.04.3-live-server-amd64.iso
+# Query for latest Ubuntu 24.04 live server ISO
+ISO_URL=$(ubuntu-cloudimg-query noble live-server amd64 --format "%{url}\n")
+
+# Download ISO
+wget -q --show-progress "$ISO_URL" -O ubuntu-live-server.iso
 
 # Copy ISO for modification (preserve original)
-cp ubuntu-24.04.3-live-server-amd64.iso ubuntu-autoinstall.iso
+cp ubuntu-live-server.iso ubuntu-autoinstall.iso
 
 # Create staging directories
 mkdir -p nocloud_add grub_mod
