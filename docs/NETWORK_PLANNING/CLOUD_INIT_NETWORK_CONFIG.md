@@ -1,8 +1,6 @@
 # 3.3 Network Configuration in Cloud-init
 
-**NOTE:** Refer to [network.config.yaml](../../network.config.yaml) for the exact values to be used in the script below.
-
-Network configuration is handled via cloud-init using a secure, hardware-adaptive approach that auto-detects the correct NIC using ARP probes for known network identifiers.
+Network configuration is handled via a secure, hardware-adaptive approach that auto-detects the correct NIC using ARP probes for known network identifiers.
 
 ## Strategy: ARP Probe Detection
 
@@ -21,109 +19,168 @@ This approach:
 - **Validates before committing** - DNS query confirms connectivity
 - **Self-healing** - Tries all interfaces until one works
 
-## No Initial Network Config Required
+## Configuration Files
 
-Unlike DHCP discovery, this approach requires **no network configuration** in cloud-init's network section. The `bootcmd` script handles everything.
+Network setup is split into two files for modularity:
 
-## Network Detection Script
+### build-network.py
 
-Cloud-init `bootcmd` format (replace placeholders with values from `network.config.yaml`):
+Generates network environment variables from [network.config.yaml](../../network.config.yaml):
 
-```yaml
-bootcmd:
-  - |
-    GATEWAY="<GATEWAY>"
-    DNS_PRIMARY="<DNS_PRIMARY>"
-    STATIC_IP="<HOST_IP>"
-    CIDR="<CIDR>"
+```python
+#!/usr/bin/env python3
+"""Network configuration generator for cloud-init and autoinstall."""
 
-    # Skip if already configured (idempotent)
-    [ -f /etc/netplan/90-static.yaml ] && exit 0
+import yaml
 
-    # Test mode: if hostname contains "test", preserve eth0 for multipass
-    TESTMODE=false
-    if hostname | grep -qi "test"; then
-      TESTMODE=true
-      logger "cloud-init: TEST MODE - preserving eth0 for multipass"
-    fi
+def load_network_config(path='network.config.yaml'):
+    """Load network configuration from YAML file."""
+    with open(path) as f:
+        return yaml.safe_load(f)
 
-    # Find interface by ARP probing known hosts
-    for iface in /sys/class/net/e*; do
-      NIC=$(basename "$iface")
-      [ "$NIC" = "lo" ] && continue
+def generate_net_env(net_config):
+    """Generate shell environment variables from network config."""
+    host = net_config['host']
+    dns = host['dns_servers']
 
-      # In test mode, skip eth0 (multipass transport)
-      if $TESTMODE && [ "$NIC" = "eth0" ]; then
-        logger "cloud-init: TEST MODE - skipping eth0"
-        continue
-      fi
+    return f'''GATEWAY="{host['gateway']}"
+DNS_PRIMARY="{dns[0]}"
+DNS_SECONDARY="{dns[1]}"
+DNS_TERTIARY="{dns[2]}"
+DNS_SEARCH="{host['dns_search']}"
+STATIC_IP="{host['ip_address'].split('/')[0]}"
+CIDR="{host['ip_address'].split('/')[1]}"
+'''
 
-      # Bring link up (no IP)
-      ip link set "$NIC" up
-      sleep 2
-
-      # Probe for gateway via ARP
-      if ! arping -c 2 -w 3 -I "$NIC" "$GATEWAY" >/dev/null 2>&1; then
-        ip link set "$NIC" down
-        continue
-      fi
-
-      # Probe for DNS via ARP
-      if ! arping -c 2 -w 3 -I "$NIC" "$DNS_PRIMARY" >/dev/null 2>&1; then
-        ip link set "$NIC" down
-        continue
-      fi
-
-      logger "cloud-init: Found network on $NIC (GW=$GATEWAY, DNS=$DNS_PRIMARY)"
-
-      # Configure interface temporarily
-      ip addr add "$STATIC_IP/$CIDR" dev "$NIC"
-      ip route add default via "$GATEWAY" dev "$NIC"
-
-      # Validate with DNS query
-      if host -W 3 google.com "$DNS_PRIMARY" >/dev/null 2>&1; then
-        logger "cloud-init: DNS validated, writing netplan config"
-
-        cat > /etc/netplan/90-static.yaml << EOF
-    network:
-      version: 2
-      ethernets:
-        $NIC:
-          dhcp4: false
-          addresses:
-            - $STATIC_IP/$CIDR
-          routes:
-            - to: default
-              via: $GATEWAY
-          nameservers:
-            addresses: [<DNS_PRIMARY>, <DNS_SECONDARY>, <DNS_TERTIARY>]
-            search: [<DNS_SEARCH>]
-    EOF
-        netplan apply
-        logger "cloud-init: Static network configuration applied to $NIC"
-        exit 0
-      fi
-
-      # DNS failed, unconfigure and try next
-      logger "cloud-init: DNS validation failed on $NIC, trying next"
-      ip route del default via "$GATEWAY" dev "$NIC" 2>/dev/null
-      ip addr del "$STATIC_IP/$CIDR" dev "$NIC" 2>/dev/null
-      ip link set "$NIC" down
-    done
-
-    logger "cloud-init: ERROR - No valid network interface found"
-    exit 1
+if __name__ == '__main__':
+    net = load_network_config()
+    print(generate_net_env(net))
 ```
 
-## Known Network Identifiers
+### early-net.sh
 
-| Identifier | Placeholder |
-|------------|-------------|
-| Gateway | `<GATEWAY>` |
-| Primary DNS | `<DNS_PRIMARY>` |
-| Static IP | `<HOST_IP>` |
-| CIDR | `<CIDR>` |
-| DNS Search | `<DNS_SEARCH>` |
+Temporary network setup for autoinstall (runs during installation):
+
+```bash
+# Find interface by ARP probing known hosts
+for iface in /sys/class/net/e*; do
+  NIC=$(basename "$iface")
+  [ "$NIC" = "lo" ] && continue
+
+  ip link set "$NIC" up
+  sleep 2
+
+  if ! arping -c 2 -w 3 -I "$NIC" "$GATEWAY" >/dev/null 2>&1; then
+    ip link set "$NIC" down
+    continue
+  fi
+
+  if ! arping -c 2 -w 3 -I "$NIC" "$DNS_PRIMARY" >/dev/null 2>&1; then
+    ip link set "$NIC" down
+    continue
+  fi
+
+  ip addr add "$STATIC_IP/$CIDR" dev "$NIC"
+  ip route add default via "$GATEWAY" dev "$NIC"
+  echo "nameserver $DNS_PRIMARY" > /etc/resolv.conf
+  break
+done
+```
+
+Used by autoinstall `early-commands`. See [4.2 Autoinstall Configuration](../AUTOINSTALL_MEDIA_CREATION/AUTOINSTALL_CONFIGURATION.md).
+
+### net-setup.sh
+
+Permanent network setup for cloud-init (runs on first boot):
+
+```bash
+# Skip if already configured (idempotent)
+[ -f /etc/netplan/90-static.yaml ] && exit 0
+
+# Find interface by ARP probing known hosts
+for iface in /sys/class/net/e*; do
+  NIC=$(basename "$iface")
+  [ "$NIC" = "lo" ] && continue
+
+  # Bring link up (no IP)
+  ip link set "$NIC" up
+  sleep 2
+
+  # Probe for gateway via ARP
+  if ! arping -c 2 -w 3 -I "$NIC" "$GATEWAY" >/dev/null 2>&1; then
+    ip link set "$NIC" down
+    continue
+  fi
+
+  # Probe for DNS via ARP
+  if ! arping -c 2 -w 3 -I "$NIC" "$DNS_PRIMARY" >/dev/null 2>&1; then
+    ip link set "$NIC" down
+    continue
+  fi
+
+  logger "cloud-init: Found network on $NIC (GW=$GATEWAY, DNS=$DNS_PRIMARY)"
+
+  # Configure interface temporarily
+  ip addr add "$STATIC_IP/$CIDR" dev "$NIC"
+  ip route add default via "$GATEWAY" dev "$NIC"
+
+  # Validate with DNS query
+  if host -W 3 google.com "$DNS_PRIMARY" >/dev/null 2>&1; then
+    logger "cloud-init: DNS validated, writing netplan config"
+
+    cat > /etc/netplan/90-static.yaml << EOF
+network:
+  version: 2
+  ethernets:
+    $NIC:
+      dhcp4: false
+      addresses:
+        - $STATIC_IP/$CIDR
+      routes:
+        - to: default
+          via: $GATEWAY
+      nameservers:
+        addresses: [$DNS_PRIMARY, $DNS_SECONDARY, $DNS_TERTIARY]
+        search: [$DNS_SEARCH]
+EOF
+    netplan apply
+    logger "cloud-init: Static network configuration applied to $NIC"
+    exit 0
+  fi
+
+  # DNS failed, unconfigure and try next
+  logger "cloud-init: DNS validation failed on $NIC, trying next"
+  ip route del default via "$GATEWAY" dev "$NIC" 2>/dev/null
+  ip addr del "$STATIC_IP/$CIDR" dev "$NIC" 2>/dev/null
+  ip link set "$NIC" down
+done
+
+logger "cloud-init: ERROR - No valid network interface found"
+exit 1
+```
+
+## Build-time Composition
+
+During the build process, `build-network.py` is imported by `build-autoinstall.py`:
+1. Load network config and generate env variables
+2. Read shell scripts (`early-net.sh`, `net-setup.sh`)
+3. Compose scripts by prefixing env to shell code
+
+See [4.2 Autoinstall Configuration](../AUTOINSTALL_MEDIA_CREATION/AUTOINSTALL_CONFIGURATION.md) for the complete build script.
+
+See [5.1 Configuration Structure](../CLOUD_INIT_CONFIGURATION/CONFIGURATION_STRUCTURE.md) for the complete cloud-init configuration.
+
+## Environment Variables
+
+| Variable | Source (network.config.yaml) | Description |
+|----------|------------------------------|-------------|
+| `GATEWAY` | `host.gateway` | Default gateway IP |
+| `DNS_PRIMARY` | `host.dns_servers[0]` | Primary DNS server |
+| `DNS_SECONDARY` | `host.dns_servers[1]` | Secondary DNS server |
+| `DNS_TERTIARY` | `host.dns_servers[2]` | Tertiary DNS server |
+| `DNS_SEARCH` | `host.dns_search` | DNS search domain |
+| `STATIC_IP` | `host.ip_address` (IP part) | Static IP address |
+| `CIDR` | `host.ip_address` (prefix part) | Network prefix length |
 
 ## How ARP Probing Works
 
@@ -140,29 +197,15 @@ bootcmd:
 
 ## Cloud-init Timing
 
-Cloud-init stages (simplified):
+Cloud-init stages:
 1. **Local** - Writes network config, runs `bootcmd`
-2. **Network** - Network is up, package installation, etc.
+2. **Network** - Network is up, package installation
 3. **Final** - Runs `runcmd`, cleanup
 
 The detection script runs in `bootcmd` because:
 - Runs before any network config is applied
 - Static config is in place before package installation
 - `bootcmd` runs every boot (idempotent guard handles this)
-
-## Test Mode (Multipass)
-
-When testing with multipass on Hyper-V, eth0 is the transport for `multipass shell` and `multipass exec`. The script detects test mode by checking if the hostname contains "test":
-
-```bash
-# Launch test VM with multipass
-multipass launch --name test-cloud-init --cloud-init user-data.yaml
-```
-
-In test mode:
-- eth0 is skipped during NIC probing
-- Multipass transport remains functional
-- Other interfaces are probed normally
 
 ## Security Benefits
 
