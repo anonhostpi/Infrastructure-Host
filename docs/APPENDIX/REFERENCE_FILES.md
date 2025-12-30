@@ -40,29 +40,13 @@ autoinstall:
   shutdown: reboot
 ```
 
-## Network Configuration Templates
+## Network Configuration
 
-### DHCP
+**Do NOT use DHCP** - it creates a broadcast attack surface.
 
-```yaml
-network:
-  version: 2
-  ethernets:
-    ens18:
-      dhcp4: true
-```
+Use the secure ARP probing approach from Chapter 3 (`NETWORK_PLANNING/CLOUD_INIT_NETWORK_CONFIG.md`):
+- Probes for known gateway/DNS via arping (no broadcast)
+- Auto-detects correct NIC
+- Validates connectivity before committing
 
-### Static IP
-
-```yaml
-network:
-  version: 2
-  ethernets:
-    ens18:
-      addresses:
-        - <HOST_IP>/<CIDR>
-      gateway4: <GATEWAY>
-      nameservers:
-        addresses:
-          - <DNS_PRIMARY>
-```
+See `bootcmd` script in Chapter 3 for the full implementation.

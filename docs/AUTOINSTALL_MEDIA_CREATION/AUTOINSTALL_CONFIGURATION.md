@@ -31,15 +31,44 @@ autoinstall:
   keyboard:
     layout: us
 
-  # Network configuration (DHCP during install, cloud-init will reconfigure)
+  # Network: disabled here - configured via early-commands using arping
+  # This avoids DHCP broadcast and uses the same secure approach as cloud-init
+  # See Chapter 3: NETWORK_PLANNING/CLOUD_INIT_NETWORK_CONFIG.md
   network:
-    network:
-      version: 2
-      ethernets:
-        any:
-          match:
-            name: en*
-          dhcp4: true
+    version: 2
+    renderer: networkd
+
+  # Secure network detection via ARP probing (runs before installation)
+  # arping is available via busybox in the live installer
+  early-commands:
+    - |
+      GATEWAY="<GATEWAY>"
+      DNS_PRIMARY="<DNS_PRIMARY>"
+      STATIC_IP="<HOST_IP>"
+      CIDR="<CIDR>"
+
+      for iface in /sys/class/net/e*; do
+        NIC=$(basename "$iface")
+        [ "$NIC" = "lo" ] && continue
+
+        ip link set "$NIC" up
+        sleep 2
+
+        if ! arping -c 2 -w 3 -I "$NIC" "$GATEWAY" >/dev/null 2>&1; then
+          ip link set "$NIC" down
+          continue
+        fi
+
+        if ! arping -c 2 -w 3 -I "$NIC" "$DNS_PRIMARY" >/dev/null 2>&1; then
+          ip link set "$NIC" down
+          continue
+        fi
+
+        ip addr add "$STATIC_IP/$CIDR" dev "$NIC"
+        ip route add default via "$GATEWAY" dev "$NIC"
+        echo "nameserver $DNS_PRIMARY" > /etc/resolv.conf
+        break
+      done
 
   # Storage configuration
   storage:

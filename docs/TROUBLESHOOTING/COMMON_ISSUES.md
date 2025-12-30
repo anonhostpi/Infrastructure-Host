@@ -12,13 +12,16 @@
 
 ## Network Not Configured After Installation
 
-**Symptoms:** No network connectivity, DHCP not working
+**Symptoms:** No network connectivity, arping detection failed
 
 **Solutions:**
-- Check `/var/log/cloud-init.log` for network errors
-- Verify network configuration in user-data
+- Check `/var/log/cloud-init.log` for arping/network errors
+- Verify gateway and DNS IPs are correct and reachable
+- Verify arping is available: `which arping`
+- Check interface names: `ip link show`
+- Manually test arping: `arping -c 2 -I <interface> <gateway>`
+- Check netplan config: `cat /etc/netplan/90-static.yaml`
 - Manually apply with `sudo netplan apply`
-- Check interface names match configuration: `ip link show`
 
 ## Cloud-init Not Running
 

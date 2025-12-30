@@ -32,23 +32,18 @@ ssh_authorized_keys:
 # Timezone
 timezone: America/New_York
 
-# Network configuration (static IP)
-network:
-  version: 2
-  ethernets:
-    ens18:
-      dhcp4: false
-      addresses:
-        - <HOST_IP>/<CIDR>
-      routes:
-        - to: default
-          via: <GATEWAY>
-      nameservers:
-        addresses:
-          - <DNS_PRIMARY>
-          - <DNS_SECONDARY>
-        search:
-          - <DNS_SEARCH>
+# Network configuration
+# NOTE: Do NOT configure network here - use secure ARP probing in bootcmd instead
+# See Chapter 3: NETWORK_PLANNING/CLOUD_INIT_NETWORK_CONFIG.md for the arping approach
+# This avoids DHCP broadcast risks and validates connectivity before committing
+
+# Secure network detection via ARP probing (runs before network stage)
+# Full script in Chapter 3: NETWORK_PLANNING/CLOUD_INIT_NETWORK_CONFIG.md
+bootcmd:
+  - |
+    # Placeholder - see Chapter 3 for full arping-based network detection script
+    # Key steps: probe for known gateway/DNS via arping, configure static IP, validate DNS
+    logger "cloud-init: Network detection via ARP probing - see CLOUD_INIT_NETWORK_CONFIG.md"
 
 # Package management
 package_update: true
@@ -176,24 +171,14 @@ instance-id: ubuntu-host-01
 local-hostname: ubuntu-host-01
 ```
 
-## Optional network-config
+## Network Configuration Approach
 
-Alternative to embedding network config in user-data:
+**Recommended:** Use the secure ARP probing approach from Chapter 3 (`NETWORK_PLANNING/CLOUD_INIT_NETWORK_CONFIG.md`). This:
+- Avoids DHCP broadcast (no rogue DHCP risk)
+- Auto-detects correct NIC via known gateway/DNS probing
+- Validates connectivity before committing configuration
 
-```yaml
-version: 2
-ethernets:
-  ens18:
-    dhcp4: false
-    addresses:
-      - <HOST_IP>/<CIDR>
-    routes:
-      - to: default
-        via: <GATEWAY>
-    nameservers:
-      addresses:
-        - <DNS_PRIMARY>
-        - <DNS_SECONDARY>
-      search:
-        - <DNS_SEARCH>
-```
+**Not Recommended:** Static network-config file. While simpler, this:
+- Requires knowing interface name in advance (varies by hardware)
+- Opens attack surface if using DHCP fallback
+- No validation before committing

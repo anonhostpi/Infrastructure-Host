@@ -54,10 +54,12 @@ terraform/
 
 ### PXE Components
 
-- DHCP server with PXE options
+- DHCP server with PXE options (for network boot only)
 - TFTP server for boot files
 - HTTP server for autoinstall configs
 - Optional: MAAS (Metal as a Service)
+
+**Note:** DHCP is required for PXE network boot, but the installed OS should still use the secure arping approach for network configuration (see Chapter 3). The PXE DHCP is only used during the boot process, not for permanent OS configuration.
 
 ## Comparison
 
