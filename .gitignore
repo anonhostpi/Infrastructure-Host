@@ -1,2 +1,5 @@
 # Network configuration (contains internal IPs)
 network.config.yaml
+
+# Test outputs
+tests/autoinstall/output/
