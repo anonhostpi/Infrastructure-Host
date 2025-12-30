@@ -94,6 +94,7 @@ autoinstall:
     - qemu-guest-agent
 
   # Late commands (runs at end of installation)
+  # WARNING: Do NOT use inline comments in late-commands list items
   late-commands:
     - curtin in-target --target=/target -- systemctl enable cloud-init
     - curtin in-target --target=/target -- systemctl enable ssh
@@ -102,11 +103,29 @@ autoinstall:
   shutdown: reboot
 ```
 
+## YAML Formatting Notes
+
+**Critical:** Avoid inline comments within list items in `late-commands`. This causes YAML parsing errors:
+
+```yaml
+# WRONG - will cause "Malformed autoinstall" error
+late-commands:
+  - echo 'done' > /target/var/log/install.log  # This comment breaks it
+
+# CORRECT
+late-commands:
+  - echo 'done' > /target/var/log/install.log
+```
+
 ## Generate Password Hash
 
 ```bash
 # Generate a password hash for the identity section
+# Option 1: mkpasswd (if available)
 mkpasswd -m sha-512
+
+# Option 2: openssl (more commonly available)
+openssl passwd -6
 ```
 
 ## Storage Layout Options

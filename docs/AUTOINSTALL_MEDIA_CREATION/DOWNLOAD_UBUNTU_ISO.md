@@ -3,13 +3,16 @@
 ## Download Commands
 
 ```bash
-# Download Ubuntu 24.04 LTS Server (example)
-wget https://releases.ubuntu.com/24.04/ubuntu-24.04-live-server-amd64.iso
+# Download Ubuntu 24.04 LTS Server (use latest point release)
+# Check https://releases.ubuntu.com/24.04/ for current version (e.g., 24.04.3)
+wget https://releases.ubuntu.com/24.04/ubuntu-24.04.3-live-server-amd64.iso
 
 # Verify checksum
 wget https://releases.ubuntu.com/24.04/SHA256SUMS
 sha256sum -c SHA256SUMS 2>&1 | grep OK
 ```
+
+**Note:** Ubuntu releases point updates (24.04.1, 24.04.2, 24.04.3, etc.) with security patches and updated packages. Always download the latest point release available.
 
 ## Download Links
 
@@ -31,7 +34,7 @@ wget https://releases.ubuntu.com/24.04/SHA256SUMS.gpg
 gpg --keyid-format long --verify SHA256SUMS.gpg SHA256SUMS
 
 # Verify ISO checksum
-sha256sum -c SHA256SUMS 2>&1 | grep ubuntu-24.04-live-server-amd64.iso
+sha256sum -c SHA256SUMS 2>&1 | grep ubuntu-24.04.3-live-server-amd64.iso
 ```
 
-Expected output: `ubuntu-24.04-live-server-amd64.iso: OK`
+Expected output: `ubuntu-24.04.3-live-server-amd64.iso: OK`
