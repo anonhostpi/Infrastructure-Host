@@ -31,10 +31,10 @@ This document outlines the complete documentation structure for bare-metal Ubunt
 
 #### 4. Creating Ubuntu Autoinstall Media
 **Directory:** `docs/AUTOINSTALL_MEDIA_CREATION/`
-- [Overview](./docs/AUTOINSTALL_MEDIA_CREATION/OVERVIEW.md)
-- [4.1 Download Ubuntu Server ISO](./docs/AUTOINSTALL_MEDIA_CREATION/DOWNLOAD_UBUNTU_ISO.md)
-- [4.2 Autoinstall Configuration](./docs/AUTOINSTALL_MEDIA_CREATION/AUTOINSTALL_CONFIGURATION.md)
-- [4.3 Methods to Create Bootable Media](./docs/AUTOINSTALL_MEDIA_CREATION/BOOTABLE_MEDIA_METHODS.md)
+- [ ] [Overview](./docs/AUTOINSTALL_MEDIA_CREATION/OVERVIEW.md)
+  - [ ] [4.1 Download Ubuntu Server ISO](./docs/AUTOINSTALL_MEDIA_CREATION/DOWNLOAD_UBUNTU_ISO.md)
+  - [ ] [4.2 Autoinstall Configuration](./docs/AUTOINSTALL_MEDIA_CREATION/AUTOINSTALL_CONFIGURATION.md)
+  - [ ] [4.3 Tested Bootable Media Creation](./docs/AUTOINSTALL_MEDIA_CREATION/TESTED_BOOTABLE_MEDIA_CREATION.md)
 
 #### 5. Cloud-init Configuration
 **Directory:** `docs/CLOUD_INIT_CONFIGURATION/`
