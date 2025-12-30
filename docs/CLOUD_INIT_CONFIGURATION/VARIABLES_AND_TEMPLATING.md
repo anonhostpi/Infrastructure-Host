@@ -1,85 +1,87 @@
-# 5.3 Cloud-init Variables and Templating
+# 5.2 Variables and Templating
 
-Cloud-init supports Jinja2 templating for dynamic configurations.
+Configuration uses two approaches at build time:
+1. **YAML composition** - Network scripts are composed by prefixing shell env vars to shell scripts
+2. **Placeholder substitution** - Identity and hostname values are replaced in templates
 
-## Basic Templating
+## Configuration Files
 
-```yaml
-#cloud-config
-hostname: host-{{ ds.meta_data.instance_id }}
+| File | Purpose |
+|------|---------|
+| `network.config.yaml` | Network settings (hostname, IPs, DNS) |
+| `identity.config.yaml` | Credentials (username, password, SSH keys) |
 
-runcmd:
-  - echo "Instance ID: {{ ds.meta_data.instance_id }}" > /etc/instance-info
-  - echo "Local IPv4: {{ ds.meta_data.local_ipv4 }}" >> /etc/instance-info
+These files are gitignored - create them from the `.example` templates.
+
+## Build Scripts
+
+The build chain composes the final `user-data`:
+
+| Script | Chapter | Purpose |
+|--------|---------|---------|
+| `build_network.py` | 3.3 | Generates network env vars from `network.config.yaml` |
+| `build_cloud_init.py` | 5.1 | Composes `bootcmd` with network detection script |
+| `build_autoinstall.py` | 4.2 | Composes `early-commands`, embeds cloud-init |
+
+## Network Variables (YAML Composition)
+
+Network values are generated as shell environment variables by `build_network.py`:
+
+```python
+from build_network import load_network_config, generate_net_env
+
+net_config = load_network_config()
+net_setup_env = generate_net_env(net_config)
+# Returns:
+# GATEWAY="..."
+# DNS_PRIMARY="..."
+# DNS_SECONDARY="..."
+# DNS_TERTIARY="..."
+# DNS_SEARCH="..."
+# STATIC_IP="..."
+# CIDR="..."
 ```
 
-## Available Variables
+These are prefixed to shell scripts (`early-net.sh`, `net-setup.sh`) to create composed scripts for `early-commands` and `bootcmd`.
 
-| Variable | Description |
-|----------|-------------|
-| `ds.meta_data.instance_id` | Instance ID from meta-data |
-| `ds.meta_data.local_hostname` | Local hostname from meta-data |
-| `ds.meta_data.local_ipv4` | Local IPv4 address |
-| `v1.instance_id` | Instance ID |
-| `v1.local_hostname` | Local hostname |
-| `v1.region` | Region (cloud-specific) |
+## Placeholders (String Substitution)
 
-## Conditional Configuration
+These placeholders in templates are replaced with actual values:
 
-```yaml
-#cloud-config
-{% if ds.meta_data.instance_id.startswith('prod') %}
-packages:
-  - monitoring-agent
-  - security-tools
-{% else %}
-packages:
-  - debug-tools
-{% endif %}
-```
+### From network.config.yaml
 
-## Loops
+| Placeholder | Description |
+|-------------|-------------|
+| `<HOSTNAME>` | System hostname |
+| `<HOST_IP>` | Static IP address (for display in messages) |
+| `<DNS_SEARCH>` | DNS search domain (for FQDN) |
 
-```yaml
-#cloud-config
-write_files:
-{% for i in range(3) %}
-  - path: /etc/config/file{{ i }}.conf
-    content: "Configuration file {{ i }}"
-{% endfor %}
-```
+### From identity.config.yaml
 
-## Environment-Based Configuration
+| Placeholder | Description |
+|-------------|-------------|
+| `<USERNAME>` | Admin account username |
+| `<PASSWORD_HASH>` | SHA-512 password hash (generated at build) |
+| `<SSH_AUTHORIZED_KEY>` | SSH public key (optional) |
 
-Define variables in meta-data:
+## Password Hashing
 
-```yaml
-# meta-data
-instance-id: prod-web-01
-local-hostname: prod-web-01
-environment: production
-role: webserver
-```
-
-Reference in user-data:
-
-```yaml
-#cloud-config
-hostname: {{ ds.meta_data.local_hostname }}
-
-runcmd:
-  - echo "Environment: {{ ds.meta_data.environment }}" >> /etc/server-info
-  - echo "Role: {{ ds.meta_data.role }}" >> /etc/server-info
-```
-
-## Template Validation
-
-Test your templates before deployment:
+The build script generates the password hash from plaintext:
 
 ```bash
-# Validate cloud-init syntax
-cloud-init schema --config-file user-data
+PASSWORD_HASH=$(openssl passwd -6 "$PASSWORD")
+```
 
-# Render template (on a system with cloud-init)
-cloud-init query --format "$(cat user-data)"
+Store plaintext password in `identity.config.yaml` - the build handles hashing.
+
+## Validation
+
+After building, validate the generated user-data:
+
+```bash
+# Check YAML syntax
+python3 -c "import yaml; yaml.safe_load(open('user-data'))"
+
+# Validate cloud-init syntax (on Ubuntu)
+cloud-init schema --config-file user-data
 ```

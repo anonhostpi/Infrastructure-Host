@@ -66,9 +66,9 @@ autoinstall:
 ### build-autoinstall.py
 
 The build script:
-1. Imports `build-network.py` to generate `net_setup_env`
+1. Imports `build_network` to generate `net_setup_env`
 2. Composes `early-commands` from `net_setup_env` + `early-net.sh`
-3. Composes `user-data` (cloud-init) with `bootcmd` from `net_setup_env` + `net-setup.sh`
+3. Imports `build_cloud_init` to get cloud-init with `bootcmd` already composed
 4. Embeds cloud-init into autoinstall
 
 ```python
@@ -77,32 +77,28 @@ The build script:
 
 import yaml
 from build_network import load_network_config, generate_net_env
+from build_cloud_init import build_cloud_init
 
 # Generate network environment from config
 net_config = load_network_config()
 net_setup_env = generate_net_env(net_config)
 
-# Read shell scripts
+# Read early-net script
 with open('early-net.sh') as f:
     early_net_sh = f.read()
-with open('net-setup.sh') as f:
-    net_setup_sh = f.read()
 
-# Compose scripts (env + shell)
+# Compose early-commands script (env + shell)
 early_net_script = net_setup_env + '\n' + early_net_sh
-bootcmd_script = net_setup_env + '\n' + net_setup_sh
 
-# Load YAML templates
+# Load autoinstall template
 with open('autoinstall.yml') as f:
     autoinstall = yaml.safe_load(f)
-with open('cloud-init.yml') as f:
-    cloud_init = yaml.safe_load(f)
 
 # Create early-commands array
 autoinstall['autoinstall']['early-commands'] = [early_net_script]
 
-# Replace bootcmd placeholder
-cloud_init['bootcmd'][0] = bootcmd_script
+# Get cloud-init with bootcmd already composed
+cloud_init = build_cloud_init()
 
 # Embed cloud-init in autoinstall
 autoinstall['autoinstall']['user-data'] = cloud_init
@@ -147,5 +143,4 @@ late-commands:
 
 | Artifact | Source | Description |
 |----------|--------|-------------|
-| `early-commands` | network.config.yaml + early-net.sh | Early network setup (created by build script) |
-| `bootcmd` | network.config.yaml + net-setup.sh | Cloud-init network setup (created by build script) |
+| `early-commands` | network.config.yaml + early-net.sh | Early network setup (created by build-autoinstall.py) |

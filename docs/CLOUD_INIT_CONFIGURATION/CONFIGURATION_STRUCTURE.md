@@ -1,19 +1,17 @@
 # 5.1 Cloud-init Configuration Structure
 
+Cloud-init configuration is stored in `cloud-init.yml` and embedded into autoinstall at build time. See [4.2 Autoinstall Configuration](../AUTOINSTALL_MEDIA_CREATION/AUTOINSTALL_CONFIGURATION.md) for the build process.
+
 **Configuration Files:** Replace placeholders with values from:
 - [network.config.yaml](../../network.config.yaml) - Hostname, IPs, gateway, DNS
 - [identity.config.yaml](../../identity.config.yaml) - Username, password, SSH keys
 
-## Complete user-data Example
+## Cloud-init Template (cloud-init.yml)
 
 ```yaml
-#cloud-config
-
 # Hostname - from network.config.yaml
 hostname: <HOSTNAME>
 fqdn: <HOSTNAME>.<DNS_SEARCH>
-
-# Manage /etc/hosts
 manage_etc_hosts: true
 
 # Users - from identity.config.yaml
@@ -22,6 +20,8 @@ users:
     groups: [sudo, libvirt, kvm]
     shell: /bin/bash
     sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    lock_passwd: false
+    passwd: <PASSWORD_HASH>
     ssh_authorized_keys:
       - <SSH_AUTHORIZED_KEY>
 
@@ -34,33 +34,19 @@ ssh_pwauth: true
 # Timezone
 timezone: America/Phoenix
 
-# Network configuration
-# NOTE: Do NOT configure network here - use secure ARP probing in bootcmd instead
-# See Chapter 3: NETWORK_PLANNING/CLOUD_INIT_NETWORK_CONFIG.md for the arping approach
-# This avoids DHCP broadcast risks and validates connectivity before committing
-
-# Secure network detection via ARP probing (runs before network stage)
-# Full script in Chapter 3: NETWORK_PLANNING/CLOUD_INIT_NETWORK_CONFIG.md
-bootcmd:
-  - |
-    # Placeholder - see Chapter 3 for full arping-based network detection script
-    # Key steps: probe for known gateway/DNS via arping, configure static IP, validate DNS
-    logger "cloud-init: Network detection via ARP probing - see CLOUD_INIT_NETWORK_CONFIG.md"
+# bootcmd: created by build-cloud-init.py
+# See Chapter 3: NETWORK_PLANNING/CLOUD_INIT_NETWORK_CONFIG.md
 
 # Package management
 package_update: true
 package_upgrade: true
-package_reboot_if_required: true
 
 # Packages to install
 packages:
-  # Virtualization (KVM/QEMU)
   - qemu-kvm
   - libvirt-daemon-system
   - libvirt-clients
   - virtinst
-
-  # Cockpit web interface
   - cockpit
   - cockpit-machines
 
@@ -71,43 +57,19 @@ snap:
 
 # Systemd services to enable
 runcmd:
-  # Enable and start libvirtd
   - systemctl enable libvirtd
   - systemctl start libvirtd
-
-  # Add user to libvirt group
   - usermod -aG libvirt <USERNAME>
   - usermod -aG kvm <USERNAME>
-
-  # Enable and start Cockpit
   - systemctl enable cockpit.socket
   - systemctl start cockpit.socket
-
-  # Configure firewall for Cockpit (port 9090)
   - ufw allow 9090/tcp
   - ufw --force enable
-
-  # Configure libvirt default network
   - virsh net-autostart default
   - virsh net-start default || true
 
-  # Set up br0 bridge for VMs (example - out of scope for this deployment)
-  # - |
-  #   cat > /etc/netplan/60-bridge.yaml << 'NETPLAN_EOF'
-  #   network:
-  #     version: 2
-  #     bridges:
-  #       br0:
-  #         interfaces: []
-  #         dhcp4: false
-  #         addresses:
-  #           - <BRIDGE_IP>/<CIDR>
-  #   NETPLAN_EOF
-  # - netplan apply || true
-
 # Write files
 write_files:
-  # Custom MOTD
   - path: /etc/motd
     content: |
       ========================================
@@ -116,42 +78,84 @@ write_files:
       ========================================
     permissions: '0644'
 
-  # Cockpit configuration
   - path: /etc/cockpit/cockpit.conf
     content: |
       [WebService]
       AllowUnencrypted = false
-      UrlRoot = /cockpit
     permissions: '0644'
 
 # Final message
-final_message: "Cloud-init deployment complete! Cockpit available at https://<HOST_IP>:9090"
-
-# Power state
-power_state:
-  mode: reboot
-  timeout: 30
-  condition: true
+final_message: "Cloud-init complete! Cockpit at https://<HOST_IP>:9090"
 ```
 
-## meta-data Example
+## Testing with Multipass
 
-```yaml
-instance-id: <HOSTNAME>
-local-hostname: <HOSTNAME>
+Before composing with autoinstall, verify cloud-init works standalone:
+
+```bash
+# Build cloud-init.yaml with placeholders replaced
+python3 build-cloud-init.py
+
+# Test with multipass (may timeout - that's OK)
+multipass launch --name test-chapter-5 --cloud-init cloud-init.yaml || true
+
+# Wait for cloud-init to complete (THIS is the error indicator)
+multipass exec test-chapter-5 -- cloud-init status --wait
+
+# Verify
+multipass exec test-chapter-5 -- cat /etc/motd
+multipass exec test-chapter-5 -- systemctl status cockpit.socket
+
+# Cleanup
+multipass delete test-chapter-5 && multipass purge
 ```
 
-## Network Configuration Approach
+**Note:** The `multipass launch` command may timeout during cloud-init execution - this is normal. The `cloud-init status --wait` command is the true indicator of success/failure.
 
-**Recommended:** Use the secure ARP probing approach from Chapter 3 (`NETWORK_PLANNING/CLOUD_INIT_NETWORK_CONFIG.md`). This:
-- Avoids DHCP broadcast (no rogue DHCP risk)
-- Auto-detects correct NIC via known gateway/DNS probing
-- Validates connectivity before committing configuration
+Once verified, proceed to [4.2 Autoinstall Configuration](../AUTOINSTALL_MEDIA_CREATION/AUTOINSTALL_CONFIGURATION.md) to compose the final user-data.
 
-**Not Recommended:** Static network-config file. While simpler, this:
-- Requires knowing interface name in advance (varies by hardware)
-- Opens attack surface if using DHCP fallback
-- No validation before committing
+## build-cloud-init.py
+
+Builds cloud-init configuration with bootcmd composed from network config:
+
+```python
+#!/usr/bin/env python3
+"""Build cloud-init configuration from template and network config."""
+
+import yaml
+from build_network import load_network_config, generate_net_env
+
+def build_cloud_init(template_path='cloud-init.yml'):
+    """Build cloud-init config with composed bootcmd."""
+    # Generate network environment
+    net_config = load_network_config()
+    net_setup_env = generate_net_env(net_config)
+
+    # Read network setup script
+    with open('net-setup.sh') as f:
+        net_setup_sh = f.read()
+
+    # Compose bootcmd script (env + shell)
+    bootcmd_script = net_setup_env + '\n' + net_setup_sh
+
+    # Load template
+    with open(template_path) as f:
+        cloud_init = yaml.safe_load(f)
+
+    # Create bootcmd array
+    cloud_init['bootcmd'] = [bootcmd_script]
+
+    return cloud_init
+
+if __name__ == '__main__':
+    cloud_init = build_cloud_init()
+    with open('cloud-init-built.yaml', 'w') as f:
+        f.write('#cloud-config\n')
+        yaml.dump(cloud_init, f, default_flow_style=False)
+    print('Generated cloud-init-built.yaml')
+```
+
+See [3.3 Network Configuration](../NETWORK_PLANNING/CLOUD_INIT_NETWORK_CONFIG.md) for script details.
 
 ## Placeholder Reference
 
@@ -161,4 +165,11 @@ local-hostname: <HOSTNAME>
 | `<HOST_IP>` | network.config.yaml | Static IP address |
 | `<DNS_SEARCH>` | network.config.yaml | DNS search domain |
 | `<USERNAME>` | identity.config.yaml | Admin account username |
+| `<PASSWORD_HASH>` | identity.config.yaml | Password hash (generated at build) |
 | `<SSH_AUTHORIZED_KEY>` | identity.config.yaml | SSH public key (optional) |
+
+## Build Artifacts
+
+| Artifact | Source | Description |
+|----------|--------|-------------|
+| `bootcmd` | network.config.yaml + net-setup.sh | Network detection script (created by build-cloud-init.py) |
