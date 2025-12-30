@@ -2,7 +2,7 @@
 # Copy to identity.config.yaml and fill in your values
 # THIS FILE IS TRACKED IN GIT - identity.config.yaml IS NOT
 
-# System credentials (created during autoinstall)
+# System credentials (created by cloud-init on first boot)
 identity:
   username: admin
   password: yourpassword
@@ -13,5 +13,5 @@ identity:
 
 # Placeholder mapping for documentation:
 # <USERNAME> = admin
-# <PASSWORD> = yourpassword (hashed during build)
+# <PASSWORD_HASH> = (generated from password during build)
 # <SSH_AUTHORIZED_KEY> = ssh-ed25519 AAAA...
