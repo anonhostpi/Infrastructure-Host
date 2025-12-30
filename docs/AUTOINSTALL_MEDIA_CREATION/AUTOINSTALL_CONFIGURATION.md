@@ -91,7 +91,6 @@ autoinstall:
   # Packages to install during installation
   packages:
     - cloud-init
-    - qemu-guest-agent
 
   # Late commands (runs at end of installation)
   # WARNING: Do NOT use inline comments in late-commands list items
@@ -160,13 +159,13 @@ storage:
       size: -1
 ```
 
-### Additional Packages
+### Packages
+
+Keep autoinstall packages minimal - only `cloud-init` is required:
 
 ```yaml
 packages:
   - cloud-init
-  - qemu-guest-agent
-  - openssh-server
-  - vim
-  - htop
 ```
+
+All other packages (openssh-server, vim, htop, etc.) should be installed via cloud-init configuration. See Chapter 5 for the full package list.
