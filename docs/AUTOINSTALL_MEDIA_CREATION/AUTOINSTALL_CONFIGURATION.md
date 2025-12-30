@@ -73,7 +73,7 @@ autoinstall:
   # Storage configuration
   storage:
     layout:
-      name: lvm
+      name: zfs
       sizing-policy: all
 
   # Identity (temporary, will be managed by cloud-init)
@@ -131,9 +131,15 @@ openssl passwd -6
 
 | Layout | Description |
 |--------|-------------|
+| `zfs` | ZFS root filesystem (recommended for virtualization hosts) |
 | `lvm` | LVM with single volume group |
 | `direct` | Direct partitioning without LVM |
-| `zfs` | ZFS root filesystem |
+
+ZFS provides advantages for virtualization hosts:
+- Native snapshots for VM backups
+- Data checksumming prevents silent corruption
+- Built-in compression saves storage
+- zvols for efficient VM disk storage
 
 ## Common Customizations
 
