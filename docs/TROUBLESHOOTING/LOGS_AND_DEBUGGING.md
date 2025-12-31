@@ -1,4 +1,4 @@
-# 8.2 Logs and Debugging
+# 9.2 Logs and Debugging
 
 ## Key Log Files
 

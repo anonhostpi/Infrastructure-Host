@@ -1,4 +1,4 @@
-# 11.4 Hardware Compatibility
+# 12.4 Hardware Compatibility
 
 ## Check Ubuntu Hardware Compatibility
 

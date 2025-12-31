@@ -1,4 +1,4 @@
-# 6.3 Monitoring Cloud-init Progress
+# 7.3 Monitoring Cloud-init Progress
 
 ## Check Cloud-init Status
 

@@ -1,4 +1,4 @@
-# 6.2 Step-by-Step Deployment
+# 7.2 Step-by-Step Deployment
 
 ## Step 1: Boot from Installation Media
 

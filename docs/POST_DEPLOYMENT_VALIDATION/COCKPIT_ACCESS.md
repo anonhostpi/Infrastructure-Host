@@ -1,4 +1,4 @@
-# 7.3 Cockpit Access and Configuration
+# 8.3 Cockpit Access and Configuration
 
 ## Accessing Cockpit
 

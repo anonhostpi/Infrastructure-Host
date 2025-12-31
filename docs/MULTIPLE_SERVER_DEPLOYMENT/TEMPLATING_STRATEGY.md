@@ -1,4 +1,4 @@
-# 9.1 Templating Strategy
+# 10.1 Templating Strategy
 
 For deploying multiple servers, use a template-based approach.
 

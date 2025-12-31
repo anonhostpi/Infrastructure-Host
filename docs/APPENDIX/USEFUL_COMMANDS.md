@@ -1,4 +1,4 @@
-# 11.2 Useful Commands
+# 12.2 Useful Commands
 
 ## Password Generation
 

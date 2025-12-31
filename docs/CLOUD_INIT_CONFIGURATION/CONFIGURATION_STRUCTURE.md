@@ -88,32 +88,6 @@ write_files:
 final_message: "Cloud-init complete! Cockpit at https://<HOST_IP>:9090"
 ```
 
-## Testing with Multipass
-
-Before composing with autoinstall, verify cloud-init works standalone:
-
-```bash
-# Build cloud-init.yaml with placeholders replaced
-python3 build-cloud-init.py
-
-# Test with multipass (may timeout - that's OK)
-multipass launch --name test-chapter-5 --cloud-init cloud-init.yaml || true
-
-# Wait for cloud-init to complete (THIS is the error indicator)
-multipass exec test-chapter-5 -- cloud-init status --wait
-
-# Verify
-multipass exec test-chapter-5 -- cat /etc/motd
-multipass exec test-chapter-5 -- systemctl status cockpit.socket
-
-# Cleanup
-multipass delete test-chapter-5 && multipass purge
-```
-
-**Note:** The `multipass launch` command may timeout during cloud-init execution - this is normal. The `cloud-init status --wait` command is the true indicator of success/failure.
-
-Once verified, proceed to [4.2 Autoinstall Configuration](../AUTOINSTALL_MEDIA_CREATION/AUTOINSTALL_CONFIGURATION.md) to compose the final user-data.
-
 ## build-cloud-init.py
 
 Builds cloud-init configuration with bootcmd composed from network config:
@@ -156,6 +130,10 @@ if __name__ == '__main__':
 ```
 
 See [3.3 Network Configuration](../NETWORK_PLANNING/CLOUD_INIT_NETWORK_CONFIG.md) for script details.
+
+## Testing
+
+Test cloud-init configuration with multipass before embedding in autoinstall. See [6.1 Test Procedures](../TESTING_AND_VALIDATION/TEST_PROCEDURES.md) for the complete testing workflow.
 
 ## Placeholder Reference
 

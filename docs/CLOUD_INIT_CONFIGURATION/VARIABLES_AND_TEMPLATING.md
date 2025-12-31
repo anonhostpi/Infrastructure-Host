@@ -76,12 +76,4 @@ Store plaintext password in `identity.config.yaml` - the build handles hashing.
 
 ## Validation
 
-After building, validate the generated user-data:
-
-```bash
-# Check YAML syntax
-python3 -c "import yaml; yaml.safe_load(open('user-data'))"
-
-# Validate cloud-init syntax (on Ubuntu)
-cloud-init schema --config-file user-data
-```
+See [6.2 Validation Checks](../TESTING_AND_VALIDATION/VALIDATION_CHECKS.md) for YAML syntax validation and build verification.

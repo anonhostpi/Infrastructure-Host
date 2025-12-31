@@ -1,4 +1,4 @@
-# 6.1 Pre-Deployment Checklist
+# 7.1 Pre-Deployment Checklist
 
 Complete this checklist before beginning deployment.
 

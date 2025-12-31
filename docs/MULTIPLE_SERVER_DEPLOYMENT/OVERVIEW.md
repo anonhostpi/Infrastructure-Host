@@ -4,8 +4,8 @@ This section covers deploying multiple servers using templating and automation.
 
 ## Contents
 
-- [9.1 Templating Strategy](./TEMPLATING_STRATEGY.md)
-- [9.2 Automation Considerations](./AUTOMATION_CONSIDERATIONS.md)
+- [10.1 Templating Strategy](./TEMPLATING_STRATEGY.md)
+- [10.2 Automation Considerations](./AUTOMATION_CONSIDERATIONS.md)
 
 ## Overview
 

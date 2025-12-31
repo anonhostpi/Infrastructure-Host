@@ -15,4 +15,8 @@ Cloud-init handles post-installation configuration on first boot:
 - Package installation (KVM, Cockpit, multipass)
 - Service enablement and firewall configuration
 
-The cloud-init configuration is embedded in the autoinstall `user-data` field rather than being a separate file. See [4.2 Autoinstall Configuration](../AUTOINSTALL_MEDIA_CREATION/AUTOINSTALL_CONFIGURATION.md) for the complete configuration.
+The cloud-init configuration is embedded in the autoinstall `user-data` field rather than being a separate file. See [4.2 Autoinstall Configuration](../AUTOINSTALL_MEDIA_CREATION/AUTOINSTALL_CONFIGURATION.md) for the embedding process.
+
+## Next Steps
+
+After configuring cloud-init, proceed to [Chapter 6: Testing and Validation](../TESTING_AND_VALIDATION/OVERVIEW.md) to verify the configuration before deployment.

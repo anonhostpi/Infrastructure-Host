@@ -42,43 +42,49 @@ This document outlines the complete documentation structure for bare-metal Ubunt
   - [ ] [5.1 Cloud-init Configuration Structure](./docs/CLOUD_INIT_CONFIGURATION/CONFIGURATION_STRUCTURE.md)
   - [ ] [5.2 Variables and Templating](./docs/CLOUD_INIT_CONFIGURATION/VARIABLES_AND_TEMPLATING.md)
 
-#### 6. Deployment Process
+#### 6. Testing and Validation
+**Directory:** `docs/TESTING_AND_VALIDATION/`
+- [ ] [Overview](./docs/TESTING_AND_VALIDATION/OVERVIEW.md)
+  - [ ] [6.1 Test Procedures](./docs/TESTING_AND_VALIDATION/TEST_PROCEDURES.md)
+  - [ ] [6.2 Validation Checks](./docs/TESTING_AND_VALIDATION/VALIDATION_CHECKS.md)
+
+#### 7. Deployment Process
 **Directory:** `docs/DEPLOYMENT_PROCESS/`
 - [Overview](./docs/DEPLOYMENT_PROCESS/OVERVIEW.md)
-- [6.1 Pre-Deployment Checklist](./docs/DEPLOYMENT_PROCESS/PRE_DEPLOYMENT_CHECKLIST.md)
-- [6.2 Step-by-Step Deployment](./docs/DEPLOYMENT_PROCESS/STEP_BY_STEP_DEPLOYMENT.md)
-- [6.3 Monitoring Cloud-init Progress](./docs/DEPLOYMENT_PROCESS/MONITORING_CLOUD_INIT.md)
+- [7.1 Pre-Deployment Checklist](./docs/DEPLOYMENT_PROCESS/PRE_DEPLOYMENT_CHECKLIST.md)
+- [7.2 Step-by-Step Deployment](./docs/DEPLOYMENT_PROCESS/STEP_BY_STEP_DEPLOYMENT.md)
+- [7.3 Monitoring Cloud-init Progress](./docs/DEPLOYMENT_PROCESS/MONITORING_CLOUD_INIT.md)
 
-#### 7. Post-Deployment Validation
+#### 8. Post-Deployment Validation
 **Directory:** `docs/POST_DEPLOYMENT_VALIDATION/`
 - [Overview](./docs/POST_DEPLOYMENT_VALIDATION/OVERVIEW.md)
-- [7.1 System Validation Checklist](./docs/POST_DEPLOYMENT_VALIDATION/VALIDATION_CHECKLIST.md)
-- [7.2 Validation Commands](./docs/POST_DEPLOYMENT_VALIDATION/VALIDATION_COMMANDS.md)
-- [7.3 Cockpit Access and Configuration](./docs/POST_DEPLOYMENT_VALIDATION/COCKPIT_ACCESS.md)
+- [8.1 System Validation Checklist](./docs/POST_DEPLOYMENT_VALIDATION/VALIDATION_CHECKLIST.md)
+- [8.2 Validation Commands](./docs/POST_DEPLOYMENT_VALIDATION/VALIDATION_COMMANDS.md)
+- [8.3 Cockpit Access and Configuration](./docs/POST_DEPLOYMENT_VALIDATION/COCKPIT_ACCESS.md)
 
-#### 8. Troubleshooting
+#### 9. Troubleshooting
 **Directory:** `docs/TROUBLESHOOTING/`
 - [Overview](./docs/TROUBLESHOOTING/OVERVIEW.md)
-- [8.1 Common Issues](./docs/TROUBLESHOOTING/COMMON_ISSUES.md)
-- [8.2 Logs and Debugging](./docs/TROUBLESHOOTING/LOGS_AND_DEBUGGING.md)
+- [9.1 Common Issues](./docs/TROUBLESHOOTING/COMMON_ISSUES.md)
+- [9.2 Logs and Debugging](./docs/TROUBLESHOOTING/LOGS_AND_DEBUGGING.md)
 
-#### 9. Multiple Server Deployment
+#### 10. Multiple Server Deployment
 **Directory:** `docs/MULTIPLE_SERVER_DEPLOYMENT/`
 - [Overview](./docs/MULTIPLE_SERVER_DEPLOYMENT/OVERVIEW.md)
-- [9.1 Templating Strategy](./docs/MULTIPLE_SERVER_DEPLOYMENT/TEMPLATING_STRATEGY.md)
-- [9.2 Automation Considerations](./docs/MULTIPLE_SERVER_DEPLOYMENT/AUTOMATION_CONSIDERATIONS.md)
+- [10.1 Templating Strategy](./docs/MULTIPLE_SERVER_DEPLOYMENT/TEMPLATING_STRATEGY.md)
+- [10.2 Automation Considerations](./docs/MULTIPLE_SERVER_DEPLOYMENT/AUTOMATION_CONSIDERATIONS.md)
 
-#### 10. Security Hardening
+#### 11. Security Hardening
 **Directory:** `docs/SECURITY_HARDENING/`
 - [Overview](./docs/SECURITY_HARDENING/OVERVIEW.md)
-- [10.1 Post-Deployment Security](./docs/SECURITY_HARDENING/POST_DEPLOYMENT_SECURITY.md)
-- [10.2 Firewall Configuration](./docs/SECURITY_HARDENING/FIREWALL_CONFIGURATION.md)
-- [10.3 Monitoring and Logging](./docs/SECURITY_HARDENING/MONITORING_AND_LOGGING.md)
+- [11.1 Post-Deployment Security](./docs/SECURITY_HARDENING/POST_DEPLOYMENT_SECURITY.md)
+- [11.2 Firewall Configuration](./docs/SECURITY_HARDENING/FIREWALL_CONFIGURATION.md)
+- [11.3 Monitoring and Logging](./docs/SECURITY_HARDENING/MONITORING_AND_LOGGING.md)
 
-#### 11. Appendix
+#### 12. Appendix
 **Directory:** `docs/APPENDIX/`
 - [Overview](./docs/APPENDIX/OVERVIEW.md)
-- [11.1 Reference Files](./docs/APPENDIX/REFERENCE_FILES.md)
-- [11.2 Useful Commands](./docs/APPENDIX/USEFUL_COMMANDS.md)
-- [11.3 Additional Resources](./docs/APPENDIX/ADDITIONAL_RESOURCES.md)
-- [11.4 Hardware Compatibility](./docs/APPENDIX/HARDWARE_COMPATIBILITY.md)
+- [12.1 Reference Files](./docs/APPENDIX/REFERENCE_FILES.md)
+- [12.2 Useful Commands](./docs/APPENDIX/USEFUL_COMMANDS.md)
+- [12.3 Additional Resources](./docs/APPENDIX/ADDITIONAL_RESOURCES.md)
+- [12.4 Hardware Compatibility](./docs/APPENDIX/HARDWARE_COMPATIBILITY.md)
