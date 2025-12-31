@@ -34,7 +34,7 @@ This document outlines the complete documentation structure for bare-metal Ubunt
 - [ ] [Overview](./docs/AUTOINSTALL_MEDIA_CREATION/OVERVIEW.md)
   - [ ] [4.1 Download Ubuntu Server ISO](./docs/AUTOINSTALL_MEDIA_CREATION/DOWNLOAD_UBUNTU_ISO.md)
   - [ ] [4.2 Autoinstall Configuration](./docs/AUTOINSTALL_MEDIA_CREATION/AUTOINSTALL_CONFIGURATION.md)
-  - [ ] [4.3 Tested Bootable Media Creation](./docs/AUTOINSTALL_MEDIA_CREATION/TESTED_BOOTABLE_MEDIA_CREATION.md)
+  - [ ] [4.3 Bootable Media Creation](./docs/AUTOINSTALL_MEDIA_CREATION/TESTED_BOOTABLE_MEDIA_CREATION.md)
 
 #### 5. Cloud-init Configuration
 **Directory:** `docs/CLOUD_INIT_CONFIGURATION/`
@@ -45,8 +45,8 @@ This document outlines the complete documentation structure for bare-metal Ubunt
 #### 6. Testing and Validation
 **Directory:** `docs/TESTING_AND_VALIDATION/`
 - [ ] [Overview](./docs/TESTING_AND_VALIDATION/OVERVIEW.md)
-  - [ ] [6.1 Test Procedures](./docs/TESTING_AND_VALIDATION/TEST_PROCEDURES.md)
-  - [ ] [6.2 Validation Checks](./docs/TESTING_AND_VALIDATION/VALIDATION_CHECKS.md)
+  - [ ] [6.1 Cloud-init Testing](./docs/TESTING_AND_VALIDATION/CLOUD_INIT_TESTING.md)
+  - [ ] [6.2 Autoinstall Testing](./docs/TESTING_AND_VALIDATION/AUTOINSTALL_TESTING.md)
 
 #### 7. Deployment Process
 **Directory:** `docs/DEPLOYMENT_PROCESS/`

@@ -1,80 +1,12 @@
-# 6.1 Test Procedures
+# 6.2 Autoinstall Testing
 
-Testing occurs in two phases: cloud-init validation with multipass, then full autoinstall testing with VirtualBox.
+Build and test the full autoinstall ISO with VirtualBox.
 
-## Phase 1: Cloud-init Testing
-
-Test cloud-init configuration before embedding in autoinstall.
-
-### Step 1: Start Builder VM
-
-```powershell
-# Create or start the builder VM
-multipass launch --name iso-builder --cpus 2 --memory 4G --disk 20G
-
-# Or if it already exists
-multipass start iso-builder
-```
-
-### Step 2: Transfer Build Scripts
-
-```powershell
-# Transfer config files
-multipass transfer network.config.yaml iso-builder:/home/ubuntu/
-multipass transfer identity.config.yaml iso-builder:/home/ubuntu/
-
-# Transfer build scripts
-multipass transfer build_network.py iso-builder:/home/ubuntu/
-multipass transfer build_cloud_init.py iso-builder:/home/ubuntu/
-
-# Transfer templates
-multipass transfer cloud-init.yml iso-builder:/home/ubuntu/
-multipass transfer net-setup.sh iso-builder:/home/ubuntu/
-```
-
-### Step 3: Build cloud-init.yml
-
-```powershell
-# Install dependencies
-multipass exec iso-builder -- sudo apt-get update -qq
-multipass exec iso-builder -- sudo apt-get install -y -qq python3-yaml
-
-# Build cloud-init configuration
-multipass exec iso-builder -- python3 build_cloud_init.py
-
-# Retrieve built config
-multipass transfer iso-builder:/home/ubuntu/cloud-init-built.yaml ./cloud-init-test.yaml
-```
-
-### Step 4: Test with Multipass
-
-```powershell
-# Launch test VM with cloud-init config (may timeout - that's OK)
-multipass launch --name cloud-init-test --cloud-init cloud-init-test.yaml 2>$null
-
-# Wait for cloud-init to complete (THIS is the true success indicator)
-multipass exec cloud-init-test -- cloud-init status --wait
-
-# Verify configuration applied
-multipass exec cloud-init-test -- cat /etc/motd
-multipass exec cloud-init-test -- systemctl status cockpit.socket
-multipass exec cloud-init-test -- cat /etc/netplan/90-static.yaml
-```
-
-### Step 5: Cleanup Test VM
-
-```powershell
-multipass delete cloud-init-test
-multipass purge
-```
-
-If cloud-init test passes, proceed to Phase 2.
+**Prerequisite:** Complete [6.1 Cloud-init Testing](./CLOUD_INIT_TESTING.md) first.
 
 ## Phase 2: Autoinstall Testing
 
-Build and test the full autoinstall ISO.
-
-### Step 1: Build user-data
+### Step 1: Build and Validate user-data
 
 ```powershell
 # Transfer additional files to builder VM
@@ -82,13 +14,30 @@ multipass transfer autoinstall.yml iso-builder:/home/ubuntu/
 multipass transfer early-net.sh iso-builder:/home/ubuntu/
 multipass transfer build_autoinstall.py iso-builder:/home/ubuntu/
 
+# Validate YAML syntax before build
+multipass exec iso-builder -- python3 -c "import yaml; yaml.safe_load(open('autoinstall.yml'))"
+
 # Build final user-data
 multipass exec iso-builder -- python3 build_autoinstall.py
+
+# Validate user-data structure (check printed output manually)
+multipass exec iso-builder -- python3 -c "
+import yaml
+with open('user-data') as f:
+    data = yaml.safe_load(f)
+ai = data.get('autoinstall', {})
+print('autoinstall version:', ai.get('version'))
+print('has early-commands:', 'early-commands' in ai)
+print('has user-data:', 'user-data' in ai)
+ud = ai.get('user-data', {})
+print('user-data has bootcmd:', 'bootcmd' in ud)
+print('user-data has users:', 'users' in ud)
+"
 ```
 
-### Step 2: Build ISO
+### Step 2: Build and Validate ISO
 
-Transfer the ISO build script and execute:
+Transfer and execute the ISO build script. See [4.3 Bootable Media Creation](../AUTOINSTALL_MEDIA_CREATION/TESTED_BOOTABLE_MEDIA_CREATION.md) for the full script.
 
 ```powershell
 multipass transfer build-iso.sh iso-builder:/home/ubuntu/
@@ -96,77 +45,14 @@ multipass exec iso-builder -- chmod +x build-iso.sh
 multipass exec iso-builder -- ./build-iso.sh
 ```
 
-### build-iso.sh
+**ISO Validation** - Run inside builder VM:
 
-```bash
-#!/bin/bash
-# Build autoinstall ISO using xorriso in-place modification
-set -e
+```powershell
+# List nocloud directory contents
+multipass exec iso-builder -- xorriso -indev ubuntu-autoinstall.iso -ls /nocloud
 
-UBUNTU_VERSION="24.04.2"
-ISO_URL="https://releases.ubuntu.com/24.04/ubuntu-${UBUNTU_VERSION}-live-server-amd64.iso"
-ORIGINAL_ISO="ubuntu-${UBUNTU_VERSION}-live-server-amd64.iso"
-OUTPUT_ISO="$HOME/ubuntu-autoinstall.iso"
-
-echo "=== Installing dependencies ==="
-sudo apt-get update -qq
-sudo apt-get install -y -qq xorriso wget
-
-echo "=== Downloading Ubuntu ISO (if not cached) ==="
-if [ ! -f "$HOME/$ORIGINAL_ISO" ]; then
-    wget -q --show-progress "$ISO_URL" -O "$HOME/$ORIGINAL_ISO"
-else
-    echo "Using cached ISO"
-fi
-
-echo "=== Copying ISO for modification ==="
-cp "$HOME/$ORIGINAL_ISO" "$OUTPUT_ISO"
-
-echo "=== Creating config directories ==="
-mkdir -p "$HOME/nocloud_add" "$HOME/grub_mod"
-
-# user-data is the autoinstall config (includes embedded cloud-init)
-cp "$HOME/user-data" "$HOME/nocloud_add/"
-
-# meta-data is minimal
-cat > "$HOME/nocloud_add/meta-data" << 'EOF'
-instance-id: autoinstall-001
-EOF
-
-echo "=== Creating GRUB config ==="
-cat > "$HOME/grub_mod/grub.cfg" << 'GRUBEOF'
-set timeout=5
-set default=0
-loadfont unicode
-set menu_color_normal=white/black
-set menu_color_highlight=black/light-gray
-
-menuentry "Autoinstall Ubuntu Server" {
-    set gfxpayload=keep
-    linux /casper/vmlinuz autoinstall ds=nocloud\;s=/cdrom/nocloud/ consoleblank=0 ---
-    initrd /casper/initrd
-}
-
-menuentry "Ubuntu Server (Manual Install)" {
-    set gfxpayload=keep
-    linux /casper/vmlinuz ---
-    initrd /casper/initrd
-}
-GRUBEOF
-
-echo "=== Modifying ISO in-place with xorriso ==="
-xorriso -indev "$OUTPUT_ISO" \
-    -outdev "$OUTPUT_ISO" \
-    -boot_image any replay \
-    -map "$HOME/nocloud_add" /nocloud \
-    -map "$HOME/grub_mod/grub.cfg" /boot/grub/grub.cfg \
-    -commit
-
-echo "=== Verifying ISO ==="
-xorriso -indev "$OUTPUT_ISO" -ls /nocloud 2>/dev/null || true
-
-echo "=== ISO built successfully ==="
-ls -lh "$OUTPUT_ISO"
+# Verify GRUB config has autoinstall entry
+multipass exec iso-builder -- bash -c "xorriso -indev ubuntu-autoinstall.iso -extract /boot/grub/grub.cfg /tmp/grub.cfg 2>/dev/null && grep -A5 'Autoinstall' /tmp/grub.cfg"
 ```
 
 ### Step 3: Transfer ISO to Host
@@ -217,11 +103,11 @@ if (Test-Path $vdiPath) { Remove-Item $vdiPath -Force }
 & $vbox startvm $vmName --type gui
 ```
 
-### Step 5: Monitor Installation
+### Step 5: Validate Autoinstall
 
 Watch the VM window. Installation typically takes 5-10 minutes.
 
-After reboot, query for IP:
+After reboot, query for IP and SSH in:
 
 ```powershell
 # Wait for guest utils to report IP
@@ -232,6 +118,38 @@ After reboot, query for IP:
 
 # Connect via SSH
 ssh -p 2222 admin@localhost
+```
+
+**Validation** - Run these commands inside the VM:
+
+```bash
+# Verify autoinstall completed
+cat /var/log/installer/autoinstall-user-data
+
+# Verify cloud-init completed
+cloud-init status
+
+# Verify ZFS root
+zfs list
+
+# Verify network
+ip addr show
+cat /etc/netplan/90-static.yaml
+
+# Verify services
+systemctl status cockpit.socket
+systemctl status libvirtd
+systemctl status ssh
+
+# Verify packages
+dpkg -l | grep -E "qemu-kvm|libvirt|cockpit"
+
+# Verify user and groups
+id admin
+groups admin
+
+# Verify firewall
+ufw status
 ```
 
 ### Step 6: Cleanup
@@ -251,7 +169,12 @@ multipass stop iso-builder
 
 ## Automated Test Script
 
-For convenience, a PowerShell script can automate the full test cycle:
+For convenience, a PowerShell script can automate the full test cycle (both phases).
+
+**Prerequisites:** Transfer build scripts to the builder VM before running:
+- `build_network.py`, `build_cloud_init.py`, `build_autoinstall.py`
+- `build-iso.sh` (see [4.3 Bootable Media Creation](../AUTOINSTALL_MEDIA_CREATION/TESTED_BOOTABLE_MEDIA_CREATION.md))
+- Template files and config files
 
 ### Test-Autoinstall.ps1
 
@@ -444,7 +367,17 @@ try {
 }
 ```
 
-## Key Differences from tests/autoinstall
+## Common Errors
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `Malformed YAML` | Inline comments in list items | Remove comments from list items |
+| `Invalid user-data` | Missing `#cloud-config` header | Ensure first line is `#cloud-config` |
+| `Schema validation failed` | Invalid cloud-init keys | Check cloud-init documentation |
+| `No autoinstall config found` | Missing datasource parameter | Add `ds=nocloud;s=/cdrom/nocloud/` to GRUB |
+| `Network not configured` | arping failed to find interface | Check gateway/DNS IPs are reachable |
+
+## Key Differences from tests/autoinstall (old experiment)
 
 | Aspect | tests/autoinstall (old) | Current approach |
 |--------|------------------------|------------------|

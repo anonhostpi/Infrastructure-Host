@@ -4,8 +4,8 @@ This section covers testing the build artifacts before deploying to bare metal.
 
 ## Contents
 
-- [6.1 Test Procedures](./TEST_PROCEDURES.md)
-- [6.2 Validation Checks](./VALIDATION_CHECKS.md)
+- [6.1 Cloud-init Testing](./CLOUD_INIT_TESTING.md)
+- [6.2 Autoinstall Testing](./AUTOINSTALL_TESTING.md)
 
 ## Overview
 
