@@ -67,7 +67,7 @@ Cloud-init performs:
 | Users | Admin user created with password and SSH key |
 | Packages | KVM, libvirt, Cockpit, multipass installed |
 | Services | libvirtd, cockpit.socket enabled and started |
-| Firewall | UFW enabled, port 9090 opened for Cockpit |
+| Firewall | UFW enabled, port 443 opened for Cockpit |
 
 **Duration:** 5-20 minutes depending on package downloads
 
@@ -87,7 +87,7 @@ ssh -i ~/.ssh/your_key admin@<HOST_IP>
 
 ### Cockpit Access
 
-Open in browser: `https://<HOST_IP>:9090`
+Open in browser: `https://<HOST_IP>`
 
 Login with admin credentials from `identity.config.yaml`.
 

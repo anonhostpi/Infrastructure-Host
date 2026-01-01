@@ -33,7 +33,7 @@ systemctl status docker --no-pager
 echo ""
 
 echo "=== Cockpit Access ==="
-echo "Cockpit URL: https://$(hostname -I | awk '{print $1}'):9090"
+echo "Cockpit URL: https://$(hostname -I | awk '{print $1}')"
 echo ""
 
 echo "=== Cloud-init Status ==="

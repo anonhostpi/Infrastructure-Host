@@ -8,7 +8,7 @@ runcmd:
   - ufw default deny incoming
   - ufw default allow outgoing
   - ufw allow ssh
-  - ufw allow 9090/tcp    # Cockpit
+  - ufw allow 443/tcp     # Cockpit
   - ufw --force enable
 ```
 
@@ -24,8 +24,7 @@ sudo ufw status verbose
 # Allow specific ports
 sudo ufw allow 22/tcp      # SSH
 sudo ufw allow 80/tcp      # HTTP
-sudo ufw allow 443/tcp     # HTTPS
-sudo ufw allow 9090/tcp    # Cockpit
+sudo ufw allow 443/tcp     # HTTPS (Cockpit)
 
 # Allow from specific subnet
 sudo ufw allow from <SUBNET>/<CIDR>
@@ -45,9 +44,8 @@ sudo ufw reset
 | Port | Service | Action |
 |------|---------|--------|
 | 22/tcp | SSH | Allow |
-| 9090/tcp | Cockpit | Allow |
+| 443/tcp | Cockpit (HTTPS) | Allow |
 | 80/tcp | HTTP | Allow if needed |
-| 443/tcp | HTTPS | Allow if needed |
 | 16509/tcp | Libvirt | Allow from trusted IPs |
 
 ## Firewall for Virtualization

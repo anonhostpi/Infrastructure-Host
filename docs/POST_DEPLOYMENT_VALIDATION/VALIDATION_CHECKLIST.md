@@ -27,7 +27,7 @@
 ## Cockpit
 
 - [ ] Cockpit service running: `systemctl status cockpit.socket`
-- [ ] Cockpit accessible: Open browser to `https://<host-ip>:9090`
+- [ ] Cockpit accessible: Open browser to `https://<host-ip>`
 - [ ] Login with admin user credentials
 - [ ] Verify modules loaded (Machines, Podman, Network)
 

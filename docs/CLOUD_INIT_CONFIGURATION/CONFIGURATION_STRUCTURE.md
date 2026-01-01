@@ -63,7 +63,7 @@ runcmd:
   - usermod -aG kvm <USERNAME>
   - systemctl enable cockpit.socket
   - systemctl start cockpit.socket
-  - ufw allow 9090/tcp
+  - ufw allow 443/tcp
   - ufw --force enable
   - virsh net-autostart default
   - virsh net-start default || true
@@ -85,7 +85,7 @@ write_files:
     permissions: '0644'
 
 # Final message
-final_message: "Cloud-init complete! Cockpit at https://<HOST_IP>:9090"
+final_message: "Cloud-init complete! Cockpit at https://<HOST_IP>"
 ```
 
 ## build-cloud-init.py

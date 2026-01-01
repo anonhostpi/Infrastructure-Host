@@ -80,7 +80,7 @@ During cloud-init execution, monitor for:
 | Arping detection | "Interface detected: ethX" in output log |
 | Package install | apt-get output for kvm, libvirt, cockpit |
 | Service enable | systemctl enable/start for libvirtd, cockpit |
-| Firewall config | ufw enable, port 9090 opened |
+| Firewall config | ufw enable, port 443 opened |
 
 ## Completion Verification
 

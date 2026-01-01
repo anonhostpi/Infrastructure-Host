@@ -35,12 +35,12 @@
 
 ## Cockpit Not Accessible
 
-**Symptoms:** Cannot connect to port 9090
+**Symptoms:** Cannot connect to port 443
 
 **Solutions:**
 - Check service status: `systemctl status cockpit.socket`
-- Verify firewall: `sudo ufw status | grep 9090`
-- Check listening ports: `sudo ss -tlnp | grep 9090`
+- Verify firewall: `sudo ufw status | grep 443`
+- Check listening ports: `sudo ss -tlnp | grep 443`
 - Restart service: `sudo systemctl restart cockpit.socket`
 
 ## Virtualization Not Working

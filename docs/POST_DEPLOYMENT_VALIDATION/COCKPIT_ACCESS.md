@@ -3,7 +3,7 @@
 ## Accessing Cockpit
 
 1. Open web browser
-2. Navigate to: `https://<host-ip>:9090`
+2. Navigate to: `https://<host-ip>`
 3. Accept self-signed certificate (or configure proper TLS)
 4. Login with `admin` user and password
 
@@ -75,10 +75,10 @@ IdleTimeout = 15
 systemctl status cockpit.socket
 
 # Check listening port
-ss -tlnp | grep 9090
+ss -tlnp | grep 443
 
 # Check firewall
-ufw status | grep 9090
+ufw status | grep 443
 
 # View logs
 journalctl -u cockpit
