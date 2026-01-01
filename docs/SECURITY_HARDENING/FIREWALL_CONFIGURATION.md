@@ -1,4 +1,4 @@
-# 11.2 Firewall Configuration
+# 10.2 Firewall Configuration
 
 ## UFW Configuration via Cloud-init
 

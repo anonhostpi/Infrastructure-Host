@@ -1,4 +1,4 @@
-# 12.3 Additional Resources
+# 11.3 Additional Resources
 
 ## Official Documentation
 
