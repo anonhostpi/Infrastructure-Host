@@ -1,6 +1,6 @@
 # Deployment Process
 
-This section covers the step-by-step deployment process.
+Deploy the autoinstall ISO to bare metal hardware.
 
 ## Contents
 
@@ -10,4 +10,26 @@ This section covers the step-by-step deployment process.
 
 ## Overview
 
-This section guides you through the actual deployment process, from final preparation through installation completion and cloud-init execution.
+This chapter guides you through deploying the autoinstall ISO to bare metal. The deployment process has two phases:
+
+1. **Autoinstall Phase** - Boot from ISO, automatic partitioning with ZFS, base OS install
+2. **Cloud-init Phase** - First boot configuration: arping network detection, static IP, packages, services
+
+### What Gets Deployed
+
+| Component | Configuration |
+|-----------|---------------|
+| Storage | ZFS root pool with boot partition |
+| Network | Static IP via arping interface detection |
+| User | Admin account with password and SSH key |
+| Packages | KVM, libvirt, Cockpit, multipass |
+| Services | libvirtd, cockpit.socket, UFW firewall |
+
+### Prerequisites
+
+Before deploying, ensure you have:
+
+- Completed [Chapter 6: Testing and Validation](../TESTING_AND_VALIDATION/OVERVIEW.md)
+- Autoinstall ISO built and validated
+- Target hardware with BIOS configured per [Chapter 2](../HARDWARE_BIOS_SETUP/OVERVIEW.md)
+- Network environment with gateway/DNS responding to ARP

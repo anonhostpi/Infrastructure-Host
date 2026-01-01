@@ -1,73 +1,117 @@
 # 7.2 Step-by-Step Deployment
 
-## Step 1: Boot from Installation Media
+Deploy the autoinstall ISO to bare metal hardware.
 
-1. Insert USB or attach ISO via IPMI/iLO/iDRAC
-2. Power on server
-3. Press boot menu key (F11, F12, ESC - varies by vendor)
-4. Select USB/ISO device
-5. Ubuntu installer should start automatically with autoinstall
+## Step 1: Prepare Boot Media
 
-## Step 2: Monitor Autoinstall Process
+### USB Drive
 
-1. Autoinstall will proceed automatically
-2. Monitor for any errors (usually network or storage related)
-3. Installation takes 5-15 minutes depending on hardware
-4. System will reboot automatically when complete
+```powershell
+# On Windows, use Rufus or similar tool
+# Select the autoinstall ISO and write to USB drive
+```
 
-## Step 3: First Boot - Cloud-init Execution
+### Remote Console (IPMI/iLO/iDRAC)
 
-1. After reboot, remove installation media
-2. System boots into newly installed Ubuntu
-3. Cloud-init executes on first boot
-4. This applies:
-   - Network configuration
-   - User accounts
-   - SSH keys
-   - Package installations (including Cockpit)
-   - Custom scripts
+1. Log into server management interface
+2. Open remote console (Java/HTML5)
+3. Mount ISO as virtual media
 
-**Cloud-init execution takes 5-20 minutes depending on packages**
+## Step 2: Boot from Installation Media
 
-## Step 4: Attach Cloud-init Configuration (if not embedded)
+1. Power on server (or reboot if already on)
+2. Press boot menu key during POST:
+   - Dell: F11
+   - HP: F11
+   - Supermicro: F11
+   - Generic: F12 or ESC
+3. Select USB/CD device from boot menu
+4. GRUB menu appears with "Autoinstall Ubuntu Server"
 
-If using separate cloud-init ISO:
+The autoinstall entry will be selected automatically after 5 seconds.
 
-1. After autoinstall completes and system reboots
-2. Attach cloud-init ISO as second CD/DVD
-3. Cloud-init will detect and apply configuration on first boot
+## Step 3: Monitor Autoinstall
 
-### Alternative: Manual Placement
+The installation proceeds automatically:
+
+1. **Partitioning** - Creates ZFS root layout
+2. **Base install** - Installs Ubuntu base system
+3. **early-commands** - Runs arping network detection for installer connectivity
+4. **Package install** - Installs selected packages
+5. **Reboot** - System reboots automatically
+
+**Duration:** 5-15 minutes depending on hardware speed
+
+### What to Watch For
+
+- Disk detection (ensure target disk is found)
+- Network connectivity during installation
+- No error messages on screen
+
+If errors occur, note the message and check [Chapter 9: Troubleshooting](../TROUBLESHOOTING/OVERVIEW.md).
+
+## Step 4: First Boot - Cloud-init Execution
+
+After reboot:
+
+1. Remove installation media (USB/virtual media)
+2. System boots from ZFS root
+3. Cloud-init executes automatically
+
+Cloud-init performs:
+
+| Stage | What Happens |
+|-------|--------------|
+| bootcmd | Arping network detection, writes netplan config |
+| Network | Static IP applied via netplan |
+| Users | Admin user created with password and SSH key |
+| Packages | KVM, libvirt, Cockpit, multipass installed |
+| Services | libvirtd, cockpit.socket enabled and started |
+| Firewall | UFW enabled, port 9090 opened for Cockpit |
+
+**Duration:** 5-20 minutes depending on package downloads
+
+## Step 5: Verify Deployment
+
+Once cloud-init completes, verify access:
+
+### SSH Access
 
 ```bash
-# SSH into server with installer account
-ssh installer@<HOST_IP>
+# From your workstation
+ssh admin@<HOST_IP>
 
-# Become root
-sudo su -
+# Or if using SSH key
+ssh -i ~/.ssh/your_key admin@<HOST_IP>
+```
 
-# Create cloud-init seed directory
-mkdir -p /var/lib/cloud/seed/nocloud-net
+### Cockpit Access
 
-# Upload or create user-data and meta-data files
-cat > /var/lib/cloud/seed/nocloud-net/user-data << 'EOF'
-#cloud-config
-# (paste your cloud-init configuration)
-EOF
+Open in browser: `https://<HOST_IP>:9090`
 
-cat > /var/lib/cloud/seed/nocloud-net/meta-data << 'EOF'
-instance-id: ubuntu-host-01
-local-hostname: ubuntu-host-01
-EOF
+Login with admin credentials from `identity.config.yaml`.
 
-# Clean cloud-init and re-run
-cloud-init clean
-cloud-init init
-cloud-init modules --mode config
-cloud-init modules --mode final
+### Verification Commands
 
-# Or simply reboot to trigger cloud-init
-reboot
+Run these on the deployed server:
+
+```bash
+# Verify cloud-init completed
+cloud-init status
+
+# Verify ZFS
+zfs list
+
+# Verify network
+ip addr show
+cat /etc/netplan/90-static.yaml
+
+# Verify services
+systemctl status cockpit.socket
+systemctl status libvirtd
+
+# Verify KVM
+virsh list --all
 ```
 
 ## Timeline Summary
@@ -75,7 +119,14 @@ reboot
 | Phase | Duration | Description |
 |-------|----------|-------------|
 | Boot & BIOS | 1-2 min | POST, boot menu selection |
-| Autoinstall | 5-15 min | Base OS installation |
-| First Reboot | 1-2 min | System restart |
-| Cloud-init | 5-20 min | Post-install configuration |
+| Autoinstall | 5-15 min | Base OS installation with ZFS |
+| Reboot | 1-2 min | System restart, remove media |
+| Cloud-init | 5-20 min | Network config, packages, services |
 | **Total** | **12-40 min** | Complete deployment |
+
+## Next Steps
+
+After successful deployment:
+
+1. Complete [Chapter 8: Post-Deployment Validation](../POST_DEPLOYMENT_VALIDATION/OVERVIEW.md)
+2. Apply [Chapter 10: Security Hardening](../SECURITY_HARDENING/OVERVIEW.md) if needed

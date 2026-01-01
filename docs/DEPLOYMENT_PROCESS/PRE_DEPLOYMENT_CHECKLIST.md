@@ -1,39 +1,62 @@
 # 7.1 Pre-Deployment Checklist
 
-Complete this checklist before beginning deployment.
+Complete this checklist before deploying to bare metal.
 
-## Checklist
+## Prerequisites
 
-- [ ] BIOS configured (virtualization enabled, boot order set)
-- [ ] Network details documented (IP, gateway, DNS)
-- [ ] SSH public key ready for cloud-init
-- [ ] Autoinstall ISO created and tested
-- [ ] Cloud-init ISO created with correct configurations
-- [ ] Backup of any existing data (if applicable)
-- [ ] USB devices or ISO files ready
+- [ ] Chapter 6 testing completed successfully
+- [ ] Autoinstall ISO built and validated
+- [ ] Physical access to target server (or remote console)
 
-## Verification Steps
+## Hardware Checklist
 
-### BIOS Configuration
-- Virtualization extensions enabled
-- Boot order set to USB/CD first
-- UEFI mode enabled (recommended)
+- [ ] BIOS configured (see [Chapter 2](../HARDWARE_BIOS_SETUP/OVERVIEW.md))
+  - [ ] Virtualization extensions enabled (VT-x/AMD-V)
+  - [ ] UEFI mode enabled
+  - [ ] Boot order set to USB/CD first
+- [ ] Target disk identified and ready to be wiped
+- [ ] Network cable connected
 
-### Network Readiness
-- IP address reserved/documented
-- Gateway and DNS servers confirmed
-- Switch port configured (if using VLANs)
+## Configuration Checklist
 
-### Media Preparation
-- Autoinstall ISO verified and bootable
-- Cloud-init ISO created with correct user-data
-- Media accessible (USB, virtual media, etc.)
+- [ ] `network.config.yaml` has correct values for production:
+  - [ ] Static IP address for this server
+  - [ ] Gateway IP reachable from target network
+  - [ ] DNS servers reachable from target network
+  - [ ] Hostname matches intended use
+- [ ] `identity.config.yaml` has secure credentials:
+  - [ ] Strong password set
+  - [ ] SSH key configured (recommended)
 
-### Access Preparation
-- Console access available (physical, IPMI, iLO, iDRAC)
-- SSH key pair generated
-- Network path to server confirmed
+## Media Checklist
 
-## Go/No-Go Decision
+- [ ] Autoinstall ISO transferred to bootable media:
+  - USB drive, OR
+  - Virtual media (IPMI/iLO/iDRAC), OR
+  - Network boot (if configured)
+- [ ] ISO verified bootable in Chapter 6 VirtualBox test
 
-Only proceed if ALL checklist items are complete. Missing any item may result in a failed or incomplete deployment.
+## Network Checklist
+
+- [ ] Target IP address reserved (not in use)
+- [ ] Gateway responds to ARP (required for arping detection)
+- [ ] Primary DNS server responds to ARP (required for arping detection)
+- [ ] Firewall rules allow traffic to/from target IP
+
+## Access Checklist
+
+- [ ] Console access available:
+  - Physical monitor/keyboard, OR
+  - IPMI/iLO/iDRAC remote console
+- [ ] SSH client ready for post-deployment access
+- [ ] Network path to target IP confirmed from workstation
+
+## Go/No-Go
+
+Only proceed if ALL items are checked. The autoinstall process will:
+- **Wipe the target disk** (ZFS layout)
+- Configure static IP via arping detection
+- Create admin user with configured credentials
+- Install KVM, Cockpit, and multipass
+
+If any item is missing, the deployment may fail or produce an incorrectly configured system.
