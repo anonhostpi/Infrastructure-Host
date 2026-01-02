@@ -1,10 +1,11 @@
-# 4.3 Network Configuration in Cloud-init
+# 4.3 Network Scripts
 
-Network configuration is handled via a secure, hardware-adaptive approach that auto-detects the correct NIC using ARP probes for known network identifiers.
+Network configuration is handled via ARP probe detection scripts rendered from Jinja2 templates.
 
 ## Strategy: ARP Probe Detection
 
-Instead of using DHCP discovery (which broadcasts and opens attack surface), we:
+Instead of DHCP discovery (which broadcasts and opens attack surface), the scripts:
+
 1. Iterate over unconfigured interfaces
 2. Bring each interface up (link only, no IP)
 3. Use `arping` to probe for known gateway IP
@@ -13,55 +14,29 @@ Instead of using DHCP discovery (which broadcasts and opens attack surface), we:
 6. Validate with actual DNS query
 7. If validation fails, unconfigure and try next interface
 
-This approach:
-- **No DHCP broadcast** - No rogue DHCP server risk
-- **Targeted probes** - Only looks for known, trusted IPs
-- **Validates before committing** - DNS query confirms connectivity
-- **Self-healing** - Tries all interfaces until one works
+**Benefits:**
+- No DHCP broadcast - No rogue DHCP server risk
+- Targeted probes - Only looks for known, trusted IPs
+- Validates before committing - DNS query confirms connectivity
+- Self-healing - Tries all interfaces until one works
 
-## Configuration Files
+## Script Templates
 
-Network setup is split into two files for modularity:
+Scripts are Jinja2 templates in `src/scripts/` that render network values from `src/config/network.config.yaml`.
 
-### build-network.py
+### early-net.sh.tpl
 
-Generates network environment variables from [network.config.yaml](../../network.config.yaml):
-
-```python
-#!/usr/bin/env python3
-"""Network configuration generator for cloud-init and autoinstall."""
-
-import yaml
-
-def load_network_config(path='network.config.yaml'):
-    """Load network configuration from YAML file."""
-    with open(path) as f:
-        return yaml.safe_load(f)
-
-def generate_net_env(net_config):
-    """Generate shell environment variables from network config."""
-    host = net_config['host']
-    dns = host['dns_servers']
-
-    return f'''GATEWAY="{host['gateway']}"
-DNS_PRIMARY="{dns[0]}"
-DNS_SECONDARY="{dns[1]}"
-DNS_TERTIARY="{dns[2]}"
-DNS_SEARCH="{host['dns_search']}"
-STATIC_IP="{host['ip_address'].split('/')[0]}"
-CIDR="{host['ip_address'].split('/')[1]}"
-'''
-
-if __name__ == '__main__':
-    net = load_network_config()
-    print(generate_net_env(net))
-```
-
-### early-net.sh
-
-Temporary network setup for autoinstall (runs during installation):
+Temporary network setup for autoinstall (runs during installation via `early-commands`):
 
 ```bash
+#!/bin/bash
+# Auto-generated network detection script for autoinstall
+
+GATEWAY={{ network.gateway | shell_quote }}
+DNS_PRIMARY={{ network.dns_servers[0] | shell_quote }}
+STATIC_IP={{ network.ip_address | ip_only | shell_quote }}
+CIDR={{ network.ip_address | cidr_only | shell_quote }}
+
 # Find interface by ARP probing known hosts
 for iface in /sys/class/net/e*; do
   NIC=$(basename "$iface")
@@ -87,32 +62,38 @@ for iface in /sys/class/net/e*; do
 done
 ```
 
-Used by autoinstall `early-commands`. See [4.2 Autoinstall Configuration](../AUTOINSTALL_MEDIA_CREATION/AUTOINSTALL_CONFIGURATION.md).
+### net-setup.sh.tpl
 
-### net-setup.sh
-
-Permanent network setup for cloud-init (runs on first boot):
+Permanent network setup for cloud-init (runs on first boot via `bootcmd`):
 
 ```bash
+#!/bin/bash
+# Auto-generated network detection script for cloud-init
+
 # Skip if already configured (idempotent)
 [ -f /etc/netplan/90-static.yaml ] && exit 0
+
+GATEWAY={{ network.gateway | shell_quote }}
+DNS_PRIMARY={{ network.dns_servers[0] | shell_quote }}
+DNS_SECONDARY={{ network.dns_servers[1] | shell_quote }}
+DNS_TERTIARY={{ network.dns_servers[2] | shell_quote }}
+DNS_SEARCH={{ network.dns_search | shell_quote }}
+STATIC_IP={{ network.ip_address | ip_only | shell_quote }}
+CIDR={{ network.ip_address | cidr_only | shell_quote }}
 
 # Find interface by ARP probing known hosts
 for iface in /sys/class/net/e*; do
   NIC=$(basename "$iface")
   [ "$NIC" = "lo" ] && continue
 
-  # Bring link up (no IP)
   ip link set "$NIC" up
   sleep 2
 
-  # Probe for gateway via ARP
   if ! arping -c 2 -w 3 -I "$NIC" "$GATEWAY" >/dev/null 2>&1; then
     ip link set "$NIC" down
     continue
   fi
 
-  # Probe for DNS via ARP
   if ! arping -c 2 -w 3 -I "$NIC" "$DNS_PRIMARY" >/dev/null 2>&1; then
     ip link set "$NIC" down
     continue
@@ -120,11 +101,9 @@ for iface in /sys/class/net/e*; do
 
   logger "cloud-init: Found network on $NIC (GW=$GATEWAY, DNS=$DNS_PRIMARY)"
 
-  # Configure interface temporarily
   ip addr add "$STATIC_IP/$CIDR" dev "$NIC"
   ip route add default via "$GATEWAY" dev "$NIC"
 
-  # Validate with DNS query
   if host -W 3 google.com "$DNS_PRIMARY" >/dev/null 2>&1; then
     logger "cloud-init: DNS validated, writing netplan config"
 
@@ -148,7 +127,6 @@ EOF
     exit 0
   fi
 
-  # DNS failed, unconfigure and try next
   logger "cloud-init: DNS validation failed on $NIC, trying next"
   ip route del default via "$GATEWAY" dev "$NIC" 2>/dev/null
   ip addr del "$STATIC_IP/$CIDR" dev "$NIC" 2>/dev/null
@@ -159,28 +137,34 @@ logger "cloud-init: ERROR - No valid network interface found"
 exit 1
 ```
 
-## Build-time Composition
+## Filters Used
 
-During the build process, `build-network.py` is imported by `build-autoinstall.py`:
-1. Load network config and generate env variables
-2. Read shell scripts (`early-net.sh`, `net-setup.sh`)
-3. Compose scripts by prefixing env to shell code
+| Filter | Purpose | Example |
+|--------|---------|---------|
+| `shell_quote` | Safe shell quoting | `{{ network.gateway \| shell_quote }}` → `'192.168.1.1'` |
+| `ip_only` | Extract IP from CIDR | `{{ network.ip_address \| ip_only }}` → `192.168.1.100` |
+| `cidr_only` | Extract prefix from CIDR | `{{ network.ip_address \| cidr_only }}` → `24` |
 
-See [4.2 Autoinstall Configuration](../AUTOINSTALL_MEDIA_CREATION/AUTOINSTALL_CONFIGURATION.md) for the complete build script.
+See [3.2 Jinja2 Filters](../BUILD_SYSTEM/JINJA2_FILTERS.md) for full filter documentation.
 
-See [5.1 Configuration Structure](../CLOUD_INIT_CONFIGURATION/CONFIGURATION_STRUCTURE.md) for the complete cloud-init configuration.
+## Build Output
 
-## Environment Variables
+```bash
+make scripts
+```
 
-| Variable | Source (network.config.yaml) | Description |
-|----------|------------------------------|-------------|
-| `GATEWAY` | `host.gateway` | Default gateway IP |
-| `DNS_PRIMARY` | `host.dns_servers[0]` | Primary DNS server |
-| `DNS_SECONDARY` | `host.dns_servers[1]` | Secondary DNS server |
-| `DNS_TERTIARY` | `host.dns_servers[2]` | Tertiary DNS server |
-| `DNS_SEARCH` | `host.dns_search` | DNS search domain |
-| `STATIC_IP` | `host.ip_address` (IP part) | Static IP address |
-| `CIDR` | `host.ip_address` (prefix part) | Network prefix length |
+Renders templates to:
+- `output/scripts/early-net.sh`
+- `output/scripts/net-setup.sh`
+
+These scripts are also available to cloud-init and autoinstall templates via the `scripts` context:
+
+```jinja
+{# In cloud-init or autoinstall templates #}
+bootcmd:
+  - |
+{{ scripts["net-setup.sh"] | indent(4) }}
+```
 
 ## How ARP Probing Works
 
@@ -198,6 +182,7 @@ See [5.1 Configuration Structure](../CLOUD_INIT_CONFIGURATION/CONFIGURATION_STRU
 ## Cloud-init Timing
 
 Cloud-init stages:
+
 1. **Local** - Writes network config, runs `bootcmd`
 2. **Network** - Network is up, package installation
 3. **Final** - Runs `runcmd`, cleanup
