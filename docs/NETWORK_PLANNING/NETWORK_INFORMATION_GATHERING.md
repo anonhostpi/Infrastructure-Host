@@ -1,4 +1,4 @@
-# 3.1 Network Information Gathering
+# 4.1 Network Information Gathering
 
 Before deployment, collect the following information for the server.
 

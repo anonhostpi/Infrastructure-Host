@@ -1,4 +1,4 @@
-# 3.3 Network Configuration in Cloud-init
+# 4.3 Network Configuration in Cloud-init
 
 Network configuration is handled via a secure, hardware-adaptive approach that auto-detects the correct NIC using ARP probes for known network identifiers.
 

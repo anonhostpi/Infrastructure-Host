@@ -1,4 +1,4 @@
-# 3.2 Network Topology Considerations
+# 4.2 Network Topology Considerations
 
 ## Configuration: Single NIC
 

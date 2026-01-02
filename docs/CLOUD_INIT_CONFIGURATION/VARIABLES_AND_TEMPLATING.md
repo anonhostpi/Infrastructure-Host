@@ -1,4 +1,4 @@
-# 5.2 Variables and Templating
+# 6.2 Variables and Templating
 
 Configuration uses two approaches at build time:
 1. **YAML composition** - Network scripts are composed by prefixing shell env vars to shell scripts

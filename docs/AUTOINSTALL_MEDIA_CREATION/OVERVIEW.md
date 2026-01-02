@@ -4,9 +4,9 @@ This section covers creating bootable installation media with autoinstall config
 
 ## Contents
 
-- [4.1 Download Ubuntu Server ISO](./DOWNLOAD_UBUNTU_ISO.md)
-- [4.2 Autoinstall Configuration](./AUTOINSTALL_CONFIGURATION.md)
-- [4.3 Bootable Media Creation](./TESTED_BOOTABLE_MEDIA_CREATION.md)
+- [5.1 Download Ubuntu Server ISO](./DOWNLOAD_UBUNTU_ISO.md)
+- [5.2 Autoinstall Configuration](./AUTOINSTALL_CONFIGURATION.md)
+- [5.3 Bootable Media Creation](./TESTED_BOOTABLE_MEDIA_CREATION.md)
 
 ## Overview
 

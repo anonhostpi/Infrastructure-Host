@@ -1,4 +1,4 @@
-# 4.1 Download Ubuntu Server ISO
+# 5.1 Download Ubuntu Server ISO
 
 ## Using ubuntu-cloudimg-query (Recommended)
 

@@ -1,4 +1,4 @@
-# 7.3 Monitoring Cloud-init Progress
+# 8.3 Monitoring Cloud-init Progress
 
 Monitor cloud-init execution after the system reboots from autoinstall.
 

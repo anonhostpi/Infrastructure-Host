@@ -4,9 +4,9 @@ This section covers network planning and configuration for bare-metal Ubuntu dep
 
 ## Contents
 
-- [3.1 Network Information Gathering](./NETWORK_INFORMATION_GATHERING.md)
-- [3.2 Network Topology Considerations](./NETWORK_TOPOLOGY.md)
-- [3.3 Network Configuration in Cloud-init](./CLOUD_INIT_NETWORK_CONFIG.md)
+- [4.1 Network Information Gathering](./NETWORK_INFORMATION_GATHERING.md)
+- [4.2 Network Topology Considerations](./NETWORK_TOPOLOGY.md)
+- [4.3 Network Configuration in Cloud-init](./CLOUD_INIT_NETWORK_CONFIG.md)
 
 ## Overview
 

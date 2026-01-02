@@ -4,9 +4,9 @@ This section covers validation and verification after deployment.
 
 ## Contents
 
-- [8.1 System Validation Checklist](./VALIDATION_CHECKLIST.md)
-- [8.2 Validation Commands](./VALIDATION_COMMANDS.md)
-- [8.3 Cockpit Access and Configuration](./COCKPIT_ACCESS.md)
+- [9.1 System Validation Checklist](./VALIDATION_CHECKLIST.md)
+- [9.2 Validation Commands](./VALIDATION_COMMANDS.md)
+- [9.3 Cockpit Access and Configuration](./COCKPIT_ACCESS.md)
 
 ## Overview
 

@@ -4,8 +4,8 @@ This section covers the cloud-init configuration embedded in autoinstall.
 
 ## Contents
 
-- [5.1 Cloud-init Configuration Structure](./CONFIGURATION_STRUCTURE.md)
-- [5.2 Variables and Templating](./VARIABLES_AND_TEMPLATING.md)
+- [6.1 Cloud-init Configuration Structure](./CONFIGURATION_STRUCTURE.md)
+- [6.2 Variables and Templating](./VARIABLES_AND_TEMPLATING.md)
 
 ## Overview
 

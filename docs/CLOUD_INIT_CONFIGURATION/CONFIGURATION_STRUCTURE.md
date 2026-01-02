@@ -1,4 +1,4 @@
-# 5.1 Cloud-init Configuration Structure
+# 6.1 Cloud-init Configuration Structure
 
 Cloud-init configuration is stored in `cloud-init.yml` and embedded into autoinstall at build time. See [4.2 Autoinstall Configuration](../AUTOINSTALL_MEDIA_CREATION/AUTOINSTALL_CONFIGURATION.md) for the build process.
 

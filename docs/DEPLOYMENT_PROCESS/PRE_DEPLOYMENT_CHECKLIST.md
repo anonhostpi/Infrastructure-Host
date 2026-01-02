@@ -1,4 +1,4 @@
-# 7.1 Pre-Deployment Checklist
+# 8.1 Pre-Deployment Checklist
 
 Complete this checklist before deploying to bare metal.
 

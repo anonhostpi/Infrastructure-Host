@@ -1,4 +1,4 @@
-# 7.2 Step-by-Step Deployment
+# 8.2 Step-by-Step Deployment
 
 Deploy the autoinstall ISO to bare metal hardware.
 

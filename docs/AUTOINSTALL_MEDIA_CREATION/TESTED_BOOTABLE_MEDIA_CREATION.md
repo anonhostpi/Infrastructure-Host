@@ -1,4 +1,4 @@
-# 4.3 Bootable Media Creation
+# 5.3 Bootable Media Creation
 
 This section covers building the autoinstall ISO using xorriso in-place modification.
 

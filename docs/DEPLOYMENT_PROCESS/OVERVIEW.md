@@ -4,9 +4,9 @@ Deploy the autoinstall ISO to bare metal hardware.
 
 ## Contents
 
-- [7.1 Pre-Deployment Checklist](./PRE_DEPLOYMENT_CHECKLIST.md)
-- [7.2 Step-by-Step Deployment](./STEP_BY_STEP_DEPLOYMENT.md)
-- [7.3 Monitoring Cloud-init Progress](./MONITORING_CLOUD_INIT.md)
+- [8.1 Pre-Deployment Checklist](./PRE_DEPLOYMENT_CHECKLIST.md)
+- [8.2 Step-by-Step Deployment](./STEP_BY_STEP_DEPLOYMENT.md)
+- [8.3 Monitoring Cloud-init Progress](./MONITORING_CLOUD_INIT.md)
 
 ## Overview
 

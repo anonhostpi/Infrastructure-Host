@@ -1,4 +1,4 @@
-# 4.2 Autoinstall Configuration
+# 5.2 Autoinstall Configuration
 
 Autoinstall uses a `user-data` file for installation automation. The cloud-init configuration is combined at build time from a separate file.
 

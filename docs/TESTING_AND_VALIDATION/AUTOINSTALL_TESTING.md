@@ -1,4 +1,4 @@
-# 6.2 Autoinstall Testing
+# 7.2 Autoinstall Testing
 
 Build and test the full autoinstall ISO with VirtualBox.
 

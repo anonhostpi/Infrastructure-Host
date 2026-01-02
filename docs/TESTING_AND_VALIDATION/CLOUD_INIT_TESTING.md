@@ -1,4 +1,4 @@
-# 6.1 Cloud-init Testing
+# 7.1 Cloud-init Testing
 
 Test cloud-init configuration with multipass before building the full autoinstall ISO.
 
