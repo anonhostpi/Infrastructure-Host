@@ -328,13 +328,13 @@ Result - not unwrapped:
 
 Configuration files are namespaced by their filename (minus `.config.yaml`):
 
-```jinja
-{# From network.config.yaml #}
+```yaml
+# From network.config.yaml
 hostname: {{ network.hostname }}
 gateway: {{ network.gateway }}
 dns_servers: {{ network.dns_servers }}
 
-{# From identity.config.yaml #}
+# From identity.config.yaml
 username: {{ identity.username }}
 password: {{ identity.password | sha512_hash }}
 ```
