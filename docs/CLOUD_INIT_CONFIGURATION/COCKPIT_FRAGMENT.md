@@ -80,9 +80,9 @@ https://localhost
 
 Login with the admin credentials from `identity.config.yaml`.
 
-### Persistent SSH Config
+### SSH Config Snippet
 
-Add to `~/.ssh/config` for convenience:
+The system MOTD (see [6.12 UI Touches](./UI_TOUCHES_FRAGMENT.md)) displays an SSH config snippet on login that you can copy to your workstation's `~/.ssh/config`:
 
 ```
 Host kvm-host
@@ -93,21 +93,7 @@ Host kvm-host
 
 Then simply `ssh kvm-host` and access `https://localhost`.
 
-### Multiple Hosts
-
-When managing multiple hosts, use different local ports:
-
-```
-Host kvm-host-1
-    HostName 192.168.1.100
-    LocalForward 8443 localhost:443
-
-Host kvm-host-2
-    HostName 192.168.1.101
-    LocalForward 8444 localhost:443
-```
-
-Access via `https://localhost:8443` and `https://localhost:8444`.
+This snippet is dynamically generated with the correct IP address and username from the deployment configuration.
 
 ## Security Benefits
 
@@ -128,7 +114,7 @@ The `cockpit-machines` package integrates with libvirt to provide:
 - Console access
 - Storage and network configuration
 
-This complements the CLI tools from [6.9 Virtualization Fragment](./VIRTUALIZATION_FRAGMENT.md).
+This complements the CLI tools from [6.10 Virtualization Fragment](./VIRTUALIZATION_FRAGMENT.md).
 
 ## HTTPS Certificate
 
