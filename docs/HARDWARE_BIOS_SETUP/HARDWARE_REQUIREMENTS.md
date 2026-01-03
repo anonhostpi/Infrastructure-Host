@@ -4,17 +4,15 @@
 
 - CPU: x86_64 processor with virtualization support (Intel VT-x or AMD-V)
 - RAM: 4GB minimum (8GB+ recommended for virtualization workloads)
-- Storage: 25GB minimum (SSD recommended)
-- Network: Gigabit Ethernet adapter
+- Storage: 25GB minimum NVMe SSD
+- Network: Single Gigabit Ethernet adapter
 
 ## Recommended for Production
 
 - CPU: Multi-core processor with VT-x/AMD-V and VT-d/AMD-Vi (for I/O virtualization)
 - RAM: 16GB+ (depending on workload)
-- Storage:
-  - RAID configuration for redundancy (RAID 1 for OS, RAID 10 for data)
-  - NVMe SSD for optimal performance
-- Network: Dual NICs for bonding/redundancy
+- Storage: NVMe SSD (motherboard M.2 slot)
+- Network: Single Gigabit Ethernet
 
 ## Virtualization Requirements
 
@@ -28,9 +26,12 @@ For running virtual machines (KVM/QEMU), the following CPU features are required
 
 ## Storage Considerations
 
-| Use Case | Recommended Configuration |
-|----------|--------------------------|
-| Development | Single SSD, no RAID |
-| Production (basic) | RAID 1 (mirror) for OS |
-| Production (performance) | RAID 10 for OS + data |
-| Production (capacity) | RAID 1 for OS, RAID 6 for data |
+This deployment uses a **single disk** configuration with ZFS. Recovery is achieved by rebuilding the system from the documented configuration (Chapters 3-6), not hardware redundancy.
+
+| Component | Strategy |
+|-----------|----------|
+| OS/Host | Rebuild from autoinstall media |
+| Configuration | Version-controlled in this repository |
+| VMs | Restore from backup |
+
+**Disk Selection:** Autoinstall selects the largest available disk. See [5.2 Autoinstall Configuration](../AUTOINSTALL_MEDIA_CREATION/AUTOINSTALL_CONFIGURATION.md) for disk matching options.

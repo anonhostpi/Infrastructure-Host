@@ -54,11 +54,13 @@ autoinstall:
     - |
 {{ scripts["early-net.sh"] | indent(6) }}
 
-  # Storage configuration
+  # Storage configuration - use largest disk
   storage:
     layout:
       name: zfs
       sizing-policy: all
+      match:
+        size: largest
 
   # SSH server
   ssh:
@@ -113,6 +115,38 @@ See [3.3 Render CLI](../BUILD_SYSTEM/RENDER_CLI.md) for render function details.
 | `zfs` | ZFS root filesystem (recommended for virtualization hosts) |
 | `lvm` | LVM with single volume group |
 | `direct` | Direct partitioning without LVM |
+
+### Disk Selection
+
+The `match` block controls which disk is selected for installation:
+
+```yaml
+storage:
+  layout:
+    name: zfs
+    match:
+      size: largest    # Use the largest available disk
+```
+
+| Match Option | Description |
+|--------------|-------------|
+| `size: largest` | Select the largest disk (current default) |
+| `size: smallest` | Select the smallest disk |
+| `path: /dev/nvme0n1` | Match specific device path |
+| `serial: Samsung*` | Match by serial number pattern |
+| `id: nvme-*` | Match by disk ID pattern |
+
+**Future refinement:** When additional NVMe drives are added via PCI or Thunderbolt, the match criteria will need refinement to specifically target the motherboard's M.2 slot and exclude external/expansion drives.
+
+### Recovery Strategy
+
+This deployment does **not** use RAID. System recovery is achieved by rebuilding from the documented configuration:
+
+1. Boot from autoinstall media
+2. Automated installation proceeds using Chapters 3-6 configuration
+3. VMs are restored from backup
+
+This approach treats the infrastructure host as immutable - configuration changes go through the documented build process, not ad-hoc modifications.
 
 ## YAML Formatting Notes
 

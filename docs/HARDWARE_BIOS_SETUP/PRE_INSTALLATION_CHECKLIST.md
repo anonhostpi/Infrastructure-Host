@@ -10,9 +10,9 @@ Complete these checks before beginning installation.
   grep -E 'vmx|svm' /proc/cpuinfo
   ```
 - [x] Test all RAM modules (use memtest86+ if available)
-- [ ] ~~Configure RAID arrays if applicable~~
-- [x] Verify all NICs are recognized
-- [x] Document MAC addresses for network planning
+- [x] Verify target disk is the largest disk in the system
+- [x] Verify NIC is recognized
+- [x] Document MAC address for network planning
 
 ## CPU Verification
 
@@ -38,14 +38,12 @@ Before production deployment, test RAM with memtest86+:
 
 ## Network Documentation
 
-Document for each NIC:
+Document the NIC:
 - MAC Address
 - Port location (physical label)
 - Connected switch/port
-- Intended purpose (management, production, storage)
 
 Example:
 ```
-NIC 1: AA:BB:CC:DD:EE:01 - Port 1 - Switch A/Port 24 - Management
-NIC 2: AA:BB:CC:DD:EE:02 - Port 2 - Switch B/Port 24 - Production
+NIC: AA:BB:CC:DD:EE:01 - Port 1 - Switch A/Port 24
 ```
