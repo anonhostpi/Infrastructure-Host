@@ -31,6 +31,26 @@ identity:
 
 See [4.1 Network Information Gathering](../NETWORK_PLANNING/NETWORK_INFORMATION_GATHERING.md) for `network.config.yaml`.
 
+### storage.config.yaml
+
+```yaml
+storage:
+  layout: zfs
+  sizing_policy: all
+  match:
+    size: largest
+    # Future: target specific NVMe slot via id_path
+    # id_path: pci-0000:01:00.0-nvme-1
+```
+
+For advanced disk selection (e.g., targeting motherboard M.2 slots while excluding PCI/Thunderbolt NVMe), use `id_path` matching. Discover the path with:
+
+```bash
+udevadm info --query=property --name=/dev/nvme0n1 | grep ID_PATH
+```
+
+This returns the PCIe topology path (e.g., `pci-0000:01:00.0-nvme-1`) which uniquely identifies the physical slot.
+
 ## Autoinstall Template
 
 **src/autoinstall/base.yaml.tpl:**
@@ -54,13 +74,13 @@ autoinstall:
     - |
 {{ scripts["early-net.sh"] | indent(6) }}
 
-  # Storage configuration - use largest disk
+  # Storage configuration
   storage:
     layout:
-      name: zfs
-      sizing-policy: all
+      name: {{ storage.layout }}
+      sizing-policy: {{ storage.sizing_policy }}
       match:
-        size: largest
+        size: {{ storage.match.size }}
 
   # SSH server
   ssh:
@@ -87,6 +107,7 @@ The autoinstall template has access to:
 |---------|--------|-------------|
 | `network.*` | `network.config.yaml` | Network configuration |
 | `identity.*` | `identity.config.yaml` | User identity settings |
+| `storage.*` | `storage.config.yaml` | Disk selection and layout |
 | `scripts` | `render_scripts()` | Dict of rendered script contents |
 | `cloud_init` | `render_cloud_init()` | Dict of merged cloud-init configuration |
 
