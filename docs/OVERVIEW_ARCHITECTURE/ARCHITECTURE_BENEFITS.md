@@ -6,6 +6,7 @@
 - **Version Control** - Infrastructure as code with cloud-init configs
 - **Rapid Deployment** - Minimal manual intervention required
 - **Consistency** - Eliminates configuration drift
+- **Modularity** - Fragment-based composition for flexible configuration
 
 ## Detailed Benefits
 
@@ -32,3 +33,12 @@ Configuration drift is eliminated because:
 - Changes are applied through updated cloud-init configs
 - Manual ad-hoc changes are discouraged
 - Infrastructure state is documented in code
+
+### Modularity
+The fragment-based architecture enables:
+- **Separation of concerns** - Each fragment handles one aspect (network, users, security, etc.)
+- **Selective inclusion** - Enable/disable features by including or excluding fragments
+- **Independent maintenance** - Update security settings without touching virtualization config
+- **Clear organization** - Numeric prefixes control merge order (10-network, 20-users, etc.)
+
+See [Chapter 6](../CLOUD_INIT_CONFIGURATION/OVERVIEW.md) for the full fragment catalog.
