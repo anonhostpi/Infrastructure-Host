@@ -1,0 +1,13 @@
+# SMTP Configuration (Optional)
+# Copy to smtp.config.yaml and fill in your values
+# THIS FILE IS TRACKED IN GIT - smtp.config.yaml IS NOT
+#
+# See docs/CLOUD_INIT_CONFIGURATION/MSMTP_FRAGMENT.md for provider-specific
+# configurations (Proton Mail, M365, Gmail, SendGrid, AWS SES)
+
+smtp:
+  host: smtp.example.com
+  port: 587
+  from_email: alerts@example.com
+  user: alerts@example.com
+  recipient: admin@example.com

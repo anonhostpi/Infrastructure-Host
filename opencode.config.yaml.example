@@ -1,0 +1,23 @@
+# OpenCode Configuration (Optional)
+# Copy to opencode.config.yaml and fill in your values
+# THIS FILE IS TRACKED IN GIT - opencode.config.yaml IS NOT
+#
+# OpenCode is an AI coding agent for terminal use.
+# See: https://opencode.ai/docs
+#
+# After deployment, run `/connect` within opencode to configure API keys.
+# Keys are stored in ~/.local/share/opencode/auth.json (not in this file).
+
+opencode:
+  # Whether to install opencode during cloud-init
+  enabled: true
+
+  # Installation method: npm, brew, or script
+  install_method: npm
+
+  # Default model (configured after install via /connect)
+  # Examples: anthropic/claude-sonnet-4-5, openai/gpt-4o
+  # default_model: anthropic/claude-sonnet-4-5
+
+  # Global config location: ~/.config/opencode/opencode.json
+  # Project config: opencode.json in project root

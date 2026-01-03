@@ -1,0 +1,8 @@
+# Image Configuration
+# Copy to image.config.yaml and fill in your values
+# THIS FILE IS TRACKED IN GIT - image.config.yaml IS NOT
+
+image:
+  release: noble        # Ubuntu codename (noble=24.04, jammy=22.04)
+  type: live-server     # Image type
+  arch: amd64           # Architecture
