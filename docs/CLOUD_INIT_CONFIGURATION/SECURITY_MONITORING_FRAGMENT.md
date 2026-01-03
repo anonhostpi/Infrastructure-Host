@@ -10,37 +10,122 @@
 
 Intrusion prevention system that bans IPs with too many failed authentication attempts.
 
+#### File Organization
+
+fail2ban configuration uses a modular `jail.d/` structure instead of a monolithic `jail.local`:
+
+```
+/etc/fail2ban/
+├── jail.d/
+│   ├── sshd.conf           # SSH brute force protection
+│   ├── sshd-ddos.conf      # SSH connection flooding
+│   ├── sudo.conf           # Privilege escalation attempts
+│   └── recidive.conf       # Repeat offender escalation
+├── filter.d/
+│   └── sudo.conf           # Custom sudo filter (if needed)
+└── action.d/
+    └── msmtp-mail.conf     # Email notifications (optional)
+```
+
+**Benefits:**
+- Each jail is independently configurable
+- Easy to enable/disable specific jails
+- Clear audit trail of what's protected
+- Follows Headscale-VPS proven pattern
+
+#### Base Template
+
 ```yaml
 packages:
   - fail2ban
-
-write_files:
-  - path: /etc/fail2ban/jail.local
-    permissions: '0644'
-    content: |
-      [sshd]
-      enabled = true
-      port = 22
-      filter = sshd
-      logpath = /var/log/auth.log
-      maxretry = 3
-      bantime = 3600
-      findtime = 600
 
 runcmd:
   - systemctl enable fail2ban
   - systemctl start fail2ban
 ```
 
+### SSH Jail
+
+Primary defense against SSH brute force attacks.
+
+```yaml
+write_files:
+  - path: /etc/fail2ban/jail.d/sshd.conf
+    permissions: '0644'
+    content: |
+      [sshd]
+      enabled = true
+      port = ssh
+      filter = sshd
+      logpath = /var/log/auth.log
+      maxretry = 4
+      findtime = 10m
+      bantime = 24h
+```
+
 | Setting | Value | Description |
 |---------|-------|-------------|
-| `maxretry` | 3 | Ban after 3 failed attempts |
-| `bantime` | 3600 | Ban duration (1 hour) |
-| `findtime` | 600 | Time window for attempts (10 min) |
+| `maxretry` | 4 | Ban after 4 failed attempts |
+| `findtime` | 10m | Time window for attempts |
+| `bantime` | 24h | Ban duration |
+
+### SSH DDoS Jail
+
+Catches connection flooding (different from auth failures).
+
+```yaml
+write_files:
+  - path: /etc/fail2ban/jail.d/sshd-ddos.conf
+    permissions: '0644'
+    content: |
+      [sshd-ddos]
+      enabled = true
+      port = ssh
+      filter = sshd-ddos
+      logpath = /var/log/auth.log
+      maxretry = 6
+      findtime = 30s
+      bantime = 1h
+```
+
+| Setting | Value | Description |
+|---------|-------|-------------|
+| `maxretry` | 6 | Ban after 6 rapid connections |
+| `findtime` | 30s | Very short window (flood detection) |
+| `bantime` | 1h | Shorter ban (may be legitimate user) |
+
+**Note:** Uses built-in `sshd-ddos` filter that matches connection attempts regardless of auth outcome.
+
+### Sudo Jail
+
+Detects privilege escalation attempts (post-compromise detection).
+
+```yaml
+write_files:
+  - path: /etc/fail2ban/jail.d/sudo.conf
+    permissions: '0644'
+    content: |
+      [sudo]
+      enabled = true
+      port = all
+      filter = sudo
+      logpath = /var/log/auth.log
+      maxretry = 3
+      findtime = 10m
+      bantime = 1h
+```
+
+| Setting | Value | Description |
+|---------|-------|-------------|
+| `maxretry` | 3 | Ban after 3 failed sudo attempts |
+| `findtime` | 10m | Time window |
+| `bantime` | 1h | Ban duration |
+
+**Note:** This jail bans the source IP. Since sudo failures typically come from authenticated SSH sessions, this provides defense-in-depth against compromised accounts attempting privilege escalation.
 
 ### Recidive Jail (Repeat Offenders)
 
-For IPs that get banned repeatedly:
+Escalates bans for IPs that get banned repeatedly across any jail.
 
 ```yaml
 write_files:
@@ -52,17 +137,76 @@ write_files:
       filter = recidive
       logpath = /var/log/fail2ban.log
       maxretry = 3
-      findtime = 86400
-      bantime = 604800
+      findtime = 1d
+      bantime = 1w
 ```
 
 | Setting | Value | Description |
 |---------|-------|-------------|
-| `maxretry` | 3 | Ban after 3 previous bans |
-| `findtime` | 86400 | Within 24 hours |
-| `bantime` | 604800 | Ban for 1 week |
+| `maxretry` | 3 | Escalate after 3 bans from any jail |
+| `findtime` | 1d | Within 24 hours |
+| `bantime` | 1w | Ban for 1 week |
 
-### auditd
+### Email Notifications (Optional)
+
+Send email alerts on ban events. Requires msmtp from [6.7 Package Security](./PACKAGE_SECURITY_FRAGMENT.md).
+
+```yaml
+write_files:
+  - path: /etc/fail2ban/action.d/msmtp-mail.conf
+    permissions: '0644'
+    content: |
+      [Definition]
+      actionstart =
+      actionstop =
+      actioncheck =
+      actionban = printf "Subject: [fail2ban] %(name)s: Banned <ip>\n\nfail2ban has banned IP <ip> for jail %(name)s after <failures> failures.\n\nMatches:\n<matches>" | msmtp <dest>
+      actionunban =
+
+      [Init]
+      dest = root
+```
+
+To enable email notifications, add the action to each jail:
+
+```ini
+[sshd]
+enabled = true
+# ... other settings ...
+action = %(action_)s
+         msmtp-mail[name=SSH]
+```
+
+### Jail Summary
+
+| Jail | Trigger | Ban Time | Purpose |
+|------|---------|----------|---------|
+| `sshd` | 4 auth failures / 10m | 24h | Brute force protection |
+| `sshd-ddos` | 6 connections / 30s | 1h | Connection flooding |
+| `sudo` | 3 sudo failures / 10m | 1h | Privilege escalation |
+| `recidive` | 3 bans / 24h | 1w | Repeat offender escalation |
+
+### Verification
+
+After deployment, verify fail2ban status:
+
+```bash
+# Check jail status
+sudo fail2ban-client status
+
+# Check specific jail
+sudo fail2ban-client status sshd
+
+# View banned IPs
+sudo fail2ban-client get sshd banip
+
+# Manually unban an IP
+sudo fail2ban-client set sshd unbanip 192.168.1.100
+```
+
+---
+
+## auditd
 
 Linux audit daemon for security event logging.
 
@@ -100,14 +244,25 @@ runcmd:
   - systemctl start auditd
 ```
 
-## Integration with SSH Hardening
+---
+
+## Integration with Other Fragments
+
+### SSH Hardening (6.4)
 
 fail2ban works in conjunction with [6.4 SSH Hardening](./SSH_HARDENING_FRAGMENT.md):
 
 1. SSH hardening limits `MaxAuthTries` per connection
 2. fail2ban bans IPs that repeatedly fail across connections
+3. UFW rate limiting (`ufw limit ssh`) provides additional layer
 
 Together, they provide defense in depth against brute force attacks.
+
+### Package Security (6.7)
+
+Email notifications require msmtp configured in [6.7 Package Security](./PACKAGE_SECURITY_FRAGMENT.md). If msmtp is not configured, omit the `msmtp-mail` action from jail definitions.
+
+---
 
 ## Implementation Notes
 
@@ -115,7 +270,9 @@ This fragment is not yet implemented because:
 
 1. **Baseline first** - Establish working system before adding monitoring
 2. **Log volume** - auditd generates significant log data
-3. **Tuning required** - fail2ban rules need tuning for the environment
+3. **Tuning required** - fail2ban thresholds need tuning for the environment
+
+---
 
 ## Log Rotation
 
@@ -151,9 +308,11 @@ write_files:
 
 **Note:** Ubuntu's default logrotate handles most logs. Custom rotation is only needed for application-specific logs.
 
+---
+
 ## Future Considerations
 
 - **Log aggregation** - Shipping logs to central SIEM
-- **Alerting** - Notifications on security events
+- **Alerting** - Notifications on security events (see email action above)
 - **AIDE** - File integrity monitoring
 - **rkhunter** - Rootkit detection
