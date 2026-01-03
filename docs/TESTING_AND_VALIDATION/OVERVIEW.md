@@ -70,3 +70,4 @@ Before testing, ensure these config files exist in `src/config/`:
 | `storage.config.yaml` | Disk selection | [5.2 Autoinstall Config](../AUTOINSTALL_MEDIA_CREATION/AUTOINSTALL_CONFIGURATION.md) |
 | `image.config.yaml` | Ubuntu release | [5.1 Download ISO](../AUTOINSTALL_MEDIA_CREATION/DOWNLOAD_UBUNTU_ISO.md) |
 | `smtp.config.yaml` | Email notifications (optional) | [6.7 MSMTP Fragment](../CLOUD_INIT_CONFIGURATION/MSMTP_FRAGMENT.md) |
+| `opencode.config.yaml` | AI coding agent (optional) | [6.12 OpenCode Fragment](../CLOUD_INIT_CONFIGURATION/OPENCODE_FRAGMENT.md) |
