@@ -35,7 +35,7 @@ See [4.1 Network Information Gathering](../NETWORK_PLANNING/NETWORK_INFORMATION_
 
 **src/autoinstall/base.yaml.tpl:**
 
-```jinja
+```yaml
 #cloud-config
 autoinstall:
   version: 1
