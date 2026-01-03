@@ -47,8 +47,16 @@ This document outlines the complete documentation structure for bare-metal Ubunt
 #### 6. Cloud-init Configuration
 **Directory:** `docs/CLOUD_INIT_CONFIGURATION/`
 - [ ] [Overview](./docs/CLOUD_INIT_CONFIGURATION/OVERVIEW.md)
-  - [ ] [6.1 Cloud-init Configuration Structure](./docs/CLOUD_INIT_CONFIGURATION/CONFIGURATION_STRUCTURE.md)
-  - [ ] [6.2 Variables and Templating](./docs/CLOUD_INIT_CONFIGURATION/VARIABLES_AND_TEMPLATING.md)
+  - [ ] [6.1 Network Fragment](./docs/CLOUD_INIT_CONFIGURATION/NETWORK_FRAGMENT.md)
+  - [ ] [6.2 Users Fragment](./docs/CLOUD_INIT_CONFIGURATION/USERS_FRAGMENT.md)
+  - [ ] [6.3 SSH Hardening Fragment](./docs/CLOUD_INIT_CONFIGURATION/SSH_HARDENING_FRAGMENT.md)
+  - [ ] [6.4 UFW Fragment](./docs/CLOUD_INIT_CONFIGURATION/UFW_FRAGMENT.md)
+  - [ ] [6.5 System Settings Fragment](./docs/CLOUD_INIT_CONFIGURATION/SYSTEM_SETTINGS_FRAGMENT.md)
+  - [ ] [6.6 Package Security Fragment](./docs/CLOUD_INIT_CONFIGURATION/PACKAGE_SECURITY_FRAGMENT.md)
+  - [ ] [6.7 Security Monitoring Fragment](./docs/CLOUD_INIT_CONFIGURATION/SECURITY_MONITORING_FRAGMENT.md)
+  - [ ] [6.8 Virtualization Fragment](./docs/CLOUD_INIT_CONFIGURATION/VIRTUALIZATION_FRAGMENT.md)
+  - [ ] [6.9 Cockpit Fragment](./docs/CLOUD_INIT_CONFIGURATION/COCKPIT_FRAGMENT.md)
+  - [ ] [6.10 UI Touches Fragment](./docs/CLOUD_INIT_CONFIGURATION/UI_TOUCHES_FRAGMENT.md)
 
 #### 7. Testing and Validation
 **Directory:** `docs/TESTING_AND_VALIDATION/`
