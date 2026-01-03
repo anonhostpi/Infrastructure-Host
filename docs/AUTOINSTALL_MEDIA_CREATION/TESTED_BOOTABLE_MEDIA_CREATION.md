@@ -6,34 +6,46 @@ This section covers building the autoinstall ISO using xorriso in-place modifica
 
 ## Build Workflow
 
-The entire build process runs inside a multipass VM:
+The build process renders templates locally, then builds the ISO inside a multipass VM:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  1. Transfer repo to builder VM                                 │
+│  1. Render templates (local)                                    │
+│     make all                                                    │
+│     → output/user-data, output/scripts/build-iso.sh             │
+├─────────────────────────────────────────────────────────────────┤
+│  2. Transfer repo to builder VM                                 │
 │     multipass transfer . iso-builder:~/build/                   │
 ├─────────────────────────────────────────────────────────────────┤
-│  2. Build ISO (inside VM)                                       │
-│     cd ~/build && make iso                                      │
+│  3. Build ISO (inside VM)                                       │
+│     cd ~/build && ./output/scripts/build-iso.sh                 │
 │     → output/ubuntu-autoinstall.iso                             │
 ├─────────────────────────────────────────────────────────────────┤
-│  3. Retrieve build artifacts                                    │
+│  4. Retrieve build artifacts                                    │
 │     multipass transfer iso-builder:~/build/output ./            │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-## build-iso.sh
+## build-iso.sh.tpl
 
-Automated script for building the autoinstall ISO. Run inside a multipass VM.
+The build script is rendered from a Jinja2 template using values from `image.config.yaml` (see [5.1](./DOWNLOAD_UBUNTU_ISO.md)).
+
+**src/scripts/build-iso.sh.tpl:**
 
 ```bash
 #!/bin/bash
 # build-iso.sh - Build autoinstall ISO using xorriso in-place modification
 # Run via `make iso` inside multipass VM
+# Generated from build-iso.sh.tpl - do not edit directly
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 OUTPUT_ISO="$SCRIPT_DIR/output/ubuntu-autoinstall.iso"
+
+# Image settings from image.config.yaml
+RELEASE="{{ image.release }}"
+TYPE="{{ image.type }}"
+ARCH="{{ image.arch }}"
 
 echo "=== Installing dependencies ==="
 sudo apt-get update -qq
@@ -41,8 +53,8 @@ sudo apt-get install -y -qq xorriso cloud-image-utils
 
 echo "=== Querying latest Ubuntu ISO ==="
 # See 5.1 Download Ubuntu Server ISO for details on ubuntu-cloudimg-query
-ISO_URL=$(ubuntu-cloudimg-query noble live-server amd64 --format "%{url}\n")
-ISO_NAME=$(ubuntu-cloudimg-query noble live-server amd64 --format "%{filename}\n")
+ISO_URL=$(ubuntu-cloudimg-query "$RELEASE" "$TYPE" "$ARCH" --format "%{url}\n")
+ISO_NAME=$(ubuntu-cloudimg-query "$RELEASE" "$TYPE" "$ARCH" --format "%{filename}\n")
 
 echo "=== Downloading Ubuntu ISO (if not cached) ==="
 if [ ! -f "$HOME/$ISO_NAME" ]; then
@@ -103,22 +115,34 @@ ls -lh "$OUTPUT_ISO"
 
 ## Usage
 
-### 1. Transfer Repo to Builder VM
+### 1. Render Templates (Local)
+
+```powershell
+# Render all templates using Chapter 3 build system
+make all
+```
+
+This generates:
+- `output/user-data` - Autoinstall configuration
+- `output/scripts/build-iso.sh` - ISO build script (from template)
+- `output/scripts/early-net.sh` - Network detection script
+
+### 2. Transfer Repo to Builder VM
 
 ```powershell
 # Transfer entire repo to builder VM
 multipass transfer . iso-builder:/home/ubuntu/build/
 ```
 
-### 2. Build ISO (Inside VM)
+### 3. Build ISO (Inside VM)
 
 ```powershell
-multipass exec iso-builder -- bash -c "cd ~/build && make iso"
+multipass exec iso-builder -- bash -c "cd ~/build && chmod +x output/scripts/build-iso.sh && ./output/scripts/build-iso.sh"
 ```
 
-This runs `make autoinstall` (generates `output/user-data`) then `build-iso.sh`.
+The rendered script uses values from `image.config.yaml` to query and download the correct Ubuntu ISO.
 
-### 3. Retrieve Build Artifacts
+### 4. Retrieve Build Artifacts
 
 ```powershell
 # Transfer entire output directory
@@ -127,16 +151,24 @@ multipass transfer iso-builder:/home/ubuntu/build/output ./
 
 This retrieves all build artifacts:
 - `output/ubuntu-autoinstall.iso` - Bootable installation media
-- `output/user-data` - Autoinstall configuration (for automated testing)
-- `output/cloud-init.yaml` - Cloud-init configuration (for automated testing)
-- `output/scripts/*.sh` - Network scripts (for automated testing)
+- `output/user-data` - Autoinstall configuration
+- `output/scripts/build-iso.sh` - Rendered build script
+- `output/scripts/early-net.sh` - Network detection script
+
+## Template Context
+
+The `build-iso.sh.tpl` template has access to:
+
+| Context | Source | Description |
+|---------|--------|-------------|
+| `image.*` | `image.config.yaml` | Ubuntu release, type, architecture |
 
 ## Script Details
 
 | Step | Description |
 |------|-------------|
 | Install dependencies | Installs `xorriso`, `wget`, and `cloud-image-utils` |
-| Query ISO | Uses `ubuntu-cloudimg-query` to find latest ISO (see [5.1](./DOWNLOAD_UBUNTU_ISO.md)) |
+| Query ISO | Uses `ubuntu-cloudimg-query` with values from `image.config.yaml` |
 | Download ISO | Downloads Ubuntu Server ISO (cached for subsequent builds) |
 | Copy ISO | Creates working copy to preserve original |
 | Create nocloud directory | Copies `output/user-data` from make build, creates minimal `meta-data` |

@@ -1,5 +1,24 @@
 # 5.1 Download Ubuntu Server ISO
 
+## image.config.yaml
+
+Configure the Ubuntu release and architecture in `src/config/image.config.yaml`:
+
+```yaml
+image:
+  release: noble        # Ubuntu codename (noble=24.04, jammy=22.04)
+  type: live-server     # Image type
+  arch: amd64           # Architecture
+```
+
+This config is used by the build system to render `build-iso.sh` from its template. See [5.3 Bootable Media Creation](./TESTED_BOOTABLE_MEDIA_CREATION.md) for the build workflow.
+
+| Field | Description | Options |
+|-------|-------------|---------|
+| `release` | Ubuntu release codename | `noble` (24.04), `jammy` (22.04) |
+| `type` | Image type | `live-server` |
+| `arch` | CPU architecture | `amd64`, `arm64` |
+
 ## Using ubuntu-cloudimg-query (Recommended)
 
 The `ubuntu-cloudimg-query` tool automatically finds the latest image URL:
