@@ -1,4 +1,4 @@
-# 6.10 Cockpit Fragment
+# 6.11 Cockpit Fragment
 
 **Template:** `src/autoinstall/cloud-init/70-cockpit.yaml.tpl`
 

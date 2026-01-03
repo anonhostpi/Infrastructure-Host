@@ -10,11 +10,12 @@ This section documents the cloud-init fragments that compose the final cloud-ini
 - [6.4 SSH Hardening Fragment](./SSH_HARDENING_FRAGMENT.md)
 - [6.5 UFW Fragment](./UFW_FRAGMENT.md)
 - [6.6 System Settings Fragment](./SYSTEM_SETTINGS_FRAGMENT.md)
-- [6.7 Package Security Fragment](./PACKAGE_SECURITY_FRAGMENT.md)
-- [6.8 Security Monitoring Fragment](./SECURITY_MONITORING_FRAGMENT.md)
-- [6.9 Virtualization Fragment](./VIRTUALIZATION_FRAGMENT.md)
-- [6.10 Cockpit Fragment](./COCKPIT_FRAGMENT.md)
-- [6.11 UI Touches Fragment](./UI_TOUCHES_FRAGMENT.md)
+- [6.7 MSMTP Fragment](./MSMTP_FRAGMENT.md)
+- [6.8 Package Security Fragment](./PACKAGE_SECURITY_FRAGMENT.md)
+- [6.9 Security Monitoring Fragment](./SECURITY_MONITORING_FRAGMENT.md)
+- [6.10 Virtualization Fragment](./VIRTUALIZATION_FRAGMENT.md)
+- [6.11 Cockpit Fragment](./COCKPIT_FRAGMENT.md)
+- [6.12 UI Touches Fragment](./UI_TOUCHES_FRAGMENT.md)
 
 ## Fragment Composition
 
@@ -50,6 +51,7 @@ src/autoinstall/cloud-init/
 ├── 25-ssh.yaml.tpl          # SSH hardening
 ├── 30-ufw.yaml.tpl          # Firewall base
 ├── 40-system.yaml.tpl       # System settings
+├── 45-msmtp.yaml.tpl        # Email notifications
 ├── 50-pkg-security.yaml.tpl # Package security
 ├── 55-security-mon.yaml.tpl # Security monitoring
 ├── 60-virtualization.yaml.tpl
@@ -67,8 +69,9 @@ Later fragments can override scalar values from earlier ones, and append to arra
 | Access Control | [6.3 Users](./USERS_FRAGMENT.md) | User accounts, disable root |
 | Network Auth | [6.4 SSH](./SSH_HARDENING_FRAGMENT.md) | sshd hardening |
 | Firewall | [6.5 UFW](./UFW_FRAGMENT.md) | Base policy, distributed rules |
-| Updates | [6.7 Package Security](./PACKAGE_SECURITY_FRAGMENT.md) | Auto-update, auto-upgrade |
-| Monitoring | [6.8 Security Monitoring](./SECURITY_MONITORING_FRAGMENT.md) | fail2ban, auditd (future) |
+| Notifications | [6.7 MSMTP](./MSMTP_FRAGMENT.md) | Email alerts for system events |
+| Updates | [6.8 Package Security](./PACKAGE_SECURITY_FRAGMENT.md) | Auto-update, auto-upgrade |
+| Monitoring | [6.9 Security Monitoring](./SECURITY_MONITORING_FRAGMENT.md) | fail2ban, auditd (future) |
 
 ## Build Output
 

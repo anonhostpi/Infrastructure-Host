@@ -53,11 +53,12 @@ This document outlines the complete documentation structure for bare-metal Ubunt
   - [ ] [6.4 SSH Hardening Fragment](./docs/CLOUD_INIT_CONFIGURATION/SSH_HARDENING_FRAGMENT.md)
   - [ ] [6.5 UFW Fragment](./docs/CLOUD_INIT_CONFIGURATION/UFW_FRAGMENT.md)
   - [ ] [6.6 System Settings Fragment](./docs/CLOUD_INIT_CONFIGURATION/SYSTEM_SETTINGS_FRAGMENT.md)
-  - [ ] [6.7 Package Security Fragment](./docs/CLOUD_INIT_CONFIGURATION/PACKAGE_SECURITY_FRAGMENT.md)
-  - [ ] [6.8 Security Monitoring Fragment](./docs/CLOUD_INIT_CONFIGURATION/SECURITY_MONITORING_FRAGMENT.md)
-  - [ ] [6.9 Virtualization Fragment](./docs/CLOUD_INIT_CONFIGURATION/VIRTUALIZATION_FRAGMENT.md)
-  - [ ] [6.10 Cockpit Fragment](./docs/CLOUD_INIT_CONFIGURATION/COCKPIT_FRAGMENT.md)
-  - [ ] [6.11 UI Touches Fragment](./docs/CLOUD_INIT_CONFIGURATION/UI_TOUCHES_FRAGMENT.md)
+  - [ ] [6.7 MSMTP Fragment](./docs/CLOUD_INIT_CONFIGURATION/MSMTP_FRAGMENT.md)
+  - [ ] [6.8 Package Security Fragment](./docs/CLOUD_INIT_CONFIGURATION/PACKAGE_SECURITY_FRAGMENT.md)
+  - [ ] [6.9 Security Monitoring Fragment](./docs/CLOUD_INIT_CONFIGURATION/SECURITY_MONITORING_FRAGMENT.md)
+  - [ ] [6.10 Virtualization Fragment](./docs/CLOUD_INIT_CONFIGURATION/VIRTUALIZATION_FRAGMENT.md)
+  - [ ] [6.11 Cockpit Fragment](./docs/CLOUD_INIT_CONFIGURATION/COCKPIT_FRAGMENT.md)
+  - [ ] [6.12 UI Touches Fragment](./docs/CLOUD_INIT_CONFIGURATION/UI_TOUCHES_FRAGMENT.md)
 
 #### 7. Testing and Validation
 **Directory:** `docs/TESTING_AND_VALIDATION/`

@@ -1,4 +1,4 @@
-# 6.8 Security Monitoring Fragment
+# 6.9 Security Monitoring Fragment
 
 **Template:** `src/autoinstall/cloud-init/55-security-mon.yaml.tpl`
 

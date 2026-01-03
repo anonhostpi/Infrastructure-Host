@@ -1,4 +1,4 @@
-# 6.9 Virtualization Fragment
+# 6.10 Virtualization Fragment
 
 **Template:** `src/autoinstall/cloud-init/60-virtualization.yaml.tpl`
 
