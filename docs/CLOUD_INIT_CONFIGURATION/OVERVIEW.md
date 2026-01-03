@@ -15,7 +15,8 @@ This section documents the cloud-init fragments that compose the final cloud-ini
 - [6.9 Security Monitoring Fragment](./SECURITY_MONITORING_FRAGMENT.md)
 - [6.10 Virtualization Fragment](./VIRTUALIZATION_FRAGMENT.md)
 - [6.11 Cockpit Fragment](./COCKPIT_FRAGMENT.md)
-- [6.12 UI Touches Fragment](./UI_TOUCHES_FRAGMENT.md)
+- [6.12 OpenCode Fragment](./OPENCODE_FRAGMENT.md)
+- [6.13 UI Touches Fragment](./UI_TOUCHES_FRAGMENT.md)
 
 ## Fragment Composition
 
@@ -56,6 +57,7 @@ src/autoinstall/cloud-init/
 ├── 55-security-mon.yaml.tpl # Security monitoring
 ├── 60-virtualization.yaml.tpl
 ├── 70-cockpit.yaml.tpl
+├── 75-opencode.yaml.tpl     # AI coding agent
 └── 90-ui.yaml.tpl           # Final touches
 ```
 
