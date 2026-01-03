@@ -166,7 +166,7 @@ def create_environment(template_dir='src'):
 
 ### Shell Script Template
 
-```jinja
+```bash
 #!/bin/bash
 # Auto-generated network detection script
 
@@ -182,7 +182,7 @@ ip route add default via ${GATEWAY}
 
 ### Cloud-init Template
 
-```jinja
+```yaml
 #cloud-config
 hostname: {{ network.hostname }}
 
