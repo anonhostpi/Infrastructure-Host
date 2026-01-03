@@ -1,5 +1,23 @@
 # Private configuration files (contain internal IPs, credentials, keys)
+# See *.config.yaml.example files for templates
 *.config.yaml
 
-# Test outputs
+# Build outputs
+output/
+
+# Test outputs (legacy)
 tests/autoinstall/output/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
