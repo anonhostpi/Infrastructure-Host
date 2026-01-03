@@ -16,7 +16,7 @@ Network configuration is stored in `src/config/network.config.yaml` (not tracked
 
 ## Configuration File
 
-Create `src/config/network.config.yaml`:
+Create `src/config/network.config.yaml` (example):
 
 ```yaml
 network:
@@ -36,8 +36,8 @@ network:
 
 Once configured, network values are available in all templates:
 
-```jinja
-{# In any .tpl file #}
+```yaml
+# In any .tpl file
 hostname: {{ network.hostname }}
 gateway: {{ network.gateway }}
 static_ip: {{ network.ip_address | ip_only }}

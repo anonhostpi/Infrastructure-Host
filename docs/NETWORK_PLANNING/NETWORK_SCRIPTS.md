@@ -159,8 +159,8 @@ Renders templates to:
 
 These scripts are also available to cloud-init and autoinstall templates via the `scripts` context:
 
-```jinja
-{# In cloud-init or autoinstall templates #}
+```yaml
+# In cloud-init or autoinstall templates
 bootcmd:
   - |
 {{ scripts["net-setup.sh"] | indent(4) }}
