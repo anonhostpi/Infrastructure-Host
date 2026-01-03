@@ -1,4 +1,4 @@
-# 6.2 Users Fragment
+# 6.3 Users Fragment
 
 **Template:** `src/autoinstall/cloud-init/20-users.yaml.tpl`
 
@@ -70,4 +70,4 @@ SSH authorized keys are optional. If provided in `identity.config.yaml`, they ar
 | `disable_root` | true | Prevent direct root login |
 | `ssh_pwauth` | true | Allow SSH password authentication |
 
-**Note:** SSH password authentication is enabled here but can be hardened in [6.3 SSH Hardening](./SSH_HARDENING_FRAGMENT.md).
+**Note:** SSH password authentication is enabled here but can be hardened in [6.4 SSH Hardening](./SSH_HARDENING_FRAGMENT.md).

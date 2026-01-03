@@ -1,8 +1,8 @@
-# 6.9 Cockpit Fragment
+# 6.10 Cockpit Fragment
 
 **Template:** `src/autoinstall/cloud-init/70-cockpit.yaml.tpl`
 
-Configures Cockpit web-based management console.
+Configures Cockpit web-based management console with localhost-only access via SSH tunneling.
 
 ## Template
 
@@ -18,12 +18,17 @@ write_files:
       [WebService]
       AllowUnencrypted = false
 
+  - path: /etc/systemd/system/cockpit.socket.d/listen.conf
+    permissions: '0644'
+    content: |
+      [Socket]
+      ListenStream=
+      ListenStream=127.0.0.1:443
+
 runcmd:
-  # Enable and start Cockpit
+  - systemctl daemon-reload
   - systemctl enable cockpit.socket
   - systemctl start cockpit.socket
-  # Open firewall
-  - ufw allow 9090/tcp
 ```
 
 ## Packages
@@ -35,42 +40,85 @@ runcmd:
 
 ## Configuration
 
+### Web Service
+
 The `/etc/cockpit/cockpit.conf` file configures the web service:
 
 | Setting | Value | Purpose |
 |---------|-------|---------|
 | `AllowUnencrypted` | false | Require HTTPS |
 
-## Service
+### Socket Override
 
-Cockpit uses socket activation:
+The systemd drop-in `/etc/systemd/system/cockpit.socket.d/listen.conf` binds Cockpit to localhost only:
+
+```ini
+[Socket]
+ListenStream=
+ListenStream=127.0.0.1:443
+```
+
+- First `ListenStream=` clears the default (0.0.0.0:9090)
+- Second `ListenStream=127.0.0.1:443` binds to localhost port 443
+
+This ensures Cockpit is **not accessible from the network** - only via SSH tunnel.
+
+## Access via SSH Tunnel
+
+Since Cockpit only listens on localhost, access requires SSH local port forwarding:
 
 ```bash
-systemctl enable cockpit.socket
-systemctl start cockpit.socket
+# From your workstation
+ssh -L 443:localhost:443 user@kvm-host
 ```
 
-The service only starts when a connection is received on port 9090.
-
-## Firewall
-
-This fragment adds its own UFW rule:
-
-```bash
-ufw allow 9090/tcp
-```
-
-This works with the base UFW policy from [6.4 UFW Fragment](./UFW_FRAGMENT.md).
-
-## Access
-
-After deployment, access Cockpit at:
+Then open in browser:
 
 ```
-https://<HOST_IP>:9090
+https://localhost
 ```
 
 Login with the admin credentials from `identity.config.yaml`.
+
+### Persistent SSH Config
+
+Add to `~/.ssh/config` for convenience:
+
+```
+Host kvm-host
+    HostName 192.168.1.100
+    User admin
+    LocalForward 443 localhost:443
+```
+
+Then simply `ssh kvm-host` and access `https://localhost`.
+
+### Multiple Hosts
+
+When managing multiple hosts, use different local ports:
+
+```
+Host kvm-host-1
+    HostName 192.168.1.100
+    LocalForward 8443 localhost:443
+
+Host kvm-host-2
+    HostName 192.168.1.101
+    LocalForward 8444 localhost:443
+```
+
+Access via `https://localhost:8443` and `https://localhost:8444`.
+
+## Security Benefits
+
+| Benefit | Description |
+|---------|-------------|
+| No network exposure | Cockpit not reachable from network |
+| SSH authentication | Only SSH-authorized users can access |
+| Double encryption | SSH tunnel + HTTPS |
+| No firewall rules | No ports to open for Cockpit |
+| No reverse proxy | No additional services to maintain |
+| No certificate management | Self-signed cert is fine for localhost |
 
 ## cockpit-machines
 
@@ -80,15 +128,24 @@ The `cockpit-machines` package integrates with libvirt to provide:
 - Console access
 - Storage and network configuration
 
-This complements the CLI tools from [6.8 Virtualization Fragment](./VIRTUALIZATION_FRAGMENT.md).
+This complements the CLI tools from [6.9 Virtualization Fragment](./VIRTUALIZATION_FRAGMENT.md).
 
 ## HTTPS Certificate
 
-Cockpit generates a self-signed certificate on first access. For production, consider:
+Cockpit generates a self-signed certificate on first access. Since access is via localhost through an SSH tunnel, the self-signed certificate is acceptable - the connection is already authenticated and encrypted by SSH.
 
-- Let's Encrypt certificate
-- Custom CA-signed certificate
+Browser warnings for `localhost` can be safely bypassed in this configuration.
 
-Place certificates at:
-- `/etc/cockpit/ws-certs.d/<name>.cert`
-- `/etc/cockpit/ws-certs.d/<name>.key`
+## Verification
+
+After deployment and SSH tunnel setup:
+
+```bash
+# On the host - verify socket is listening on localhost only
+ss -tlnp | grep 443
+# Expected: 127.0.0.1:443
+
+# From workstation with tunnel active
+curl -k https://localhost
+# Should return Cockpit HTML
+```

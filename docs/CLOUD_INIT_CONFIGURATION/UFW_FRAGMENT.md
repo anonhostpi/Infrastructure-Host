@@ -1,4 +1,4 @@
-# 6.4 UFW Fragment
+# 6.5 UFW Fragment
 
 **Template:** `src/autoinstall/cloud-init/30-ufw.yaml.tpl`
 
@@ -14,8 +14,10 @@ runcmd:
   # Set default policies
   - ufw default deny incoming
   - ufw default allow outgoing
-  # Allow SSH (required for remote access)
-  - ufw allow 22/tcp
+  # Rate-limit SSH (prevents brute force)
+  - ufw limit ssh
+  # Enable logging
+  - ufw logging medium
   # Enable firewall
   - ufw --force enable
 ```
@@ -29,21 +31,34 @@ runcmd:
 
 ## Base Rules
 
-| Port | Protocol | Purpose |
-|------|----------|---------|
-| 22 | TCP | SSH access |
+| Rule | Purpose |
+|------|---------|
+| `ufw limit ssh` | Rate-limited SSH access (prevents brute force) |
+| `ufw logging medium` | Log blocked and rate-limited connections |
 
-SSH is allowed by default to prevent lockout.
+### Rate Limiting
+
+`ufw limit ssh` allows SSH connections but rate-limits them:
+- Allows 6 connections per 30 seconds from a single IP
+- Additional connections are blocked temporarily
+- Works alongside fail2ban for defense in depth
+
+### Logging Levels
+
+| Level | Logs |
+|-------|------|
+| `off` | Nothing |
+| `low` | Blocked packets |
+| `medium` | Blocked + rate-limited + invalid packets |
+| `high` | All of above + unmatched packets |
+| `full` | Everything |
 
 ## Distributed Rules
 
-Other fragments add their own firewall rules:
+Other fragments can add their own firewall rules. Each fragment is responsible for opening ports it requires.
 
-| Fragment | Rule | Purpose |
-|----------|------|---------|
-| [6.9 Cockpit](./COCKPIT_FRAGMENT.md) | `ufw allow 9090/tcp` | Cockpit web UI |
-
-Each fragment is responsible for opening ports it requires.
+Currently, no fragments add UFW rules:
+- **Cockpit** ([6.10](./COCKPIT_FRAGMENT.md)) binds to localhost only, accessed via SSH tunnel - no firewall rule needed
 
 ## Rule Order
 
@@ -74,10 +89,12 @@ sudo ufw status verbose
 Expected output:
 ```
 Status: active
+Logging: on (medium)
 Default: deny (incoming), allow (outgoing), disabled (routed)
 
 To                         Action      From
 --                         ------      ----
-22/tcp                     ALLOW IN    Anywhere
-9090/tcp                   ALLOW IN    Anywhere
+22/tcp                     LIMIT IN    Anywhere
 ```
+
+Note: SSH shows `LIMIT IN` instead of `ALLOW IN` due to rate limiting.

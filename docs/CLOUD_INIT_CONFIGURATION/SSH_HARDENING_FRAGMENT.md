@@ -1,4 +1,4 @@
-# 6.3 SSH Hardening Fragment
+# 6.4 SSH Hardening Fragment
 
 **Template:** `src/autoinstall/cloud-init/25-ssh.yaml.tpl`
 
@@ -12,12 +12,23 @@ write_files:
     permissions: '0644'
     content: |
       # SSH Hardening - managed by cloud-init
+
+      # Authentication
       MaxAuthTries 3
+      LoginGraceTime 20
+      PermitEmptyPasswords no
+      ChallengeResponseAuthentication no
+
+      # Forwarding
       X11Forwarding no
       AllowTcpForwarding no
-      PermitEmptyPasswords no
+
+      # Session timeout
       ClientAliveInterval 300
       ClientAliveCountMax 2
+
+      # Root access
+      PermitRootLogin prohibit-password
 ```
 
 ## Hardening Options
@@ -25,11 +36,14 @@ write_files:
 | Setting | Value | Purpose |
 |---------|-------|---------|
 | `MaxAuthTries` | 3 | Limit authentication attempts |
+| `LoginGraceTime` | 20 | Seconds to authenticate before disconnect |
+| `PermitEmptyPasswords` | no | Require passwords |
+| `ChallengeResponseAuthentication` | no | Disable keyboard-interactive auth |
 | `X11Forwarding` | no | Disable X11 forwarding |
 | `AllowTcpForwarding` | no | Disable TCP forwarding |
-| `PermitEmptyPasswords` | no | Require passwords |
 | `ClientAliveInterval` | 300 | Timeout inactive sessions (5 min) |
 | `ClientAliveCountMax` | 2 | Disconnect after 2 missed keepalives |
+| `PermitRootLogin` | prohibit-password | Allow root only with key auth |
 
 ## Password vs Key Authentication
 
@@ -58,6 +72,6 @@ The `99-` prefix ensures this file is processed last, giving it final authority 
 
 ## Future Considerations
 
-- **fail2ban integration** - See [6.7 Security Monitoring](./SECURITY_MONITORING_FRAGMENT.md)
+- **fail2ban integration** - See [6.8 Security Monitoring](./SECURITY_MONITORING_FRAGMENT.md)
 - **SSH key rotation** - Manual process post-deployment
 - **Certificate-based auth** - For enterprise environments

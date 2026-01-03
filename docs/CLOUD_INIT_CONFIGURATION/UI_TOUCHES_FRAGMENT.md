@@ -1,4 +1,4 @@
-# 6.10 UI Touches Fragment
+# 6.11 UI Touches Fragment
 
 **Template:** `src/autoinstall/cloud-init/90-ui.yaml.tpl`
 
@@ -19,7 +19,9 @@ write_files:
 final_message: |
   Cloud-init complete!
 
-  Access Cockpit at: https://{{ network.ip_address | ip_only }}:9090
+  Cockpit access via SSH tunnel:
+    ssh -L 443:localhost:443 {{ identity.username }}@{{ network.ip_address | ip_only }}
+    Then open: https://localhost
 
   System ready for use.
 ```
@@ -44,7 +46,9 @@ The `final_message` is logged and displayed at the end of cloud-init:
 ```
 Cloud-init complete!
 
-Access Cockpit at: https://192.168.1.100:9090
+Cockpit access via SSH tunnel:
+  ssh -L 443:localhost:443 admin@192.168.1.100
+  Then open: https://localhost
 
 System ready for use.
 ```
@@ -55,13 +59,14 @@ This message appears in:
 
 ## Dynamic Content
 
-The final message uses the network configuration to display the correct IP:
+The final message uses template variables for the SSH command:
 
 ```jinja
-https://{{ network.ip_address | ip_only }}:9090
+ssh -L 443:localhost:443 {{ identity.username }}@{{ network.ip_address | ip_only }}
 ```
 
-The `ip_only` filter extracts the IP from CIDR notation (e.g., `192.168.1.100/24` → `192.168.1.100`).
+- `identity.username` - Admin username from config
+- `ip_only` filter extracts IP from CIDR notation (e.g., `192.168.1.100/24` → `192.168.1.100`)
 
 ## Future: Terminal Improvements
 

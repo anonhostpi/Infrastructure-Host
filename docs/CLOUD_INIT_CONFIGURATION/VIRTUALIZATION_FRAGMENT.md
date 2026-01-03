@@ -1,4 +1,4 @@
-# 6.8 Virtualization Fragment
+# 6.9 Virtualization Fragment
 
 **Template:** `src/autoinstall/cloud-init/60-virtualization.yaml.tpl`
 
@@ -94,3 +94,46 @@ Default VM storage is at `/var/lib/libvirt/images/`. This uses the ZFS root file
 For production, consider:
 - Dedicated ZFS dataset for VM images
 - Separate storage pool in libvirt
+
+## Systemd Hardening (Optional)
+
+For additional security, add systemd hardening via drop-in file:
+
+```yaml
+write_files:
+  - path: /etc/systemd/system/libvirtd.service.d/hardening.conf
+    permissions: '0644'
+    content: |
+      [Service]
+      NoNewPrivileges=true
+      PrivateTmp=true
+      ProtectHome=true
+      ProtectClock=true
+      ProtectHostname=true
+      ProtectKernelTunables=true
+      ProtectKernelModules=true
+      ProtectControlGroups=true
+      RestrictSUIDSGID=true
+      RestrictRealtime=true
+      LockPersonality=true
+
+      # libvirtd needs these paths writable
+      ReadWritePaths=/var/lib/libvirt /var/log/libvirt /run/libvirt
+
+runcmd:
+  - systemctl daemon-reload
+```
+
+**Note:** libvirtd requires more capabilities than typical services for VM management. Test thoroughly before enabling in production. Some settings may need adjustment based on VM requirements.
+
+### Hardening Options
+
+| Setting | Purpose |
+|---------|---------|
+| `NoNewPrivileges` | Prevent privilege escalation |
+| `PrivateTmp` | Isolated /tmp directory |
+| `ProtectHome` | No access to /home |
+| `ProtectClock` | No system clock changes |
+| `ProtectKernelTunables` | No sysctl changes |
+| `ProtectKernelModules` | No module loading |
+| `ReadWritePaths` | Explicit write access for libvirt |

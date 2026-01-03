@@ -1,4 +1,4 @@
-# 6.5 System Settings Fragment
+# 6.6 System Settings Fragment
 
 **Template:** `src/autoinstall/cloud-init/40-system.yaml.tpl`
 
