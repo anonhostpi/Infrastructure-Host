@@ -4,109 +4,185 @@ Test cloud-init configuration with multipass before building the full autoinstal
 
 ## Pre-Build Checklist
 
-Before starting, verify these files exist:
+Before starting, verify these files exist in `src/config/`:
 
-- [ ] `network.config.yaml` - valid IPs, gateway, DNS
-- [ ] `identity.config.yaml` - username, password
-- [ ] `autoinstall.yml` - autoinstall template
-- [ ] `cloud-init.yml` - cloud-init template
-- [ ] `early-net.sh` - autoinstall network script
-- [ ] `net-setup.sh` - cloud-init network script
+- [ ] `network.config.yaml` - Valid IPs, gateway, DNS
+- [ ] `identity.config.yaml` - Username, password, SSH keys
+- [ ] `storage.config.yaml` - Disk selection settings
+- [ ] `image.config.yaml` - Ubuntu release (noble, jammy)
 
 ## Phase 1: Cloud-init Testing
 
 Test cloud-init configuration before embedding in autoinstall.
 
-### Step 1: Start Builder VM
+### Step 1: Build Cloud-init Configuration
 
 ```powershell
-# Create or start the builder VM
-multipass launch --name iso-builder --cpus 2 --memory 4G --disk 20G
-
-# Or if it already exists
-multipass start iso-builder
+# From repository root
+make cloud-init
 ```
 
-### Step 2: Transfer Build Scripts
+This generates `output/cloud-init.yaml` by:
+1. Rendering all fragment templates in `src/autoinstall/cloud-init/`
+2. Merging them using `deep_merge` (see [3.3 Render CLI](../BUILD_SYSTEM/RENDER_CLI.md))
+
+### Step 2: Validate YAML and Schema
 
 ```powershell
-# Transfer config files
-multipass transfer network.config.yaml iso-builder:/home/ubuntu/
-multipass transfer identity.config.yaml iso-builder:/home/ubuntu/
+# Validate YAML syntax
+python -c "import yaml; yaml.safe_load(open('output/cloud-init.yaml'))"
 
-# Transfer build scripts
-multipass transfer build_network.py iso-builder:/home/ubuntu/
-multipass transfer build_cloud_init.py iso-builder:/home/ubuntu/
-
-# Transfer templates
-multipass transfer cloud-init.yml iso-builder:/home/ubuntu/
-multipass transfer net-setup.sh iso-builder:/home/ubuntu/
+# Validate against cloud-init schema (requires cloud-init installed)
+cloud-init schema --config-file output/cloud-init.yaml
 ```
 
-### Step 3: Build and Validate cloud-init.yml
+### Step 3: Launch Test VM
 
 ```powershell
-# Install dependencies
-multipass exec iso-builder -- sudo apt-get update -qq
-multipass exec iso-builder -- sudo apt-get install -y -qq python3-yaml
+# Launch multipass VM with cloud-init config
+multipass launch --name cloud-init-test --cloud-init output/cloud-init.yaml
 
-# Validate YAML syntax before build
-multipass exec iso-builder -- python3 -c "import yaml; yaml.safe_load(open('cloud-init.yml'))"
-
-# Build cloud-init configuration
-multipass exec iso-builder -- python3 build_cloud_init.py
-
-# Validate built output (check printed output manually)
-multipass exec iso-builder -- python3 -c "
-from build_cloud_init import build_cloud_init
-ci = build_cloud_init()
-print('bootcmd entries:', len(ci.get('bootcmd', [])))
-print('packages:', ci.get('packages', []))
-print('users:', [u.get('name') for u in ci.get('users', [])])
-"
-
-# Validate against cloud-init schema
-multipass exec iso-builder -- cloud-init schema --config-file cloud-init-built.yaml
-
-# Retrieve built config
-multipass transfer iso-builder:/home/ubuntu/cloud-init-built.yaml ./cloud-init-test.yaml
-```
-
-### Step 4: Test with Multipass and Validate
-
-```powershell
-# Launch test VM with cloud-init config (may timeout - that's OK)
-multipass launch --name cloud-init-test --cloud-init cloud-init-test.yaml 2>$null
-
-# Wait for cloud-init to complete (THIS is the true success indicator)
+# Wait for cloud-init to complete
 multipass exec cloud-init-test -- cloud-init status --wait
 ```
 
-**Validation** - Run these commands and verify output:
+**Note:** The launch command may show timeout warnings - this is normal. The `cloud-init status --wait` command is the true success indicator.
+
+### Step 4: Validate Configuration
 
 ```powershell
-# Check cloud-init status
+# Check cloud-init status (should show "done")
 multipass exec cloud-init-test -- cloud-init status
 
 # Check for errors in cloud-init log
-multipass exec cloud-init-test -- grep -i error /var/log/cloud-init.log
-
-# Verify network configuration applied
-multipass exec cloud-init-test -- cat /etc/netplan/90-static.yaml
+multipass exec cloud-init-test -- grep -iE "error|warning|failed" /var/log/cloud-init.log
 
 # Verify user created
 multipass exec cloud-init-test -- id admin
 
-# Verify services running
-multipass exec cloud-init-test -- systemctl status cockpit.socket --no-pager
-multipass exec cloud-init-test -- systemctl status libvirtd --no-pager
+# Verify packages installed
+multipass exec cloud-init-test -- dpkg -l | grep -E "qemu-kvm|libvirt|cockpit|fail2ban"
+
+# Verify services enabled
+multipass exec cloud-init-test -- systemctl is-enabled cockpit.socket libvirtd fail2ban
+
+# Verify firewall configured
+multipass exec cloud-init-test -- sudo ufw status
+
+# Verify MOTD (should show dynamic content)
+multipass exec cloud-init-test -- cat /run/motd.dynamic
 ```
 
-### Step 5: Cleanup Test VM
+### Step 5: Validate Specific Fragments
+
+Test components from each cloud-init fragment:
+
+```powershell
+# 6.2 Kernel Hardening - sysctl settings
+multipass exec cloud-init-test -- sysctl net.ipv4.ip_forward
+
+# 6.4 SSH Hardening - sshd config
+multipass exec cloud-init-test -- sudo sshd -T | grep -E "permitrootlogin|passwordauthentication"
+
+# 6.5 UFW - firewall rules
+multipass exec cloud-init-test -- sudo ufw status numbered
+
+# 6.6 System Settings - timezone/locale
+multipass exec cloud-init-test -- timedatectl
+multipass exec cloud-init-test -- localectl
+
+# 6.9 Security Monitoring - fail2ban jails
+multipass exec cloud-init-test -- sudo fail2ban-client status
+
+# 6.10 Virtualization - libvirt
+multipass exec cloud-init-test -- virsh list --all
+multipass exec cloud-init-test -- groups | grep -E "libvirt|kvm"
+
+# 6.11 Cockpit - socket listening on localhost
+multipass exec cloud-init-test -- ss -tlnp | grep 443
+
+# 6.12 UI Touches - CLI tools installed
+multipass exec cloud-init-test -- which batcat fdfind htop neofetch
+```
+
+### Step 6: Cleanup Test VM
 
 ```powershell
 multipass delete cloud-init-test
 multipass purge
 ```
 
-If cloud-init test passes, proceed to [6.2 Autoinstall Testing](./AUTOINSTALL_TESTING.md).
+If cloud-init test passes, proceed to [7.2 Autoinstall Testing](./AUTOINSTALL_TESTING.md).
+
+---
+
+## Troubleshooting
+
+### Common Issues
+
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| Schema validation failed | Invalid cloud-init keys | Check [cloud-init docs](https://cloudinit.readthedocs.io/) |
+| Package not found | Typo in package name | Verify package exists in Ubuntu repos |
+| Service failed to start | Missing dependencies | Check `journalctl -u <service>` |
+| Permission denied | Wrong file permissions | Check `write_files` permissions |
+
+### Debug Commands
+
+```powershell
+# Full cloud-init output log
+multipass exec cloud-init-test -- cat /var/log/cloud-init-output.log
+
+# Cloud-init config used
+multipass exec cloud-init-test -- sudo cat /var/lib/cloud/instance/cloud-config.txt
+
+# Per-module status
+multipass exec cloud-init-test -- cat /run/cloud-init/result.json
+```
+
+### Network Testing Limitations
+
+Multipass VMs use NAT networking and cannot test:
+- Static IP configuration (autoinstall early-commands)
+- Gateway detection (arping)
+- Network interface naming
+
+These are tested in Phase 2 with VirtualBox or on actual hardware.
+
+---
+
+## Quick Test Script
+
+For rapid iteration, use this PowerShell script:
+
+```powershell
+# Quick cloud-init test cycle
+param([switch]$Rebuild)
+
+if ($Rebuild) {
+    make cloud-init
+}
+
+# Cleanup previous test
+multipass delete cloud-init-test 2>$null
+multipass purge 2>$null
+
+# Launch and test
+multipass launch --name cloud-init-test --cloud-init output/cloud-init.yaml
+multipass exec cloud-init-test -- cloud-init status --wait
+
+# Quick validation
+Write-Host "`n=== Validation ===" -ForegroundColor Cyan
+multipass exec cloud-init-test -- cloud-init status
+multipass exec cloud-init-test -- id admin
+multipass exec cloud-init-test -- systemctl is-enabled cockpit.socket libvirtd
+
+Write-Host "`n=== Test Complete ===" -ForegroundColor Green
+Write-Host "Run validation commands or: multipass shell cloud-init-test"
+```
+
+Save as `Test-CloudInit.ps1` and run:
+
+```powershell
+.\Test-CloudInit.ps1 -Rebuild
+```
