@@ -223,7 +223,89 @@ def deep_merge(base, override):
 | Lists | Extended (fragment items appended) |
 | Scalars | Replaced by fragment value |
 
-### Example
+### Examples
+
+#### Scalars (replaced)
+
+**base.yaml.tpl:**
+```yaml
+hostname: default-host
+timezone: UTC
+```
+
+**10-identity.yaml.tpl:**
+```yaml
+hostname: kvm-host
+```
+
+**Merged result:**
+```yaml
+hostname: kvm-host
+timezone: UTC
+```
+
+Later fragments replace scalar values from earlier fragments.
+
+#### Dicts (recursively merged)
+
+**base.yaml.tpl:**
+```yaml
+users:
+  - name: admin
+    groups: sudo
+    shell: /bin/bash
+```
+
+**10-security.yaml.tpl:**
+```yaml
+users:
+  - name: admin
+    ssh_authorized_keys:
+      - ssh-ed25519 AAAA...
+```
+
+**Merged result:**
+```yaml
+users:
+  - name: admin
+    groups: sudo
+    shell: /bin/bash
+  - name: admin
+    ssh_authorized_keys:
+      - ssh-ed25519 AAAA...
+```
+
+Note: `users` is a list, so items are appended (not merged by `name`). For true dict merging:
+
+**base.yaml.tpl:**
+```yaml
+write_files:
+  sshd_config:
+    path: /etc/ssh/sshd_config.d/hardening.conf
+    permissions: '0644'
+```
+
+**10-security.yaml.tpl:**
+```yaml
+write_files:
+  sshd_config:
+    content: |
+      PermitRootLogin no
+```
+
+**Merged result:**
+```yaml
+write_files:
+  sshd_config:
+    path: /etc/ssh/sshd_config.d/hardening.conf
+    permissions: '0644'
+    content: |
+      PermitRootLogin no
+```
+
+Dict keys are combined recursively, preserving values from both fragments.
+
+#### Lists (extended)
 
 **base.yaml.tpl:**
 ```yaml
@@ -257,5 +339,9 @@ runcmd:
   - systemctl enable libvirtd
   - ufw enable
 ```
+
+Lists are concatenated in fragment order.
+
+---
 
 Fragments are processed in sorted order by filename, so numeric prefixes control merge order.
