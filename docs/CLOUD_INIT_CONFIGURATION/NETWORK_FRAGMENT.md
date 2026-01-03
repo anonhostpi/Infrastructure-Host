@@ -1,0 +1,56 @@
+# 6.1 Network Fragment
+
+**Template:** `src/autoinstall/cloud-init/10-network.yaml.tpl`
+
+Sets hostname and FQDN, and runs the network detection script on boot.
+
+## Template
+
+```yaml
+hostname: {{ network.hostname }}
+fqdn: {{ network.hostname }}.{{ network.dns_search }}
+manage_etc_hosts: true
+
+bootcmd:
+  - |
+{{ scripts["net-setup.sh"] | indent(4) }}
+```
+
+## Configuration Fields
+
+| Field | Source | Description |
+|-------|--------|-------------|
+| `hostname` | `network.config.yaml` | Short hostname |
+| `fqdn` | `network.config.yaml` | Fully qualified domain name |
+| `manage_etc_hosts` | Static | Cloud-init manages `/etc/hosts` |
+
+## bootcmd
+
+The `bootcmd` array runs the network detection script from [4.3 Network Scripts](../NETWORK_PLANNING/NETWORK_SCRIPTS.md). This script:
+
+1. Iterates over network interfaces
+2. Uses ARP probing to find the correct interface
+3. Configures static IP via netplan
+4. Validates with DNS query
+
+The script is injected via the `scripts` context (see [3.3 Render CLI](../BUILD_SYSTEM/RENDER_CLI.md)).
+
+## Cloud-init Timing
+
+`bootcmd` runs during the **Local** stage:
+- Runs every boot (script has idempotent guard)
+- Runs before network is configured
+- Runs before package installation
+
+This ensures network is configured before any network-dependent operations.
+
+## manage_etc_hosts
+
+When `true`, cloud-init manages `/etc/hosts`:
+
+```
+127.0.1.1 kvm-host.local.lan kvm-host
+127.0.0.1 localhost
+```
+
+This ensures hostname resolution works correctly for local services.
