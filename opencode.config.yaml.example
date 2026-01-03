@@ -4,20 +4,56 @@
 #
 # OpenCode is an AI coding agent for terminal use.
 # See: https://opencode.ai/docs
-#
-# After deployment, run `/connect` within opencode to configure API keys.
-# Keys are stored in ~/.local/share/opencode/auth.json (not in this file).
+# Provider docs: https://opencode.ai/docs/providers
 
 opencode:
   # Whether to install opencode during cloud-init
   enabled: true
 
-  # Installation method: npm, brew, or script
+  # Installation method: npm or script
   install_method: npm
 
-  # Default model (configured after install via /connect)
+  # Default model to use
+  # Format: provider/model-id
   # Examples: anthropic/claude-sonnet-4-5, openai/gpt-4o
-  # default_model: anthropic/claude-sonnet-4-5
+  model: anthropic/claude-sonnet-4-5
 
-  # Global config location: ~/.config/opencode/opencode.json
-  # Project config: opencode.json in project root
+  # Theme: dark, light, or specific theme name
+  theme: dark
+
+  # Provider configuration
+  # API keys use environment variable references: {env:VAR_NAME}
+  # Or configure post-deployment via: opencode, then /connect
+  providers:
+    anthropic:
+      # API key from https://console.anthropic.com/
+      # Leave as env reference - set ANTHROPIC_API_KEY in environment
+      api_key: "{env:ANTHROPIC_API_KEY}"
+      # Optional: custom base URL (for proxies)
+      # base_url: https://api.anthropic.com/v1
+
+    # Uncomment to add OpenAI
+    # openai:
+    #   api_key: "{env:OPENAI_API_KEY}"
+
+    # Uncomment for local Ollama
+    # ollama:
+    #   base_url: http://localhost:11434/v1
+    #   models:
+    #     llama3:
+    #       name: Llama 3
+    #       context: 8192
+    #     codellama:
+    #       name: Code Llama
+    #       context: 16384
+
+    # Uncomment for custom OpenAI-compatible provider
+    # custom:
+    #   name: My Provider
+    #   base_url: https://api.example.com/v1
+    #   api_key: "{env:CUSTOM_API_KEY}"
+    #   models:
+    #     my-model:
+    #       name: My Model
+    #       context: 128000
+    #       output: 8192
