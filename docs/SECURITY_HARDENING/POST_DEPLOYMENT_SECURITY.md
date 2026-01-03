@@ -1,65 +1,31 @@
 # 11.1 Post-Deployment Security
 
-## Immediate Actions
+> **Deprecated:** This content has been migrated to Chapter 6 cloud-init fragments and is applied automatically during deployment.
 
-Add to cloud-init user-data for automatic security hardening:
+## Migrated Content
 
-```yaml
-runcmd:
-  # Update system
-  - apt update && apt upgrade -y
+| Topic | Now In |
+|-------|--------|
+| SSH Hardening | [6.4 SSH Hardening Fragment](../CLOUD_INIT_CONFIGURATION/SSH_HARDENING_FRAGMENT.md) |
+| Automatic Updates | [6.8 Package Security Fragment](../CLOUD_INIT_CONFIGURATION/PACKAGE_SECURITY_FRAGMENT.md) |
+| fail2ban | [6.9 Security Monitoring Fragment](../CLOUD_INIT_CONFIGURATION/SECURITY_MONITORING_FRAGMENT.md) |
+| Kernel Hardening | [6.2 Kernel Hardening Fragment](../CLOUD_INIT_CONFIGURATION/KERNEL_HARDENING_FRAGMENT.md) |
 
-  # Configure automatic security updates
-  - apt install unattended-upgrades -y
-  - dpkg-reconfigure -plow unattended-upgrades
+All security hardening in this section is now automated via cloud-init and does not require manual post-deployment action.
 
-  # Harden SSH
-  - sed -i 's/#PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config
-  - sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
-  - systemctl restart sshd
+## Verification
 
-  # Configure fail2ban
-  - apt install fail2ban -y
-  - systemctl enable fail2ban
-  - systemctl start fail2ban
-```
-
-## SSH Hardening
-
-Recommended `/etc/ssh/sshd_config` settings:
-
-```
-PermitRootLogin no
-PasswordAuthentication no
-PubkeyAuthentication yes
-PermitEmptyPasswords no
-X11Forwarding no
-MaxAuthTries 3
-LoginGraceTime 60
-```
-
-## Automatic Updates
-
-Configure unattended-upgrades for automatic security updates:
+After deployment, verify security settings are applied:
 
 ```bash
-sudo apt install unattended-upgrades
-sudo dpkg-reconfigure -plow unattended-upgrades
-```
+# SSH hardening
+sudo sshd -T | grep -E "permitrootlogin|passwordauthentication"
 
-## Fail2ban
-
-Fail2ban protects against brute-force attacks:
-
-```bash
-sudo apt install fail2ban
-sudo systemctl enable fail2ban
-sudo systemctl start fail2ban
-```
-
-Default configuration protects SSH. Check status:
-
-```bash
+# fail2ban
 sudo fail2ban-client status
-sudo fail2ban-client status sshd
+
+# Automatic updates
+systemctl is-enabled unattended-upgrades
 ```
+
+See [Chapter 7: Testing and Validation](../TESTING_AND_VALIDATION/OVERVIEW.md) for complete verification procedures.

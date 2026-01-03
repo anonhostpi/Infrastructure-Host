@@ -1,61 +1,40 @@
 # 11.2 Firewall Configuration
 
-## UFW Configuration via Cloud-init
+> **Deprecated:** This content has been migrated to Chapter 6 cloud-init fragments and is applied automatically during deployment.
 
-```yaml
-runcmd:
-  # Configure UFW
-  - ufw default deny incoming
-  - ufw default allow outgoing
-  - ufw allow ssh
-  - ufw allow 443/tcp     # Cockpit
-  - ufw --force enable
-```
+## Migrated Content
 
-## Common UFW Commands
+| Topic | Now In |
+|-------|--------|
+| UFW Base Policy | [6.5 UFW Fragment](../CLOUD_INIT_CONFIGURATION/UFW_FRAGMENT.md) |
+| SSH Rate Limiting | [6.5 UFW Fragment](../CLOUD_INIT_CONFIGURATION/UFW_FRAGMENT.md) |
+| Virtualization Forwarding | [6.10 Virtualization Fragment](../CLOUD_INIT_CONFIGURATION/VIRTUALIZATION_FRAGMENT.md) |
+
+The base firewall configuration is now automated via cloud-init.
+
+**Note:** Cockpit no longer requires a UFW rule - it binds to localhost only and is accessed via SSH tunnel. See [6.11 Cockpit Fragment](../CLOUD_INIT_CONFIGURATION/COCKPIT_FRAGMENT.md).
+
+## Verification
+
+After deployment, verify firewall is active:
 
 ```bash
-# Enable firewall
-sudo ufw enable
-
-# Check status
 sudo ufw status verbose
+```
 
-# Allow specific ports
-sudo ufw allow 22/tcp      # SSH
-sudo ufw allow 80/tcp      # HTTP
-sudo ufw allow 443/tcp     # HTTPS (Cockpit)
+## Post-Deployment Additions
+
+If you need to open additional ports after deployment:
+
+```bash
+# Allow specific port
+sudo ufw allow 8080/tcp
 
 # Allow from specific subnet
-sudo ufw allow from <SUBNET>/<CIDR>
-
-# Deny specific port
-sudo ufw deny 23/tcp
+sudo ufw allow from 192.168.1.0/24 to any port 8080
 
 # Delete rule
-sudo ufw delete allow 80/tcp
-
-# Reset to defaults
-sudo ufw reset
+sudo ufw delete allow 8080/tcp
 ```
 
-## Recommended Firewall Rules
-
-| Port | Service | Action |
-|------|---------|--------|
-| 22/tcp | SSH | Allow |
-| 443/tcp | Cockpit (HTTPS) | Allow |
-| 80/tcp | HTTP | Allow if needed |
-| 16509/tcp | Libvirt | Allow from trusted IPs |
-
-## Firewall for Virtualization
-
-If running VMs with bridged networking:
-
-```bash
-# Allow forwarding
-sudo ufw route allow in on br0
-
-# Or edit /etc/default/ufw
-DEFAULT_FORWARD_POLICY="ACCEPT"
-```
+See [6.5 UFW Fragment](../CLOUD_INIT_CONFIGURATION/UFW_FRAGMENT.md) for the complete base firewall policy.
