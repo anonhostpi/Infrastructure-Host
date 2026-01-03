@@ -149,7 +149,7 @@ write_files:
 
 ### Email Notifications (Optional)
 
-Send email alerts on ban events. Requires msmtp from [6.7 Package Security](./PACKAGE_SECURITY_FRAGMENT.md).
+Send email alerts on ban events. Requires msmtp from [6.7 MSMTP Fragment](./MSMTP_FRAGMENT.md).
 
 ```yaml
 write_files:
@@ -258,9 +258,9 @@ fail2ban works in conjunction with [6.4 SSH Hardening](./SSH_HARDENING_FRAGMENT.
 
 Together, they provide defense in depth against brute force attacks.
 
-### Package Security (6.7)
+### MSMTP (6.7)
 
-Email notifications require msmtp configured in [6.7 Package Security](./PACKAGE_SECURITY_FRAGMENT.md). If msmtp is not configured, omit the `msmtp-mail` action from jail definitions.
+Email notifications require msmtp configured in [6.7 MSMTP Fragment](./MSMTP_FRAGMENT.md). If msmtp is not configured, omit the `msmtp-mail` action from jail definitions.
 
 ---
 

@@ -95,6 +95,115 @@ For production, consider:
 - Dedicated ZFS dataset for VM images
 - Separate storage pool in libvirt
 
+## VM Lifecycle Notifications
+
+Send email alerts when VMs start, stop, or crash. Requires msmtp from [6.7 MSMTP Fragment](./MSMTP_FRAGMENT.md).
+
+### libvirt Hook Script
+
+libvirt supports hook scripts that run on VM lifecycle events:
+
+```yaml
+write_files:
+  - path: /etc/libvirt/hooks/qemu
+    permissions: '0755'
+    content: |
+      #!/bin/bash
+      # libvirt QEMU hook for VM lifecycle notifications
+      # Arguments: $1=VM name, $2=operation, $3=sub-operation
+
+      VM_NAME="$1"
+      OPERATION="$2"
+      SUB_OPERATION="$3"
+      HOSTNAME=$(hostname)
+      TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+      RECIPIENT=$(grep "^root:" /etc/aliases 2>/dev/null | cut -d: -f2 | tr -d ' ')
+
+      # Only notify on these events
+      case "$OPERATION/$SUB_OPERATION" in
+        start/begin)
+          SUBJECT="[${HOSTNAME}] VM Started: ${VM_NAME}"
+          BODY="Virtual machine '${VM_NAME}' has started.\n\nTimestamp: ${TIMESTAMP}\nHost: ${HOSTNAME}"
+          ;;
+        stopped/end)
+          SUBJECT="[${HOSTNAME}] VM Stopped: ${VM_NAME}"
+          BODY="Virtual machine '${VM_NAME}' has stopped.\n\nTimestamp: ${TIMESTAMP}\nHost: ${HOSTNAME}"
+          ;;
+        reconnect/begin)
+          SUBJECT="[${HOSTNAME}] VM Reconnected: ${VM_NAME}"
+          BODY="Virtual machine '${VM_NAME}' reconnected after libvirtd restart.\n\nTimestamp: ${TIMESTAMP}\nHost: ${HOSTNAME}"
+          ;;
+        *)
+          # Don't notify for other events (prepare, release, migrate, etc.)
+          exit 0
+          ;;
+      esac
+
+      # Send notification if msmtp is configured
+      if [ -n "$RECIPIENT" ] && [ -f /etc/msmtp-password ]; then
+        echo -e "Subject: ${SUBJECT}\n\n${BODY}" | msmtp "$RECIPIENT" 2>/dev/null || true
+      fi
+
+      exit 0
+```
+
+### Hook Events
+
+| Event | Trigger | Notification |
+|-------|---------|--------------|
+| `start/begin` | VM is starting | Yes |
+| `stopped/end` | VM has stopped (any reason) | Yes |
+| `reconnect/begin` | libvirtd reconnects to running VM | Yes |
+| `prepare/begin` | Before VM starts | No |
+| `release/end` | After VM resources released | No |
+| `migrate/*` | Migration events | No |
+
+### Crash Detection
+
+The `stopped/end` event fires regardless of how the VM stopped:
+- Clean shutdown
+- Forced stop (`virsh destroy`)
+- Guest crash
+- Host crash recovery
+
+For more granular crash detection, check the domain state:
+
+```bash
+# In hook script, after stopped/end
+STATE=$(virsh domstate "$VM_NAME" 2>/dev/null)
+if [ "$STATE" = "crashed" ]; then
+  SUBJECT="[${HOSTNAME}] VM CRASHED: ${VM_NAME}"
+fi
+```
+
+### Testing Hooks
+
+```bash
+# Test the hook script manually
+sudo /etc/libvirt/hooks/qemu test-vm start begin
+
+# Start a VM and check for email
+virsh start my-vm
+
+# Check msmtp log
+cat /var/log/msmtp.log
+```
+
+### Disabling Notifications
+
+To disable notifications for a specific VM, add a condition:
+
+```bash
+# Skip notification for certain VMs
+case "$VM_NAME" in
+  test-*|temp-*)
+    exit 0
+    ;;
+esac
+```
+
+---
+
 ## Systemd Hardening (Optional)
 
 For additional security, add systemd hardening via drop-in file:
