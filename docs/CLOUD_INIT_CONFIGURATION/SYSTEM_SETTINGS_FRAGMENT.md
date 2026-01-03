@@ -2,11 +2,16 @@
 
 **Template:** `src/autoinstall/cloud-init/40-system.yaml.tpl`
 
-Configures system-wide settings like timezone.
+Configures system-wide settings: locale, keyboard, and timezone.
 
 ## Template
 
 ```yaml
+locale: en_US.UTF-8
+
+keyboard:
+  layout: us
+
 timezone: America/Phoenix
 ```
 
@@ -14,6 +19,8 @@ timezone: America/Phoenix
 
 | Field | Value | Description |
 |-------|-------|-------------|
+| `locale` | en_US.UTF-8 | American English, UTF-8 encoding |
+| `keyboard.layout` | us | Standard American QWERTY |
 | `timezone` | America/Phoenix | System timezone |
 
 ## Timezone
@@ -49,7 +56,3 @@ Common options:
 This fragment may be extended to include:
 
 - **NTP/chrony** - Time synchronization configuration
-- **Locale** - If different from autoinstall defaults
-- **Keyboard** - If different from autoinstall defaults
-
-Currently, locale and keyboard are set in autoinstall (see [5.2 Autoinstall Configuration](../AUTOINSTALL_MEDIA_CREATION/AUTOINSTALL_CONFIGURATION.md)).
