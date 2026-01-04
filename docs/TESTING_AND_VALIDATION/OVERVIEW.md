@@ -11,8 +11,8 @@ This section covers testing build artifacts before deploying to bare metal.
 
 Testing occurs in two phases:
 
-1. **Cloud-init Testing** - Verify rendered cloud-init works with multipass before embedding in autoinstall
-2. **Autoinstall Testing** - Build ISO and test full installation in VirtualBox
+1. **Cloud-init Testing** (7.1) - Test fragment configuration with multipass. Validates all cloud-init fragments (security, services, packages, user experience). Most testing happens here.
+2. **Autoinstall Testing** (7.2) - Test full installation in VirtualBox. Validates autoinstall-specific components (ZFS root, static IP, boot process).
 
 This approach catches configuration errors early before building the full ISO.
 
@@ -71,3 +71,4 @@ Before testing, ensure these config files exist in `src/config/`:
 | `image.config.yaml` | Ubuntu release | [5.1 Download ISO](../AUTOINSTALL_MEDIA_CREATION/DOWNLOAD_UBUNTU_ISO.md) |
 | `smtp.config.yaml` | Email notifications (optional) | [6.7 MSMTP Fragment](../CLOUD_INIT_CONFIGURATION/MSMTP_FRAGMENT.md) |
 | `opencode.config.yaml` | AI coding agent (optional) | [6.12 OpenCode Fragment](../CLOUD_INIT_CONFIGURATION/OPENCODE_FRAGMENT.md) |
+| `vm.config.ps1` | Local VM test settings | [7.1 Cloud-init Testing](./CLOUD_INIT_TESTING.md) |

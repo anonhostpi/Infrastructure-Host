@@ -257,6 +257,118 @@ After successful autoinstall, verify:
 | UFW | Firewall enabled | `sudo ufw status` |
 | MOTD | Dynamic content | `cat /run/motd.dynamic` |
 | CLI tools | bat, fd, htop | `which batcat fdfind htop` |
+| OpenCode | AI agent (if enabled) | `which opencode` |
+
+---
+
+## Autoinstall-Specific Tests
+
+These tests validate components that **cannot be tested with multipass** - they require the full autoinstall process.
+
+### ZFS Root Filesystem
+
+```bash
+# Verify ZFS pool exists
+zpool status
+# Expected: pool "rpool" with state: ONLINE
+
+# Verify ZFS datasets
+zfs list
+# Expected: rpool/ROOT/ubuntu mounted at /
+
+# Check ZFS properties
+zfs get compression,atime rpool
+```
+
+### Network Verification
+
+Network is fully tested in [7.1 Cloud-init Testing](./CLOUD_INIT_TESTING.md#scenario-1-network-configuration-test) with bridged multipass. Quick verification after autoinstall:
+
+```bash
+# Confirm IP matches config
+ip addr show | grep "inet "
+
+# Confirm gateway
+ip route | grep default
+```
+
+### Installation Artifacts
+
+```bash
+# Verify autoinstall completed
+ls -la /var/log/installer/
+cat /var/log/installer/autoinstall-user-data | head -20
+
+# Verify cloud-init ran after install
+cloud-init status
+cat /var/log/cloud-init-output.log | tail -50
+```
+
+### Boot Configuration
+
+```bash
+# Verify GRUB installed correctly
+efibootmgr -v
+# Expected: ubuntu entry pointing to correct disk
+
+# Verify no installer remnants
+mount | grep cdrom
+# Expected: no output (ISO ejected)
+```
+
+---
+
+## Cloud-init Tests (Reference)
+
+For fragment-specific testing (security, virtualization, monitoring, user experience), see the automated test scenarios in [7.1 Cloud-init Testing](./CLOUD_INIT_TESTING.md#automated-test-scenarios).
+
+These tests work identically in multipass (7.1) and VirtualBox (7.2) since they validate cloud-init configuration, not autoinstall-specific behavior.
+
+---
+
+## Snapshot Testing
+
+For iterative testing, use VirtualBox snapshots to quickly restore state:
+
+```powershell
+# After successful base install, create snapshot
+& $VBoxManage snapshot $VBoxVMName take "base-install" --description "Clean autoinstall complete"
+
+# Test configuration changes...
+
+# Restore to clean state
+& $VBoxManage snapshot $VBoxVMName restore "base-install"
+
+# List snapshots
+& $VBoxManage snapshot $VBoxVMName list
+```
+
+This allows testing multiple scenarios without full reinstall.
+
+---
+
+## Troubleshooting Failures
+
+When tests fail, collect diagnostics before cleanup:
+
+```powershell
+# Collect logs from VM before destroying
+ssh -p 2222 admin@localhost "sudo tar czf /tmp/logs.tar.gz /var/log/cloud-init* /var/log/installer/ /var/log/syslog"
+scp -P 2222 admin@localhost:/tmp/logs.tar.gz ./test-failure-logs.tar.gz
+
+# Extract and review
+tar xzf test-failure-logs.tar.gz
+```
+
+### Failure Categories
+
+| Symptom | Likely Cause | Diagnostic |
+|---------|--------------|------------|
+| VM won't boot | ISO build issue | Check xorriso output, verify GRUB config |
+| Drops to shell at GRUB | Missing autoinstall datasource | Verify `ds=nocloud;s=/cdrom/nocloud/` |
+| Install starts but fails | YAML syntax error | Check `/var/log/installer/autoinstall-user-data` |
+| Install completes, services fail | Fragment issue | Check `cloud-init status`, specific service logs |
+| Network unreachable | early-commands failed | Check `/var/log/installer/curtin-install.log` |
 
 ---
 

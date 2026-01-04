@@ -121,6 +121,184 @@ If cloud-init test passes, proceed to [7.2 Autoinstall Testing](./AUTOINSTALL_TE
 
 ---
 
+## Automated Test Scenarios
+
+Run these comprehensive tests to validate each fragment category. These can be scripted for CI or rapid validation.
+
+### Scenario 1: Network Configuration Test
+
+Validates fragment 6.1 (Network). Requires `--network` bridged mode.
+
+```powershell
+# Verify netplan config was written
+multipass exec cloud-init-test -- cat /etc/netplan/*.yaml
+# Should contain static IP, gateway, DNS from network.config.yaml
+
+# Verify static IP is applied
+multipass exec cloud-init-test -- ip addr show
+# Should show IP from network.config.yaml on bridged interface
+
+# Verify gateway is reachable
+multipass exec cloud-init-test -- ip route | grep default
+multipass exec cloud-init-test -- ping -c 1 $(grep gateway network.config.yaml | awk '{print $2}')
+
+# Verify DNS configuration
+multipass exec cloud-init-test -- resolvectl status | head -20
+```
+
+### Scenario 2: Security Hardening Test
+
+Validates fragments 6.2 (Kernel), 6.4 (SSH), 6.5 (UFW), 6.8 (Package Security).
+
+```powershell
+# Kernel hardening (6.2)
+multipass exec cloud-init-test -- sysctl net.ipv4.ip_forward
+# Expected: 1 (for VMs)
+multipass exec cloud-init-test -- sysctl net.ipv4.conf.all.rp_filter
+# Expected: 1
+
+# SSH hardening (6.4)
+multipass exec cloud-init-test -- sudo sshd -T | grep -E "permitrootlogin|passwordauthentication|maxauthtries"
+# Expected: permitrootlogin no, passwordauthentication no, maxauthtries 3
+
+# UFW (6.5)
+multipass exec cloud-init-test -- sudo ufw status verbose
+# Expected: Status: active, Default: deny (incoming)
+
+# Unattended upgrades (6.8)
+multipass exec cloud-init-test -- systemctl is-enabled unattended-upgrades
+# Expected: enabled
+```
+
+### Scenario 2: Virtualization Test
+
+Validates fragments 6.10 (Virtualization), 6.11 (Cockpit).
+
+```powershell
+# libvirt (6.10)
+multipass exec cloud-init-test -- virsh list --all
+multipass exec cloud-init-test -- virsh net-list --all
+multipass exec cloud-init-test -- sudo systemctl status libvirtd --no-pager
+
+# User permissions
+multipass exec cloud-init-test -- groups | grep -E "libvirt|kvm"
+
+# Cockpit (6.11) - must be localhost only
+multipass exec cloud-init-test -- ss -tlnp | grep 443
+# Expected: 127.0.0.1:443 ONLY
+```
+
+### Scenario 3: Monitoring Test
+
+Validates fragments 6.7 (MSMTP), 6.9 (Security Monitoring).
+
+```powershell
+# fail2ban (6.9)
+multipass exec cloud-init-test -- sudo fail2ban-client status
+multipass exec cloud-init-test -- sudo fail2ban-client status sshd
+# Expected: sshd jail active
+
+# Recidive jail
+multipass exec cloud-init-test -- sudo fail2ban-client status recidive
+
+# msmtp (6.7) - if configured
+multipass exec cloud-init-test -- which msmtp
+multipass exec cloud-init-test -- cat /etc/msmtprc 2>/dev/null | grep host || echo "msmtp not configured"
+```
+
+### Scenario 4: User Experience Test
+
+Validates fragments 6.3 (Users), 6.12 (OpenCode), 6.13 (UI Touches).
+
+```powershell
+# User and groups (6.3)
+multipass exec cloud-init-test -- id admin
+multipass exec cloud-init-test -- groups admin
+
+# Dynamic MOTD (6.13)
+multipass exec cloud-init-test -- cat /run/motd.dynamic
+# Should show: hostname, uptime, load, memory, disk, SSH config snippet
+
+# Shell aliases
+multipass exec cloud-init-test -- bash -ic "type cat"
+# Should alias to batcat
+
+# CLI tools
+multipass exec cloud-init-test -- batcat --version
+multipass exec cloud-init-test -- fdfind --version
+multipass exec cloud-init-test -- htop --version
+multipass exec cloud-init-test -- jq --version
+
+# OpenCode (6.12) - if enabled
+multipass exec cloud-init-test -- which opencode 2>/dev/null && opencode --version
+```
+
+---
+
+## Full Validation Script
+
+Automate all scenarios with a single script:
+
+```powershell
+# Validate-CloudInit.ps1
+param([switch]$Verbose)
+
+# Load VM configuration
+if (-not (Test-Path ".\vm.config.ps1")) {
+    Write-Error "Missing vm.config.ps1 - copy from vm.config.ps1.example"
+    exit 1
+}
+. .\vm.config.ps1
+
+function Test-Command {
+    param([string]$Name, [string]$Command, [string]$Expected)
+    $result = multipass exec $VMName -- bash -c $Command 2>&1
+    $pass = if ($Expected) { $result -match $Expected } else { $LASTEXITCODE -eq 0 }
+    $status = if ($pass) { "[PASS]" } else { "[FAIL]" }
+    $color = if ($pass) { "Green" } else { "Red" }
+    Write-Host "$status $Name" -ForegroundColor $color
+    if ($Verbose -or -not $pass) { Write-Host "       $result" -ForegroundColor Gray }
+    return $pass
+}
+
+Write-Host "`n=== Network Configuration ===" -ForegroundColor Cyan
+Test-Command "Netplan: Config exists" "ls /etc/netplan/*.yaml" ".yaml"
+Test-Command "Netplan: Has addresses" "grep -q addresses /etc/netplan/*.yaml" ""
+Test-Command "Network: IP assigned" "ip addr show | grep 'inet '" "inet"
+Test-Command "Network: Gateway reachable" "ping -c 1 -W 2 \$(ip route | grep default | awk '{print \$3}')" "1 received"
+
+Write-Host "`n=== Security Hardening ===" -ForegroundColor Cyan
+Test-Command "Kernel: IP forward" "sysctl -n net.ipv4.ip_forward" "1"
+Test-Command "SSH: Root login disabled" "sudo sshd -T | grep permitrootlogin" "no"
+Test-Command "SSH: Password auth disabled" "sudo sshd -T | grep passwordauthentication" "no"
+Test-Command "UFW: Active" "sudo ufw status | head -1" "active"
+
+Write-Host "`n=== Virtualization ===" -ForegroundColor Cyan
+Test-Command "libvirt: Running" "systemctl is-active libvirtd" "active"
+Test-Command "Cockpit: Localhost only" "ss -tlnp | grep 443 | grep 127.0.0.1" "127.0.0.1"
+Test-Command "Groups: libvirt" "groups | grep libvirt" "libvirt"
+
+Write-Host "`n=== Monitoring ===" -ForegroundColor Cyan
+Test-Command "fail2ban: Running" "systemctl is-active fail2ban" "active"
+Test-Command "fail2ban: SSH jail" "sudo fail2ban-client status sshd | grep 'Jail'" "sshd"
+
+Write-Host "`n=== User Experience ===" -ForegroundColor Cyan
+Test-Command "User: admin exists" "id admin" "admin"
+Test-Command "MOTD: Dynamic" "test -f /run/motd.dynamic" ""
+Test-Command "CLI: batcat" "which batcat" "batcat"
+Test-Command "CLI: fdfind" "which fdfind" "fdfind"
+
+Write-Host "`n=== Complete ===" -ForegroundColor Green
+```
+
+Run with:
+
+```powershell
+.\Validate-CloudInit.ps1 -Verbose
+```
+
+---
+
 ## Troubleshooting
 
 ### Common Issues
