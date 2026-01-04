@@ -87,17 +87,10 @@ This document outlines the complete documentation structure for bare-metal Ubunt
 - [10.1 Common Issues](./docs/TROUBLESHOOTING/COMMON_ISSUES.md)
 - [10.2 Logs and Debugging](./docs/TROUBLESHOOTING/LOGS_AND_DEBUGGING.md)
 
-#### 11. Security Hardening
-**Directory:** `docs/SECURITY_HARDENING/`
-- [Overview](./docs/SECURITY_HARDENING/OVERVIEW.md)
-- [11.1 Post-Deployment Security](./docs/SECURITY_HARDENING/POST_DEPLOYMENT_SECURITY.md)
-- [11.2 Firewall Configuration](./docs/SECURITY_HARDENING/FIREWALL_CONFIGURATION.md)
-- [11.3 Monitoring and Logging](./docs/SECURITY_HARDENING/MONITORING_AND_LOGGING.md)
-
-#### 12. Appendix
+#### 11. Appendix
 **Directory:** `docs/APPENDIX/`
 - [Overview](./docs/APPENDIX/OVERVIEW.md)
-- [12.1 Reference Files](./docs/APPENDIX/REFERENCE_FILES.md)
-- [12.2 Useful Commands](./docs/APPENDIX/USEFUL_COMMANDS.md)
-- [12.3 Additional Resources](./docs/APPENDIX/ADDITIONAL_RESOURCES.md)
-- [12.4 Hardware Compatibility](./docs/APPENDIX/HARDWARE_COMPATIBILITY.md)
+- [11.1 Reference Files](./docs/APPENDIX/REFERENCE_FILES.md)
+- [11.2 Useful Commands](./docs/APPENDIX/USEFUL_COMMANDS.md)
+- [11.3 Additional Resources](./docs/APPENDIX/ADDITIONAL_RESOURCES.md)
+- [11.4 Hardware Compatibility](./docs/APPENDIX/HARDWARE_COMPATIBILITY.md)

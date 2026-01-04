@@ -128,5 +128,4 @@ virsh list --all
 
 After successful deployment:
 
-1. Complete [Chapter 8: Post-Deployment Validation](../POST_DEPLOYMENT_VALIDATION/OVERVIEW.md)
-2. Apply [Chapter 10: Security Hardening](../SECURITY_HARDENING/OVERVIEW.md) if needed
+1. Complete [Chapter 9: Post-Deployment Validation](../POST_DEPLOYMENT_VALIDATION/OVERVIEW.md)
