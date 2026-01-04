@@ -60,7 +60,8 @@ journalctl -b
 # Specific service logs
 journalctl -u ssh
 journalctl -u libvirtd
-journalctl -u docker
+journalctl -u cockpit
+journalctl -u fail2ban
 ```
 
 ## Network Debugging

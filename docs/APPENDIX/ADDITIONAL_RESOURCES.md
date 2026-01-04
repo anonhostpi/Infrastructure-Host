@@ -1,4 +1,4 @@
-# 12.3 Additional Resources
+# 11.3 Additional Resources
 
 ## Official Documentation
 
@@ -19,11 +19,6 @@
 - **Libvirt Documentation**: https://libvirt.org/docs.html
 - **QEMU Documentation**: https://www.qemu.org/documentation/
 - **KVM Wiki**: https://www.linux-kvm.org/page/Main_Page
-
-## Container Resources
-
-- **Docker Documentation**: https://docs.docker.com/
-- **Podman Documentation**: https://docs.podman.io/
 
 ## Configuration Management
 

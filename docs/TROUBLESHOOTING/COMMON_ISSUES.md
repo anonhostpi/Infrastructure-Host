@@ -35,13 +35,16 @@
 
 ## Cockpit Not Accessible
 
-**Symptoms:** Cannot connect to port 443
+**Symptoms:** Cannot connect via SSH tunnel
+
+**Note:** Cockpit binds to localhost only (127.0.0.1:443). Direct access to `https://<host-ip>` will not work by design.
 
 **Solutions:**
 - Check service status: `systemctl status cockpit.socket`
-- Verify firewall: `sudo ufw status | grep 443`
-- Check listening ports: `sudo ss -tlnp | grep 443`
+- Verify listening on localhost: `sudo ss -tlnp | grep 443` (should show 127.0.0.1:443)
 - Restart service: `sudo systemctl restart cockpit.socket`
+- Verify SSH tunnel: `ssh -L 9090:127.0.0.1:443 admin@<host-ip>`
+- Open browser to `https://localhost:9090`
 
 ## Virtualization Not Working
 

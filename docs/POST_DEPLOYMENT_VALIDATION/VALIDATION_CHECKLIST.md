@@ -27,15 +27,14 @@
 ## Cockpit
 
 - [ ] Cockpit service running: `systemctl status cockpit.socket`
-- [ ] Cockpit accessible: Open browser to `https://<host-ip>`
+- [ ] Cockpit listening on localhost: `ss -tlnp | grep 443` (should show 127.0.0.1:443)
+- [ ] Cockpit accessible via SSH tunnel:
+  ```bash
+  ssh -L 9090:127.0.0.1:443 admin@<host-ip>
+  # Then open https://localhost:9090
+  ```
 - [ ] Login with admin user credentials
-- [ ] Verify modules loaded (Machines, Podman, Network)
-
-## Docker
-
-- [ ] Docker service running: `systemctl status docker`
-- [ ] Docker functional: `sudo docker run hello-world`
-- [ ] Admin user in docker group (may require logout/login): `groups admin | grep docker`
+- [ ] Verify modules loaded (Machines, Network)
 
 ## Firewall
 

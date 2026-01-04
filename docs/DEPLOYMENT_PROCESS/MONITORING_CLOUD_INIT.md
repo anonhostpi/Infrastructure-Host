@@ -104,4 +104,4 @@ cloud-init analyze show
 | No 90-static.yaml | Arping detection failed | Check gateway/DNS respond to ARP, verify network config |
 | Services not running | Package install failed | Check apt errors in cloud-init.log |
 
-If cloud-init fails, see [Chapter 9: Troubleshooting](../TROUBLESHOOTING/OVERVIEW.md).
+If cloud-init fails, see [Chapter 10: Troubleshooting](../TROUBLESHOOTING/OVERVIEW.md).

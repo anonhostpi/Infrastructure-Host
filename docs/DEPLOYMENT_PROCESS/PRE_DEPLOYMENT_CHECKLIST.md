@@ -4,7 +4,7 @@ Complete this checklist before deploying to bare metal.
 
 ## Prerequisites
 
-- [ ] Chapter 6 testing completed successfully
+- [ ] Chapter 7 testing completed successfully
 - [ ] Autoinstall ISO built and validated
 - [ ] Physical access to target server (or remote console)
 
@@ -34,7 +34,7 @@ Complete this checklist before deploying to bare metal.
   - USB drive, OR
   - Virtual media (IPMI/iLO/iDRAC), OR
   - Network boot (if configured)
-- [ ] ISO verified bootable in Chapter 6 VirtualBox test
+- [ ] ISO verified bootable in Chapter 7 VirtualBox test
 
 ## Network Checklist
 

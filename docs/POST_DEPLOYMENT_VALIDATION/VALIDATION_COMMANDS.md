@@ -29,11 +29,12 @@ echo ""
 echo "=== Services Status ==="
 systemctl status libvirtd --no-pager
 systemctl status cockpit.socket --no-pager
-systemctl status docker --no-pager
+systemctl status fail2ban --no-pager
 echo ""
 
 echo "=== Cockpit Access ==="
-echo "Cockpit URL: https://$(hostname -I | awk '{print $1}')"
+echo "Cockpit: localhost:443 (use SSH tunnel)"
+echo "  ssh -L 9090:127.0.0.1:443 admin@\$(hostname -I | awk '{print \$1}')"
 echo ""
 
 echo "=== Cloud-init Status ==="
@@ -64,7 +65,7 @@ resolvectl status
 ```bash
 systemctl status libvirtd
 systemctl status cockpit.socket
-systemctl status docker
+systemctl status fail2ban
 systemctl status ssh
 ```
 

@@ -48,7 +48,7 @@ The installation proceeds automatically:
 - Network connectivity during installation
 - No error messages on screen
 
-If errors occur, note the message and check [Chapter 9: Troubleshooting](../TROUBLESHOOTING/OVERVIEW.md).
+If errors occur, note the message and check [Chapter 10: Troubleshooting](../TROUBLESHOOTING/OVERVIEW.md).
 
 ## Step 4: First Boot - Cloud-init Execution
 
@@ -67,7 +67,7 @@ Cloud-init performs:
 | Users | Admin user created with password and SSH key |
 | Packages | KVM, libvirt, Cockpit, multipass installed |
 | Services | libvirtd, cockpit.socket enabled and started |
-| Firewall | UFW enabled, port 443 opened for Cockpit |
+| Firewall | UFW enabled with SSH rate limiting |
 
 **Duration:** 5-20 minutes depending on package downloads
 
@@ -87,7 +87,15 @@ ssh -i ~/.ssh/your_key admin@<HOST_IP>
 
 ### Cockpit Access
 
-Open in browser: `https://<HOST_IP>`
+Cockpit binds to localhost only for security. Access via SSH tunnel:
+
+```bash
+# Create SSH tunnel
+ssh -L 9090:127.0.0.1:443 admin@<HOST_IP>
+
+# Open in browser (in another terminal)
+# https://localhost:9090
+```
 
 Login with admin credentials from `identity.config.yaml`.
 

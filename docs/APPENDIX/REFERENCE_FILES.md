@@ -1,4 +1,4 @@
-# 12.1 Reference Files
+# 11.1 Reference Files
 
 ## Minimal Cloud-init for Testing
 
@@ -44,9 +44,9 @@ autoinstall:
 
 **Do NOT use DHCP** - it creates a broadcast attack surface.
 
-Use the secure ARP probing approach from Chapter 3 (`NETWORK_PLANNING/CLOUD_INIT_NETWORK_CONFIG.md`):
+Use the secure ARP probing approach from [Chapter 4](../NETWORK_PLANNING/OVERVIEW.md):
 - Probes for known gateway/DNS via arping (no broadcast)
 - Auto-detects correct NIC
 - Validates connectivity before committing
 
-See `bootcmd` script in Chapter 3 for the full implementation.
+See [6.1 Network Fragment](../CLOUD_INIT_CONFIGURATION/NETWORK_FRAGMENT.md) for the full implementation.

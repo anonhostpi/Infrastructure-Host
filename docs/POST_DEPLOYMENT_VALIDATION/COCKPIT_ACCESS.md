@@ -1,85 +1,90 @@
 # 9.3 Cockpit Access and Configuration
 
+## Security Model
+
+Cockpit binds to **localhost only** (127.0.0.1:443) for security. Access is via SSH tunnel, which:
+- Requires SSH authentication before accessing Cockpit
+- Eliminates need for firewall port exposure
+- Encrypts all traffic through existing SSH connection
+
 ## Accessing Cockpit
 
-1. Open web browser
-2. Navigate to: `https://<host-ip>`
-3. Accept self-signed certificate (or configure proper TLS)
-4. Login with `admin` user and password
+### Step 1: Create SSH Tunnel
 
-## Cockpit Features Available
+```bash
+# From your workstation
+ssh -L 9090:127.0.0.1:443 admin@<host-ip>
+```
+
+This forwards local port 9090 to the server's localhost:443.
+
+### Step 2: Open Browser
+
+Navigate to: `https://localhost:9090`
+
+Accept the self-signed certificate warning and login with admin credentials.
+
+### Persistent Tunnel (SSH Config)
+
+Add to `~/.ssh/config`:
+
+```
+Host infra-host
+    HostName <host-ip>
+    User admin
+    LocalForward 9090 127.0.0.1:443
+```
+
+Then connect with:
+```bash
+ssh infra-host
+# Cockpit available at https://localhost:9090
+```
+
+## Cockpit Features
 
 - **Overview** - System resources, performance graphs
 - **Machines** - Virtual machine management (create, start, stop VMs)
-- **Podman** - Container management
-- **Networking** - Network interface configuration, firewall rules
+- **Networking** - Network interface configuration
 - **Storage** - Disk and filesystem management
 - **Services** - Systemd service management
 - **Terminal** - Web-based terminal access
 
-## Configure TLS Certificate (Optional)
-
-### Self-Signed Certificate
+## Verification
 
 ```bash
-# Generate self-signed certificate (or use Let's Encrypt)
-sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-  -keyout /etc/cockpit/ws-certs.d/cockpit.key \
-  -out /etc/cockpit/ws-certs.d/cockpit.cert
+# Verify Cockpit is running
+systemctl status cockpit.socket
 
-# Combine into single file
-sudo cat /etc/cockpit/ws-certs.d/cockpit.cert \
-  /etc/cockpit/ws-certs.d/cockpit.key | \
-  sudo tee /etc/cockpit/ws-certs.d/0-self-signed.cert
+# Verify listening on localhost only
+ss -tlnp | grep 443
+# Expected: 127.0.0.1:443
 
-# Restart cockpit
-sudo systemctl restart cockpit.socket
+# Verify NOT listening on public interface
+# (this should return nothing)
+ss -tlnp | grep 443 | grep -v 127.0.0.1
 ```
 
-### Let's Encrypt Certificate
-
-```bash
-# Install certbot
-sudo apt install certbot
-
-# Obtain certificate
-sudo certbot certonly --standalone -d server.example.com
-
-# Link certificates
-sudo ln -s /etc/letsencrypt/live/server.example.com/fullchain.pem \
-  /etc/cockpit/ws-certs.d/server.cert
-sudo ln -s /etc/letsencrypt/live/server.example.com/privkey.pem \
-  /etc/cockpit/ws-certs.d/server.key
-
-# Restart cockpit
-sudo systemctl restart cockpit.socket
-```
-
-## Cockpit Configuration
-
-Edit `/etc/cockpit/cockpit.conf`:
-
-```ini
-[WebService]
-AllowUnencrypted = false
-UrlRoot = /cockpit
-
-[Session]
-IdleTimeout = 15
-```
-
-## Troubleshooting Cockpit
+## Troubleshooting
 
 ```bash
 # Check service status
 systemctl status cockpit.socket
 
-# Check listening port
-ss -tlnp | grep 443
-
-# Check firewall
-ufw status | grep 443
-
 # View logs
 journalctl -u cockpit
+
+# Restart service
+sudo systemctl restart cockpit.socket
+
+# Verify socket override is applied
+cat /etc/systemd/system/cockpit.socket.d/listen.conf
 ```
+
+### Common Issues
+
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| Connection refused on tunnel | Cockpit not running | `sudo systemctl start cockpit.socket` |
+| Certificate warning | Self-signed cert | Accept warning or configure custom cert |
+| Can't access https://host-ip | Correct behavior | Cockpit is localhost only; use SSH tunnel |

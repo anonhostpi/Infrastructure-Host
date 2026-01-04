@@ -29,7 +29,7 @@ This chapter guides you through deploying the autoinstall ISO to bare metal. The
 
 Before deploying, ensure you have:
 
-- Completed [Chapter 6: Testing and Validation](../TESTING_AND_VALIDATION/OVERVIEW.md)
+- Completed [Chapter 7: Testing and Validation](../TESTING_AND_VALIDATION/OVERVIEW.md)
 - Autoinstall ISO built and validated
 - Target hardware with BIOS configured per [Chapter 2](../HARDWARE_BIOS_SETUP/OVERVIEW.md)
 - Network environment with gateway/DNS responding to ARP
