@@ -51,7 +51,7 @@ This document outlines the complete documentation structure. Each section is mai
 - [ ] [Overview](./docs/CLOUD_INIT_CONFIGURATION/OVERVIEW.md)
   - [x] [6.1 Network Fragment](./docs/CLOUD_INIT_CONFIGURATION/NETWORK_FRAGMENT.md)
   - [x] [6.2 Kernel Hardening Fragment](./docs/CLOUD_INIT_CONFIGURATION/KERNEL_HARDENING_FRAGMENT.md)
-  - [ ] [6.3 Users Fragment](./docs/CLOUD_INIT_CONFIGURATION/USERS_FRAGMENT.md)
+  - [x] [6.3 Users Fragment](./docs/CLOUD_INIT_CONFIGURATION/USERS_FRAGMENT.md)
   - [ ] [6.4 SSH Hardening Fragment](./docs/CLOUD_INIT_CONFIGURATION/SSH_HARDENING_FRAGMENT.md)
   - [ ] [6.5 UFW Fragment](./docs/CLOUD_INIT_CONFIGURATION/UFW_FRAGMENT.md)
   - [ ] [6.6 System Settings Fragment](./docs/CLOUD_INIT_CONFIGURATION/SYSTEM_SETTINGS_FRAGMENT.md)

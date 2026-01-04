@@ -1,6 +1,6 @@
 users:
   - name: {{ identity.username }}
-    groups: [sudo, adm, libvirt, kvm]
+    groups: [sudo, libvirt, kvm]
     shell: /bin/bash
     sudo: ALL=(ALL) NOPASSWD:ALL
     lock_passwd: false
@@ -11,3 +11,6 @@ users:
       - {{ key }}
 {% endfor %}
 {% endif %}
+
+disable_root: true
+ssh_pwauth: true
