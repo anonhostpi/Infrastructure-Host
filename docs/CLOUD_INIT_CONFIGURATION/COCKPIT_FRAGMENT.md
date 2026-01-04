@@ -46,7 +46,8 @@ cockpit:
 ```yaml
 {% if cockpit.enabled | default(true) %}
 packages:
-{% for pkg in cockpit.packages | default(['cockpit', 'cockpit-machines']) %}
+  - cockpit
+{% for pkg in cockpit.packages | default(['cockpit-machines']) %}
   - {{ pkg }}
 {% endfor %}
 
