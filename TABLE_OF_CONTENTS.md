@@ -56,7 +56,7 @@ This document outlines the complete documentation structure. Each section is mai
   - [x] [6.5 UFW Fragment](./docs/CLOUD_INIT_CONFIGURATION/UFW_FRAGMENT.md)
   - [x] [6.6 System Settings Fragment](./docs/CLOUD_INIT_CONFIGURATION/SYSTEM_SETTINGS_FRAGMENT.md)
   - [x] [6.7 MSMTP Fragment](./docs/CLOUD_INIT_CONFIGURATION/MSMTP_FRAGMENT.md)
-  - [ ] [6.8 Package Security Fragment](./docs/CLOUD_INIT_CONFIGURATION/PACKAGE_SECURITY_FRAGMENT.md)
+  - [x] [6.8 Package Security Fragment](./docs/CLOUD_INIT_CONFIGURATION/PACKAGE_SECURITY_FRAGMENT.md)
   - [ ] [6.9 Security Monitoring Fragment](./docs/CLOUD_INIT_CONFIGURATION/SECURITY_MONITORING_FRAGMENT.md)
   - [ ] [6.10 Virtualization Fragment](./docs/CLOUD_INIT_CONFIGURATION/VIRTUALIZATION_FRAGMENT.md)
   - [x] [6.11 Cockpit Fragment](./docs/CLOUD_INIT_CONFIGURATION/COCKPIT_FRAGMENT.md)
