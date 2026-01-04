@@ -34,17 +34,17 @@ This document outlines the complete documentation structure. Each section is mai
 
 #### 4. Network Configuration Planning
 **Directory:** `docs/NETWORK_PLANNING/`
-- [ ] [Overview](./docs/NETWORK_PLANNING/OVERVIEW.md)
+- [x] [Overview](./docs/NETWORK_PLANNING/OVERVIEW.md)
   - [x] [4.1 Network Information Gathering](./docs/NETWORK_PLANNING/NETWORK_INFORMATION_GATHERING.md)
   - [x] [4.2 Network Topology Considerations](./docs/NETWORK_PLANNING/NETWORK_TOPOLOGY.md)
-  - [ ] [4.3 Network Scripts](./docs/NETWORK_PLANNING/NETWORK_SCRIPTS.md)
+  - [x] [4.3 Network Scripts](./docs/NETWORK_PLANNING/NETWORK_SCRIPTS.md)
 
 #### 5. Creating Ubuntu Autoinstall Media
 **Directory:** `docs/AUTOINSTALL_MEDIA_CREATION/`
-- [ ] [Overview](./docs/AUTOINSTALL_MEDIA_CREATION/OVERVIEW.md)
-  - [ ] [5.1 Download Ubuntu Server ISO](./docs/AUTOINSTALL_MEDIA_CREATION/DOWNLOAD_UBUNTU_ISO.md)
-  - [ ] [5.2 Autoinstall Configuration](./docs/AUTOINSTALL_MEDIA_CREATION/AUTOINSTALL_CONFIGURATION.md)
-  - [ ] [5.3 Bootable Media Creation](./docs/AUTOINSTALL_MEDIA_CREATION/TESTED_BOOTABLE_MEDIA_CREATION.md)
+- [x] [Overview](./docs/AUTOINSTALL_MEDIA_CREATION/OVERVIEW.md)
+  - [x] [5.1 Download Ubuntu Server ISO](./docs/AUTOINSTALL_MEDIA_CREATION/DOWNLOAD_UBUNTU_ISO.md)
+  - [x] [5.2 Autoinstall Configuration](./docs/AUTOINSTALL_MEDIA_CREATION/AUTOINSTALL_CONFIGURATION.md)
+  - [x] [5.3 Bootable Media Creation](./docs/AUTOINSTALL_MEDIA_CREATION/TESTED_BOOTABLE_MEDIA_CREATION.md)
 
 #### 6. Cloud-init Configuration
 **Directory:** `docs/CLOUD_INIT_CONFIGURATION/`
