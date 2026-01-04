@@ -47,26 +47,29 @@ print('user-data has write_files:', 'write_files' in ud)
 Follow the workflow from [5.3 Bootable Media Creation](../AUTOINSTALL_MEDIA_CREATION/TESTED_BOOTABLE_MEDIA_CREATION.md):
 
 ```powershell
+# Load VM configuration
+. .\vm.config.ps1
+
 # Ensure builder VM exists
-multipass launch --name iso-builder --cpus 2 --memory 4G --disk 20G 2>$null
+multipass launch --name $BuilderVMName --cpus $BuilderCpus --memory $BuilderMemory --disk $BuilderDisk 2>$null
 # Or start existing
-multipass start iso-builder
+multipass start $BuilderVMName
 
 # Transfer repository to builder VM
-multipass transfer . iso-builder:/home/ubuntu/build/
+multipass transfer . ${BuilderVMName}:/home/ubuntu/build/
 
 # Build ISO inside VM
-multipass exec iso-builder -- bash -c "cd ~/build && chmod +x output/scripts/build-iso.sh && ./output/scripts/build-iso.sh"
+multipass exec $BuilderVMName -- bash -c "cd ~/build && chmod +x output/scripts/build-iso.sh && ./output/scripts/build-iso.sh"
 ```
 
 ### Step 4: Validate ISO
 
 ```powershell
 # Verify nocloud directory exists
-multipass exec iso-builder -- xorriso -indev ~/build/output/ubuntu-autoinstall.iso -ls /nocloud 2>/dev/null
+multipass exec $BuilderVMName -- xorriso -indev ~/build/output/ubuntu-autoinstall.iso -ls /nocloud 2>/dev/null
 
 # Verify GRUB has autoinstall entry
-multipass exec iso-builder -- bash -c "
+multipass exec $BuilderVMName -- bash -c "
   xorriso -indev ~/build/output/ubuntu-autoinstall.iso -extract /boot/grub/grub.cfg /tmp/grub.cfg 2>/dev/null
   grep -A5 'Autoinstall' /tmp/grub.cfg
 "
@@ -76,7 +79,7 @@ multipass exec iso-builder -- bash -c "
 
 ```powershell
 # Transfer ISO from builder VM
-multipass transfer iso-builder:/home/ubuntu/build/output/ubuntu-autoinstall.iso ./output/
+multipass transfer "$BuilderVMName`:/home/ubuntu/build/output/ubuntu-autoinstall.iso" ./output/
 
 # Verify
 Get-Item ./output/ubuntu-autoinstall.iso | Select-Object Name, Length, LastWriteTime
@@ -85,36 +88,41 @@ Get-Item ./output/ubuntu-autoinstall.iso | Select-Object Name, Length, LastWrite
 ### Step 6: Test with VirtualBox
 
 ```powershell
-$vbox = 'C:\Program Files\Oracle\VirtualBox\VBoxManage.exe'
-$vmName = 'ubuntu-autoinstall-test'
+# Load VM configuration
+if (-not (Test-Path ".\vm.config.ps1")) {
+    Write-Error "Missing vm.config.ps1 - copy from vm.config.ps1.example"
+    exit 1
+}
+. .\vm.config.ps1
+
 $isoPath = (Resolve-Path './output/ubuntu-autoinstall.iso').Path
 $vdiPath = (Join-Path (Get-Location) 'output/ubuntu-test.vdi')
 
 # Cleanup existing VM if present
-$existingVM = & $vbox list vms 2>$null | Select-String $vmName
+$existingVM = & $VBoxManage list vms 2>$null | Select-String $VBoxVMName
 if ($existingVM) {
-    & $vbox controlvm $vmName poweroff 2>$null
+    & $VBoxManage controlvm $VBoxVMName poweroff 2>$null
     Start-Sleep 2
-    & $vbox unregistervm $vmName --delete 2>$null
+    & $VBoxManage unregistervm $VBoxVMName --delete 2>$null
 }
 if (Test-Path $vdiPath) { Remove-Item $vdiPath -Force }
 
 # Create VM with UEFI (matches bare metal)
-& $vbox createvm --name $vmName --ostype Ubuntu_64 --register
-& $vbox modifyvm $vmName --memory 4096 --cpus 2 --nic1 nat --firmware efi
+& $VBoxManage createvm --name $VBoxVMName --ostype Ubuntu_64 --register
+& $VBoxManage modifyvm $VBoxVMName --memory $VBoxMemory --cpus $VBoxCpus --nic1 nat --firmware efi
 
 # Add storage controller
-& $vbox storagectl $vmName --name 'SATA' --add sata --controller IntelAhci
+& $VBoxManage storagectl $VBoxVMName --name 'SATA' --add sata --controller IntelAhci
 
 # Create and attach disk (use larger size to test ZFS)
-& $vbox createmedium disk --filename $vdiPath --size 40960 --format VDI
-& $vbox storageattach $vmName --storagectl 'SATA' --port 0 --device 0 --type hdd --medium $vdiPath
+& $VBoxManage createmedium disk --filename $vdiPath --size $VBoxDiskSize --format VDI
+& $VBoxManage storageattach $VBoxVMName --storagectl 'SATA' --port 0 --device 0 --type hdd --medium $vdiPath
 
 # Attach ISO
-& $vbox storageattach $vmName --storagectl 'SATA' --port 1 --device 0 --type dvddrive --medium $isoPath
+& $VBoxManage storageattach $VBoxVMName --storagectl 'SATA' --port 1 --device 0 --type dvddrive --medium $isoPath
 
 # Start VM
-& $vbox startvm $vmName --type gui
+& $VBoxManage startvm $VBoxVMName --type gui
 ```
 
 ### Step 7: Monitor Installation
@@ -137,7 +145,7 @@ After reboot, add SSH port forwarding and connect:
 
 ```powershell
 # Add SSH port forwarding
-& $vbox controlvm $vmName natpf1 'ssh,tcp,,2222,,22'
+& $VBoxManage controlvm $VBoxVMName natpf1 'ssh,tcp,,2222,,22'
 
 # Wait for VM to be ready
 Start-Sleep 30
@@ -187,9 +195,9 @@ ss -tlnp | grep 443
 
 ```powershell
 # Stop and remove VirtualBox VM
-& $vbox controlvm $vmName poweroff 2>$null
+& $VBoxManage controlvm $VBoxVMName poweroff 2>$null
 Start-Sleep 2
-& $vbox unregistervm $vmName --delete
+& $VBoxManage unregistervm $VBoxVMName --delete
 
 # Remove VDI
 Remove-Item ./output/ubuntu-test.vdi -Force -ErrorAction SilentlyContinue
@@ -198,7 +206,7 @@ Remove-Item ./output/ubuntu-test.vdi -Force -ErrorAction SilentlyContinue
 # Remove-Item ./output/ubuntu-autoinstall.iso -Force
 
 # Stop builder VM (preserves cached Ubuntu ISO)
-multipass stop iso-builder
+multipass stop $BuilderVMName
 ```
 
 ---

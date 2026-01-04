@@ -1,0 +1,25 @@
+# VM Test Configuration
+# Copy to vm.config.ps1 and customize for your environment
+# THIS FILE IS TRACKED IN GIT - vm.config.ps1 IS NOT
+#
+# Find available networks: multipass networks
+
+# Multipass VM settings
+$VMName = "cloud-init-test"
+$VMCpus = 2
+$VMMemory = "4G"
+$VMDisk = "20G"
+$VMNetwork = "Ethernet 1"  # Use: multipass networks
+
+# VirtualBox VM settings
+$VBoxManage = "C:\Program Files\Oracle\VirtualBox\VBoxManage.exe"
+$VBoxVMName = "ubuntu-autoinstall-test"
+$VBoxMemory = 4096
+$VBoxCpus = 2
+$VBoxDiskSize = 40960  # MB (40GB for ZFS)
+
+# ISO Builder VM (for building autoinstall ISO)
+$BuilderVMName = "iso-builder"
+$BuilderCpus = 2
+$BuilderMemory = "4G"
+$BuilderDisk = "20G"

@@ -39,14 +39,19 @@ cloud-init schema --config-file output/cloud-init.yaml
 ### Step 3: Launch Test VM
 
 ```powershell
-# Launch multipass VM with cloud-init config
-multipass launch --name cloud-init-test --cloud-init output/cloud-init.yaml
+# Source VM configuration (see vm.config.ps1.example)
+. .\vm.config.ps1
+
+# Launch multipass VM with bridged networking for static IP testing
+multipass launch --name $VMName --cpus $VMCpus --memory $VMMemory --network $VMNetwork --cloud-init output/cloud-init.yaml
 
 # Wait for cloud-init to complete
-multipass exec cloud-init-test -- cloud-init status --wait
+multipass exec $VMName -- cloud-init status --wait
 ```
 
-**Note:** The launch command may show timeout warnings - this is normal. The `cloud-init status --wait` command is the true success indicator.
+**Note:** The `--network` flag enables bridged networking. Use `multipass networks` to list available networks (e.g., `"Ethernet 1"`, `"Wi-Fi"`).
+
+The launch command may show timeout warnings - this is normal. The `cloud-init status --wait` command is the true success indicator.
 
 ### Step 4: Validate Configuration
 
@@ -140,14 +145,26 @@ multipass exec cloud-init-test -- sudo cat /var/lib/cloud/instance/cloud-config.
 multipass exec cloud-init-test -- cat /run/cloud-init/result.json
 ```
 
-### Network Testing Limitations
+### Network Testing with Bridged Mode
 
-Multipass VMs use NAT networking and cannot test:
-- Static IP configuration (autoinstall early-commands)
-- Gateway detection (arping)
-- Network interface naming
+Using `--network` bridged mode, multipass can fully test network configuration:
+- Static IP assignment
+- Gateway reachability
+- DNS resolution
+- Netplan configuration
 
-These are tested in Phase 2 with VirtualBox or on actual hardware.
+```powershell
+# List available networks
+multipass networks
+
+# Configure in vm.config.ps1 (copy from vm.config.ps1.example)
+$VMNetwork = "Ethernet 1"
+
+# Launch with bridged networking
+multipass launch --name cloud-init-test --network $VMNetwork --cloud-init output/cloud-init.yaml
+```
+
+**Note:** The interface naming may differ between multipass (e.g., `enp0s2`) and bare metal (e.g., `enp3s0`). The early-commands network detection script handles this automatically.
 
 ---
 
@@ -159,30 +176,43 @@ For rapid iteration, use this PowerShell script:
 # Quick cloud-init test cycle
 param([switch]$Rebuild)
 
+# Load VM configuration
+if (-not (Test-Path ".\vm.config.ps1")) {
+    Write-Error "Missing vm.config.ps1 - copy from vm.config.ps1.example"
+    exit 1
+}
+. .\vm.config.ps1
+
 if ($Rebuild) {
     make cloud-init
 }
 
 # Cleanup previous test
-multipass delete cloud-init-test 2>$null
+multipass delete $VMName 2>$null
 multipass purge 2>$null
 
-# Launch and test
-multipass launch --name cloud-init-test --cloud-init output/cloud-init.yaml
-multipass exec cloud-init-test -- cloud-init status --wait
+# Launch with bridged networking
+multipass launch --name $VMName --cpus $VMCpus --memory $VMMemory --network $VMNetwork --cloud-init output/cloud-init.yaml
+multipass exec $VMName -- cloud-init status --wait
 
 # Quick validation
 Write-Host "`n=== Validation ===" -ForegroundColor Cyan
-multipass exec cloud-init-test -- cloud-init status
-multipass exec cloud-init-test -- id admin
-multipass exec cloud-init-test -- systemctl is-enabled cockpit.socket libvirtd
+multipass exec $VMName -- cloud-init status
+multipass exec $VMName -- id admin
+multipass exec $VMName -- ip addr show | Select-String "inet "
+multipass exec $VMName -- systemctl is-enabled cockpit.socket libvirtd
 
 Write-Host "`n=== Test Complete ===" -ForegroundColor Green
-Write-Host "Run validation commands or: multipass shell cloud-init-test"
+Write-Host "Run validation commands or: multipass shell $VMName"
 ```
 
 Save as `Test-CloudInit.ps1` and run:
 
 ```powershell
+# First time: copy and configure vm.config.ps1
+cp vm.config.ps1.example vm.config.ps1
+# Edit vm.config.ps1 with your network (use: multipass networks)
+
+# Run test
 .\Test-CloudInit.ps1 -Rebuild
 ```

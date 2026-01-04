@@ -2,6 +2,10 @@
 # See *.config.yaml.example files for templates
 *.config.yaml
 
+# VM test configuration (local machine settings)
+# See vm.config.ps1.example for template
+vm.config.ps1
+
 # Build outputs
 output/
 
