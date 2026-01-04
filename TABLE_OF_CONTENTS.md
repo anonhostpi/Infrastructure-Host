@@ -48,7 +48,7 @@ This document outlines the complete documentation structure. Each section is mai
 
 #### 6. Cloud-init Configuration
 **Directory:** `docs/CLOUD_INIT_CONFIGURATION/`
-- [ ] [Overview](./docs/CLOUD_INIT_CONFIGURATION/OVERVIEW.md)
+- [x] [Overview](./docs/CLOUD_INIT_CONFIGURATION/OVERVIEW.md)
   - [x] [6.1 Network Fragment](./docs/CLOUD_INIT_CONFIGURATION/NETWORK_FRAGMENT.md)
   - [x] [6.2 Kernel Hardening Fragment](./docs/CLOUD_INIT_CONFIGURATION/KERNEL_HARDENING_FRAGMENT.md)
   - [x] [6.3 Users Fragment](./docs/CLOUD_INIT_CONFIGURATION/USERS_FRAGMENT.md)
@@ -61,7 +61,7 @@ This document outlines the complete documentation structure. Each section is mai
   - [x] [6.10 Virtualization Fragment](./docs/CLOUD_INIT_CONFIGURATION/VIRTUALIZATION_FRAGMENT.md)
   - [x] [6.11 Cockpit Fragment](./docs/CLOUD_INIT_CONFIGURATION/COCKPIT_FRAGMENT.md)
   - [x] [6.12 OpenCode Fragment](./docs/CLOUD_INIT_CONFIGURATION/OPENCODE_FRAGMENT.md)
-  - [ ] [6.13 UI Touches Fragment](./docs/CLOUD_INIT_CONFIGURATION/UI_TOUCHES_FRAGMENT.md)
+  - [x] [6.13 UI Touches Fragment](./docs/CLOUD_INIT_CONFIGURATION/UI_TOUCHES_FRAGMENT.md)
 
 #### 7. Testing and Validation
 **Directory:** `docs/TESTING_AND_VALIDATION/`
