@@ -11,10 +11,25 @@ This section covers testing build artifacts before deploying to bare metal.
 
 Testing occurs in two phases:
 
-1. **Cloud-init Testing** (7.1) - Test fragment configuration with multipass. Validates all cloud-init fragments (security, services, packages, user experience). Most testing happens here.
-2. **Autoinstall Testing** (7.2) - Test full installation in VirtualBox. Validates autoinstall-specific components (ZFS root, static IP, boot process).
+1. **Cloud-init Testing** (7.1) - Test fragment configuration with **multipass**. Validates all cloud-init fragments (security, services, packages, user experience). **Most testing happens here.**
+2. **Autoinstall Testing** (7.2) - Test full installation in **VirtualBox**. Validates autoinstall-specific components only (ZFS root, boot process, ISO structure).
 
 This approach catches configuration errors early before building the full ISO.
+
+## Testing Platform Policy
+
+| Test Type | Platform | Reason |
+|-----------|----------|--------|
+| All Chapter 6 fragments | **Multipass** | Fast iteration, full cloud-init support |
+| Network configuration | **Multipass** (bridged) | Bridged mode supports static IP testing |
+| Security hardening | **Multipass** | All sysctl, SSH, UFW tests work |
+| Services (Cockpit, libvirt, fail2ban) | **Multipass** | Full service testing capability |
+| User experience (MOTD, aliases, CLI tools) | **Multipass** | Complete shell environment |
+| ZFS root filesystem | **VirtualBox** | Requires real disk partitioning |
+| ISO boot process | **VirtualBox** | Requires UEFI boot from ISO |
+| GRUB autoinstall entry | **VirtualBox** | Requires boot from ISO |
+
+**Rule:** Use multipass for everything except autoinstall-specific tests that require the ISO boot process or ZFS root filesystem.
 
 ## Build System Integration
 
