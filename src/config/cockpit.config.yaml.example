@@ -1,0 +1,29 @@
+# Cockpit Configuration
+# Copy to cockpit.config.yaml and modify as needed
+# THIS FILE IS TRACKED IN GIT - cockpit.config.yaml IS NOT
+
+cockpit:
+  # Set to false to completely disable Cockpit installation
+  enabled: true
+
+  # Listen address - 127.0.0.1 for localhost-only (SSH tunnel access)
+  # Use 0.0.0.0 to allow network access (requires UFW rule)
+  listen_address: 127.0.0.1
+
+  # Listen port (443 allows https://localhost without port suffix)
+  listen_port: 443
+
+  # Cockpit packages to install
+  packages:
+    - cockpit
+    - cockpit-machines    # VM management via libvirt
+
+  # Require HTTPS (should always be true)
+  require_https: true
+
+  # Session idle timeout in minutes (0 = no timeout)
+  idle_timeout: 15
+
+  # Additional Origins for cross-origin access (optional)
+  # Example: https://other-host.local
+  # origins: []
