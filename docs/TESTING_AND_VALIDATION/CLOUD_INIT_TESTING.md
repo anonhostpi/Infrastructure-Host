@@ -207,6 +207,9 @@ multipass exec $VMName -- sudo fail2ban-client status recidive
 # msmtp (6.7) - if configured
 multipass exec $VMName -- which msmtp
 multipass exec $VMName -- cat /etc/msmtprc 2>/dev/null | grep host || echo "msmtp not configured"
+
+# Send test email (requires valid SMTP config in smtp.config.yaml)
+multipass exec $VMName -- bash -c "printf 'Subject: Cloud-init Test\n\nTest email from cloud-init VM' | msmtp recipient@example.com" || echo "msmtp not configured or send failed"
 ```
 
 ### Scenario 5: User Experience Test
