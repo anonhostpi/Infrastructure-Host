@@ -85,6 +85,17 @@ kvm-ok
 
 # List VMs (should be empty initially)
 virsh list --all
+
+# Verify multipass installation
+multipass version
+
+# List multipass instances (should be empty initially)
+multipass list
+
+# Test multipass can launch a VM
+multipass launch --name test-vm
+multipass exec test-vm -- uname -a
+multipass delete test-vm && multipass purge
 ```
 
 ## VM Storage
