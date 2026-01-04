@@ -19,14 +19,36 @@ Complete this checklist before deploying to bare metal.
 
 ## Configuration Checklist
 
-- [ ] `network.config.yaml` has correct values for production:
+All configs in `src/config/`. Copy from `.example` files if needed.
+
+### Required
+
+- [ ] `network.config.yaml`:
   - [ ] Static IP address for this server
   - [ ] Gateway IP reachable from target network
   - [ ] DNS servers reachable from target network
-  - [ ] Hostname matches intended use
-- [ ] `identity.config.yaml` has secure credentials:
+  - [ ] Hostname and FQDN match intended use
+- [ ] `identity.config.yaml`:
   - [ ] Strong password set
   - [ ] SSH key configured (recommended)
+  - [ ] Username appropriate for environment
+- [ ] `storage.config.yaml`:
+  - [ ] Disk selection method configured (largest, smallest, or by-id)
+  - [ ] ZFS pool name set
+- [ ] `image.config.yaml`:
+  - [ ] Ubuntu release set (noble, jammy)
+  - [ ] Architecture correct (amd64)
+
+### Optional
+
+- [ ] `smtp.config.yaml` (if email notifications desired):
+  - [ ] SMTP host and port configured
+  - [ ] Credentials set
+  - [ ] From/to addresses configured
+- [ ] `opencode.config.yaml` (if AI coding agent desired):
+  - [ ] Provider configured (anthropic, openai, etc.)
+  - [ ] API key set
+  - [ ] Model selected
 
 ## Media Checklist
 

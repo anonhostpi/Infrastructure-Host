@@ -4,7 +4,15 @@ Test cloud-init configuration with multipass before building the full autoinstal
 
 ## Pre-Build Checklist
 
-Before starting, verify these files exist in `src/config/`:
+Before starting, copy example files and configure in `src/config/`:
+
+```powershell
+# Copy examples and edit with your values
+cp src/config/network.config.yaml.example src/config/network.config.yaml
+cp src/config/identity.config.yaml.example src/config/identity.config.yaml
+cp src/config/storage.config.yaml.example src/config/storage.config.yaml
+cp src/config/image.config.yaml.example src/config/image.config.yaml
+```
 
 - [ ] `network.config.yaml` - Valid IPs, gateway, DNS
 - [ ] `identity.config.yaml` - Username, password, SSH keys
@@ -143,7 +151,7 @@ multipass exec $VMName -- ip addr show
 
 # Verify gateway is reachable
 multipass exec $VMName -- ip route | grep default
-multipass exec $VMName -- ping -c 1 $(grep gateway network.config.yaml | awk '{print $2}')
+multipass exec $VMName -- ping -c 1 $(grep gateway src/config/network.config.yaml | awk '{print $2}')
 
 # Verify DNS configuration
 multipass exec $VMName -- resolvectl status | head -20

@@ -78,7 +78,7 @@ Then open in browser:
 https://localhost
 ```
 
-Login with the admin credentials from `identity.config.yaml`.
+Login with the admin credentials from `src/config/identity.config.yaml`.
 
 ### SSH Config Snippet
 

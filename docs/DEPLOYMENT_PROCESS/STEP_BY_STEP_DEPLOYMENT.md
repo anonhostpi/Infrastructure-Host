@@ -97,7 +97,7 @@ ssh -L 9090:127.0.0.1:443 admin@<HOST_IP>
 # https://localhost:9090
 ```
 
-Login with admin credentials from `identity.config.yaml`.
+Login with admin credentials from `src/config/identity.config.yaml`.
 
 ### Verification Commands
 

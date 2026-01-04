@@ -61,7 +61,22 @@ See [3.4 Makefile Interface](../BUILD_SYSTEM/MAKEFILE_INTERFACE.md) for complete
 
 ## Configuration Files
 
-Before testing, ensure these config files exist in `src/config/`:
+Before testing, copy examples and configure:
+
+```powershell
+# Required configs (in src/config/)
+cp src/config/network.config.yaml.example src/config/network.config.yaml
+cp src/config/identity.config.yaml.example src/config/identity.config.yaml
+cp src/config/storage.config.yaml.example src/config/storage.config.yaml
+cp src/config/image.config.yaml.example src/config/image.config.yaml
+
+# Optional configs (in src/config/)
+cp src/config/smtp.config.yaml.example src/config/smtp.config.yaml
+cp src/config/opencode.config.yaml.example src/config/opencode.config.yaml
+
+# VM test settings (in repo root)
+cp vm.config.ps1.example vm.config.ps1
+```
 
 | File | Purpose | Reference |
 |------|---------|-----------|
@@ -69,6 +84,6 @@ Before testing, ensure these config files exist in `src/config/`:
 | `identity.config.yaml` | Username, SSH keys | [5.2 Autoinstall Config](../AUTOINSTALL_MEDIA_CREATION/AUTOINSTALL_CONFIGURATION.md) |
 | `storage.config.yaml` | Disk selection | [5.2 Autoinstall Config](../AUTOINSTALL_MEDIA_CREATION/AUTOINSTALL_CONFIGURATION.md) |
 | `image.config.yaml` | Ubuntu release | [5.1 Download ISO](../AUTOINSTALL_MEDIA_CREATION/DOWNLOAD_UBUNTU_ISO.md) |
-| `smtp.config.yaml` | Email notifications (optional) | [6.7 MSMTP Fragment](../CLOUD_INIT_CONFIGURATION/MSMTP_FRAGMENT.md) |
-| `opencode.config.yaml` | AI coding agent (optional) | [6.12 OpenCode Fragment](../CLOUD_INIT_CONFIGURATION/OPENCODE_FRAGMENT.md) |
-| `vm.config.ps1` | Local VM test settings | [7.1 Cloud-init Testing](./CLOUD_INIT_TESTING.md) |
+| `smtp.config.yaml` | Email (optional) | [6.7 MSMTP Fragment](../CLOUD_INIT_CONFIGURATION/MSMTP_FRAGMENT.md) |
+| `opencode.config.yaml` | AI agent (optional) | [6.12 OpenCode Fragment](../CLOUD_INIT_CONFIGURATION/OPENCODE_FRAGMENT.md) |
+| `vm.config.ps1` | VM settings (repo root) | [7.1 Cloud-init Testing](./CLOUD_INIT_TESTING.md) |

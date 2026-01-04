@@ -150,7 +150,7 @@ After reboot, add SSH port forwarding and connect:
 # Wait for VM to be ready
 Start-Sleep 30
 
-# Connect via SSH (use password from identity.config.yaml)
+# Connect via SSH (use password from src/config/identity.config.yaml)
 ssh -p 2222 admin@localhost
 ```
 
