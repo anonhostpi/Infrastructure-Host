@@ -69,28 +69,28 @@ This document outlines the complete documentation structure for bare-metal Ubunt
 
 #### 8. Deployment Process
 **Directory:** `docs/DEPLOYMENT_PROCESS/`
-- [Overview](./docs/DEPLOYMENT_PROCESS/OVERVIEW.md)
-- [8.1 Pre-Deployment Checklist](./docs/DEPLOYMENT_PROCESS/PRE_DEPLOYMENT_CHECKLIST.md)
-- [8.2 Step-by-Step Deployment](./docs/DEPLOYMENT_PROCESS/STEP_BY_STEP_DEPLOYMENT.md)
-- [8.3 Monitoring Cloud-init Progress](./docs/DEPLOYMENT_PROCESS/MONITORING_CLOUD_INIT.md)
+- [ ] [Overview](./docs/DEPLOYMENT_PROCESS/OVERVIEW.md)
+  - [ ] [8.1 Pre-Deployment Checklist](./docs/DEPLOYMENT_PROCESS/PRE_DEPLOYMENT_CHECKLIST.md)
+  - [ ] [8.2 Step-by-Step Deployment](./docs/DEPLOYMENT_PROCESS/STEP_BY_STEP_DEPLOYMENT.md)
+  - [ ] [8.3 Monitoring Cloud-init Progress](./docs/DEPLOYMENT_PROCESS/MONITORING_CLOUD_INIT.md)
 
 #### 9. Post-Deployment Validation
 **Directory:** `docs/POST_DEPLOYMENT_VALIDATION/`
-- [Overview](./docs/POST_DEPLOYMENT_VALIDATION/OVERVIEW.md)
-- [9.1 System Validation Checklist](./docs/POST_DEPLOYMENT_VALIDATION/VALIDATION_CHECKLIST.md)
-- [9.2 Validation Commands](./docs/POST_DEPLOYMENT_VALIDATION/VALIDATION_COMMANDS.md)
-- [9.3 Cockpit Access and Configuration](./docs/POST_DEPLOYMENT_VALIDATION/COCKPIT_ACCESS.md)
+- [ ] [Overview](./docs/POST_DEPLOYMENT_VALIDATION/OVERVIEW.md)
+  - [ ] [9.1 System Validation Checklist](./docs/POST_DEPLOYMENT_VALIDATION/VALIDATION_CHECKLIST.md)
+  - [ ] [9.2 Validation Commands](./docs/POST_DEPLOYMENT_VALIDATION/VALIDATION_COMMANDS.md)
+  - [ ] [9.3 Cockpit Access and Configuration](./docs/POST_DEPLOYMENT_VALIDATION/COCKPIT_ACCESS.md)
 
 #### 10. Troubleshooting
 **Directory:** `docs/TROUBLESHOOTING/`
-- [Overview](./docs/TROUBLESHOOTING/OVERVIEW.md)
-- [10.1 Common Issues](./docs/TROUBLESHOOTING/COMMON_ISSUES.md)
-- [10.2 Logs and Debugging](./docs/TROUBLESHOOTING/LOGS_AND_DEBUGGING.md)
+- [ ] [Overview](./docs/TROUBLESHOOTING/OVERVIEW.md)
+  - [ ] [10.1 Common Issues](./docs/TROUBLESHOOTING/COMMON_ISSUES.md)
+  - [ ] [10.2 Logs and Debugging](./docs/TROUBLESHOOTING/LOGS_AND_DEBUGGING.md)
 
 #### 11. Appendix
 **Directory:** `docs/APPENDIX/`
-- [Overview](./docs/APPENDIX/OVERVIEW.md)
-- [11.1 Reference Files](./docs/APPENDIX/REFERENCE_FILES.md)
-- [11.2 Useful Commands](./docs/APPENDIX/USEFUL_COMMANDS.md)
-- [11.3 Additional Resources](./docs/APPENDIX/ADDITIONAL_RESOURCES.md)
-- [11.4 Hardware Compatibility](./docs/APPENDIX/HARDWARE_COMPATIBILITY.md)
+- [ ] [Overview](./docs/APPENDIX/OVERVIEW.md)
+  - [ ] [11.1 Reference Files](./docs/APPENDIX/REFERENCE_FILES.md)
+  - [ ] [11.2 Useful Commands](./docs/APPENDIX/USEFUL_COMMANDS.md)
+  - [ ] [11.3 Additional Resources](./docs/APPENDIX/ADDITIONAL_RESOURCES.md)
+  - [ ] [11.4 Hardware Compatibility](./docs/APPENDIX/HARDWARE_COMPATIBILITY.md)
