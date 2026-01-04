@@ -57,25 +57,25 @@ The launch command may show timeout warnings - this is normal. The `cloud-init s
 
 ```powershell
 # Check cloud-init status (should show "done")
-multipass exec cloud-init-test -- cloud-init status
+multipass exec $VMName -- cloud-init status
 
 # Check for errors in cloud-init log
-multipass exec cloud-init-test -- grep -iE "error|warning|failed" /var/log/cloud-init.log
+multipass exec $VMName -- grep -iE "error|warning|failed" /var/log/cloud-init.log
 
 # Verify user created
-multipass exec cloud-init-test -- id admin
+multipass exec $VMName -- id admin
 
 # Verify packages installed
-multipass exec cloud-init-test -- dpkg -l | grep -E "qemu-kvm|libvirt|cockpit|fail2ban"
+multipass exec $VMName -- dpkg -l | grep -E "qemu-kvm|libvirt|cockpit|fail2ban"
 
 # Verify services enabled
-multipass exec cloud-init-test -- systemctl is-enabled cockpit.socket libvirtd fail2ban
+multipass exec $VMName -- systemctl is-enabled cockpit.socket libvirtd fail2ban
 
 # Verify firewall configured
-multipass exec cloud-init-test -- sudo ufw status
+multipass exec $VMName -- sudo ufw status
 
 # Verify MOTD (should show dynamic content)
-multipass exec cloud-init-test -- cat /run/motd.dynamic
+multipass exec $VMName -- cat /run/motd.dynamic
 ```
 
 ### Step 5: Validate Specific Fragments
@@ -84,36 +84,39 @@ Test components from each cloud-init fragment:
 
 ```powershell
 # 6.2 Kernel Hardening - sysctl settings
-multipass exec cloud-init-test -- sysctl net.ipv4.ip_forward
+multipass exec $VMName -- sysctl net.ipv4.ip_forward
 
 # 6.4 SSH Hardening - sshd config
-multipass exec cloud-init-test -- sudo sshd -T | grep -E "permitrootlogin|passwordauthentication"
+multipass exec $VMName -- sudo sshd -T | grep -E "permitrootlogin|passwordauthentication"
 
 # 6.5 UFW - firewall rules
-multipass exec cloud-init-test -- sudo ufw status numbered
+multipass exec $VMName -- sudo ufw status numbered
 
 # 6.6 System Settings - timezone/locale
-multipass exec cloud-init-test -- timedatectl
-multipass exec cloud-init-test -- localectl
+multipass exec $VMName -- timedatectl
+multipass exec $VMName -- localectl
 
 # 6.9 Security Monitoring - fail2ban jails
-multipass exec cloud-init-test -- sudo fail2ban-client status
+multipass exec $VMName -- sudo fail2ban-client status
 
 # 6.10 Virtualization - libvirt
-multipass exec cloud-init-test -- virsh list --all
-multipass exec cloud-init-test -- groups | grep -E "libvirt|kvm"
+multipass exec $VMName -- virsh list --all
+multipass exec $VMName -- groups | grep -E "libvirt|kvm"
 
 # 6.11 Cockpit - socket listening on localhost
-multipass exec cloud-init-test -- ss -tlnp | grep 443
+multipass exec $VMName -- ss -tlnp | grep 443
 
-# 6.12 UI Touches - CLI tools installed
-multipass exec cloud-init-test -- which batcat fdfind htop neofetch
+# 6.12 OpenCode - AI coding agent (if enabled)
+multipass exec $VMName -- which opencode 2>/dev/null && echo "OpenCode installed"
+
+# 6.13 UI Touches - CLI tools installed
+multipass exec $VMName -- which batcat fdfind htop neofetch
 ```
 
 ### Step 6: Cleanup Test VM
 
 ```powershell
-multipass delete cloud-init-test
+multipass delete $VMName
 multipass purge
 ```
 
@@ -131,19 +134,19 @@ Validates fragment 6.1 (Network). Requires `--network` bridged mode.
 
 ```powershell
 # Verify netplan config was written
-multipass exec cloud-init-test -- cat /etc/netplan/*.yaml
+multipass exec $VMName -- cat /etc/netplan/*.yaml
 # Should contain static IP, gateway, DNS from network.config.yaml
 
 # Verify static IP is applied
-multipass exec cloud-init-test -- ip addr show
+multipass exec $VMName -- ip addr show
 # Should show IP from network.config.yaml on bridged interface
 
 # Verify gateway is reachable
-multipass exec cloud-init-test -- ip route | grep default
-multipass exec cloud-init-test -- ping -c 1 $(grep gateway network.config.yaml | awk '{print $2}')
+multipass exec $VMName -- ip route | grep default
+multipass exec $VMName -- ping -c 1 $(grep gateway network.config.yaml | awk '{print $2}')
 
 # Verify DNS configuration
-multipass exec cloud-init-test -- resolvectl status | head -20
+multipass exec $VMName -- resolvectl status | head -20
 ```
 
 ### Scenario 2: Security Hardening Test
@@ -152,85 +155,94 @@ Validates fragments 6.2 (Kernel), 6.4 (SSH), 6.5 (UFW), 6.8 (Package Security).
 
 ```powershell
 # Kernel hardening (6.2)
-multipass exec cloud-init-test -- sysctl net.ipv4.ip_forward
+multipass exec $VMName -- sysctl net.ipv4.ip_forward
 # Expected: 1 (for VMs)
-multipass exec cloud-init-test -- sysctl net.ipv4.conf.all.rp_filter
+multipass exec $VMName -- sysctl net.ipv4.conf.all.rp_filter
 # Expected: 1
 
 # SSH hardening (6.4)
-multipass exec cloud-init-test -- sudo sshd -T | grep -E "permitrootlogin|passwordauthentication|maxauthtries"
+multipass exec $VMName -- sudo sshd -T | grep -E "permitrootlogin|passwordauthentication|maxauthtries"
 # Expected: permitrootlogin no, passwordauthentication no, maxauthtries 3
 
 # UFW (6.5)
-multipass exec cloud-init-test -- sudo ufw status verbose
+multipass exec $VMName -- sudo ufw status verbose
 # Expected: Status: active, Default: deny (incoming)
 
 # Unattended upgrades (6.8)
-multipass exec cloud-init-test -- systemctl is-enabled unattended-upgrades
+multipass exec $VMName -- systemctl is-enabled unattended-upgrades
 # Expected: enabled
 ```
 
-### Scenario 2: Virtualization Test
+### Scenario 3: Virtualization Test
 
 Validates fragments 6.10 (Virtualization), 6.11 (Cockpit).
 
 ```powershell
 # libvirt (6.10)
-multipass exec cloud-init-test -- virsh list --all
-multipass exec cloud-init-test -- virsh net-list --all
-multipass exec cloud-init-test -- sudo systemctl status libvirtd --no-pager
+multipass exec $VMName -- virsh list --all
+multipass exec $VMName -- virsh net-list --all
+multipass exec $VMName -- sudo systemctl status libvirtd --no-pager
 
 # User permissions
-multipass exec cloud-init-test -- groups | grep -E "libvirt|kvm"
+multipass exec $VMName -- groups | grep -E "libvirt|kvm"
 
 # Cockpit (6.11) - must be localhost only
-multipass exec cloud-init-test -- ss -tlnp | grep 443
+multipass exec $VMName -- ss -tlnp | grep 443
 # Expected: 127.0.0.1:443 ONLY
 ```
 
-### Scenario 3: Monitoring Test
+### Scenario 4: Monitoring Test
 
 Validates fragments 6.7 (MSMTP), 6.9 (Security Monitoring).
 
 ```powershell
 # fail2ban (6.9)
-multipass exec cloud-init-test -- sudo fail2ban-client status
-multipass exec cloud-init-test -- sudo fail2ban-client status sshd
+multipass exec $VMName -- sudo fail2ban-client status
+multipass exec $VMName -- sudo fail2ban-client status sshd
 # Expected: sshd jail active
 
 # Recidive jail
-multipass exec cloud-init-test -- sudo fail2ban-client status recidive
+multipass exec $VMName -- sudo fail2ban-client status recidive
 
 # msmtp (6.7) - if configured
-multipass exec cloud-init-test -- which msmtp
-multipass exec cloud-init-test -- cat /etc/msmtprc 2>/dev/null | grep host || echo "msmtp not configured"
+multipass exec $VMName -- which msmtp
+multipass exec $VMName -- cat /etc/msmtprc 2>/dev/null | grep host || echo "msmtp not configured"
 ```
 
-### Scenario 4: User Experience Test
+### Scenario 5: User Experience Test
 
 Validates fragments 6.3 (Users), 6.12 (OpenCode), 6.13 (UI Touches).
 
 ```powershell
 # User and groups (6.3)
-multipass exec cloud-init-test -- id admin
-multipass exec cloud-init-test -- groups admin
+multipass exec $VMName -- id admin
+multipass exec $VMName -- groups admin
 
 # Dynamic MOTD (6.13)
-multipass exec cloud-init-test -- cat /run/motd.dynamic
+multipass exec $VMName -- cat /run/motd.dynamic
 # Should show: hostname, uptime, load, memory, disk, SSH config snippet
 
 # Shell aliases
-multipass exec cloud-init-test -- bash -ic "type cat"
+multipass exec $VMName -- bash -ic "type cat"
 # Should alias to batcat
 
 # CLI tools
-multipass exec cloud-init-test -- batcat --version
-multipass exec cloud-init-test -- fdfind --version
-multipass exec cloud-init-test -- htop --version
-multipass exec cloud-init-test -- jq --version
+multipass exec $VMName -- batcat --version
+multipass exec $VMName -- fdfind --version
+multipass exec $VMName -- htop --version
+multipass exec $VMName -- jq --version
 
 # OpenCode (6.12) - if enabled
-multipass exec cloud-init-test -- which opencode 2>/dev/null && opencode --version
+multipass exec $VMName -- which opencode 2>/dev/null && opencode --version
+
+# OpenCode config file exists
+multipass exec $VMName -- cat ~/.config/opencode/opencode.json 2>/dev/null
+
+# OpenCode configured providers/credentials
+multipass exec $VMName -- opencode auth list 2>/dev/null
+
+# OpenCode available models (requires valid credentials)
+multipass exec $VMName -- bash -c "echo '/models' | opencode --no-tui 2>/dev/null | head -20" || echo "Models require valid API key"
 ```
 
 ---
@@ -288,6 +300,11 @@ Test-Command "MOTD: Dynamic" "test -f /run/motd.dynamic" ""
 Test-Command "CLI: batcat" "which batcat" "batcat"
 Test-Command "CLI: fdfind" "which fdfind" "fdfind"
 
+Write-Host "`n=== OpenCode (if enabled) ===" -ForegroundColor Cyan
+Test-Command "OpenCode: Installed" "which opencode" "opencode"
+Test-Command "OpenCode: Config exists" "test -f ~/.config/opencode/opencode.json" ""
+Test-Command "OpenCode: Auth configured" "opencode auth list 2>/dev/null | grep -q ." ""
+
 Write-Host "`n=== Complete ===" -ForegroundColor Green
 ```
 
@@ -314,13 +331,13 @@ Run with:
 
 ```powershell
 # Full cloud-init output log
-multipass exec cloud-init-test -- cat /var/log/cloud-init-output.log
+multipass exec $VMName -- cat /var/log/cloud-init-output.log
 
 # Cloud-init config used
-multipass exec cloud-init-test -- sudo cat /var/lib/cloud/instance/cloud-config.txt
+multipass exec $VMName -- sudo cat /var/lib/cloud/instance/cloud-config.txt
 
 # Per-module status
-multipass exec cloud-init-test -- cat /run/cloud-init/result.json
+multipass exec $VMName -- cat /run/cloud-init/result.json
 ```
 
 ### Network Testing with Bridged Mode
@@ -339,7 +356,7 @@ multipass networks
 $VMNetwork = "Ethernet 1"
 
 # Launch with bridged networking
-multipass launch --name cloud-init-test --network $VMNetwork --cloud-init output/cloud-init.yaml
+multipass launch --name $VMName --network $VMNetwork --cloud-init output/cloud-init.yaml
 ```
 
 **Note:** The interface naming may differ between multipass (e.g., `enp0s2`) and bare metal (e.g., `enp3s0`). The early-commands network detection script handles this automatically.
