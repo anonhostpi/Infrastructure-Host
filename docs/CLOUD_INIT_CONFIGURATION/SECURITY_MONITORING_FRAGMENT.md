@@ -2,9 +2,7 @@
 
 **Template:** `src/autoinstall/cloud-init/55-security-mon.yaml.tpl`
 
-**Status:** Future implementation. This section documents planned security monitoring.
-
-## Planned Components
+## Components
 
 ### fail2ban
 
@@ -261,16 +259,6 @@ Together, they provide defense in depth against brute force attacks.
 ### MSMTP (6.7)
 
 Email notifications require msmtp configured in [6.7 MSMTP Fragment](./MSMTP_FRAGMENT.md). If msmtp is not configured, omit the `msmtp-mail` action from jail definitions.
-
----
-
-## Implementation Notes
-
-This fragment is not yet implemented because:
-
-1. **Baseline first** - Establish working system before adding monitoring
-2. **Log volume** - auditd generates significant log data
-3. **Tuning required** - fail2ban thresholds need tuning for the environment
 
 ---
 
