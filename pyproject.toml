@@ -1,0 +1,24 @@
+[project]
+name = "infrastructure-host-builder"
+version = "1.0.0"
+description = "Build system for automatic Ubuntu deployment with bare-metal support"
+requires-python = ">=3.8"
+dependencies = [
+    "jinja2>=3.0",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+]
+
+[project.scripts]
+builder = "builder.__main__:main"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["builder*"]

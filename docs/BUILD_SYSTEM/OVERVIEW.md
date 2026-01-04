@@ -12,3 +12,11 @@ This section covers the Jinja2-based build system for generating deployment arti
 ## Overview
 
 The build system uses Jinja2 templating to generate shell scripts and YAML configurations from templates and configuration files. BuildContext loads `*.config.yaml` files and exposes them to templates. Custom filters handle shell quoting, password hashing, and CIDR parsing. The Makefile orchestrates builds with proper dependency tracking.
+
+## Build Targets
+
+| Target | Output | Use Case |
+|--------|--------|----------|
+| `cloud-init` | `output/cloud-init.yaml` | VMs, VPS, cloud providers |
+| `autoinstall` | `output/user-data` | Bare-metal with autoinstall ISO |
+| `scripts` | `output/scripts/*.sh` | Standalone scripts for debugging |

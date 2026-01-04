@@ -1,6 +1,8 @@
 # Overview & Architecture
 
-This section provides a high-level overview of the bare-metal Ubuntu deployment strategy using cloud-init.
+Build system for automatic Ubuntu deployment with bare-metal support. The generated cloud-init configuration can also be used with VMs (multipass, VirtualBox) or cloud VPS providers.
+
+This section provides a high-level overview of the deployment strategy using cloud-init and autoinstall.
 
 ## Contents
 

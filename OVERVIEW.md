@@ -1,3 +1,7 @@
+# Infrastructure Host
+
+Build system for automatic Ubuntu deployment with bare-metal support. The generated cloud-init configuration can also be used with VMs (multipass, VirtualBox) or cloud VPS providers.
+
 ## How to Use This Documentation
 
 **For First-Time Users:**

@@ -1,6 +1,8 @@
-# Bare-Metal Ubuntu Deployment - Table of Contents
+# Ubuntu Deployment - Table of Contents
 
-This document outlines the complete documentation structure for bare-metal Ubuntu deployment. Each section will be maintained as a separate file for modularity and maintainability.
+Build system for automatic Ubuntu deployment with bare-metal support. The generated cloud-init configuration can also be used with VMs (multipass, VirtualBox) or cloud VPS providers.
+
+This document outlines the complete documentation structure. Each section is maintained as a separate file for modularity.
 
 ---
 
@@ -24,11 +26,11 @@ This document outlines the complete documentation structure for bare-metal Ubunt
 
 #### 3. Build System
 **Directory:** `docs/BUILD_SYSTEM/`
-- [ ] [Overview](./docs/BUILD_SYSTEM/OVERVIEW.md)
-  - [ ] [3.1 BuildContext](./docs/BUILD_SYSTEM/BUILD_CONTEXT.md)
-  - [ ] [3.2 Jinja2 Filters](./docs/BUILD_SYSTEM/JINJA2_FILTERS.md)
-  - [ ] [3.3 Render CLI](./docs/BUILD_SYSTEM/RENDER_CLI.md)
-  - [ ] [3.4 Makefile Interface](./docs/BUILD_SYSTEM/MAKEFILE_INTERFACE.md)
+- [x] [Overview](./docs/BUILD_SYSTEM/OVERVIEW.md)
+  - [x] [3.1 BuildContext](./docs/BUILD_SYSTEM/BUILD_CONTEXT.md)
+  - [x] [3.2 Jinja2 Filters](./docs/BUILD_SYSTEM/JINJA2_FILTERS.md)
+  - [x] [3.3 Render CLI](./docs/BUILD_SYSTEM/RENDER_CLI.md)
+  - [x] [3.4 Makefile Interface](./docs/BUILD_SYSTEM/MAKEFILE_INTERFACE.md)
 
 #### 4. Network Configuration Planning
 **Directory:** `docs/NETWORK_PLANNING/`
