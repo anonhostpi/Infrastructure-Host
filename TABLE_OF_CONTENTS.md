@@ -10,10 +10,10 @@ This document outlines the complete documentation structure for bare-metal Ubunt
 
 #### 1. Overview & Architecture
 **Directory:** `docs/OVERVIEW_ARCHITECTURE/`
-- [x] [Overview](./docs/OVERVIEW_ARCHITECTURE/OVERVIEW.md)
-  - [x] [1.1 Deployment Strategy](./docs/OVERVIEW_ARCHITECTURE/DEPLOYMENT_STRATEGY.md)
-  - [x] [1.2 Key Components](./docs/OVERVIEW_ARCHITECTURE/KEY_COMPONENTS.md)
-  - [x] [1.3 Architecture Benefits](./docs/OVERVIEW_ARCHITECTURE/ARCHITECTURE_BENEFITS.md)
+- [Overview](./docs/OVERVIEW_ARCHITECTURE/OVERVIEW.md)
+  - [1.1 Deployment Strategy](./docs/OVERVIEW_ARCHITECTURE/DEPLOYMENT_STRATEGY.md)
+  - [1.2 Key Components](./docs/OVERVIEW_ARCHITECTURE/KEY_COMPONENTS.md)
+  - [1.3 Architecture Benefits](./docs/OVERVIEW_ARCHITECTURE/ARCHITECTURE_BENEFITS.md)
 
 #### 2. Hardware & BIOS Setup
 **Directory:** `docs/HARDWARE_BIOS_SETUP/`
