@@ -14,6 +14,7 @@ write_files:
       # SSH Hardening - managed by cloud-init
 
       # Authentication
+      PermitRootLogin no
       MaxAuthTries 3
       LoginGraceTime 20
       PermitEmptyPasswords no
@@ -21,29 +22,29 @@ write_files:
 
       # Forwarding
       X11Forwarding no
-      AllowTcpForwarding no
+      AllowTcpForwarding yes
 
       # Session timeout
       ClientAliveInterval 300
       ClientAliveCountMax 2
 
-      # Root access
-      PermitRootLogin prohibit-password
+runcmd:
+  - systemctl restart ssh
 ```
 
 ## Hardening Options
 
 | Setting | Value | Purpose |
 |---------|-------|---------|
+| `PermitRootLogin` | no | Disable root login entirely |
 | `MaxAuthTries` | 3 | Limit authentication attempts |
 | `LoginGraceTime` | 20 | Seconds to authenticate before disconnect |
 | `PermitEmptyPasswords` | no | Require passwords |
-| `ChallengeResponseAuthentication` | no | Disable keyboard-interactive auth |
+| `ChallengeResponseAuthentication` | no | Disable keyboard-interactive auth (OTP/2FA) |
 | `X11Forwarding` | no | Disable X11 forwarding |
-| `AllowTcpForwarding` | no | Disable TCP forwarding |
+| `AllowTcpForwarding` | yes | Allow TCP forwarding (needed for SSH tunnels) |
 | `ClientAliveInterval` | 300 | Timeout inactive sessions (5 min) |
 | `ClientAliveCountMax` | 2 | Disconnect after 2 missed keepalives |
-| `PermitRootLogin` | prohibit-password | Allow root only with key auth |
 
 ## Password vs Key Authentication
 
