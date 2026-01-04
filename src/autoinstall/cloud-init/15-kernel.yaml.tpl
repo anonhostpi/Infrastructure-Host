@@ -1,0 +1,43 @@
+write_files:
+  - path: /etc/sysctl.d/99-security.conf
+    permissions: '0644'
+    content: |
+      # Reverse path filtering (prevents IP spoofing)
+      net.ipv4.conf.all.rp_filter = 1
+      net.ipv4.conf.default.rp_filter = 1
+
+      # Disable source routing
+      net.ipv4.conf.all.accept_source_route = 0
+      net.ipv4.conf.default.accept_source_route = 0
+      net.ipv6.conf.all.accept_source_route = 0
+      net.ipv6.conf.default.accept_source_route = 0
+
+      # Disable ICMP redirects
+      net.ipv4.conf.all.accept_redirects = 0
+      net.ipv4.conf.default.accept_redirects = 0
+      net.ipv6.conf.all.accept_redirects = 0
+      net.ipv6.conf.default.accept_redirects = 0
+      net.ipv4.conf.all.send_redirects = 0
+      net.ipv4.conf.default.send_redirects = 0
+
+      # SYN flood protection
+      net.ipv4.tcp_syncookies = 1
+
+      # Log martian packets (suspicious sources)
+      net.ipv4.conf.all.log_martians = 1
+      net.ipv4.conf.default.log_martians = 1
+
+      # Ignore ICMP echo broadcasts (ping amplification)
+      net.ipv4.icmp_echo_ignore_broadcasts = 1
+
+      # Ignore bogus ICMP error responses
+      net.ipv4.icmp_ignore_bogus_error_responses = 1
+
+      # Restrict kernel debug messages
+      kernel.dmesg_restrict = 1
+
+      # Hide kernel pointers (KASLR support)
+      kernel.kptr_restrict = 2
+
+runcmd:
+  - sysctl --system
