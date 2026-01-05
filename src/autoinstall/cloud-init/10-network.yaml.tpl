@@ -4,4 +4,4 @@ manage_etc_hosts: true
 
 bootcmd:
   - |
-{{ scripts["net-setup.sh"] | indent(4) }}
+    {{ scripts["net-setup.sh"] | indent(4) }}
