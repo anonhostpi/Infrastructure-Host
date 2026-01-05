@@ -23,19 +23,19 @@ help:
 scripts: output/scripts/early-net.sh output/scripts/net-setup.sh output/scripts/build-iso.sh
 
 output/scripts/%.sh: src/scripts/%.sh.tpl $(CONFIGS)
-	python -m builder render script $< -o $@
+	python3 -m builder render script $< -o $@
 
 # Generate cloud-init config (renders scripts internally)
 cloud-init: output/cloud-init.yaml
 
 output/cloud-init.yaml: $(CLOUD_INIT_FRAGMENTS) $(SCRIPTS) $(CONFIGS)
-	python -m builder render cloud-init -o $@
+	python3 -m builder render cloud-init -o $@
 
 # Generate autoinstall user-data (renders scripts + cloud-init internally)
 autoinstall: output/user-data
 
 output/user-data: $(AUTOINSTALL_TEMPLATES) $(CLOUD_INIT_FRAGMENTS) $(SCRIPTS) $(CONFIGS)
-	python -m builder render autoinstall -o $@
+	python3 -m builder render autoinstall -o $@
 
 # Build ISO (runs build script in multipass)
 iso: output/user-data scripts
