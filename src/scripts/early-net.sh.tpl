@@ -10,18 +10,21 @@ CIDR={{ network.ip_address | cidr_only | shell_quote }}
 # Find interface by ARP probing known hosts
 for iface in /sys/class/net/e*; do
   NIC=$(basename "$iface")
-  [ "$NIC" = "lo" ] && continue
 
-  ip link set "$NIC" up
-  sleep 2
+  ip link set "$NIC" up 2>/dev/null
 
-  if ! arping -c 2 -w 3 -I "$NIC" "$GATEWAY" >/dev/null 2>&1; then
-    ip link set "$NIC" down
-    continue
-  fi
+  # Wait for carrier (physical link)
+  CARRIER_WAIT=0
+  while [ $CARRIER_WAIT -lt 10 ]; do
+    CARRIER=$(cat "/sys/class/net/$NIC/carrier" 2>/dev/null || echo 0)
+    [ "$CARRIER" = "1" ] && break
+    sleep 1
+    CARRIER_WAIT=$((CARRIER_WAIT + 1))
+  done
+  [ "$CARRIER" != "1" ] && continue
 
-  if ! arping -c 2 -w 3 -I "$NIC" "$DNS_PRIMARY" >/dev/null 2>&1; then
-    ip link set "$NIC" down
+  # ARP probe the gateway (busybox arping - standalone arping not available)
+  if ! busybox arping -c 2 -w 3 -I "$NIC" "$GATEWAY" >/dev/null 2>&1; then
     continue
   fi
 
