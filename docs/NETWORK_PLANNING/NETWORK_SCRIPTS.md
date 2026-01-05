@@ -6,13 +6,15 @@ Network configuration is handled via ARP probe detection scripts rendered from J
 
 Instead of DHCP discovery (which broadcasts and opens attack surface), the scripts:
 
-1. Iterate over unconfigured interfaces
-2. Bring each interface up (link only, no IP)
-3. Use `arping` to probe for known gateway IP
-4. Use `arping` to probe for known DNS server IP
-5. If both respond, configure static IP on that interface
-6. Validate with actual DNS query
-7. If validation fails, unconfigure and try next interface
+1. Wait for ethernet interfaces to appear (up to 30 seconds)
+2. For each interface:
+   - Bring interface up (link only, no IP)
+   - Wait for carrier (physical link) with 10 second timeout
+   - Use `busybox arping` to probe for known gateway IP (3 retries)
+3. If gateway responds, configure static IP on that interface
+4. Validate with ping to gateway
+5. If validation fails, unconfigure and try next interface
+6. Write netplan config with secure permissions (0600)
 
 **Benefits:**
 - No DHCP broadcast - No rogue DHCP server risk
@@ -40,18 +42,21 @@ CIDR={{ network.ip_address | cidr_only | shell_quote }}
 # Find interface by ARP probing known hosts
 for iface in /sys/class/net/e*; do
   NIC=$(basename "$iface")
-  [ "$NIC" = "lo" ] && continue
 
-  ip link set "$NIC" up
-  sleep 2
+  ip link set "$NIC" up 2>/dev/null
 
-  if ! arping -c 2 -w 3 -I "$NIC" "$GATEWAY" >/dev/null 2>&1; then
-    ip link set "$NIC" down
-    continue
-  fi
+  # Wait for carrier (physical link)
+  CARRIER_WAIT=0
+  while [ $CARRIER_WAIT -lt 10 ]; do
+    CARRIER=$(cat "/sys/class/net/$NIC/carrier" 2>/dev/null || echo 0)
+    [ "$CARRIER" = "1" ] && break
+    sleep 1
+    CARRIER_WAIT=$((CARRIER_WAIT + 1))
+  done
+  [ "$CARRIER" != "1" ] && continue
 
-  if ! arping -c 2 -w 3 -I "$NIC" "$DNS_PRIMARY" >/dev/null 2>&1; then
-    ip link set "$NIC" down
+  # ARP probe the gateway (busybox arping - standalone arping not available)
+  if ! busybox arping -c 2 -w 3 -I "$NIC" "$GATEWAY" >/dev/null 2>&1; then
     continue
   fi
 
@@ -81,33 +86,77 @@ DNS_SEARCH={{ network.dns_search | shell_quote }}
 STATIC_IP={{ network.ip_address | ip_only | shell_quote }}
 CIDR={{ network.ip_address | cidr_only | shell_quote }}
 
-# Find interface by ARP probing known hosts
+logger "cloud-init net-setup: Starting network detection (GW=$GATEWAY, IP=$STATIC_IP/$CIDR)"
+
+# Wait for at least one ethernet interface to appear
+WAIT_COUNT=0
+while [ $WAIT_COUNT -lt 30 ]; do
+  IFACES=$(ls -1 /sys/class/net/ 2>/dev/null | grep -E '^e' | wc -l)
+  [ "$IFACES" -gt 0 ] && break
+  sleep 1
+  WAIT_COUNT=$((WAIT_COUNT + 1))
+done
+
+if [ "$IFACES" -eq 0 ]; then
+  logger "cloud-init net-setup: ERROR - No ethernet interfaces found after 30s"
+  exit 1
+fi
+
+# Find interface by ARP probing the gateway
+FOUND_INTERFACE=""
 for iface in /sys/class/net/e*; do
   NIC=$(basename "$iface")
-  [ "$NIC" = "lo" ] && continue
 
-  ip link set "$NIC" up
-  sleep 2
+  ip link set "$NIC" up 2>/dev/null
 
-  if ! arping -c 2 -w 3 -I "$NIC" "$GATEWAY" >/dev/null 2>&1; then
-    ip link set "$NIC" down
-    continue
-  fi
+  # Wait for carrier (physical link) with timeout
+  CARRIER_WAIT=0
+  while [ $CARRIER_WAIT -lt 10 ]; do
+    CARRIER=$(cat "/sys/class/net/$NIC/carrier" 2>/dev/null || echo 0)
+    [ "$CARRIER" = "1" ] && break
+    sleep 1
+    CARRIER_WAIT=$((CARRIER_WAIT + 1))
+  done
 
-  if ! arping -c 2 -w 3 -I "$NIC" "$DNS_PRIMARY" >/dev/null 2>&1; then
-    ip link set "$NIC" down
-    continue
-  fi
+  [ "$CARRIER" != "1" ] && continue
 
-  logger "cloud-init: Found network on $NIC (GW=$GATEWAY, DNS=$DNS_PRIMARY)"
+  # ARP probe the gateway (busybox arping - standalone arping not available)
+  ARP_OK=0
+  for attempt in 1 2 3; do
+    if busybox arping -c 2 -w 3 -I "$NIC" "$GATEWAY" >/dev/null 2>&1; then
+      ARP_OK=1
+      break
+    fi
+    sleep 1
+  done
 
-  ip addr add "$STATIC_IP/$CIDR" dev "$NIC"
-  ip route add default via "$GATEWAY" dev "$NIC"
+  [ "$ARP_OK" != "1" ] && continue
 
-  if host -W 3 google.com "$DNS_PRIMARY" >/dev/null 2>&1; then
-    logger "cloud-init: DNS validated, writing netplan config"
+  logger "cloud-init net-setup: $NIC can reach gateway $GATEWAY"
+  FOUND_INTERFACE="$NIC"
+  break
+done
 
-    cat > /etc/netplan/90-static.yaml << EOF
+if [ -z "$FOUND_INTERFACE" ]; then
+  logger "cloud-init net-setup: ERROR - No interface can reach gateway $GATEWAY"
+  exit 1
+fi
+
+NIC="$FOUND_INTERFACE"
+ip addr add "$STATIC_IP/$CIDR" dev "$NIC" 2>/dev/null
+ip route add default via "$GATEWAY" dev "$NIC" 2>/dev/null
+
+# Verify connectivity by pinging the gateway
+if ! ping -c 2 -W 3 "$GATEWAY" >/dev/null 2>&1; then
+  logger "cloud-init net-setup: ERROR - Cannot ping gateway after IP config"
+  exit 1
+fi
+
+logger "cloud-init net-setup: Gateway reachable, writing netplan config"
+
+# Write permanent netplan configuration (with secure permissions)
+umask 077
+cat > /etc/netplan/90-static.yaml << EOF
 network:
   version: 2
   ethernets:
@@ -122,20 +171,21 @@ network:
         addresses: [$DNS_PRIMARY, $DNS_SECONDARY, $DNS_TERTIARY]
         search: [$DNS_SEARCH]
 EOF
-    netplan apply
-    logger "cloud-init: Static network configuration applied to $NIC"
-    exit 0
-  fi
 
-  logger "cloud-init: DNS validation failed on $NIC, trying next"
-  ip route del default via "$GATEWAY" dev "$NIC" 2>/dev/null
-  ip addr del "$STATIC_IP/$CIDR" dev "$NIC" 2>/dev/null
-  ip link set "$NIC" down
-done
-
-logger "cloud-init: ERROR - No valid network interface found"
-exit 1
+# Apply netplan in background to avoid blocking cloud-init
+# The config will take effect shortly after the script exits
+(sleep 2 && netplan apply && logger "cloud-init net-setup: netplan applied") &
+logger "cloud-init net-setup: Static network configuration written to $NIC"
+exit 0
 ```
+
+**Key implementation details:**
+- Uses `busybox arping` (standalone `arping` package not available at bootcmd time)
+- Waits for carrier (physical link) before ARP probing
+- Retries ARP 3 times for slow-starting links
+- Uses `ping` for validation (`host` command not available at bootcmd time)
+- Sets `umask 077` before writing netplan config (required by netplan)
+- Runs `netplan apply` in background to avoid blocking cloud-init
 
 ## Filters Used
 
@@ -175,9 +225,13 @@ bootcmd:
 └─────────────┘     ARP: <GATEWAY> is at XX:XX   └─────────────┘
 ```
 
-- `arping` sends ARP requests at Layer 2 (no IP needed on host)
+- `busybox arping` sends ARP requests at Layer 2 (no IP needed on host)
 - If target responds, we know that NIC is on the correct network segment
-- Gateway + DNS response = high confidence we're on the right network
+- Gateway response = high confidence we're on the right network
+
+**Why `busybox arping`?**
+
+The standalone `arping` command requires the `arping` package, which isn't available at bootcmd time (packages haven't been installed yet). However, `busybox` is part of the base Ubuntu system and includes an `arping` implementation.
 
 ## Cloud-init Timing
 
