@@ -4,7 +4,12 @@ import argparse
 import sys
 
 from .context import BuildContext
-from .renderer import render_script, render_cloud_init_to_file, render_autoinstall_to_file
+from .renderer import (
+    render_script,
+    render_cloud_init_to_file,
+    render_autoinstall_to_file,
+    get_available_fragments,
+)
 
 
 def main():
@@ -36,6 +41,26 @@ def main():
         default='src/config',
         help='Configuration directory (default: src/config)'
     )
+    render_parser.add_argument(
+        '-i', '--include',
+        action='append',
+        metavar='FRAGMENT',
+        help='Include only specified fragments (can be repeated). '
+             'Use "python -m builder list-fragments" to see available fragments.'
+    )
+    render_parser.add_argument(
+        '-x', '--exclude',
+        action='append',
+        metavar='FRAGMENT',
+        help='Exclude specified fragments (can be repeated). '
+             'Use "python -m builder list-fragments" to see available fragments.'
+    )
+
+    # list-fragments subcommand
+    list_parser = subparsers.add_parser(
+        'list-fragments',
+        help='List available cloud-init fragments'
+    )
 
     args = parser.parse_args()
 
@@ -43,6 +68,18 @@ def main():
         parser.print_help()
         sys.exit(1)
 
+    # Handle list-fragments command
+    if args.command == 'list-fragments':
+        fragments = get_available_fragments()
+        if not fragments:
+            print('No fragments found in src/autoinstall/cloud-init/')
+            sys.exit(1)
+        print('Available cloud-init fragments:')
+        for f in fragments:
+            print(f'  {f}')
+        sys.exit(0)
+
+    # Handle render command
     ctx = BuildContext(args.config_dir)
 
     if args.target == 'script':
@@ -51,8 +88,16 @@ def main():
             sys.exit(1)
         render_script(ctx, args.input, args.output)
     elif args.target == 'cloud-init':
-        render_cloud_init_to_file(ctx, args.output)
+        render_cloud_init_to_file(
+            ctx,
+            args.output,
+            include=args.include,
+            exclude=args.exclude
+        )
     elif args.target == 'autoinstall':
+        if args.include or args.exclude:
+            print('Warning: --include/--exclude only apply to cloud-init target',
+                  file=sys.stderr)
         render_autoinstall_to_file(ctx, args.output)
 
     print(f'Generated: {args.output}')

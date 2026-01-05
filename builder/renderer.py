@@ -92,8 +92,28 @@ def render_script(ctx, input_path, output_path):
         f.write(result)
 
 
-def render_cloud_init(ctx):
-    """Render and merge cloud-init fragments, return as dict."""
+def get_available_fragments():
+    """Return list of available fragment names (without path or extension)."""
+    fragments_dir = Path('src/autoinstall/cloud-init')
+    if not fragments_dir.exists():
+        return []
+    return sorted([
+        p.name.removesuffix('.yaml.tpl')
+        for p in fragments_dir.glob('*.yaml.tpl')
+    ])
+
+
+def render_cloud_init(ctx, include=None, exclude=None):
+    """Render and merge cloud-init fragments, return as dict.
+
+    Args:
+        ctx: Build context
+        include: List of fragment names to include (default: all)
+        exclude: List of fragment names to exclude (default: none)
+
+    Fragment names are matched without path or extension, e.g.:
+        "20-users" matches "src/autoinstall/cloud-init/20-users.yaml.tpl"
+    """
     fragments_dir = Path('src/autoinstall/cloud-init')
     scripts = render_scripts(ctx)
 
@@ -103,6 +123,16 @@ def render_cloud_init(ctx):
         return merged
 
     for tpl_path in sorted(fragments_dir.glob('*.yaml.tpl')):
+        fragment_name = tpl_path.name.removesuffix('.yaml.tpl')
+
+        # Filter by include list (if specified)
+        if include is not None and fragment_name not in include:
+            continue
+
+        # Filter by exclude list (if specified)
+        if exclude is not None and fragment_name in exclude:
+            continue
+
         # Use forward slashes for Jinja2 (cross-platform)
         template_path = tpl_path.relative_to('src').as_posix()
         rendered = render_text(ctx, template_path, scripts=scripts)
@@ -113,14 +143,21 @@ def render_cloud_init(ctx):
     return merged
 
 
-def render_cloud_init_to_file(ctx, output_path):
-    """Render cloud-init to output file."""
-    merged = render_cloud_init(ctx)
+def render_cloud_init_to_file(ctx, output_path, include=None, exclude=None):
+    """Render cloud-init to output file.
+
+    Args:
+        ctx: Build context
+        output_path: Path to write output
+        include: List of fragment names to include (default: all)
+        exclude: List of fragment names to exclude (default: none)
+    """
+    merged = render_cloud_init(ctx, include=include, exclude=exclude)
 
     Path(output_path).parent.mkdir(parents=True, exist_ok=True)
     with open(output_path, 'w', newline='\n') as f:
         f.write('#cloud-config\n')
-        yaml.dump(merged, f, default_flow_style=False, sort_keys=False)
+        yaml.dump(merged, f, default_flow_style=False, sort_keys=False, width=1000)
 
 
 def render_autoinstall(ctx):
