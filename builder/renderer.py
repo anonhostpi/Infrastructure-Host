@@ -8,6 +8,19 @@ from . import filters
 from .composer import deep_merge
 
 
+# Custom YAML representer for multiline strings using literal block scalars
+def str_representer(dumper, data):
+    """Use literal block scalar (|) for multiline strings."""
+    if '\n' in data:
+        # Use literal block style for multiline
+        return dumper.represent_scalar('tag:yaml.org,2002:str', data, style='|')
+    return dumper.represent_scalar('tag:yaml.org,2002:str', data)
+
+
+# Register the custom representer
+yaml.add_representer(str, str_representer)
+
+
 def create_environment(template_dir='src'):
     """Create Jinja2 environment with custom filters."""
     env = Environment(
