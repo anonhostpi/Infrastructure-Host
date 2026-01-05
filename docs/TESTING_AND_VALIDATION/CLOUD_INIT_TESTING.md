@@ -2,7 +2,33 @@
 
 Test cloud-init configuration with multipass before building the full autoinstall ISO.
 
-**Testing Platform:** All tests run on a multipass VM. VirtualBox is only used for autoinstall ISO testing (see [7.2 Autoinstall Testing](./AUTOINSTALL_TESTING.md)).
+> **CRITICAL: NOTHING RUNS ON THE WINDOWS HOST**
+>
+> | Task | Where it runs |
+> |------|---------------|
+> | Build (`make cloud-init`) | **Builder VM** (multipass) |
+> | Run tests | **Test VM** (multipass) |
+>
+> The Windows host only orchestrates VMs via PowerShell scripts that source `vm.config.ps1`.
+> Never run Python, make, or test scripts directly on Windows.
+>
+> VirtualBox is only used for [7.2 Autoinstall Testing](./AUTOINSTALL_TESTING.md) (ZFS root, ISO boot).
+
+---
+
+## VM Orchestration
+
+**All VM orchestration uses `vm.config.ps1`** in the repository root.
+
+```powershell
+# Always source the config first
+. .\vm.config.ps1
+
+# Then use the variables
+multipass launch --name $VMName --cpus $VMCpus --memory $VMMemory --disk $VMDisk --network $VMNetwork --cloud-init output/cloud-init.yaml
+```
+
+This ensures consistent VM settings across all test runs.
 
 ---
 
@@ -28,68 +54,73 @@ Detailed test specifications for each Chapter 6 fragment are in [CLOUD_INIT_TEST
 
 ---
 
-## Pre-Build Checklist
+## Configuration Files
 
-Before starting, copy example files and configure in `src/config/`:
+Configuration files in `src/config/` are created once from examples and **persist across test runs**. They contain values gathered during earlier chapters (network planning, identity setup, etc.).
 
-```powershell
-# Copy examples and edit with your values
-cp src/config/network.config.yaml.example src/config/network.config.yaml
-cp src/config/identity.config.yaml.example src/config/identity.config.yaml
-cp src/config/storage.config.yaml.example src/config/storage.config.yaml
-cp src/config/image.config.yaml.example src/config/image.config.yaml
-```
+| File | Created From | Contains |
+|------|--------------|----------|
+| `network.config.yaml` | Chapter 4 values | IP, gateway, DNS from network planning |
+| `identity.config.yaml` | Chapter 5 values | Username, password, SSH keys |
+| `storage.config.yaml` | Chapter 5 values | Disk selection settings |
+| `image.config.yaml` | Chapter 5 values | Ubuntu release |
+| `vm.config.ps1` | Repository root | VM orchestration settings |
 
-- [ ] `network.config.yaml` - Valid IPs, gateway, DNS
-- [ ] `identity.config.yaml` - Username, password, SSH keys
-- [ ] `storage.config.yaml` - Disk selection settings
-- [ ] `image.config.yaml` - Ubuntu release (noble, jammy)
+**Do not delete or recreate these files** - they are your deployment configuration.
 
 ---
 
 ## Test Environment Setup
 
-### Step 1: Build Cloud-init Configuration
+### Step 1: Launch Builder VM
 
 ```powershell
-# From repository root
-make cloud-init
+. .\vm.config.ps1
+
+# Launch builder VM and mount repo
+multipass launch --name $BuilderVMName --cpus $BuilderCpus --memory $BuilderMemory --disk $BuilderDisk
+multipass mount . ${BuilderVMName}:/home/ubuntu/infra-host
+```
+
+### Step 2: Build Cloud-init Configuration (on Builder VM)
+
+```powershell
+# Install dependencies and build
+multipass exec $BuilderVMName -- bash -c "cd /home/ubuntu/infra-host && pip3 install -r requirements.txt && make cloud-init"
 ```
 
 This generates `output/cloud-init.yaml` by rendering and merging all fragment templates.
 
-### Step 2: Launch Test VM
+### Step 3: Launch Test VM
 
 ```powershell
-# Source VM configuration (see vm.config.ps1.example)
 . .\vm.config.ps1
 
-# Launch multipass VM with bridged networking
+# Launch test VM with generated cloud-init
 multipass launch --name $VMName --cpus $VMCpus --memory $VMMemory --disk $VMDisk --network $VMNetwork --cloud-init output/cloud-init.yaml
 
 # Wait for cloud-init to complete
 multipass exec $VMName -- cloud-init status --wait
 ```
 
-### Step 3: Verify Cloud-init Success
+### Step 4: Verify Cloud-init Success
 
 ```powershell
+. .\vm.config.ps1
+
 # Check cloud-init status (should show "done")
 multipass exec $VMName -- cloud-init status
 
 # Check for errors
-multipass exec $VMName -- grep -iE "error|failed" /var/log/cloud-init.log | grep -v "No error" || echo "No errors found"
+multipass exec $VMName -- bash -c "grep -iE 'error|failed' /var/log/cloud-init.log | grep -v 'No error' || echo 'No errors found'"
 ```
 
 ---
 
 ## Quick Validation Checklist
 
-Run these commands for a rapid pass/fail assessment:
-
 ```powershell
-# From PowerShell, with VM running
-$VMName = "cloud-init-test"
+. .\vm.config.ps1
 
 # Cloud-init status
 multipass exec $VMName -- cloud-init status
@@ -98,7 +129,7 @@ multipass exec $VMName -- cloud-init status
 multipass exec $VMName -- systemctl is-active libvirtd fail2ban ssh
 
 # Security
-multipass exec $VMName -- sudo ufw status | Select-String "Status"
+multipass exec $VMName -- sudo ufw status
 multipass exec $VMName -- sudo sshd -T | Select-String "permitrootlogin"
 
 # Cockpit localhost-only (CRITICAL)
@@ -109,10 +140,19 @@ multipass exec $VMName -- id admin
 multipass exec $VMName -- groups admin
 ```
 
-### Cleanup
+---
+
+## Cleanup
 
 ```powershell
+. .\vm.config.ps1
+
+# Delete test VM
 multipass delete $VMName
+multipass purge
+
+# Optionally delete builder VM
+multipass delete $BuilderVMName
 multipass purge
 ```
 
@@ -123,6 +163,8 @@ multipass purge
 ### Debug Commands
 
 ```powershell
+. .\vm.config.ps1
+
 # Full cloud-init log
 multipass exec $VMName -- cat /var/log/cloud-init-output.log
 

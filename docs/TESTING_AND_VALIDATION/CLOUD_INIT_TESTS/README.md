@@ -2,6 +2,34 @@
 
 Individual test specifications for each Chapter 6 cloud-init fragment.
 
+---
+
+## Testing Platform Requirements
+
+> **CRITICAL: NOTHING RUNS ON THE WINDOWS HOST**
+>
+> | Task | Where it runs |
+> |------|---------------|
+> | Build (`make cloud-init`) | **Builder VM** (multipass) |
+> | Run fragment tests | **Test VM** (multipass) |
+> | Autoinstall ISO tests | **Test VM** (VirtualBox) |
+>
+> The Windows host only orchestrates VMs via `multipass` commands.
+> **Never run Python, make, or test scripts directly on Windows.**
+
+**Why Multipass for cloud-init tests?**
+- Fast iteration (seconds to launch)
+- Native cloud-init support
+- No manual ISO burning required
+- Bridged networking for realistic testing
+
+**When to use VirtualBox instead:**
+- Testing the autoinstall ISO boot process
+- Testing ZFS root filesystem (requires real disk partitioning)
+- Testing UEFI boot sequence
+
+---
+
 ## Test Files
 
 | Test | Fragment | Template |
@@ -20,42 +48,70 @@ Individual test specifications for each Chapter 6 cloud-init fragment.
 | [TEST_6.12](./TEST_6.12_OPENCODE.md) | OpenCode | `75-opencode.yaml.tpl` |
 | [TEST_6.13](./TEST_6.13_UI_TOUCHES.md) | UI Touches | `90-ui.yaml.tpl` |
 
-## Testing Platform
+---
 
-All tests in this folder are designed to run on **multipass VMs**. See the [Testing Overview](../OVERVIEW.md) for platform requirements.
+## Running Tests
+
+**All orchestration uses `vm.config.ps1`** - always source it first.
+
+### Step 1: Build cloud-init configuration (on Builder VM)
+
+```powershell
+. .\vm.config.ps1
+
+multipass exec $BuilderVMName -- bash -c "cd /home/ubuntu/infra-host && make cloud-init"
+```
+
+### Step 2: Launch test VM
+
+```powershell
+. .\vm.config.ps1
+
+multipass launch --name $VMName --cpus $VMCpus --memory $VMMemory --disk $VMDisk --network $VMNetwork --cloud-init output/cloud-init.yaml
+multipass exec $VMName -- cloud-init status --wait
+```
+
+### Step 3: Run tests on the VM
+
+```powershell
+. .\vm.config.ps1
+
+# All commands run ON THE VM via multipass exec
+multipass exec $VMName -- hostname -f
+multipass exec $VMName -- systemctl is-active libvirtd
+multipass exec $VMName -- sudo ufw status
+```
+
+### Step 4: Cleanup
+
+```powershell
+. .\vm.config.ps1
+
+multipass delete $VMName && multipass purge
+```
+
+---
 
 ## Test Structure
 
 Each test file follows a consistent format:
 
 1. **Header** - Template file and fragment documentation link
-2. **Numbered Tests** - Individual test cases (e.g., Test 6.1.1, 6.1.2, etc.)
-3. **Check Tables** - Command and expected result for each verification
-4. **PowerShell Commands** - Host-side commands for running tests via multipass exec
+2. **Platform Notice** - Confirms tests run on multipass VM
+3. **Numbered Tests** - Individual test cases with bash commands
+4. **Check Tables** - Command and expected result for verification
+5. **PowerShell Section** - Host-side commands using `multipass exec`
+6. **Footer** - Test results and lessons learned
 
-## Running Tests
-
-### Quick Test (Single Fragment)
-
-```powershell
-$VMName = "cloud-init-test"
-
-# Example: Run network tests
-multipass exec $VMName -- ip addr show
-multipass exec $VMName -- cat /etc/netplan/50-cloud-init.yaml
-```
-
-### Full Test Suite
-
-Use the comprehensive test script from the parent [CLOUD_INIT_TESTING.md](../CLOUD_INIT_TESTING.md).
+---
 
 ## Conditional Tests
 
 Some fragments are optional and tests should be skipped if not configured:
 
-| Fragment | Condition |
-|----------|-----------|
-| 6.7 MSMTP | `smtp.config.yaml` exists |
-| 6.12 OpenCode | `opencode.enabled: true` |
+| Fragment | Skip Condition |
+|----------|----------------|
+| 6.7 MSMTP | `smtp.config.yaml` does not exist |
+| 6.12 OpenCode | `opencode.enabled: false` or not set |
 
 Check the individual test file for skip conditions.

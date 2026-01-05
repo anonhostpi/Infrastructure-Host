@@ -2,6 +2,21 @@
 
 This section covers testing build artifacts before deploying to bare metal.
 
+> **CRITICAL: NOTHING RUNS ON THE WINDOWS HOST**
+>
+> **All building AND testing happens inside VMs:**
+>
+> | Task | Where it runs |
+> |------|---------------|
+> | `make cloud-init` | Builder VM (multipass) |
+> | `make autoinstall` | Builder VM (multipass) |
+> | `make iso` | Builder VM (multipass) |
+> | Cloud-init fragment tests | Test VM (multipass) |
+> | Autoinstall ISO tests | Test VM (VirtualBox) |
+>
+> The Windows host only orchestrates VMs via PowerShell scripts that source `vm.config.ps1`.
+> **Never run Python, make, or test scripts directly on Windows.**
+
 ## Contents
 
 - [7.1 Cloud-init Testing](./CLOUD_INIT_TESTING.md)
@@ -33,50 +48,54 @@ This approach catches configuration errors early before building the full ISO.
 
 ## Build System Integration
 
-Testing uses the build system from [Chapter 3](../BUILD_SYSTEM/OVERVIEW.md):
+Testing uses the build system from [Chapter 3](../BUILD_SYSTEM/OVERVIEW.md). **All builds run on the Builder VM:**
 
-```bash
-# Render all templates
-make all
-
-# Individual targets
-make cloud-init    # output/cloud-init.yaml
-make autoinstall   # output/user-data
-make scripts       # output/scripts/*.sh
+```powershell
+# From Windows - run build on Builder VM
+. .\vm.config.ps1
+multipass exec $BuilderVMName -- bash -c "cd /home/ubuntu/infra-host && make cloud-init"
 ```
 
 See [3.4 Makefile Interface](../BUILD_SYSTEM/MAKEFILE_INTERFACE.md) for complete build commands.
 
 ## Prerequisites
 
-- Multipass installed on Windows
+**On Windows host:**
+- Multipass installed
 - VirtualBox installed (for autoinstall testing)
+- PowerShell
+
+**On Builder VM (installed automatically):**
 - Python 3 with dependencies: `pip install -r requirements.txt`
+- make, git
 
 ## Test Workflow
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  1. Configure                                                   │
-│     Create src/config/*.config.yaml files                       │
+│  1. Configure (one-time)                                        │
+│     Create src/config/*.config.yaml and vm.config.ps1           │
 ├─────────────────────────────────────────────────────────────────┤
-│  2. Build                                                       │
-│     make all                                                    │
+│  2. Launch Builder VM                                           │
+│     multipass launch + mount repo                               │
 ├─────────────────────────────────────────────────────────────────┤
-│  3. Test cloud-init (Phase 1)                                   │
+│  3. Build (on Builder VM)                                       │
+│     multipass exec $BuilderVMName -- make all                   │
+├─────────────────────────────────────────────────────────────────┤
+│  4. Test cloud-init (Phase 1 - on Test VM)                      │
 │     multipass launch --cloud-init output/cloud-init.yaml        │
 ├─────────────────────────────────────────────────────────────────┤
-│  4. Test autoinstall (Phase 2)                                  │
+│  5. Test autoinstall (Phase 2 - on VirtualBox VM)               │
 │     Build ISO, boot in VirtualBox                               │
 ├─────────────────────────────────────────────────────────────────┤
-│  5. Deploy to bare metal                                        │
+│  6. Deploy to bare metal                                        │
 │     Write ISO to USB, boot target hardware                      │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ## Configuration Files
 
-Before testing, copy examples and configure:
+Configuration files are created **once** from examples and **persist** - they contain values from earlier chapters. **Do not delete or recreate them.**
 
 ```powershell
 # Required configs (in src/config/)
