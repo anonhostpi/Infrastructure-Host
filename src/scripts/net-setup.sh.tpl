@@ -15,6 +15,35 @@ CIDR={{ network.ip_address | cidr_only | shell_quote }}
 
 logger "cloud-init net-setup: Starting network detection (GW=$GATEWAY, IP=$STATIC_IP/$CIDR)"
 
+# Detect multipass environment by looking for non-optional interfaces in netplan
+# Non-optional interfaces are multipass's NAT interface - we must not touch them
+PROTECTED_MAC=""
+NETPLAN_FILE="/etc/netplan/50-cloud-init.yaml"
+if [ -f "$NETPLAN_FILE" ]; then
+  # Use Python + PyYAML (available in Ubuntu at bootcmd time) to properly parse netplan
+  # Find interfaces where optional != true - these are required (multipass NAT)
+  PROTECTED_MAC=$(python3 << 'PYTHON'
+import yaml
+try:
+    with open('/etc/netplan/50-cloud-init.yaml') as f:
+        data = yaml.safe_load(f)
+    if 'network' in data and 'ethernets' in data['network']:
+        for name, config in data['network']['ethernets'].items():
+            if not config.get('optional', False):
+                mac = config.get('match', {}).get('macaddress', '')
+                if mac:
+                    print(mac)
+                    break
+except:
+    pass
+PYTHON
+)
+
+  if [ -n "$PROTECTED_MAC" ]; then
+    logger "cloud-init net-setup: Multipass detected - protecting interface with MAC $PROTECTED_MAC"
+  fi
+fi
+
 # Wait for at least one ethernet interface to appear
 WAIT_COUNT=0
 while [ $WAIT_COUNT -lt 30 ]; do
@@ -25,8 +54,8 @@ while [ $WAIT_COUNT -lt 30 ]; do
 done
 
 if [ "$IFACES" -eq 0 ]; then
-  logger "cloud-init net-setup: ERROR - No ethernet interfaces found after 30s"
-  exit 1
+  logger "cloud-init net-setup: WARNING - No ethernet interfaces found after 30s, falling back to DHCP"
+  exit 0
 fi
 
 logger "cloud-init net-setup: Found $IFACES ethernet interface(s)"
@@ -35,8 +64,18 @@ logger "cloud-init net-setup: Found $IFACES ethernet interface(s)"
 FOUND_INTERFACE=""
 for iface in /sys/class/net/e*; do
   NIC=$(basename "$iface")
+  NIC_MAC=$(cat "/sys/class/net/$NIC/address" 2>/dev/null | tr '[:upper:]' '[:lower:]')
 
-  logger "cloud-init net-setup: Checking interface $NIC"
+  # Skip protected interface (multipass NAT)
+  if [ -n "$PROTECTED_MAC" ]; then
+    PROTECTED_MAC_LOWER=$(echo "$PROTECTED_MAC" | tr '[:upper:]' '[:lower:]')
+    if [ "$NIC_MAC" = "$PROTECTED_MAC_LOWER" ]; then
+      logger "cloud-init net-setup: Skipping $NIC (protected multipass interface)"
+      continue
+    fi
+  fi
+
+  logger "cloud-init net-setup: Checking interface $NIC ($NIC_MAC)"
 
   # Bring interface up
   ip link set "$NIC" up 2>/dev/null
@@ -79,8 +118,8 @@ for iface in /sys/class/net/e*; do
 done
 
 if [ -z "$FOUND_INTERFACE" ]; then
-  logger "cloud-init net-setup: ERROR - No interface can reach gateway $GATEWAY"
-  exit 1
+  logger "cloud-init net-setup: WARNING - No interface can reach gateway $GATEWAY, falling back to DHCP"
+  exit 0
 fi
 
 NIC="$FOUND_INTERFACE"
@@ -118,8 +157,8 @@ network:
         search: [$DNS_SEARCH]
 EOF
 
-# Apply netplan in background to avoid blocking cloud-init
-# The config will take effect shortly after the script exits
-(sleep 2 && netplan apply && logger "cloud-init net-setup: netplan applied") &
+# Note: We do NOT call netplan apply here - it can disrupt other interfaces
+# The config will take effect on next boot, or can be applied manually
 logger "cloud-init net-setup: Static network configuration written to $NIC"
+logger "cloud-init net-setup: Config will apply on next boot (run 'sudo netplan apply' to apply now)"
 exit 0
