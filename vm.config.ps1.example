@@ -4,14 +4,21 @@
 #
 # Find available networks: multipass networks
 
-# Multipass VM settings
+# Cloud-init Builder VM (builds cloud-init.yaml, user-data, ISO)
 $VMName = "cloud-init-test"
 $VMCpus = 2
 $VMMemory = "4G"
 $VMDisk = "20G"
-$VMNetwork = "Ethernet 1"  # Use: multipass networks
+$VMNetwork = "Ethernet 1"  # Use: multipass networks to list available networks
 
-# VirtualBox VM settings
+# Cloud-init Runner VM (tests generated cloud-init.yaml)
+$RunnerVMName = "cloud-init-runner"
+$RunnerCpus = 2
+$RunnerMemory = "4G"
+$RunnerDisk = "20G"
+$RunnerNetwork = "Ethernet 1"  # Must match VMNetwork for network tests
+
+# VirtualBox VM settings (for autoinstall ISO testing)
 $VBoxManage = "C:\Program Files\Oracle\VirtualBox\VBoxManage.exe"
 $VBoxVMName = "ubuntu-autoinstall-test"
 $VBoxMemory = 4096

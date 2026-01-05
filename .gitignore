@@ -1,6 +1,7 @@
 # Private configuration files (contain internal IPs, credentials, keys)
 # See *.config.yaml.example files for templates
-*.config.yaml
+src/config/*.config.yaml
+!src/config/*.config.yaml.example
 
 # VM test configuration (local machine settings)
 # See vm.config.ps1.example for template
