@@ -69,7 +69,9 @@ def render_scripts(ctx):
     for tpl_path in scripts_dir.glob('*.tpl'):
         # Keep original filename (e.g., "early-net.sh")
         filename = tpl_path.name.removesuffix('.tpl')
-        rendered = render_text(ctx, str(tpl_path.relative_to('src')))
+        # Use forward slashes for Jinja2 (cross-platform)
+        template_path = tpl_path.relative_to('src').as_posix()
+        rendered = render_text(ctx, template_path)
         scripts[filename] = rendered
 
     return scripts
@@ -101,7 +103,9 @@ def render_cloud_init(ctx):
         return merged
 
     for tpl_path in sorted(fragments_dir.glob('*.yaml.tpl')):
-        rendered = render_text(ctx, str(tpl_path.relative_to('src')), scripts=scripts)
+        # Use forward slashes for Jinja2 (cross-platform)
+        template_path = tpl_path.relative_to('src').as_posix()
+        rendered = render_text(ctx, template_path, scripts=scripts)
         fragment = yaml.safe_load(rendered)
         if fragment:
             merged = deep_merge(merged, fragment)
