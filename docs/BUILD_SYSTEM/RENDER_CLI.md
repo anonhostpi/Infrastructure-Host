@@ -5,7 +5,26 @@ The builder module provides a command-line interface for rendering templates.
 ## Usage
 
 ```bash
-python -m builder render <target> [input] -o <output>
+python -m builder render <target> [input] -o <output> [options]
+python -m builder list-fragments
+```
+
+## Commands
+
+### render
+
+Render templates to output files.
+
+```bash
+python -m builder render <target> [input] -o <output> [-i FRAGMENT...] [-x FRAGMENT...]
+```
+
+### list-fragments
+
+List available cloud-init fragments.
+
+```bash
+python -m builder list-fragments
 ```
 
 ## Targets
@@ -16,18 +35,57 @@ python -m builder render <target> [input] -o <output>
 | `cloud-init` | Optional | Render and merge cloud-init fragments |
 | `autoinstall` | Optional | Render autoinstall user-data |
 
+## Options
+
+| Option | Description |
+|--------|-------------|
+| `-o, --output` | Output file path (required) |
+| `-c, --config-dir` | Configuration directory (default: `src/config`) |
+| `-i, --include` | Include only specified fragments (can be repeated) |
+| `-x, --exclude` | Exclude specified fragments (can be repeated) |
+
 ## Examples
 
 ```bash
-# Render a script template
-python -m builder render script src/scripts/early-net.sh.tpl -o output/scripts/early-net.sh
+# List available fragments
+python -m builder list-fragments
 
 # Render cloud-init (merges all fragments)
 python -m builder render cloud-init -o output/cloud-init.yaml
 
+# Render cloud-init excluding the network fragment (for testing)
+python -m builder render cloud-init -o output/cloud-init.yaml -x 10-network
+
+# Render cloud-init with only users and SSH fragments
+python -m builder render cloud-init -o output/cloud-init.yaml -i 20-users -i 25-ssh
+
+# Render a script template
+python -m builder render script src/scripts/early-net.sh.tpl -o output/scripts/early-net.sh
+
 # Render autoinstall user-data
 python -m builder render autoinstall -o output/user-data
 ```
+
+## Fragment Selection
+
+The `-i/--include` and `-x/--exclude` options allow selective rendering of cloud-init fragments. This is useful for:
+
+- **Testing individual fragments** without dependencies on others
+- **Debugging** by excluding problematic fragments
+- **Creating minimal configs** for specific use cases
+
+Fragment names match the filename without path or extension:
+- `10-network` matches `src/autoinstall/cloud-init/10-network.yaml.tpl`
+- `20-users` matches `src/autoinstall/cloud-init/20-users.yaml.tpl`
+
+### Include vs Exclude
+
+| Mode | Behavior |
+|------|----------|
+| No options | All fragments are included |
+| `--include` only | Only specified fragments are included |
+| `--exclude` only | All fragments except specified are included |
+| Both | Include takes precedence, then exclude is applied |
 
 ## Implementation
 

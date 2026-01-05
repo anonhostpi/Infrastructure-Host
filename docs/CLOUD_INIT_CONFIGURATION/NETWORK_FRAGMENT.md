@@ -28,12 +28,15 @@ bootcmd:
 
 The `bootcmd` array runs the network detection script from [4.3 Network Scripts](../NETWORK_PLANNING/NETWORK_SCRIPTS.md). This script:
 
-1. Iterates over network interfaces
-2. Uses ARP probing to find the correct interface
-3. Configures static IP via netplan
-4. Validates with DNS query
+1. Detects multipass environment and protects NAT interface (for testing)
+2. Iterates over network interfaces
+3. Uses ARP probing to find the interface that can reach the gateway
+4. Writes static IP configuration to `/etc/netplan/90-static.yaml`
+5. Validates connectivity with ping
 
 The script is injected via the `scripts` context (see [3.3 Render CLI](../BUILD_SYSTEM/RENDER_CLI.md)).
+
+> **Note:** The script does NOT call `netplan apply` - this avoids disrupting other interfaces during boot. Cloud-init automatically applies netplan configs, and the static IP takes effect on next boot or when manually applied.
 
 ## Cloud-init Timing
 
