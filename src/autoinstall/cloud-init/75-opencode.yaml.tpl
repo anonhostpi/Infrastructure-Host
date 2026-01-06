@@ -19,7 +19,7 @@ write_files:
   # OpenCode global configuration
   - path: /home/{{ identity.username }}/.config/opencode/opencode.json
     owner: {{ identity.username }}:{{ identity.username }}
-    permissions: '0600'
+    permissions: '600'
     content: |
       {
         "$schema": "https://opencode.ai/config.json",

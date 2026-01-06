@@ -7,7 +7,7 @@ packages:
 
 write_files:
   - path: /etc/apt/apt.conf.d/50unattended-upgrades
-    permissions: '0644'
+    permissions: '644'
     content: |
       Unattended-Upgrade::Allowed-Origins {
           "${distro_id}:${distro_codename}-security";
@@ -28,7 +28,7 @@ write_files:
       Unattended-Upgrade::SyslogEnable "true";
 
   - path: /etc/apt/apt.conf.d/20auto-upgrades
-    permissions: '0644'
+    permissions: '644'
     content: |
       APT::Periodic::Update-Package-Lists "1";
       APT::Periodic::Unattended-Upgrade "1";

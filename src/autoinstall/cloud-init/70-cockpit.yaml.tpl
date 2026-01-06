@@ -9,7 +9,7 @@ packages:
 
 write_files:
   - path: /etc/cockpit/cockpit.conf
-    permissions: '0644'
+    permissions: '644'
     content: |
       [WebService]
       AllowUnencrypted = {{ 'true' if not cockpit.require_https | default(true) else 'false' }}
@@ -21,7 +21,7 @@ write_files:
 {% endif %}
 
   - path: /etc/systemd/system/cockpit.socket.d/listen.conf
-    permissions: '0644'
+    permissions: '644'
     content: |
       [Socket]
       ListenStream=

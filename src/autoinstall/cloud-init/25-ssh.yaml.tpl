@@ -1,6 +1,6 @@
 write_files:
   - path: /etc/ssh/sshd_config.d/99-hardening.conf
-    permissions: '0644'
+    permissions: '644'
     content: |
       # SSH Hardening - managed by cloud-init
 
