@@ -115,7 +115,7 @@ function Test-UsersFragment {
     param([string]$VMName)
 
     $results = @()
-    $config = Get-CachedTestConfig
+    $config = Get-TestConfig
     $username = $config.identity.username
 
     # 6.3.1: User Exists
@@ -204,6 +204,63 @@ function Test-SSHFragment {
         Pass = ($sshd -match "active")
         Output = $sshd
     }
+
+    # 6.4.4: Verify root login is rejected from host
+    # Get VM IP from multipass
+    $vmInfo = multipass info $VMName --format json 2>&1 | ConvertFrom-Json
+    $vmIp = $vmInfo.info.$VMName.ipv4 | Select-Object -First 1
+
+    if ($vmIp) {
+        # Attempt SSH as root - should be rejected immediately (not timeout)
+        # BatchMode=yes prevents password prompts, ConnectTimeout keeps it short
+        $sshResult = ssh -o BatchMode=yes -o ConnectTimeout=5 -o StrictHostKeyChecking=no root@$vmIp exit 2>&1
+        $sshExitCode = $LASTEXITCODE
+
+        # SSH should fail with "Permission denied" - exit code 255
+        # Pass if we get permission denied (root login blocked)
+        $rootBlocked = ($sshResult -match "Permission denied" -or $sshResult -match "publickey")
+        $results += @{
+            Test = "6.4.4"
+            Name = "Root SSH login rejected"
+            Pass = $rootBlocked
+            Output = if ($rootBlocked) { "Root login correctly rejected" } else { $sshResult }
+        }
+    } else {
+        $results += @{
+            Test = "6.4.4"
+            Name = "Root SSH login rejected"
+            Pass = $false
+            Output = "Could not get VM IP address"
+        }
+    }
+
+    # 6.4.5: Verify SSH key authentication works (if configured)
+    $testConfig = Get-TestConfig
+    $sshKeys = $testConfig.identity.ssh_authorized_keys
+    $sshUser = $testConfig.identity.username
+
+    if ($sshKeys -and $sshKeys.Count -gt 0 -and $vmIp) {
+        # Attempt SSH as configured user using default SSH agent/identities
+        # BatchMode=yes uses agent keys, won't prompt for password
+        $sshUserResult = ssh -o BatchMode=yes -o ConnectTimeout=5 -o StrictHostKeyChecking=no "${sshUser}@${vmIp}" "echo OK" 2>&1
+        $sshUserExitCode = $LASTEXITCODE
+
+        $keyAuthWorks = ($sshUserResult -match "OK" -and $sshUserExitCode -eq 0)
+        $results += @{
+            Test = "6.4.5"
+            Name = "SSH key auth for $sshUser"
+            Pass = $keyAuthWorks
+            Output = if ($keyAuthWorks) { "Key authentication successful" } else { "Key auth failed (ensure private key is loaded in ssh-agent): $sshUserResult" }
+        }
+    } elseif ($sshKeys -and $sshKeys.Count -gt 0) {
+        $results += @{
+            Test = "6.4.5"
+            Name = "SSH key auth for $sshUser"
+            Pass = $false
+            Output = "Could not get VM IP address"
+        }
+    }
+    # If no SSH keys configured, skip test 6.4.5
 
     return $results
 }
