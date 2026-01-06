@@ -157,6 +157,10 @@ if ($ciStatus -match "error" -or $ciStatus -match "degraded") {
     Write-Host "  Status: $ciStatus"
 }
 
+# Brief delay to let services stabilize
+Write-Host "  Waiting for services to stabilize..."
+Start-Sleep -Seconds 5
+
 Write-Host "  Done" -ForegroundColor Green
 Write-Host ""
 
