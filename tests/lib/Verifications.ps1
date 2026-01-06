@@ -115,40 +115,42 @@ function Test-UsersFragment {
     param([string]$VMName)
 
     $results = @()
+    $config = Get-CachedTestConfig
+    $username = $config.identity.username
 
     # 6.3.1: User Exists
-    $id = multipass exec $VMName -- id admin 2>&1
+    $id = multipass exec $VMName -- id $username 2>&1
     $results += @{
         Test = "6.3.1"
-        Name = "Admin user exists"
+        Name = "$username user exists"
         Pass = ($id -match "uid=" -and $LASTEXITCODE -eq 0)
         Output = $id
     }
 
-    $shell = multipass exec $VMName -- bash -c "getent passwd admin | cut -d: -f7" 2>&1
+    $shell = multipass exec $VMName -- bash -c "getent passwd $username | cut -d: -f7" 2>&1
     $results += @{
         Test = "6.3.1"
-        Name = "Admin shell is bash"
+        Name = "$username shell is bash"
         Pass = ($shell -match "/bin/bash")
         Output = $shell
     }
 
     # 6.3.2: Group Membership
-    $groups = multipass exec $VMName -- groups admin 2>&1
+    $groups = multipass exec $VMName -- groups $username 2>&1
     $results += @{
         Test = "6.3.2"
-        Name = "Admin in sudo group"
+        Name = "$username in sudo group"
         Pass = ($groups -match "\bsudo\b")
         Output = $groups
     }
 
     # 6.3.3: Sudo Configuration
-    $sudoFile = multipass exec $VMName -- sudo test -f /etc/sudoers.d/admin 2>&1
+    $sudoFile = multipass exec $VMName -- sudo test -f /etc/sudoers.d/$username 2>&1
     $results += @{
         Test = "6.3.3"
         Name = "Sudoers file exists"
         Pass = ($LASTEXITCODE -eq 0)
-        Output = "/etc/sudoers.d/admin"
+        Output = "/etc/sudoers.d/$username"
     }
 
     # 6.3.4: Root Disabled
@@ -497,13 +499,13 @@ function Test-OpenCodeFragment {
         Output = $npm
     }
 
-    # 6.12.3: Claude/OpenCode setup
-    $claude = multipass exec $VMName -- which claude 2>&1
+    # 6.12.3: OpenCode setup
+    $opencode = multipass exec $VMName -- which opencode 2>&1
     $results += @{
         Test = "6.12.3"
-        Name = "Claude CLI installed"
-        Pass = ($claude -match "claude" -and $LASTEXITCODE -eq 0)
-        Output = $claude
+        Name = "OpenCode CLI installed"
+        Pass = ($opencode -match "opencode" -and $LASTEXITCODE -eq 0)
+        Output = $opencode
     }
 
     return $results
