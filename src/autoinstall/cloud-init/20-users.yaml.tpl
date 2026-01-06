@@ -1,4 +1,7 @@
 users:
+{% if testing is defined and testing %}
+  - default
+{% endif %}
   - name: {{ identity.username }}
     groups: [sudo, libvirt, kvm]
     shell: /bin/bash

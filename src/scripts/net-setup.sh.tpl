@@ -15,7 +15,8 @@ CIDR={{ network.ip_address | cidr_only | shell_quote }}
 
 logger "cloud-init net-setup: Starting network detection (GW=$GATEWAY, IP=$STATIC_IP/$CIDR)"
 
-# Detect multipass environment by looking for non-optional interfaces in netplan
+{% if testing is defined and testing %}
+# TESTING MODE: Detect multipass environment by looking for non-optional interfaces in netplan
 # Non-optional interfaces are multipass's NAT interface - we must not touch them
 PROTECTED_MAC=""
 NETPLAN_FILE="/etc/netplan/50-cloud-init.yaml"
@@ -43,6 +44,7 @@ PYTHON
     logger "cloud-init net-setup: Multipass detected - protecting interface with MAC $PROTECTED_MAC"
   fi
 fi
+{% endif %}
 
 # Wait for at least one ethernet interface to appear
 WAIT_COUNT=0
@@ -66,7 +68,8 @@ for iface in /sys/class/net/e*; do
   NIC=$(basename "$iface")
   NIC_MAC=$(cat "/sys/class/net/$NIC/address" 2>/dev/null | tr '[:upper:]' '[:lower:]')
 
-  # Skip protected interface (multipass NAT)
+{% if testing is defined and testing %}
+  # TESTING MODE: Skip protected interface (multipass NAT)
   if [ -n "$PROTECTED_MAC" ]; then
     PROTECTED_MAC_LOWER=$(echo "$PROTECTED_MAC" | tr '[:upper:]' '[:lower:]')
     if [ "$NIC_MAC" = "$PROTECTED_MAC_LOWER" ]; then
@@ -74,6 +77,7 @@ for iface in /sys/class/net/e*; do
       continue
     fi
   fi
+{% endif %}
 
   logger "cloud-init net-setup: Checking interface $NIC ($NIC_MAC)"
 

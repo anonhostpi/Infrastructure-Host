@@ -1,0 +1,10 @@
+# Testing Configuration
+# Copy to testing.config.yaml for multipass testing
+#
+# When testing: true, the following adjustments are made:
+# - Network scripts: Skip multipass's protected NAT interface (detected by MAC)
+# - Users fragment: Preserve default cloud user (multipass's ubuntu user)
+#
+# For production (bare metal/VirtualBox), set testing: false or remove this file
+
+testing: true
