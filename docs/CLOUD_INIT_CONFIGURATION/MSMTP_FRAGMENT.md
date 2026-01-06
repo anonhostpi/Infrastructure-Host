@@ -85,15 +85,52 @@ smtp:
   from_email: alerts@example.com
   user: alerts@example.com
   recipient: admin@example.com
+  # Optional settings for special providers:
+  # tls_certcheck: false     # For self-signed certs (Proton Bridge)
+  # tls_on_connect: true     # For port 465 (SMTPS)
+  # auth_method: plain       # Override auth method if needed
 ```
+
+### Required Fields
 
 | Field | Description |
 |-------|-------------|
 | `host` | SMTP server hostname |
-| `port` | SMTP port (usually 587 for STARTTLS) |
-| `from_email` | Sender email address |
+| `port` | SMTP port (587 for STARTTLS, 465 for SMTPS) |
+| `from_email` | Sender email address (From header) |
 | `user` | SMTP authentication username |
 | `recipient` | Where to send system emails |
+
+### Authentication
+
+| Field | Default | Description |
+|-------|---------|-------------|
+| `password` | (none) | SMTP password/App Password/API key. If omitted, run `msmtp-config` post-deploy |
+| `passwordeval` | (none) | Shell command to retrieve password (for OAuth2 token helpers) |
+
+### TLS Options
+
+| Field | Default | Description |
+|-------|---------|-------------|
+| `tls_certcheck` | `true` | Verify server certificate. Set `false` for Proton Bridge |
+| `tls_on_connect` | `false` | Immediate TLS (port 465). Set `true` for SMTPS |
+| `tls_starttls` | `true` | Use STARTTLS. Usually auto-detected |
+| `tls_trust_file` | system CAs | Path to CA certificate bundle |
+
+### Client Certificate Options (Self-hosted servers only)
+
+| Field | Default | Description |
+|-------|---------|-------------|
+| `tls_cert_file` | (none) | Path to client certificate (for mutual TLS) |
+| `tls_key_file` | (none) | Path to client certificate key |
+
+> **Note:** Cloud providers (Gmail, M365, SendGrid, AWS SES, etc.) do NOT support client certificate authentication. These options are only for self-hosted mail servers.
+
+### Advanced Options
+
+| Field | Default | Description |
+|-------|---------|-------------|
+| `auth_method` | auto | Auth method: `plain`, `login`, `cram-md5`, `oauthbearer`, `xoauth2`, `external` |
 
 ---
 

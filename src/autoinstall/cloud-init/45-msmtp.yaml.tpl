@@ -10,7 +10,11 @@ write_files:
       defaults
       auth           on
       tls            on
+{% if smtp.tls_trust_file is defined %}
+      tls_trust_file {{ smtp.tls_trust_file }}
+{% else %}
       tls_trust_file /etc/ssl/certs/ca-certificates.crt
+{% endif %}
       logfile        /var/log/msmtp.log
 
       account        default
@@ -18,7 +22,32 @@ write_files:
       port           {{ smtp.port | default(587) }}
       from           {{ smtp.from_email }}
       user           {{ smtp.user }}
+{% if smtp.password is defined %}
+      password       {{ smtp.password }}
+{% else %}
       passwordeval   "cat /etc/msmtp-password"
+{% endif %}
+{% if smtp.tls_starttls is defined %}
+      tls_starttls   {{ 'on' if smtp.tls_starttls else 'off' }}
+{% endif %}
+{% if smtp.tls_certcheck is defined and not smtp.tls_certcheck %}
+      tls_certcheck  off
+{% endif %}
+{% if smtp.tls_on_connect is defined and smtp.tls_on_connect %}
+      tls_starttls   off
+{% endif %}
+{% if smtp.tls_key_file is defined %}
+      tls_key_file   {{ smtp.tls_key_file }}
+{% endif %}
+{% if smtp.tls_cert_file is defined %}
+      tls_cert_file  {{ smtp.tls_cert_file }}
+{% endif %}
+{% if smtp.auth_method is defined %}
+      auth           {{ smtp.auth_method }}
+{% endif %}
+{% if smtp.passwordeval is defined %}
+      passwordeval   {{ smtp.passwordeval }}
+{% endif %}
 
   - path: /etc/aliases
     permissions: '0644'
