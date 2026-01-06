@@ -5,6 +5,8 @@ import re
 from pathlib import Path
 import yaml
 
+from .composer import deep_merge
+
 
 class BuildContext:
     """
@@ -14,6 +16,9 @@ class BuildContext:
     Auto-unwrap: If a config has only one top-level key AND that key
     matches the filename, unwrap it. e.g., identity.config.yaml with
     'identity:' unwraps, but network.config.yaml with 'host:' does not.
+
+    Testing mode: When testing.config.yaml exists and has testing: true,
+    nested config keys (like network:) override their main config counterparts.
 
     Environment variables override config values after loading.
     """
@@ -36,11 +41,36 @@ class BuildContext:
                             content = content[only_key]
                     self._data[key] = content
 
+        # Apply testing config overrides (if testing: true)
+        self._apply_testing_overrides()
+
         # Build path index for env var matching
         self._index_paths(self._data, [])
 
         # Apply environment variable overrides
         self._apply_env_overrides(env_prefix)
+
+    def _apply_testing_overrides(self):
+        """Apply nested config overrides from testing.config.yaml when testing: true."""
+        testing_config = self._data.get('testing', {})
+        if not isinstance(testing_config, dict):
+            return
+
+        # Check if testing mode is enabled
+        if not testing_config.get('testing', False):
+            return
+
+        # Apply nested configs as overrides to their main counterparts
+        for key, value in testing_config.items():
+            if key == 'testing':
+                # Skip the testing flag itself
+                continue
+            if key in self._data and isinstance(value, dict):
+                # Deep merge testing override into main config
+                self._data[key] = deep_merge(self._data[key], value)
+            elif isinstance(value, dict):
+                # New config section from testing
+                self._data[key] = value
 
     def _index_paths(self, obj, path):
         """Recursively index all paths in the config tree."""
