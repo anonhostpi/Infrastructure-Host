@@ -1,6 +1,6 @@
 write_files:
   - path: /etc/sysctl.d/99-security.conf
-    permissions: '0644'
+    permissions: '644'
     content: |
       # Reverse path filtering (prevents IP spoofing)
       net.ipv4.conf.all.rp_filter = 1
