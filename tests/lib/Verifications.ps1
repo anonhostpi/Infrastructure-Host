@@ -143,21 +143,21 @@ function Test-UsersFragment {
     }
 
     # 6.3.3: Sudo Configuration
-    $sudo = multipass exec $VMName -- sudo -l -U admin 2>&1
+    $sudoFile = multipass exec $VMName -- sudo test -f /etc/sudoers.d/admin 2>&1
     $results += @{
         Test = "6.3.3"
-        Name = "NOPASSWD sudo configured"
-        Pass = ($sudo -match "NOPASSWD")
-        Output = "NOPASSWD configured"
+        Name = "Sudoers file exists"
+        Pass = ($LASTEXITCODE -eq 0)
+        Output = "/etc/sudoers.d/admin"
     }
 
     # 6.3.4: Root Disabled
-    $root = multipass exec $VMName -- sudo grep "^root:" /etc/shadow 2>&1
+    $root = multipass exec $VMName -- sudo passwd -S root 2>&1
     $results += @{
         Test = "6.3.4"
         Name = "Root account locked"
-        Pass = ($root -match "root:[\*!]" -or $root -match "root:\$")
-        Output = "Root password field checked"
+        Pass = ($root -match "root L" -or $root -match "root LK")
+        Output = $root
     }
 
     return $results

@@ -4,8 +4,8 @@
 # Fragment order for incremental testing
 # Each test level includes all fragments from previous levels
 #
-# NOTE: Fragments 20-users and 30-ufw have testing mode support via testing.config.yaml
-# When testing: true, they include multipass-compatibility logic (preserving default user, etc.)
+# testing.config.yaml enables multipass-specific network protection (skip NAT interface).
+# The users fragment uses runcmd to avoid interfering with cloud provider's default user.
 $Script:FragmentMap = [ordered]@{
     "6.1"  = @{ Fragments = @("10-network"); Name = "Network" }
     "6.2"  = @{ Fragments = @("15-kernel"); Name = "Kernel Hardening" }
