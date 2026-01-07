@@ -17,7 +17,7 @@ New-Module -Name Test-Fragments -ScriptBlock {
             "6.5"  = @{ Fragments = @("30-ufw"); Name = "UFW Firewall" }
             "6.6"  = @{ Fragments = @("40-system"); Name = "System Settings" }
             "6.7"  = @{ Fragments = @("45-msmtp"); Name = "MSMTP Mail" }
-            "6.8"  = @{ Fragments = @("50-packages", "50-pkg-security"); Name = "Package Security" }
+            "6.8"  = @{ Fragments = @("50-packages", "50-pkg-security", "999-pkg-upgrade"); Name = "Package Security" }
             "6.9"  = @{ Fragments = @("55-security-mon"); Name = "Security Monitoring" }
             "6.10" = @{ Fragments = @("60-virtualization"); Name = "Virtualization" }
             "6.11" = @{ Fragments = @("70-cockpit"); Name = "Cockpit" }

@@ -722,6 +722,54 @@ function Test-PackageSecurityFragment {
         Output = $svc
     }
 
+    # 6.8.5: apt-listchanges installed
+    $listchanges = multipass exec $VMName -- dpkg -l apt-listchanges 2>&1
+    $results += @{
+        Test = "6.8.5"
+        Name = "apt-listchanges installed"
+        Pass = ($listchanges -match "ii.*apt-listchanges")
+        Output = "Package installed"
+    }
+
+    # 6.8.6: apt-listchanges configured for email
+    $listchangesConf = multipass exec $VMName -- bash -c 'cat /etc/apt/listchanges.conf' 2>&1
+    $results += @{
+        Test = "6.8.6"
+        Name = "apt-listchanges email config"
+        Pass = [bool]($listchangesConf -match "frontend=mail")
+        Output = "Changelogs sent via email"
+    }
+
+    # 6.8.7: apt-notify script exists
+    $notifyScript = multipass exec $VMName -- bash -c 'test -x /usr/local/bin/apt-notify' 2>&1
+    $results += @{
+        Test = "6.8.7"
+        Name = "apt-notify script exists"
+        Pass = ($LASTEXITCODE -eq 0)
+        Output = "/usr/local/bin/apt-notify"
+    }
+
+    # 6.8.8: dpkg hooks configured
+    $dpkgHook = multipass exec $VMName -- bash -c 'cat /etc/apt/apt.conf.d/90pkg-notify' 2>&1
+    $hookConfigured = [bool]($dpkgHook -match "DPkg::Pre-Invoke" -and $dpkgHook -match "DPkg::Post-Invoke")
+    $results += @{
+        Test = "6.8.8"
+        Name = "dpkg notification hooks"
+        Pass = $hookConfigured
+        Output = "Pre/Post-Invoke hooks configured"
+    }
+
+    # 6.8.9: Verbose unattended-upgrades reporting
+    $uuConf = multipass exec $VMName -- bash -c 'cat /etc/apt/apt.conf.d/50unattended-upgrades' 2>&1
+    $verboseEnabled = [bool]($uuConf -match 'Verbose.*"true"')
+    $mailAlways = [bool]($uuConf -match 'MailReport.*"always"')
+    $results += @{
+        Test = "6.8.9"
+        Name = "Verbose upgrade reporting"
+        Pass = ($verboseEnabled -and $mailAlways)
+        Output = "Verbose=true, MailReport=always"
+    }
+
     return $results
 }
 
