@@ -339,6 +339,8 @@ function Test-MSMTPFragment {
     param([string]$VMName)
 
     $results = @()
+    $config = Get-TestConfig
+    $smtp = $config.smtp
 
     # 6.7.1: msmtp installed
     $msmtp = multipass exec $VMName -- which msmtp 2>&1
@@ -349,8 +351,8 @@ function Test-MSMTPFragment {
         Output = $msmtp
     }
 
-    # 6.7.2: msmtp config
-    $config = multipass exec $VMName -- test -f /etc/msmtprc 2>&1
+    # 6.7.2: msmtp config exists
+    $configExists = multipass exec $VMName -- test -f /etc/msmtprc 2>&1
     $results += @{
         Test = "6.7.2"
         Name = "msmtp config exists"
@@ -358,7 +360,7 @@ function Test-MSMTPFragment {
         Output = "/etc/msmtprc"
     }
 
-    # 6.7.3: mail alias
+    # 6.7.3: mail alias (sendmail -> msmtp)
     $alias = multipass exec $VMName -- test -L /usr/sbin/sendmail 2>&1
     $aliasOk = ($LASTEXITCODE -eq 0)
     if (-not $aliasOk) {
@@ -372,7 +374,311 @@ function Test-MSMTPFragment {
         Output = "/usr/sbin/sendmail"
     }
 
+    # Skip config verification tests if smtp not configured
+    if (-not $smtp -or -not $smtp.host) {
+        return $results
+    }
+
+    # Read the msmtprc content for verification (sudo needed due to 600 permissions)
+    $msmtprc = multipass exec $VMName -- bash -c 'sudo cat /etc/msmtprc' 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        return $results
+    }
+
+    # 6.7.4: Verify config values match YAML
+    $hostMatch = [bool]($msmtprc -match "host\s+$([regex]::Escape($smtp.host))")
+    $results += @{
+        Test = "6.7.4"
+        Name = "Config host matches"
+        Pass = $hostMatch
+        Output = "host: $($smtp.host)"
+    }
+
+    $expectedPort = if ($smtp.port) { $smtp.port } else { 587 }
+    $portMatch = [bool]($msmtprc -match "port\s+$expectedPort")
+    $results += @{
+        Test = "6.7.4"
+        Name = "Config port matches"
+        Pass = $portMatch
+        Output = "port: $expectedPort"
+    }
+
+    $fromMatch = [bool]($msmtprc -match "from\s+$([regex]::Escape($smtp.from_email))")
+    $results += @{
+        Test = "6.7.4"
+        Name = "Config from_email matches"
+        Pass = $fromMatch
+        Output = "from: $($smtp.from_email)"
+    }
+
+    $userMatch = [bool]($msmtprc -match "user\s+$([regex]::Escape($smtp.user))")
+    $results += @{
+        Test = "6.7.4"
+        Name = "Config user matches"
+        Pass = $userMatch
+        Output = "user: $($smtp.user)"
+    }
+
+    # 6.7.5: Provider-specific configuration verification
+    $providerName = Get-SMTPProviderName -SmtpHost $smtp.host -SmtpPort $smtp.port
+    $providerValid = $true
+    $providerOutput = "Provider: $providerName"
+
+    switch -Regex ($smtp.host) {
+        "smtp\.sendgrid\.net" {
+            # SendGrid: user should be "apikey"
+            if ($smtp.user -ne "apikey") {
+                $providerValid = $false
+                $providerOutput = "SendGrid requires user='apikey'"
+            }
+        }
+        "email-smtp\..*\.amazonaws\.com" {
+            # AWS SES: port 587, standard TLS
+            if ($expectedPort -ne 587 -and $expectedPort -ne 465) {
+                $providerValid = $false
+                $providerOutput = "AWS SES requires port 587 or 465"
+            }
+        }
+        "smtp\.gmail\.com" {
+            # Gmail: check for OAuth2 if auth_method specified
+            if ($smtp.auth_method -match "oauth") {
+                if (-not $smtp.passwordeval) {
+                    $providerValid = $false
+                    $providerOutput = "Gmail OAuth2 requires passwordeval"
+                }
+            }
+        }
+        "127\.0\.0\.1|localhost" {
+            # Proton Bridge: requires tls_certcheck off for self-signed cert
+            if ($smtp.port -eq 1025) {
+                if ($smtp.tls_certcheck -ne $false) {
+                    $providerValid = $false
+                    $providerOutput = "Proton Bridge requires tls_certcheck: false"
+                }
+            }
+        }
+        "smtp\.office365\.com" {
+            # M365: port 587 required
+            if ($expectedPort -ne 587) {
+                $providerValid = $false
+                $providerOutput = "Microsoft 365 requires port 587"
+            }
+        }
+    }
+
+    $results += @{
+        Test = "6.7.5"
+        Name = "Provider config valid ($providerName)"
+        Pass = $providerValid
+        Output = $providerOutput
+    }
+
+    # 6.7.6: Authentication method verification
+    $authValid = $true
+    $authOutput = "auth: on (auto-detect)"
+
+    if ($smtp.auth_method) {
+        $validAuthMethods = @("plain", "login", "cram-md5", "oauthbearer", "xoauth2", "external", "gssapi", "on")
+        if ($smtp.auth_method -notin $validAuthMethods) {
+            $authValid = $false
+            $authOutput = "Invalid auth_method: $($smtp.auth_method)"
+        } else {
+            $authInConfig = $msmtprc -match "auth\s+$($smtp.auth_method)"
+            $authValid = $authInConfig
+            $authOutput = "auth: $($smtp.auth_method)"
+        }
+
+        # OAuth2 requires passwordeval
+        if ($smtp.auth_method -in @("oauthbearer", "xoauth2")) {
+            if (-not $smtp.passwordeval) {
+                $authValid = $false
+                $authOutput = "OAuth2 auth requires passwordeval for token retrieval"
+            }
+        }
+
+        # External auth requires client certificates
+        if ($smtp.auth_method -eq "external") {
+            if (-not $smtp.tls_cert_file -or -not $smtp.tls_key_file) {
+                $authValid = $false
+                $authOutput = "External auth requires tls_cert_file and tls_key_file"
+            }
+        }
+    }
+
+    $results += @{
+        Test = "6.7.6"
+        Name = "Auth method valid"
+        Pass = $authValid
+        Output = $authOutput
+    }
+
+    # 6.7.7: TLS settings verification
+    $tlsValid = $true
+    $tlsOutput = @()
+
+    # Check tls is enabled
+    $tlsOn = $msmtprc -match "tls\s+on"
+    if (-not $tlsOn) {
+        $tlsValid = $false
+        $tlsOutput += "TLS not enabled"
+    }
+
+    # Port 465 requires tls_starttls off (implicit TLS)
+    if ($expectedPort -eq 465) {
+        if ($smtp.tls_on_connect) {
+            $starttlsOff = $msmtprc -match "tls_starttls\s+off"
+            if (-not $starttlsOff) {
+                $tlsValid = $false
+                $tlsOutput += "Port 465 requires tls_starttls off"
+            } else {
+                $tlsOutput += "SMTPS (implicit TLS) configured"
+            }
+        }
+    }
+
+    # tls_certcheck verification
+    if ($smtp.tls_certcheck -eq $false) {
+        $certcheckOff = $msmtprc -match "tls_certcheck\s+off"
+        if (-not $certcheckOff) {
+            $tlsValid = $false
+            $tlsOutput += "tls_certcheck: false not applied"
+        } else {
+            $tlsOutput += "Certificate verification disabled"
+        }
+    }
+
+    # Client certificate verification
+    if ($smtp.tls_cert_file) {
+        $certFileInConfig = $msmtprc -match "tls_cert_file\s+$([regex]::Escape($smtp.tls_cert_file))"
+        if (-not $certFileInConfig) {
+            $tlsValid = $false
+            $tlsOutput += "tls_cert_file not configured"
+        } else {
+            $tlsOutput += "Client cert: $($smtp.tls_cert_file)"
+        }
+    }
+
+    if ($smtp.tls_key_file) {
+        $keyFileInConfig = $msmtprc -match "tls_key_file\s+$([regex]::Escape($smtp.tls_key_file))"
+        if (-not $keyFileInConfig) {
+            $tlsValid = $false
+            $tlsOutput += "tls_key_file not configured"
+        }
+    }
+
+    # Custom trust file
+    if ($smtp.tls_trust_file) {
+        $trustFileInConfig = $msmtprc -match "tls_trust_file\s+$([regex]::Escape($smtp.tls_trust_file))"
+        if (-not $trustFileInConfig) {
+            $tlsValid = $false
+            $tlsOutput += "Custom tls_trust_file not configured"
+        } else {
+            $tlsOutput += "Custom CA: $($smtp.tls_trust_file)"
+        }
+    }
+
+    if ($tlsOutput.Count -eq 0) { $tlsOutput = @("Standard TLS (STARTTLS)") }
+
+    $results += @{
+        Test = "6.7.7"
+        Name = "TLS settings valid"
+        Pass = $tlsValid
+        Output = $tlsOutput -join "; "
+    }
+
+    # 6.7.8: Password/passwordeval configuration
+    $credValid = $true
+    $credOutput = ""
+
+    if ($smtp.password) {
+        $pwInConfig = [bool]($msmtprc -match "password\s+")
+        $credValid = $pwInConfig
+        $credOutput = "Password configured inline"
+    } elseif ($smtp.passwordeval) {
+        $pwevalInConfig = [bool]($msmtprc -match "passwordeval\s+")
+        $credValid = $pwevalInConfig
+        $credOutput = "passwordeval: $($smtp.passwordeval)"
+    } else {
+        # Default: passwordeval from file
+        $defaultPweval = [bool]($msmtprc -match 'passwordeval.*cat.*/etc/msmtp-password')
+        $credValid = $defaultPweval
+        $credOutput = "Password from /etc/msmtp-password (run msmtp-config)"
+    }
+
+    $results += @{
+        Test = "6.7.8"
+        Name = "Credential config valid"
+        Pass = $credValid
+        Output = $credOutput
+    }
+
+    # 6.7.9: Aliases configuration
+    $aliases = multipass exec $VMName -- bash -c 'sudo cat /etc/aliases' 2>&1
+    $aliasValid = [bool]($aliases -match "root:\s*$([regex]::Escape($smtp.recipient))")
+    $results += @{
+        Test = "6.7.9"
+        Name = "Root alias configured"
+        Pass = $aliasValid
+        Output = "root -> $($smtp.recipient)"
+    }
+
+    # 6.7.10: msmtp-config helper script
+    $helperExists = multipass exec $VMName -- bash -c 'test -x /usr/local/bin/msmtp-config' 2>&1
+    $results += @{
+        Test = "6.7.10"
+        Name = "msmtp-config helper exists"
+        Pass = ($LASTEXITCODE -eq 0)
+        Output = "/usr/local/bin/msmtp-config"
+    }
+
+    # 6.7.11: Send test email (only if password is configured inline)
+    if ($smtp.password -and $smtp.recipient -and $credValid) {
+        $hostname = multipass exec $VMName -- hostname 2>&1
+        $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+        # Use sudo since /etc/msmtprc has 600 permissions owned by root
+        $testEmailCmd = @"
+echo -e "Subject: [Test] MSMTP Config Validation\n\nThis is an automated test email from Infrastructure-Host test framework.\n\nHostname: $hostname\nTimestamp: $timestamp\nProvider: $providerName" | sudo msmtp '$($smtp.recipient)'
+"@
+        $sendResult = multipass exec $VMName -- bash -c $testEmailCmd 2>&1
+        $sendExitCode = $LASTEXITCODE
+
+        $results += @{
+            Test = "6.7.11"
+            Name = "Test email sent"
+            Pass = ($sendExitCode -eq 0)
+            Output = if ($sendExitCode -eq 0) { "Email sent to $($smtp.recipient)" } else { "Send failed: $sendResult" }
+        }
+    }
+
     return $results
+}
+
+# Helper function to identify SMTP provider from hostname
+function Get-SMTPProviderName {
+    param(
+        [string]$SmtpHost,
+        [int]$SmtpPort
+    )
+
+    switch -Regex ($SmtpHost) {
+        "smtp\.sendgrid\.net"           { return "SendGrid" }
+        "email-smtp\..*\.amazonaws\.com" { return "AWS SES" }
+        "smtp\.mailgun\.org"            { return "Mailgun" }
+        "smtp\.postmarkapp\.com"        { return "Postmark" }
+        "smtp\.office365\.com"          { return "Microsoft 365" }
+        "smtp\.gmail\.com"              { return "Gmail" }
+        "smtp\.fastmail\.com"           { return "Fastmail" }
+        "smtp\.zoho\.(com|eu|in|com\.au|jp)" { return "Zoho" }
+        "smtps?\.zoho\.(com|eu|in|com\.au|jp)" { return "Zoho" }
+        "smtp\.mail\.yahoo\.com"        { return "Yahoo" }
+        "smtp\.mail\.me\.com"           { return "iCloud" }
+        "smtp\.protonmail\.ch"          { return "Proton Mail" }
+        "127\.0\.0\.1|localhost" {
+            if ($SmtpPort -eq 1025) { return "Proton Bridge" }
+            return "Local Server"
+        }
+        default { return "Self-hosted" }
+    }
 }
 
 function Test-PackageSecurityFragment {
