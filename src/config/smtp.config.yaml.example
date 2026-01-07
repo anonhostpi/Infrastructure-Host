@@ -463,6 +463,14 @@ smtp:
   # Advanced options:
   # auth_method: plain             # Override auth method if needed
 
+  # Package notification batching interval (default: 2m)
+  # Format: number + unit (s=seconds, m=minutes, h=hours)
+  # Examples: 1m, 2m, 5m
+  # All changes are queued; when timer expires, aggregated email is sent.
+  # Rolling timer: restarts after each send if more changes queued.
+  # Goes dormant when timer expires with empty queue.
+  # notification_interval: 2m
+
 # =============================================================================
 # EXAMPLE CONFIGURATIONS
 # =============================================================================

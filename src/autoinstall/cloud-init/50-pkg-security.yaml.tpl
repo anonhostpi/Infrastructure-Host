@@ -55,97 +55,360 @@ write_files:
       DPkg::Pre-Invoke { "/usr/local/bin/apt-notify pre"; };
       DPkg::Post-Invoke { "/usr/local/bin/apt-notify post"; };
 
-  # Package notification script
+  # Shared library for apt-notify scripts
+  - path: /usr/local/lib/apt-notify/common.sh
+    permissions: '644'
+    content: |
+      #!/bin/bash
+      # Shared functions for apt-notify and apt-notify-flush
+
+      # Configuration
+      STATE_DIR="/var/lib/apt-notify"
+      STATE_FILE="/var/run/apt-notify.state"
+      QUEUE_FILE="$STATE_DIR/queue"
+      TIMER_FILE="$STATE_DIR/timer"
+      LOG_FILE="$STATE_DIR/apt-notify.log"
+      BATCH_INTERVAL="{{ smtp.notification_interval | default('2m') }}"
+      OPENCODE_HOME="/home/{{ identity.username }}"
+
+      mkdir -p "$STATE_DIR"
+
+      # Logging function
+      log() {
+        local msg="$1"
+        local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+        echo "[$timestamp] $msg" >> "$LOG_FILE"
+        logger -t apt-notify "$msg"
+      }
+
+      # Resolve root alias from /etc/aliases (msmtp doesn't do this automatically)
+      get_mail_recipient() {
+        grep "^root:" /etc/aliases 2>/dev/null | cut -d: -f2 | tr -d ' ' || echo "root"
+      }
+
+      # Convert interval like "5m" to seconds
+      interval_to_seconds() {
+        local val="${1%[smhd]}"
+        local unit="${1: -1}"
+        case "$unit" in
+          s) echo "$val" ;;
+          m) echo $((val * 60)) ;;
+          h) echo $((val * 3600)) ;;
+          d) echo $((val * 86400)) ;;
+          *) echo "$((val * 60))" ;;
+        esac
+      }
+
+      # Build report from changes (format: pkg:ver for installed, pkg:old:new for upgraded)
+      build_report() {
+        local installed="$1" upgraded="$2" removed="$3"
+        local NL=$'\n'
+        local report=""
+
+        if [ -n "$installed" ]; then
+          report+="=== NEW PACKAGES INSTALLED ===${NL}"
+          while IFS=: read -r pkg ver; do
+            report+="  + $pkg ($ver)${NL}"
+          done <<< "$installed"
+          report+="${NL}"
+        fi
+
+        if [ -n "$upgraded" ]; then
+          report+="=== PACKAGES UPGRADED ===${NL}"
+          while IFS=: read -r pkg old new; do
+            report+="  * $pkg: $old -> $new${NL}"
+          done <<< "$upgraded"
+          report+="${NL}"
+        fi
+
+        if [ -n "$removed" ]; then
+          report+="=== PACKAGES REMOVED ===${NL}"
+          while read -r pkg; do
+            report+="  - $pkg${NL}"
+          done <<< "$removed"
+          report+="${NL}"
+        fi
+
+        # Show held packages
+        local held=$(apt-mark showhold 2>/dev/null)
+        if [ -n "$held" ]; then
+          report+="=== PACKAGES ON HOLD (skipped) ===${NL}"
+          while read -r pkg; do
+            report+="  ~ $pkg (manually held)${NL}"
+          done <<< "$held"
+          report+="${NL}"
+        fi
+
+        # Show packages kept back
+        local kept_back=$(apt-get -s upgrade 2>/dev/null | grep "kept back" | sed 's/.*: //')
+        if [ -n "$kept_back" ]; then
+          report+="=== PACKAGES KEPT BACK (would require new deps or removals) ===${NL}"
+          for pkg in $kept_back; do
+            report+="  ~ $pkg${NL}"
+          done
+          report+="${NL}"
+        fi
+
+        echo "$report"
+      }
+
+      # Generate AI summary using opencode
+      generate_ai_summary() {
+        local report="$1"
+        local NL=$'\n'
+        if command -v opencode &>/dev/null; then
+          local prompt="Analyze these package changes and provide a brief changelog summary with bullet points covering: security fixes, improvements, optimizations, and notable changes. Format for quick reading by sysadmins/DevOps. Be concise but informative:${NL}${NL}${report}"
+          HOME="$OPENCODE_HOME" opencode run "$prompt" 2>/dev/null || true
+        fi
+      }
+
+      # Send notification email
+      # Usage: send_notification "report" ["subject_suffix"]
+      send_notification() {
+        local report="$1"
+        local suffix="${2:-}"
+        local mail_to=$(get_mail_recipient)
+        local hostname=$(hostname -f)
+        local subject="[$hostname] Package Changes${suffix} - $(date '+%Y-%m-%d %H:%M')"
+
+        log "Sending notification to $mail_to"
+        log "Generating AI summary..."
+        local ai_summary=$(generate_ai_summary "$report")
+        if [ -n "$ai_summary" ]; then
+          local summary_len=$(echo -n "$ai_summary" | wc -c)
+          log "AI summary generated ($summary_len chars)"
+        else
+          log "No AI summary (opencode not available or failed)"
+        fi
+
+        {
+          echo "Subject: $subject"
+          echo ""
+          if [ -n "$ai_summary" ]; then
+            echo "=== AI SUMMARY ==="
+            echo "$ai_summary"
+            echo ""
+            echo "---"
+            echo ""
+          fi
+          echo "Package changes on $hostname at $(date)"
+          echo ""
+          echo "$report"
+        } | msmtp "$mail_to" 2>&1 | while read line; do log "msmtp: $line"; done
+        local status=${PIPESTATUS[1]}
+        if [ $status -eq 0 ]; then
+          log "Email sent successfully"
+        else
+          log "ERROR: msmtp failed with exit code $status"
+        fi
+      }
+
+      # Schedule the flush timer using systemd-run
+      schedule_flush_timer() {
+        local interval_secs=$(interval_to_seconds "$BATCH_INTERVAL")
+        log "Scheduling flush timer for ${interval_secs}s (interval: $BATCH_INTERVAL)"
+        systemctl stop apt-notify-flush.timer 2>/dev/null || true
+        local result=$(systemd-run --unit=apt-notify-flush --on-active="${interval_secs}s" /usr/local/bin/apt-notify-flush 2>&1)
+        local status=$?
+        if [ $status -eq 0 ]; then
+          log "Timer scheduled successfully: $result"
+          echo "$(date +%s)" > "$TIMER_FILE"
+        else
+          log "ERROR: Failed to schedule timer (exit $status): $result"
+        fi
+      }
+
+      # Check if timer is currently active
+      timer_active() {
+        if [ -f "$TIMER_FILE" ]; then
+          if systemctl is-active apt-notify-flush.timer &>/dev/null; then
+            return 0
+          else
+            log "Timer file exists but timer not active, cleaning up"
+            rm -f "$TIMER_FILE"
+            return 1
+          fi
+        fi
+        return 1
+      }
+
+      # Queue changes for later sending
+      queue_changes() {
+        local installed="$1" upgraded="$2" removed="$3"
+        local count=0
+        {
+          [ -n "$installed" ] && while IFS=: read -r pkg ver; do
+            echo "INSTALLED:$pkg:$ver"
+            ((count++))
+          done <<< "$installed"
+          [ -n "$upgraded" ] && while IFS=: read -r pkg old new; do
+            echo "UPGRADED:$pkg:$old:$new"
+            ((count++))
+          done <<< "$upgraded"
+          [ -n "$removed" ] && while read -r pkg; do
+            echo "REMOVED:$pkg"
+            ((count++))
+          done <<< "$removed"
+        } >> "$QUEUE_FILE"
+        log "Queued $count package changes"
+      }
+
+  # Package notification script with batching support
   - path: /usr/local/bin/apt-notify
     permissions: '755'
     content: |
       #!/bin/bash
       # Notify on package install/upgrade/remove operations
+      # Supports batching: first notification immediate, subsequent queued until timer expires
 
-      STATE_FILE="/var/run/apt-notify.state"
-      # Resolve root alias from /etc/aliases (msmtp doesn't do this automatically)
-      MAIL_TO=$(grep "^root:" /etc/aliases 2>/dev/null | cut -d: -f2 | tr -d ' ' || echo "root")
-      HOSTNAME=$(hostname -f)
+      source /usr/local/lib/apt-notify/common.sh
 
       case "$1" in
         pre)
+          log "apt-notify pre: capturing package state"
           # Capture package state before operation
           dpkg-query -W -f='${Package} ${Version} ${Status}\n' 2>/dev/null | \
             grep ' installed$' | cut -d' ' -f1,2 > "$STATE_FILE.before"
+          log "apt-notify pre: captured $(wc -l < "$STATE_FILE.before") packages"
           ;;
+
         post)
+          log "apt-notify post: processing changes"
           # Skip if no state file (first run or error)
-          [ ! -f "$STATE_FILE.before" ] && exit 0
+          if [ ! -f "$STATE_FILE.before" ]; then
+            log "apt-notify post: no state file, skipping"
+            exit 0
+          fi
 
           # Capture package state after operation
           dpkg-query -W -f='${Package} ${Version} ${Status}\n' 2>/dev/null | \
             grep ' installed$' | cut -d' ' -f1,2 > "$STATE_FILE.after"
+          log "apt-notify post: captured $(wc -l < "$STATE_FILE.after") packages after"
 
-          # Compute differences
-          INSTALLED=$(comm -13 <(cut -d' ' -f1 "$STATE_FILE.before" | sort) \
-                               <(cut -d' ' -f1 "$STATE_FILE.after" | sort))
+          # Compute differences (format: pkg:version or pkg:old:new)
+          INSTALLED=""
+          for pkg in $(comm -13 <(cut -d' ' -f1 "$STATE_FILE.before" | sort) \
+                                <(cut -d' ' -f1 "$STATE_FILE.after" | sort)); do
+            ver=$(grep "^$pkg " "$STATE_FILE.after" | cut -d' ' -f2)
+            [ -n "$INSTALLED" ] && INSTALLED+=$'\n'
+            INSTALLED+="$pkg:$ver"
+          done
+
           REMOVED=$(comm -23 <(cut -d' ' -f1 "$STATE_FILE.before" | sort) \
                              <(cut -d' ' -f1 "$STATE_FILE.after" | sort))
-          UPGRADED=$(join -j1 <(sort "$STATE_FILE.before") <(sort "$STATE_FILE.after") | \
-                     awk '$2 != $3 {print $1 ": " $2 " -> " $3}')
 
-          # Only send email if there were changes
+          UPGRADED=""
+          while read -r pkg old new; do
+            [ -n "$UPGRADED" ] && UPGRADED+=$'\n'
+            UPGRADED+="$pkg:$old:$new"
+          done < <(join -j1 <(sort "$STATE_FILE.before") <(sort "$STATE_FILE.after") | \
+                   awk '$2 != $3 {print $1, $2, $3}')
+
+          # Count changes
+          n_installed=$([ -n "$INSTALLED" ] && echo "$INSTALLED" | wc -l || echo 0)
+          n_removed=$([ -n "$REMOVED" ] && echo "$REMOVED" | wc -l || echo 0)
+          n_upgraded=$([ -n "$UPGRADED" ] && echo "$UPGRADED" | wc -l || echo 0)
+          log "apt-notify post: found $n_installed installed, $n_upgraded upgraded, $n_removed removed"
+
+          # Only process if there were changes
           if [ -n "$INSTALLED" ] || [ -n "$REMOVED" ] || [ -n "$UPGRADED" ]; then
-            {
-              echo "Subject: [$HOSTNAME] Package Changes - $(date '+%Y-%m-%d %H:%M')"
-              echo ""
-              echo "Package changes on $HOSTNAME at $(date)"
-              echo ""
-
-              if [ -n "$INSTALLED" ]; then
-                echo "=== NEW PACKAGES INSTALLED ==="
-                for pkg in $INSTALLED; do
-                  ver=$(grep "^$pkg " "$STATE_FILE.after" | cut -d' ' -f2)
-                  echo "  + $pkg ($ver)"
-                done
-                echo ""
-              fi
-
-              if [ -n "$UPGRADED" ]; then
-                echo "=== PACKAGES UPGRADED ==="
-                echo "$UPGRADED" | while read line; do
-                  echo "  * $line"
-                done
-                echo ""
-              fi
-
-              if [ -n "$REMOVED" ]; then
-                echo "=== PACKAGES REMOVED ==="
-                for pkg in $REMOVED; do
-                  echo "  - $pkg"
-                done
-                echo ""
-              fi
-
-              # Show held packages (skipped by upgrade)
-              HELD=$(apt-mark showhold 2>/dev/null)
-              if [ -n "$HELD" ]; then
-                echo "=== PACKAGES ON HOLD (skipped) ==="
-                echo "$HELD" | while read pkg; do
-                  echo "  ~ $pkg (manually held)"
-                done
-                echo ""
-              fi
-
-              # Show packages kept back by apt upgrade
-              KEPT_BACK=$(apt-get -s upgrade 2>/dev/null | grep "kept back" | sed 's/.*: //')
-              if [ -n "$KEPT_BACK" ]; then
-                echo "=== PACKAGES KEPT BACK (would require new deps or removals) ==="
-                for pkg in $KEPT_BACK; do
-                  echo "  ~ $pkg"
-                done
-                echo ""
-              fi
-
-            } | msmtp "$MAIL_TO" 2>/dev/null || true
+            # Always queue changes
+            queue_changes "$INSTALLED" "$UPGRADED" "$REMOVED"
+            # Start timer if not already running
+            if ! timer_active; then
+              log "apt-notify post: timer not active, scheduling"
+              schedule_flush_timer
+            else
+              log "apt-notify post: timer already active, changes queued"
+            fi
+          else
+            log "apt-notify post: no changes detected"
           fi
 
-          # Cleanup
+          # Cleanup state files
           rm -f "$STATE_FILE.before" "$STATE_FILE.after"
           ;;
       esac
+
+  # Flush script for batched notifications
+  - path: /usr/local/bin/apt-notify-flush
+    permissions: '755'
+    content: |
+      #!/bin/bash
+      # Flush queued package notifications with deduplication
+
+      source /usr/local/lib/apt-notify/common.sh
+
+      log "apt-notify-flush: starting flush"
+
+      # Clear timer state
+      rm -f "$TIMER_FILE"
+
+      # Check if queue has content
+      if [ ! -s "$QUEUE_FILE" ]; then
+        log "apt-notify-flush: queue empty, going dormant"
+        rm -f "$QUEUE_FILE"
+        exit 0
+      fi
+
+      queue_lines=$(wc -l < "$QUEUE_FILE")
+      log "apt-notify-flush: processing queue with $queue_lines entries"
+
+      # Deduplicate queue: keep final state for each package
+      declare -A pkg_installed pkg_upgraded pkg_removed
+
+      while IFS=: read -r action pkg rest; do
+        case "$action" in
+          INSTALLED)
+            unset pkg_removed["$pkg"]
+            pkg_installed["$pkg"]="$rest"
+            ;;
+          UPGRADED)
+            pkg_upgraded["$pkg"]="$rest"
+            ;;
+          REMOVED)
+            unset pkg_installed["$pkg"]
+            unset pkg_upgraded["$pkg"]
+            pkg_removed["$pkg"]=1
+            ;;
+        esac
+      done < "$QUEUE_FILE"
+
+      # Build deduplicated lists
+      NL=$'\n'
+      INSTALLED="" UPGRADED="" REMOVED=""
+
+      for pkg in "${!pkg_installed[@]}"; do
+        [ -n "$INSTALLED" ] && INSTALLED+="$NL"
+        INSTALLED+="$pkg:${pkg_installed[$pkg]}"
+      done
+
+      for pkg in "${!pkg_upgraded[@]}"; do
+        [ -n "$UPGRADED" ] && UPGRADED+="$NL"
+        IFS=: read -r old new <<< "${pkg_upgraded[$pkg]}"
+        UPGRADED+="$pkg:$old:$new"
+      done
+
+      for pkg in "${!pkg_removed[@]}"; do
+        [ -n "$REMOVED" ] && REMOVED+="$NL"
+        REMOVED+="$pkg"
+      done
+
+      # Clear queue
+      rm -f "$QUEUE_FILE"
+
+      # Count after dedup
+      n_installed=$(echo "${!pkg_installed[@]}" | wc -w)
+      n_upgraded=$(echo "${!pkg_upgraded[@]}" | wc -w)
+      n_removed=$(echo "${!pkg_removed[@]}" | wc -w)
+      log "apt-notify-flush: after dedup: $n_installed installed, $n_upgraded upgraded, $n_removed removed"
+
+      # Build and send report if there are changes after dedup
+      if [ -n "$INSTALLED" ] || [ -n "$UPGRADED" ] || [ -n "$REMOVED" ]; then
+        log "apt-notify-flush: building and sending report"
+        REPORT=$(build_report "$INSTALLED" "$UPGRADED" "$REMOVED")
+        send_notification "$REPORT"
+        log "apt-notify-flush: complete"
+      else
+        log "apt-notify-flush: no changes after dedup, nothing to send"
+      fi
