@@ -63,7 +63,8 @@ write_files:
       # Notify on package install/upgrade/remove operations
 
       STATE_FILE="/var/run/apt-notify.state"
-      MAIL_TO="root"
+      # Resolve root alias from /etc/aliases (msmtp doesn't do this automatically)
+      MAIL_TO=$(grep "^root:" /etc/aliases 2>/dev/null | cut -d: -f2 | tr -d ' ' || echo "root")
       HOSTNAME=$(hostname -f)
 
       case "$1" in
