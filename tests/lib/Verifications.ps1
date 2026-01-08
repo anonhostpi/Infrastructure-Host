@@ -882,7 +882,7 @@ function Test-VirtualizationFragment {
     # 6.10.8: Nested VM test - only run if KVM is available
     if ($kvmAvailable) {
         $nestedVMName = "nested-test-vm"
-        $nestedLaunch = multipass exec $VMName -- bash -c "multipass launch --name $nestedVMName --memory 512M --disk 2G --cpus 1 --timeout 300 2>&1" 2>&1
+        $nestedLaunch = multipass exec $VMName -- bash -c "multipass launch --name $nestedVMName --memory 512M --disk 4G --cpus 1 --timeout 300 2>&1" 2>&1
         $nestedLaunchCode = $LASTEXITCODE
 
         if ($nestedLaunchCode -eq 0) {
