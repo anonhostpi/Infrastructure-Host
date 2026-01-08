@@ -973,6 +973,113 @@ function Test-CockpitFragment {
         Output = "Package installed"
     }
 
+    # 6.11.4: Cockpit socket listening (detect configured port from socket config)
+    # The fragment defaults to 127.0.0.1:443 for security, but may be configured differently
+    # Config has two lines: "ListenStream=" (clears default) then "ListenStream=addr:port"
+    $socketConfig = multipass exec $VMName -- bash -c 'grep "ListenStream=.*:" /etc/systemd/system/cockpit.socket.d/listen.conf 2>/dev/null || echo "0.0.0.0:9090"' 2>&1
+    $listenMatch = [regex]::Match($socketConfig, '([0-9.]+):(\d+)')
+    $listenAddr = if ($listenMatch.Success) { $listenMatch.Groups[1].Value } else { "0.0.0.0" }
+    $listenPort = if ($listenMatch.Success) { $listenMatch.Groups[2].Value } else { "9090" }
+
+    # Activate the socket by making a request (cockpit uses socket activation)
+    multipass exec $VMName -- bash -c "curl -sk https://localhost:$listenPort/ > /dev/null 2>&1 || true" 2>&1 | Out-Null
+    Start-Sleep -Seconds 2
+
+    $listening = multipass exec $VMName -- bash -c "ss -tlnp | grep ':$listenPort'" 2>&1
+    $results += @{
+        Test = "6.11.4"
+        Name = "Cockpit socket listening"
+        Pass = ($listening -match ":$listenPort")
+        Output = if ($listening -match ":$listenPort") { "Listening on ${listenAddr}:${listenPort}" } else { "Port $listenPort not listening" }
+    }
+
+    # 6.11.5: Cockpit web interface responds (internal)
+    $httpResponse = multipass exec $VMName -- bash -c "curl -sk -o /dev/null -w '%{http_code}' https://localhost:$listenPort/" 2>&1
+    $httpOk = ($httpResponse -match "^(200|301|302)$")
+    $results += @{
+        Test = "6.11.5"
+        Name = "Cockpit web UI responds"
+        Pass = $httpOk
+        Output = if ($httpOk) { "HTTP $httpResponse on localhost:$listenPort" } else { "HTTP response: $httpResponse" }
+    }
+
+    # 6.11.6: Cockpit login page loads (check for login.js or login form elements)
+    $loginPage = multipass exec $VMName -- bash -c "curl -sk https://localhost:$listenPort/ 2>/dev/null | grep -E 'login\.js|login\.css|login-pf' | head -1" 2>&1
+    $results += @{
+        Test = "6.11.6"
+        Name = "Cockpit login page loads"
+        Pass = [bool]$loginPage
+        Output = if ($loginPage) { "Login page accessible" } else { "Login page not found" }
+    }
+
+    # 6.11.7: Test Cockpit via SSH tunnel (if SSH keys configured)
+    # Cockpit is localhost-only by design, accessed via SSH local port forwarding
+    $testConfig = Get-TestConfig
+    $sshKeys = $testConfig.identity.ssh_authorized_keys
+    $sshUser = $testConfig.identity.username
+
+    $vmInfo = multipass info $VMName --format json 2>&1 | ConvertFrom-Json
+    $vmIp = $vmInfo.info.$VMName.ipv4 | Select-Object -First 1
+
+    if ($sshKeys -and $sshKeys.Count -gt 0 -and $vmIp) {
+        # Use a random high port for local forwarding to avoid conflicts
+        $localPort = Get-Random -Minimum 19000 -Maximum 19999
+
+        # Start SSH tunnel in background (-f for background, -N for no command)
+        # Using Start-Process to run in background on Windows
+        $sshArgs = "-o BatchMode=yes -o ConnectTimeout=10 -o StrictHostKeyChecking=no -o ExitOnForwardFailure=yes -L ${localPort}:127.0.0.1:${listenPort} -N ${sshUser}@${vmIp}"
+        $sshProcess = Start-Process -FilePath "ssh" -ArgumentList $sshArgs -PassThru -WindowStyle Hidden
+
+        # Wait for tunnel to establish
+        Start-Sleep -Seconds 3
+
+        if (-not $sshProcess.HasExited) {
+            try {
+                # Test Cockpit through the SSH tunnel
+                $response = Invoke-WebRequest -Uri "https://localhost:${localPort}/" -SkipCertificateCheck -TimeoutSec 10 -ErrorAction Stop
+                $results += @{
+                    Test = "6.11.7"
+                    Name = "Cockpit via SSH tunnel"
+                    Pass = ($response.StatusCode -eq 200)
+                    Output = "SSH tunnel localhost:${localPort} -> 127.0.0.1:${listenPort} - HTTP $($response.StatusCode)"
+                }
+            } catch {
+                $errorMsg = $_.Exception.Message
+                $results += @{
+                    Test = "6.11.7"
+                    Name = "Cockpit via SSH tunnel"
+                    Pass = $false
+                    Output = "SSH tunnel established but web request failed: $errorMsg"
+                }
+            } finally {
+                # Clean up SSH tunnel
+                Stop-Process -Id $sshProcess.Id -Force -ErrorAction SilentlyContinue
+            }
+        } else {
+            $results += @{
+                Test = "6.11.7"
+                Name = "Cockpit via SSH tunnel"
+                Pass = $false
+                Output = "SSH tunnel failed to establish (ensure private key is loaded in ssh-agent)"
+            }
+        }
+    } elseif ($sshKeys -and $sshKeys.Count -gt 0) {
+        $results += @{
+            Test = "6.11.7"
+            Name = "Cockpit via SSH tunnel"
+            Pass = $false
+            Output = "Could not get VM IP address"
+        }
+    } else {
+        # No SSH keys configured, skip test
+        $results += @{
+            Test = "6.11.7"
+            Name = "Cockpit via SSH tunnel"
+            Pass = $true
+            Output = "Skipped - no SSH keys configured"
+        }
+    }
+
     return $results
 }
 
