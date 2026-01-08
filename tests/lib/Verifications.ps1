@@ -201,7 +201,7 @@ function Test-SSHFragment {
     $results += @{
         Test = "6.4.3"
         Name = "SSH service active"
-        Pass = ($sshd -match "active")
+        Pass = ($sshd -match "^active$")
         Output = $sshd
     }
 
@@ -792,7 +792,7 @@ function Test-SecurityMonitoringFragment {
     $results += @{
         Test = "6.9.2"
         Name = "fail2ban service active"
-        Pass = ($status -match "active")
+        Pass = ($status -match "^active$")
         Output = $status
     }
 
@@ -827,7 +827,7 @@ function Test-VirtualizationFragment {
     $results += @{
         Test = "6.10.2"
         Name = "libvirtd service active"
-        Pass = ($svc -match "active")
+        Pass = ($svc -match "^active$")
         Output = $svc
     }
 
