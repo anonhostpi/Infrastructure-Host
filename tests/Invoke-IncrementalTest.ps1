@@ -9,6 +9,10 @@
     IMPORTANT: Every test run starts fresh - destroys existing VMs, rebuilds
     cloud-init, and runs ALL tests from 6.1 up to the specified level.
 
+    NOTE: This script requires an ELEVATED (Administrator) PowerShell session
+    to enable nested virtualization for the runner VM. Tests at level 6.10+
+    verify nested VM functionality which requires Hyper-V nested virtualization.
+
 .PARAMETER Level
     Test level to run (6.1 through 6.13). Runs all tests up to and including
     this level. Use "all" for full integration test (7.2).
@@ -62,7 +66,7 @@ Write-Host "Levels to test: $(Get-LevelsUpTo -Level $TestLevel)" -ForegroundColo
 Write-Host ""
 
 # Step 1: Clean up any existing VMs
-Write-Host "[1/5] Cleaning up existing VMs..." -ForegroundColor Cyan
+Write-Host "[1/6] Cleaning up existing VMs..." -ForegroundColor Cyan
 
 $existingRunner = multipass list --format csv 2>$null | Select-String "^$RunnerVMName,"
 if ($existingRunner) {
@@ -80,7 +84,7 @@ Write-Host "  Done" -ForegroundColor Green
 Write-Host ""
 
 # Step 2: Set up builder VM
-Write-Host "[2/5] Setting up builder VM..." -ForegroundColor Cyan
+Write-Host "[2/6] Setting up builder VM..." -ForegroundColor Cyan
 
 Write-Host "  Launching: $VMName"
 multipass launch --name $VMName --cpus $VMCpus --memory $VMMemory --disk $VMDisk
@@ -107,7 +111,7 @@ Write-Host "  Done" -ForegroundColor Green
 Write-Host ""
 
 # Step 3: Build cloud-init with selected fragments
-Write-Host "[3/5] Building cloud-init..." -ForegroundColor Cyan
+Write-Host "[3/6] Building cloud-init..." -ForegroundColor Cyan
 
 $fragments = Get-FragmentsForLevel -Level $TestLevel
 $includeArgs = Get-IncludeArgs -Level $TestLevel
@@ -129,7 +133,7 @@ Write-Host "  Done" -ForegroundColor Green
 Write-Host ""
 
 # Step 4: Launch runner VM with generated cloud-init
-Write-Host "[4/5] Launching runner VM..." -ForegroundColor Cyan
+Write-Host "[4/6] Launching runner VM..." -ForegroundColor Cyan
 
 Write-Host "  Name: $RunnerVMName"
 Write-Host "  Network: $RunnerNetwork"
@@ -146,6 +150,42 @@ if ($LASTEXITCODE -ne 0) {
     Write-Error "Failed to launch runner VM"
     exit 1
 }
+
+# Step 5: Enable nested virtualization (requires elevated shell)
+Write-Host "[5/6] Enabling nested virtualization..." -ForegroundColor Cyan
+
+# Check if running as administrator
+$isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+
+if ($isAdmin) {
+    Write-Host "  Stopping VM for reconfiguration..."
+    multipass stop $RunnerVMName
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warning "Failed to stop VM for nested virt configuration"
+    } else {
+        Write-Host "  Enabling ExposeVirtualizationExtensions..."
+        try {
+            Set-VMProcessor -VMName $RunnerVMName -ExposeVirtualizationExtensions $true
+            Write-Host "  Nested virtualization enabled" -ForegroundColor Green
+        } catch {
+            Write-Warning "Failed to enable nested virtualization: $_"
+        }
+
+        Write-Host "  Starting VM..."
+        multipass start $RunnerVMName
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "Failed to restart runner VM after nested virt configuration"
+            exit 1
+        }
+    }
+} else {
+    Write-Host "  WARNING: Not running as Administrator" -ForegroundColor Yellow
+    Write-Host "  Nested virtualization will NOT be enabled." -ForegroundColor Yellow
+    Write-Host "  Run this script in an elevated PowerShell to enable nested VM tests." -ForegroundColor Yellow
+}
+
+Write-Host "  Done" -ForegroundColor Green
+Write-Host ""
 
 Write-Host "  Waiting for cloud-init to complete..."
 multipass exec $RunnerVMName -- cloud-init status --wait
@@ -164,8 +204,8 @@ Start-Sleep -Seconds 5
 Write-Host "  Done" -ForegroundColor Green
 Write-Host ""
 
-# Step 5: Run all tests up to the specified level
-Write-Host "[5/5] Running tests..." -ForegroundColor Cyan
+# Step 6: Run all tests up to the specified level
+Write-Host "[6/6] Running tests..." -ForegroundColor Cyan
 Write-Host ""
 
 $allResults = @()
