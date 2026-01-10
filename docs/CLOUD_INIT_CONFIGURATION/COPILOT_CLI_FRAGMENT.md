@@ -34,7 +34,7 @@ The builder VM is temporal/ephemeral - it cannot be the source of truth.
 
 ### Extracting OAuth from Secure Storage (VM Host)
 
-Copilot CLI stores tokens in the OS secure credential store by default (Windows Credential Manager, macOS Keychain, Linux libsecret). To extract tokens for the build process, use the methods documented in `~/.copilot/HACKING.md`.
+Copilot CLI stores tokens in the OS secure credential store by default (Windows Credential Manager, macOS Keychain, Linux libsecret). Use the extraction methods below to retrieve tokens for the build process.
 
 #### Credential Storage Details
 
@@ -380,4 +380,3 @@ This fragment uses the `76-` prefix to run after OpenCode (75-).
 
 - [GitHub Copilot CLI Documentation](https://docs.github.com/en/copilot/github-copilot-in-the-cli)
 - [GitHub Copilot Subscription](https://github.com/features/copilot)
-- `~/.copilot/HACKING.md` - Credential extraction from secure storage (on VM host)
