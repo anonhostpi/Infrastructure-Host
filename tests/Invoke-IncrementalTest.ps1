@@ -36,7 +36,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet("6.1", "6.2", "6.3", "6.4", "6.5", "6.6", "6.7", "6.8", "6.9", "6.10", "6.11", "6.12", "6.13", "all")]
+    [ValidateSet("6.1", "6.2", "6.3", "6.4", "6.5", "6.6", "6.7", "6.8", "6.9", "6.10", "6.11", "6.12", "6.13", "6.14", "6.15", "all")]
     [string]$Level,
 
     [switch]$SkipCleanup
@@ -53,7 +53,7 @@ $RepoRoot = Split-Path -Parent $ScriptDir
 . "$RepoRoot\vm.config.ps1"
 
 # Determine actual test level
-$TestLevel = if ($Level -eq "all") { "6.13" } else { $Level }
+$TestLevel = if ($Level -eq "all") { "6.15" } else { $Level }
 
 # Banner
 Write-Host ""
@@ -106,6 +106,171 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host "  Installing dependencies..."
 multipass exec $VMName -- bash -c "sudo apt-get update -qq && sudo apt-get install -y -qq python3-pip python3-yaml python3-jinja2 make > /dev/null"
 multipass exec $VMName -- bash -c "cd /home/ubuntu/infra-host && pip3 install --break-system-packages -q -e . 2>/dev/null"
+
+Write-Host "  Done" -ForegroundColor Green
+Write-Host ""
+
+# Step 2b: Copy OAuth credentials from host to builder VM
+Write-Host "[2b/6] Setting up AI CLI credentials..." -ForegroundColor Cyan
+
+# Claude Code credentials
+$claudeCredsPath = "$env:USERPROFILE\.claude\.credentials.json"
+$claudeStatePath = "$env:USERPROFILE\.claude.json"
+$claudeCredsExist = (Test-Path $claudeCredsPath) -and (Test-Path $claudeStatePath)
+
+if ($claudeCredsExist) {
+    Write-Host "  Found Claude Code credentials on host"
+    multipass exec $VMName -- bash -c "mkdir -p /home/ubuntu/.claude"
+
+    # Copy credentials.json
+    $credsContent = Get-Content $claudeCredsPath -Raw
+    $credsContent = $credsContent -replace '"', '\"'
+    multipass exec $VMName -- bash -c "cat > /home/ubuntu/.claude/.credentials.json << 'EOFCREDS'
+$(Get-Content $claudeCredsPath -Raw)
+EOFCREDS"
+
+    # Copy state file
+    multipass exec $VMName -- bash -c "cat > /home/ubuntu/.claude.json << 'EOFSTATE'
+$(Get-Content $claudeStatePath -Raw)
+EOFSTATE"
+
+    Write-Host "  Copied Claude Code credentials to builder VM" -ForegroundColor Green
+} else {
+    Write-Host "  Claude Code credentials not found on host" -ForegroundColor Yellow
+    Write-Host "  Please authenticate Claude Code on this machine:" -ForegroundColor Yellow
+    Write-Host "    1. Run 'claude' in a terminal" -ForegroundColor Gray
+    Write-Host "    2. Complete the OAuth flow" -ForegroundColor Gray
+    Write-Host "    3. Re-run this test script" -ForegroundColor Gray
+    Write-Host ""
+    $response = Read-Host "  Continue without Claude Code auth? (y/N)"
+    if ($response -ne 'y' -and $response -ne 'Y') {
+        Write-Host "  Aborting. Please authenticate Claude Code first." -ForegroundColor Red
+        exit 1
+    }
+}
+
+# Copilot CLI credentials
+$copilotConfigPath = "$env:USERPROFILE\.copilot\config.json"
+$copilotCredsExist = $false
+
+if (Test-Path $copilotConfigPath) {
+    $copilotConfig = Get-Content $copilotConfigPath -Raw | ConvertFrom-Json
+    if ($copilotConfig.copilot_tokens -and ($copilotConfig.copilot_tokens.PSObject.Properties.Count -gt 0)) {
+        $copilotCredsExist = $true
+    }
+}
+
+if ($copilotCredsExist) {
+    Write-Host "  Found Copilot CLI credentials in config.json"
+    multipass exec $VMName -- bash -c "mkdir -p /home/ubuntu/.copilot"
+
+    # Copy config.json (contains copilot_tokens)
+    multipass exec $VMName -- bash -c "cat > /home/ubuntu/.copilot/config.json << 'EOFCOPILOT'
+$(Get-Content $copilotConfigPath -Raw)
+EOFCOPILOT"
+
+    Write-Host "  Copied Copilot CLI credentials to builder VM" -ForegroundColor Green
+} else {
+    # Try to extract from Windows Credential Manager using Node.js
+    $extractedToken = $false
+    $copilotDir = "$env:USERPROFILE\.copilot"
+
+    if (Test-Path $copilotDir) {
+        Write-Host "  Attempting to extract Copilot token from credential store..."
+
+        # Create extraction script
+        $extractScript = @'
+const path = require('path');
+const fs = require('fs');
+const os = require('os');
+
+const COPILOT_DIR = path.join(os.homedir(), '.copilot');
+const CONFIG_PATH = path.join(COPILOT_DIR, 'config.json');
+
+function findKeytar() {
+  const pkgDir = path.join(COPILOT_DIR, 'pkg');
+  const platforms = ['win32-x64', 'darwin-arm64', 'darwin-x64', 'linux-x64'];
+  for (const platform of platforms) {
+    const platformPath = path.join(pkgDir, platform);
+    if (fs.existsSync(platformPath)) {
+      const versions = fs.readdirSync(platformPath);
+      for (const version of versions) {
+        const nodePath = path.join(platformPath, version, 'prebuilds', platform, 'keytar.node');
+        if (fs.existsSync(nodePath)) return require(nodePath);
+      }
+    }
+  }
+  return null;
+}
+
+async function main() {
+  const keytar = findKeytar();
+  if (!keytar) { console.log('NO_KEYTAR'); return; }
+
+  const creds = await keytar.findCredentials('copilot-cli');
+  if (creds.length === 0) { console.log('NO_CREDS'); return; }
+
+  const config = fs.existsSync(CONFIG_PATH)
+    ? JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'))
+    : {};
+
+  config.copilot_tokens = config.copilot_tokens || {};
+  config.logged_in_users = config.logged_in_users || [];
+
+  for (const cred of creds) {
+    config.copilot_tokens[cred.account] = cred.password;
+    const [host, login] = cred.account.split(':');
+    if (!config.logged_in_users.find(u => u.host === host && u.login === login)) {
+      config.logged_in_users.push({ host, login });
+    }
+    if (!config.last_logged_in_user) {
+      config.last_logged_in_user = { host, login };
+    }
+  }
+
+  fs.writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2));
+  console.log('EXTRACTED');
+}
+
+main().catch(() => console.log('ERROR'));
+'@
+        $scriptPath = Join-Path $env:TEMP "extract-copilot-token.js"
+        $extractScript | Out-File -FilePath $scriptPath -Encoding utf8
+
+        try {
+            $result = node $scriptPath 2>&1
+            if ($result -eq "EXTRACTED") {
+                Write-Host "  Extracted token from credential store" -ForegroundColor Green
+                $extractedToken = $true
+
+                # Re-read and copy the updated config
+                multipass exec $VMName -- bash -c "mkdir -p /home/ubuntu/.copilot"
+                multipass exec $VMName -- bash -c "cat > /home/ubuntu/.copilot/config.json << 'EOFCOPILOT'
+$(Get-Content $copilotConfigPath -Raw)
+EOFCOPILOT"
+                Write-Host "  Copied Copilot CLI credentials to builder VM" -ForegroundColor Green
+            }
+        } catch {
+            # Node.js extraction failed
+        } finally {
+            Remove-Item $scriptPath -ErrorAction SilentlyContinue
+        }
+    }
+
+    if (-not $extractedToken) {
+        Write-Host "  Copilot CLI credentials not found" -ForegroundColor Yellow
+        Write-Host "  Please authenticate Copilot CLI on this machine:" -ForegroundColor Yellow
+        Write-Host "    1. Run 'copilot' in a terminal" -ForegroundColor Gray
+        Write-Host "    2. Use '/login' command to authenticate" -ForegroundColor Gray
+        Write-Host "    3. See ~/.copilot/HACKING.md for token migration" -ForegroundColor Gray
+        Write-Host ""
+        $response = Read-Host "  Continue without Copilot CLI auth? (y/N)"
+        if ($response -ne 'y' -and $response -ne 'Y') {
+            Write-Host "  Aborting. Please authenticate Copilot CLI first." -ForegroundColor Red
+            exit 1
+        }
+    }
+}
 
 Write-Host "  Done" -ForegroundColor Green
 Write-Host ""

@@ -8,6 +8,48 @@ Installs and configures OpenCode, an open-source AI coding agent for terminal us
 
 [OpenCode](https://github.com/anomalyco/opencode) is an AI-powered coding assistant available as a terminal interface. It helps with code navigation, feature implementation, and codebase understanding.
 
+## Authentication
+
+OpenCode supports multiple authentication methods. The most streamlined approach is **automatic credential derivation** from Claude Code and Copilot CLI.
+
+### Automatic Auth Derivation (Recommended)
+
+When Claude Code (6.14) and/or Copilot CLI (6.13) are configured with OAuth credentials, OpenCode's `auth.json` is automatically generated from those credentials:
+
+| OpenCode Provider | Source |
+|-------------------|--------|
+| `anthropic` | Claude Code OAuth credentials (`claude_code.auth.oauth`) |
+| `github-copilot` | Copilot CLI OAuth token (`copilot_cli.auth.oauth`) |
+
+**How it works:**
+
+1. Configure Claude Code and/or Copilot CLI with OAuth credentials
+2. The builder automatically derives OpenCode's auth from those credentials
+3. At render time, `auth.json` is generated with the appropriate tokens
+
+**Generated auth.json structure:**
+
+```json
+{
+  "anthropic": {
+    "type": "oauth",
+    "access": "<access_token>",
+    "refresh": "<refresh_token>",
+    "expires": 1736500000000
+  },
+  "github-copilot": {
+    "type": "oauth",
+    "refresh": "<github_oauth_token>"
+  }
+}
+```
+
+**Note:** The `github-copilot.access` token (Copilot API token) is fetched dynamically by OpenCode using the GitHub OAuth token.
+
+### Manual Auth Configuration
+
+You can also configure OpenCode auth directly in the config file or use environment variables for API keys.
+
 ## Template
 
 ```yaml
@@ -109,6 +151,9 @@ opencode:
 | `model` | Default model (provider/model-id) | `anthropic/claude-sonnet-4-5` |
 | `theme` | UI theme | `dark` |
 | `providers` | Provider configurations | - |
+| `auth` | OAuth credentials (auto-derived from Claude Code and Copilot CLI) | - |
+| `auth.anthropic` | Anthropic OAuth (from Claude Code) | - |
+| `auth.github_copilot` | GitHub Copilot OAuth (from Copilot CLI) | - |
 
 ---
 
@@ -221,7 +266,9 @@ opencode:
 
 ## Generated Configuration
 
-The template generates `~/.config/opencode/opencode.json`:
+The template generates two files:
+
+### Config: `~/.config/opencode/opencode.json`
 
 ```json
 {
@@ -238,6 +285,29 @@ The template generates `~/.config/opencode/opencode.json`:
   }
 }
 ```
+
+### Auth: `~/.local/share/opencode/auth.json`
+
+When Claude Code and/or Copilot CLI are configured with OAuth credentials:
+
+```json
+{
+  "anthropic": {
+    "type": "oauth",
+    "access": "<access_token>",
+    "refresh": "<refresh_token>",
+    "expires": 1736500000000
+  },
+  "github-copilot": {
+    "type": "oauth",
+    "refresh": "<github_oauth_token>"
+  }
+}
+```
+
+This file is automatically derived from:
+- `claude_code.auth.oauth` for the `anthropic` provider
+- `copilot_cli.auth.oauth` for the `github-copilot` provider
 
 ---
 
@@ -295,7 +365,14 @@ cat ~/.config/opencode/opencode.json
 
 ## Fragment Ordering
 
-This fragment uses the `75-` prefix to run after Cockpit (70-) but before UI Touches (90-).
+This fragment uses the `75-` prefix to run after Cockpit (70-) and before Copilot CLI (76-) and Claude Code (77-).
+
+| Fragment | Prefix | Section |
+|----------|--------|---------|
+| OpenCode | 75- | 6.12 |
+| Copilot CLI | 76- | 6.13 |
+| Claude Code | 77- | 6.14 |
+| UI Touches | 90- | 6.15 |
 
 ---
 

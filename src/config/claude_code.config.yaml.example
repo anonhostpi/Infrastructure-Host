@@ -1,0 +1,69 @@
+# Claude Code Configuration (Optional)
+# Copy to claude_code.config.yaml and fill in your values
+# THIS FILE IS TRACKED IN GIT - claude_code.config.yaml IS NOT
+#
+# Claude Code is Anthropic's official AI coding agent for terminal use.
+# See: https://claude.ai/code
+# Docs: https://docs.anthropic.com/en/docs/claude-code
+
+claude_code:
+  # Whether to install Claude Code during cloud-init
+  enabled: true
+
+  # Default model to use
+  # Available models: claude-opus-4-5-20250514, claude-sonnet-4-5-20250514
+  model: claude-sonnet-4-5-20250514
+
+  # ==========================================================================
+  # Authentication Configuration
+  # ==========================================================================
+  # Claude Code supports two authentication methods:
+  #
+  # 1. OAuth (Claude Max/Pro) - RECOMMENDED
+  #    Copy tokens from an already authenticated Claude Code instance.
+  #    Source: ~/.claude/.credentials.json on authenticated machine
+  #
+  # 2. API Key (Anthropic Console)
+  #    Traditional API key from https://console.anthropic.com/
+  #
+  # Choose ONE method. OAuth is preferred for Claude Max/Pro subscriptions.
+  # ==========================================================================
+
+  auth:
+    # -------------------------------------------------------------------------
+    # Option 1: OAuth from authenticated Claude Code (RECOMMENDED)
+    # -------------------------------------------------------------------------
+    # Copy these values from ~/.claude/.credentials.json on a machine where
+    # you've already run `claude` and completed the OAuth flow.
+    #
+    # oauth:
+    #   access_token: "sk-ant-oat01-..."
+    #   refresh_token: "sk-ant-ort01-..."
+    #   expires_at: 1767957851524          # Unix timestamp in ms (optional)
+    #   subscription_type: "max"           # "max" or "pro" (optional)
+    #   onboarding_version: "2.0.55"       # Version string (optional)
+
+    # -------------------------------------------------------------------------
+    # Option 2: API Key from Anthropic Console
+    # -------------------------------------------------------------------------
+    # Get one at: https://console.anthropic.com/settings/keys
+    # Can also be set via: AUTOINSTALL_CLAUDE_CODE_AUTH_API_KEY env var
+    api_key: "sk-ant-api03-..."
+
+  # ==========================================================================
+  # Optional Settings
+  # ==========================================================================
+  # These settings are written to ~/.claude/settings.json
+
+  settings:
+    # Disable auto-updates for server deployments (recommended)
+    auto_update: false
+
+    # Permission presets (optional)
+    # permissions:
+    #   defaultMode: "dontAsk"
+    #   allow:
+    #     - Bash
+    #     - Read
+    #     - Edit
+    #     - Write

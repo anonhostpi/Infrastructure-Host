@@ -11,9 +11,11 @@ runcmd:
   - curl -fsSL https://opencode.ai/install | bash
 {% endif %}
 
-  # Create global config directory for admin user
+  # Create config directories for admin user
   - mkdir -p /home/{{ identity.username }}/.config/opencode
+  - mkdir -p /home/{{ identity.username }}/.local/share/opencode
   - chown -R {{ identity.username }}:{{ identity.username }} /home/{{ identity.username }}/.config/opencode
+  - chown -R {{ identity.username }}:{{ identity.username }} /home/{{ identity.username }}/.local/share/opencode
 
 write_files:
   # OpenCode global configuration
@@ -70,4 +72,40 @@ write_files:
         }
         {%- endif %}
       }
+
+{% if opencode.auth is defined %}
+  # OpenCode auth.json - derived from Claude Code and Copilot CLI credentials
+  # See: https://opencode.ai/docs/auth
+  - path: /home/{{ identity.username }}/.local/share/opencode/auth.json
+    owner: {{ identity.username }}:{{ identity.username }}
+    permissions: '600'
+    content: |
+      {
+        {%- set has_anthropic = opencode.auth.anthropic is defined %}
+        {%- set has_copilot = opencode.auth.github_copilot is defined %}
+        {%- if has_anthropic %}
+        "anthropic": {
+          "type": "oauth",
+          "access": "{{ opencode.auth.anthropic.access_token }}",
+          "refresh": "{{ opencode.auth.anthropic.refresh_token }}"
+          {%- if opencode.auth.anthropic.expires_at is defined %},
+          "expires": {{ opencode.auth.anthropic.expires_at }}
+          {%- endif %}
+        }
+        {%- endif %}
+        {%- if has_anthropic and has_copilot %},{% endif %}
+        {%- if has_copilot %}
+        "github-copilot": {
+          "type": "oauth",
+          "refresh": "{{ opencode.auth.github_copilot.oauth_token }}"
+          {%- if opencode.auth.github_copilot.access_token is defined %},
+          "access": "{{ opencode.auth.github_copilot.access_token }}"
+          {%- endif %}
+          {%- if opencode.auth.github_copilot.expires_at is defined %},
+          "expires": {{ opencode.auth.github_copilot.expires_at }}
+          {%- endif %}
+        }
+        {%- endif %}
+      }
+{% endif %}
 {% endif %}

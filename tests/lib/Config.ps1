@@ -22,7 +22,9 @@ New-Module -Name Test-Fragments -ScriptBlock {
             "6.10" = @{ Fragments = @("60-virtualization"); Name = "Virtualization" }
             "6.11" = @{ Fragments = @("70-cockpit"); Name = "Cockpit" }
             "6.12" = @{ Fragments = @("75-opencode"); Name = "OpenCode" }
-            "6.13" = @{ Fragments = @("90-ui"); Name = "UI Touches" }
+            "6.13" = @{ Fragments = @("76-copilot-cli"); Name = "Copilot CLI" }
+            "6.14" = @{ Fragments = @("77-claude-code"); Name = "Claude Code" }
+            "6.15" = @{ Fragments = @("90-ui"); Name = "UI Touches" }
         }
     }
 

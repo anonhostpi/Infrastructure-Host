@@ -1118,24 +1118,176 @@ function Test-OpenCodeFragment {
     return $results
 }
 
+function Test-ClaudeCodeFragment {
+    param([string]$VMName)
+
+    $results = @()
+    $testConfig = Get-TestConfig
+    $username = $testConfig.identity.username
+
+    # 6.14.1: Claude Code CLI installed
+    $claude = multipass exec $VMName -- which claude 2>&1
+    $results += @{
+        Test = "6.14.1"
+        Name = "Claude Code installed"
+        Pass = ($claude -match "claude" -and $LASTEXITCODE -eq 0)
+        Output = $claude
+    }
+
+    # 6.14.2: Claude Code config directory exists
+    $configDir = multipass exec $VMName -- bash -c "test -d /home/$username/.claude && echo 'exists'" 2>&1
+    $results += @{
+        Test = "6.14.2"
+        Name = "Claude Code config directory"
+        Pass = ($configDir -match "exists")
+        Output = "/home/$username/.claude"
+    }
+
+    # 6.14.3: Claude Code settings file exists
+    $settingsFile = multipass exec $VMName -- bash -c "test -f /home/$username/.claude/settings.json && echo 'exists'" 2>&1
+    $results += @{
+        Test = "6.14.3"
+        Name = "Claude Code settings file"
+        Pass = ($settingsFile -match "exists")
+        Output = "/home/$username/.claude/settings.json"
+    }
+
+    # 6.14.4: Check authentication configuration (OAuth or API Key)
+    $claudeCodeConfig = $testConfig.claude_code
+    $authConfigured = $false
+    $authOutput = "No pre-configured auth (run 'claude' to authenticate)"
+
+    if ($claudeCodeConfig -and $claudeCodeConfig.auth) {
+        # Check for OAuth credentials
+        if ($claudeCodeConfig.auth.oauth) {
+            $credCheck = multipass exec $VMName -- bash -c "test -f /home/$username/.claude/.credentials.json && echo 'exists'" 2>&1
+            $stateCheck = multipass exec $VMName -- bash -c "grep -q 'hasCompletedOnboarding' /home/$username/.claude.json 2>/dev/null && echo 'exists'" 2>&1
+            if ($credCheck -match "exists" -and $stateCheck -match "exists") {
+                $authConfigured = $true
+                $authOutput = "OAuth credentials configured (.credentials.json + hasCompletedOnboarding)"
+            } else {
+                $authOutput = "OAuth configured but files missing"
+            }
+        }
+        # Check for API Key
+        elseif ($claudeCodeConfig.auth.api_key) {
+            $envCheck = multipass exec $VMName -- bash -c "grep -q 'ANTHROPIC_API_KEY' /etc/environment && echo 'configured'" 2>&1
+            if ($envCheck -match "configured") {
+                $authConfigured = $true
+                $authOutput = "API Key configured (ANTHROPIC_API_KEY in /etc/environment)"
+            } else {
+                $authOutput = "API Key configured but ANTHROPIC_API_KEY not found"
+            }
+        }
+    } else {
+        $authConfigured = $true  # No auth expected, that's OK
+    }
+
+    $results += @{
+        Test = "6.14.4"
+        Name = "Claude Code auth configured"
+        Pass = $authConfigured
+        Output = $authOutput
+    }
+
+    return $results
+}
+
+function Test-CopilotCLIFragment {
+    param([string]$VMName)
+
+    $results = @()
+    $testConfig = Get-TestConfig
+    $username = $testConfig.identity.username
+
+    # 6.13.1: Copilot CLI installed
+    $copilot = multipass exec $VMName -- which copilot 2>&1
+    $results += @{
+        Test = "6.13.1"
+        Name = "Copilot CLI installed"
+        Pass = ($copilot -match "copilot" -and $LASTEXITCODE -eq 0)
+        Output = $copilot
+    }
+
+    # 6.13.2: Copilot CLI config directory exists
+    $configDir = multipass exec $VMName -- bash -c "test -d /home/$username/.copilot && echo 'exists'" 2>&1
+    $results += @{
+        Test = "6.13.2"
+        Name = "Copilot CLI config directory"
+        Pass = ($configDir -match "exists")
+        Output = "/home/$username/.copilot"
+    }
+
+    # 6.13.3: Copilot CLI config file exists
+    $configFile = multipass exec $VMName -- bash -c "test -f /home/$username/.copilot/config.json && echo 'exists'" 2>&1
+    $results += @{
+        Test = "6.13.3"
+        Name = "Copilot CLI config file"
+        Pass = ($configFile -match "exists")
+        Output = "/home/$username/.copilot/config.json"
+    }
+
+    # 6.13.4: Check authentication (copilot_tokens in config.json or GH_TOKEN)
+    $copilotConfig = $testConfig.copilot_cli
+    $authConfigured = $false
+    $authOutput = ""
+
+    if ($copilotConfig -and $copilotConfig.auth) {
+        if ($copilotConfig.auth.oauth) {
+            # Check for copilot_tokens in config.json
+            $tokensCheck = multipass exec $VMName -- bash -c "grep -q 'copilot_tokens' /home/$username/.copilot/config.json 2>/dev/null && echo 'configured'" 2>&1
+            if ($tokensCheck -match "configured") {
+                $authConfigured = $true
+                $authOutput = "OAuth configured in ~/.copilot/config.json (copilot_tokens)"
+            }
+        }
+        if (-not $authConfigured -and $copilotConfig.auth.gh_token) {
+            # Check for GH_TOKEN environment variable
+            $envCheck = multipass exec $VMName -- bash -c "grep -q 'GH_TOKEN' /etc/environment && echo 'configured'" 2>&1
+            if ($envCheck -match "configured") {
+                $authConfigured = $true
+                $authOutput = "GH_TOKEN in /etc/environment"
+            }
+        }
+    }
+
+    if ($authConfigured) {
+        $results += @{
+            Test = "6.13.4"
+            Name = "Copilot CLI auth configured"
+            Pass = $true
+            Output = $authOutput
+        }
+    } else {
+        $results += @{
+            Test = "6.13.4"
+            Name = "Copilot CLI auth configured"
+            Pass = $true
+            Output = "No pre-configured auth (run 'copilot' then '/login' to authenticate)"
+        }
+    }
+
+    return $results
+}
+
 function Test-UIFragment {
     param([string]$VMName)
 
     $results = @()
 
-    # 6.13.1: MOTD configured
+    # 6.15.1: MOTD configured
     $motd = multipass exec $VMName -- test -d /etc/update-motd.d 2>&1
     $results += @{
-        Test = "6.13.1"
+        Test = "6.15.1"
         Name = "MOTD directory exists"
         Pass = ($LASTEXITCODE -eq 0)
         Output = "/etc/update-motd.d"
     }
 
-    # 6.13.2: Custom MOTD scripts
+    # 6.15.2: Custom MOTD scripts
     $scripts = multipass exec $VMName -- bash -c "ls /etc/update-motd.d/ | wc -l" 2>&1
     $results += @{
-        Test = "6.13.2"
+        Test = "6.15.2"
         Name = "MOTD scripts present"
         Pass = ([int]$scripts -gt 0)
         Output = "$scripts scripts"
@@ -1164,7 +1316,9 @@ function Invoke-TestForLevel {
         "6.10" { return Test-VirtualizationFragment -VMName $VMName }
         "6.11" { return Test-CockpitFragment -VMName $VMName }
         "6.12" { return Test-OpenCodeFragment -VMName $VMName }
-        "6.13" { return Test-UIFragment -VMName $VMName }
+        "6.13" { return Test-CopilotCLIFragment -VMName $VMName }
+        "6.14" { return Test-ClaudeCodeFragment -VMName $VMName }
+        "6.15" { return Test-UIFragment -VMName $VMName }
         default { return @() }
     }
 }
