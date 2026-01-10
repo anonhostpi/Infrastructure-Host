@@ -1169,6 +1169,9 @@ function Test-OpenCodeFragment {
     param([string]$VMName)
 
     $results = @()
+    $testConfig = Get-TestConfig
+    $username = $testConfig.identity.username
+    $smtp = $testConfig.smtp
 
     # 6.12.1: Node.js installed
     $node = multipass exec $VMName -- which node 2>&1
