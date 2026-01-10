@@ -1,7 +1,7 @@
-# Test 6.12: OpenCode Fragment
+# Test 6.14: OpenCode Fragment
 
-**Template:** `src/autoinstall/cloud-init/75-opencode.yaml.tpl`
-**Fragment Docs:** [6.12 OpenCode Fragment](../../CLOUD_INIT_CONFIGURATION/OPENCODE_FRAGMENT.md)
+**Template:** `src/autoinstall/cloud-init/77-opencode.yaml.tpl`
+**Fragment Docs:** [6.14 OpenCode Fragment](../../CLOUD_INIT_CONFIGURATION/OPENCODE_FRAGMENT.md)
 
 Tests OpenCode AI coding agent installation and configuration.
 
@@ -9,7 +9,7 @@ Tests OpenCode AI coding agent installation and configuration.
 
 ---
 
-## Test 6.12.1: Node.js Installation (npm method)
+## Test 6.14.1: Node.js Installation (npm method)
 
 ```bash
 # On VM: Verify Node.js installed
@@ -27,7 +27,7 @@ npm --version
 
 ---
 
-## Test 6.12.2: OpenCode Installation
+## Test 6.14.2: OpenCode Installation
 
 ```bash
 # On VM: Verify opencode installed globally
@@ -45,7 +45,7 @@ opencode --version
 
 ---
 
-## Test 6.12.3: Configuration Directory
+## Test 6.14.3: Configuration Directory
 
 ```bash
 # On VM: Verify config directory exists with correct ownership
@@ -63,7 +63,7 @@ stat -c "%U:%G" /home/<admin_user>/.config/opencode/
 
 ---
 
-## Test 6.12.4: Configuration File
+## Test 6.14.4: Configuration File
 
 ```bash
 # On VM: Verify opencode.json exists with correct permissions
@@ -81,7 +81,7 @@ stat -c "%a" /home/<admin_user>/.config/opencode/opencode.json
 
 ---
 
-## Test 6.12.5: Configuration Content
+## Test 6.14.5: Configuration Content
 
 ```bash
 # On VM: Verify config contains expected fields
@@ -100,7 +100,7 @@ cat /home/<admin_user>/.config/opencode/opencode.json | jq '.theme'
 
 ---
 
-## Test 6.12.6: Provider Configuration
+## Test 6.14.6: Provider Configuration
 
 ```bash
 # On VM: Verify provider configured (if set)
@@ -114,7 +114,7 @@ cat /home/<admin_user>/.config/opencode/opencode.json | jq '.provider.anthropic'
 
 ---
 
-## Test 6.12.7: Environment Variable Reference
+## Test 6.14.7: Environment Variable Reference
 
 ```bash
 # On VM: Check if API key uses environment variable reference
@@ -124,7 +124,7 @@ cat /home/<admin_user>/.config/opencode/opencode.json | jq '.provider.anthropic.
 
 ---
 
-## Test 6.12.8: OpenCode Launch (Manual)
+## Test 6.14.8: OpenCode Launch (Manual)
 
 ```bash
 # On VM: Test opencode can launch

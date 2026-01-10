@@ -59,7 +59,9 @@ src/autoinstall/cloud-init/
 ├── 55-security-mon.yaml.tpl # Security monitoring
 ├── 60-virtualization.yaml.tpl
 ├── 70-cockpit.yaml.tpl
-├── 75-opencode.yaml.tpl     # AI coding agent
+├── 75-claude-code.yaml.tpl  # Anthropic Claude Code
+├── 76-copilot-cli.yaml.tpl  # GitHub Copilot CLI
+├── 77-opencode.yaml.tpl     # OpenCode (uses Claude/Copilot auth)
 └── 90-ui.yaml.tpl           # Final touches
 ```
 

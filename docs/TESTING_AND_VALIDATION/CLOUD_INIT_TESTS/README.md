@@ -45,8 +45,10 @@ Individual test specifications for each Chapter 6 cloud-init fragment.
 | [TEST_6.9](./TEST_6.9_SECURITY_MONITORING.md) | Security Monitoring | `55-security-mon.yaml.tpl` |
 | [TEST_6.10](./TEST_6.10_VIRTUALIZATION.md) | Virtualization | `60-virtualization.yaml.tpl` |
 | [TEST_6.11](./TEST_6.11_COCKPIT.md) | Cockpit | `70-cockpit.yaml.tpl` |
-| [TEST_6.12](./TEST_6.12_OPENCODE.md) | OpenCode | `75-opencode.yaml.tpl` |
-| [TEST_6.13](./TEST_6.13_UI_TOUCHES.md) | UI Touches | `90-ui.yaml.tpl` |
+| [TEST_6.12](./TEST_6.12_CLAUDE_CODE.md) | Claude Code | `75-claude-code.yaml.tpl` |
+| [TEST_6.13](./TEST_6.13_COPILOT_CLI.md) | Copilot CLI | `76-copilot-cli.yaml.tpl` |
+| [TEST_6.14](./TEST_6.14_OPENCODE.md) | OpenCode | `77-opencode.yaml.tpl` |
+| [TEST_6.15](./TEST_6.15_UI_TOUCHES.md) | UI Touches | `90-ui.yaml.tpl` |
 
 ---
 
@@ -112,6 +114,8 @@ Some fragments are optional and tests should be skipped if not configured:
 | Fragment | Skip Condition |
 |----------|----------------|
 | 6.7 MSMTP | `smtp.config.yaml` does not exist |
-| 6.12 OpenCode | `opencode.enabled: false` or not set |
+| 6.12 Claude Code | `claude_code.enabled: false` or not set |
+| 6.13 Copilot CLI | `copilot_cli.enabled: false` or not set |
+| 6.14 OpenCode | `opencode.enabled: false` or not set |
 
 Check the individual test file for skip conditions.

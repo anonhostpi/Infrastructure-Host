@@ -1,13 +1,13 @@
-# Test 6.13: UI Touches Fragment
+# Test 6.15: UI Touches Fragment
 
 **Template:** `src/autoinstall/cloud-init/90-ui.yaml.tpl`
-**Fragment Docs:** [6.13 UI Touches Fragment](../../CLOUD_INIT_CONFIGURATION/UI_TOUCHES_FRAGMENT.md)
+**Fragment Docs:** [6.15 UI Touches Fragment](../../CLOUD_INIT_CONFIGURATION/UI_TOUCHES_FRAGMENT.md)
 
 Tests CLI productivity tools, dynamic MOTD, and shell aliases.
 
 ---
 
-## Test 6.13.1: CLI Package Installation
+## Test 6.15.1: CLI Package Installation
 
 ```bash
 # On VM: Verify all CLI packages installed
@@ -27,7 +27,7 @@ dpkg -l | grep -E "bat|fd-find|jq|tree|htop|ncdu|neofetch"
 
 ---
 
-## Test 6.13.2: MOTD News Disabled
+## Test 6.15.2: MOTD News Disabled
 
 ```bash
 # On VM: Verify Ubuntu MOTD news disabled
@@ -44,7 +44,7 @@ grep "ENABLED=0" /etc/default/motd-news
 
 ---
 
-## Test 6.13.3: Custom MOTD Scripts Exist
+## Test 6.15.3: Custom MOTD Scripts Exist
 
 ```bash
 # On VM: Verify custom MOTD scripts exist and are executable
@@ -66,7 +66,7 @@ ls -la /etc/update-motd.d/90-updates
 
 ---
 
-## Test 6.13.4: Ubuntu Default MOTD Disabled
+## Test 6.15.4: Ubuntu Default MOTD Disabled
 
 ```bash
 # On VM: Verify default Ubuntu MOTD scripts are disabled
@@ -86,7 +86,7 @@ test -x /etc/update-motd.d/91-contract-ua-esm-status && echo "FAIL: still execut
 
 ---
 
-## Test 6.13.5: MOTD Script Execution
+## Test 6.15.5: MOTD Script Execution
 
 ```bash
 # On VM: Test each MOTD script runs without error
@@ -108,7 +108,7 @@ test -x /etc/update-motd.d/91-contract-ua-esm-status && echo "FAIL: still execut
 
 ---
 
-## Test 6.13.6: Full MOTD Generation
+## Test 6.15.6: Full MOTD Generation
 
 ```bash
 # On VM: Generate full MOTD
@@ -118,7 +118,7 @@ run-parts /etc/update-motd.d/
 
 ---
 
-## Test 6.13.7: Shell Aliases File
+## Test 6.15.7: Shell Aliases File
 
 ```bash
 # On VM: Verify aliases file exists
@@ -141,7 +141,7 @@ grep "alias vms=" /etc/profile.d/aliases.sh
 
 ---
 
-## Test 6.13.8: Aliases Work in New Shell
+## Test 6.15.8: Aliases Work in New Shell
 
 ```bash
 # On VM: Start new shell to load aliases
@@ -157,7 +157,7 @@ bash -l -c 'type vms'
 
 ---
 
-## Test 6.13.9: CLI Tools Function
+## Test 6.15.9: CLI Tools Function
 
 ```bash
 # On VM: Test CLI tools work
@@ -185,7 +185,7 @@ neofetch --version
 
 ---
 
-## Test 6.13.10: Neofetch Profile Script
+## Test 6.15.10: Neofetch Profile Script
 
 ```bash
 # On VM: Verify neofetch profile script exists (disabled by default)
@@ -195,7 +195,7 @@ cat /etc/profile.d/neofetch.sh
 
 ---
 
-## Test 6.13.11: Final Message in Cloud-Init Log
+## Test 6.15.11: Final Message in Cloud-Init Log
 
 ```bash
 # On VM: Verify final_message appears in cloud-init output
