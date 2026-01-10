@@ -100,6 +100,9 @@ class BuildContext:
         # Derive OpenCode auth from Claude Code and Copilot CLI
         self._derive_opencode_auth()
 
+        # Derive OpenCode providers/models from Claude Code and Copilot CLI
+        self._derive_opencode_providers()
+
     def _apply_claude_code_fallback(self, home):
         """Load Claude Code OAuth credentials as fallback."""
         creds_file = home / '.claude' / '.credentials.json'
@@ -268,6 +271,78 @@ class BuildContext:
             if 'opencode' not in self._data:
                 self._data['opencode'] = {}
             self._data['opencode']['auth'] = auth
+
+    def _derive_opencode_providers(self):
+        """Derive OpenCode providers/models from Claude Code and Copilot CLI as fallback.
+
+        When OpenCode is enabled but doesn't have explicit provider configs,
+        populate providers based on the configured models for Claude Code and
+        Copilot CLI. This allows OpenCode to use the same models without
+        redundant configuration.
+
+        OpenCode provider format:
+        {
+          "anthropic": { ... },
+          "github-copilot": { ... }
+        }
+        """
+        opencode_config = self._data.get('opencode', {})
+        if not isinstance(opencode_config, dict):
+            return
+
+        # Skip if opencode is not enabled
+        if not opencode_config.get('enabled', False):
+            return
+
+        # Skip if opencode.providers already has values
+        if opencode_config.get('providers'):
+            return
+
+        providers = {}
+
+        # Derive anthropic provider from Claude Code config
+        claude_config = self._data.get('claude_code', {})
+        if isinstance(claude_config, dict) and claude_config.get('enabled', False):
+            claude_model = claude_config.get('model', 'claude-sonnet-4-5-20250514')
+            # OpenCode uses format "anthropic/<model>" - extract just the model name
+            # Claude Code model might be just the model ID
+            if '/' not in claude_model:
+                # Prepend provider prefix for OpenCode
+                opencode_model = f"anthropic/{claude_model}"
+            else:
+                opencode_model = claude_model
+
+            providers['anthropic'] = {
+                'models': {
+                    claude_model.split('/')[-1] if '/' in claude_model else claude_model: {
+                        'name': claude_model.split('/')[-1] if '/' in claude_model else claude_model
+                    }
+                }
+            }
+
+            # Set default model to anthropic model if not already set
+            if not opencode_config.get('model'):
+                if 'opencode' not in self._data:
+                    self._data['opencode'] = {}
+                self._data['opencode']['model'] = opencode_model
+
+        # Derive github-copilot provider from Copilot CLI config
+        copilot_config = self._data.get('copilot_cli', {})
+        if isinstance(copilot_config, dict) and copilot_config.get('enabled', False):
+            copilot_model = copilot_config.get('model', 'gpt-4')
+            providers['github-copilot'] = {
+                'models': {
+                    copilot_model: {
+                        'name': copilot_model
+                    }
+                }
+            }
+
+        # Apply derived providers if any were found
+        if providers:
+            if 'opencode' not in self._data:
+                self._data['opencode'] = {}
+            self._data['opencode']['providers'] = providers
 
     def _index_paths(self, obj, path):
         """Recursively index all paths in the config tree."""
