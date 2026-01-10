@@ -1197,6 +1197,51 @@ function Test-OpenCodeFragment {
         Output = $opencode
     }
 
+    # 6.12.4: OpenCode config directory exists
+    $configDir = multipass exec $VMName -- bash -c "test -d /home/$username/.config/opencode && echo 'exists'" 2>&1
+    $results += @{
+        Test = "6.12.4"
+        Name = "OpenCode config directory"
+        Pass = ($configDir -match "exists")
+        Output = "/home/$username/.config/opencode"
+    }
+
+    # 6.12.5: OpenCode auth.json (derived from Claude + Copilot)
+    $authFile = multipass exec $VMName -- bash -c "test -f /home/$username/.local/share/opencode/auth.json && echo 'exists'" 2>&1
+    $authConfigured = ($authFile -match "exists")
+    $results += @{
+        Test = "6.12.5"
+        Name = "OpenCode auth.json"
+        Pass = $authConfigured
+        Output = if ($authConfigured) { "/home/$username/.local/share/opencode/auth.json" } else { "No auth (derived from Claude+Copilot)" }
+    }
+
+    # 6.12.6: OpenCode AI response test (if auth configured)
+    if ($authConfigured) {
+        $testFile = "/tmp/opencode-test-output.txt"
+        # Simple prompt to minimize tokens
+        $prompt = "Reply with exactly: OpenCode test OK"
+        $testCmd = @"
+HOME=/home/$username opencode run '$prompt' 2>&1 | head -10 > $testFile
+if [ -s $testFile ]; then
+  echo "response_saved"
+  cat $testFile
+else
+  echo "no_response"
+fi
+"@
+        $testResult = multipass exec $VMName -- bash -c $testCmd 2>&1
+        $hasResponse = ($testResult -match "response_saved")
+        $responseContent = if ($hasResponse) { ($testResult -split "`n" | Select-Object -Skip 1) -join " " } else { "No response" }
+
+        $results += @{
+            Test = "6.12.6"
+            Name = "OpenCode AI response test"
+            Pass = $hasResponse
+            Output = if ($hasResponse) { "Response: $($responseContent.Substring(0, [Math]::Min(80, $responseContent.Length)))..." } else { "AI response failed: $testResult" }
+        }
+    }
+
     return $results
 }
 
