@@ -258,11 +258,41 @@ EOFCOPILOT"
     }
 
     if (-not $extractedToken) {
+        # Try environment variables (in order of precedence)
+        $envToken = $env:COPILOT_GITHUB_TOKEN
+        if (-not $envToken) { $envToken = $env:GH_TOKEN }
+        if (-not $envToken) { $envToken = $env:GITHUB_TOKEN }
+
+        if ($envToken) {
+            Write-Host "  Found Copilot token in environment variable"
+
+            # Create config.json with token
+            multipass exec $VMName -- bash -c "mkdir -p /home/ubuntu/.copilot"
+            multipass exec $VMName -- bash -c "cat > /home/ubuntu/.copilot/config.json << 'EOFCOPILOT'
+{
+  `"copilot_tokens`": {
+    `"https://github.com:env-user`": `"$envToken`"
+  },
+  `"logged_in_users`": [
+    { `"host`": `"https://github.com`", `"login`": `"env-user`" }
+  ],
+  `"last_logged_in_user`": {
+    `"host`": `"https://github.com`",
+    `"login`": `"env-user`"
+  }
+}
+EOFCOPILOT"
+            Write-Host "  Copied Copilot CLI token from env to builder VM" -ForegroundColor Green
+            $extractedToken = $true
+        }
+    }
+
+    if (-not $extractedToken) {
         Write-Host "  Copilot CLI credentials not found" -ForegroundColor Yellow
         Write-Host "  Please authenticate Copilot CLI on this machine:" -ForegroundColor Yellow
         Write-Host "    1. Run 'copilot' in a terminal" -ForegroundColor Gray
         Write-Host "    2. Use '/login' command to authenticate" -ForegroundColor Gray
-        Write-Host "    3. See ~/.copilot/HACKING.md for token migration" -ForegroundColor Gray
+        Write-Host "    3. Or set COPILOT_GITHUB_TOKEN environment variable" -ForegroundColor Gray
         Write-Host ""
         $response = Read-Host "  Continue without Copilot CLI auth? (y/N)"
         if ($response -ne 'y' -and $response -ne 'Y') {
@@ -270,6 +300,42 @@ EOFCOPILOT"
             exit 1
         }
     }
+}
+
+Write-Host "  Done" -ForegroundColor Green
+Write-Host ""
+
+# Step 2c: Verify AI CLI authentication on builder VM
+Write-Host "[2c/6] Verifying AI CLI authentication..." -ForegroundColor Cyan
+
+# Install the CLIs on builder VM for verification
+Write-Host "  Installing Node.js and AI CLIs on builder VM..."
+multipass exec $VMName -- bash -c "command -v node || (curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo bash - && sudo apt-get install -y nodejs) > /dev/null 2>&1"
+
+# Verify Claude Code auth if credentials were provided
+if ($claudeCredsExist) {
+    Write-Host "  Verifying Claude Code authentication..."
+    multipass exec $VMName -- bash -c "npm install -g @anthropic-ai/claude-code > /dev/null 2>&1"
+    $claudeVerify = multipass exec $VMName -- bash -c "HOME=/home/ubuntu claude --version 2>&1"
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Claude Code verification failed: $claudeVerify"
+        Write-Host "  Auth credentials may be invalid or expired" -ForegroundColor Red
+        exit 1
+    }
+    Write-Host "  Claude Code: OK" -ForegroundColor Green
+}
+
+# Verify Copilot CLI auth if credentials were provided
+if ($copilotCredsExist -or $extractedToken) {
+    Write-Host "  Verifying Copilot CLI authentication..."
+    multipass exec $VMName -- bash -c "npm install -g @githubnext/github-copilot-cli > /dev/null 2>&1"
+    $copilotVerify = multipass exec $VMName -- bash -c "HOME=/home/ubuntu copilot --version 2>&1"
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Copilot CLI verification failed: $copilotVerify"
+        Write-Host "  Auth credentials may be invalid or expired" -ForegroundColor Red
+        exit 1
+    }
+    Write-Host "  Copilot CLI: OK" -ForegroundColor Green
 }
 
 Write-Host "  Done" -ForegroundColor Green
