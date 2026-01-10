@@ -18,8 +18,8 @@ copilot_cli:
   # 1. OAuth Copy (RECOMMENDED)
   #    Copy credentials from an already authenticated Copilot CLI instance.
   #    Source: ~/.copilot/config.json (copilot_tokens key)
-  #    Note: Tokens are stored in OS credential store by default. See
-  #    ~/.copilot/HACKING.md for migration to plaintext in config.json.
+  #    Note: Tokens are stored in OS credential store by default.
+  #    Use Python keyring library to extract tokens to config.json.
   #
   # 2. GH_TOKEN Environment Variable (Fallback)
   #    Set GH_TOKEN environment variable with your OAuth token.
