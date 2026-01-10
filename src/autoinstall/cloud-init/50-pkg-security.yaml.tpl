@@ -13,6 +13,8 @@ write_files:
           "${distro_id}:${distro_codename}-security";
           "${distro_id}ESMApps:${distro_codename}-apps-security";
           "${distro_id}ESM:${distro_codename}-infra-security";
+          // NodeSource repository for Node.js LTS updates
+          "nodistro:nodistro";
       };
 
       Unattended-Upgrade::Remove-Unused-Kernel-Packages "true";
@@ -28,6 +30,11 @@ write_files:
       // Verbose logging for detailed reports
       Unattended-Upgrade::Verbose "true";
       Unattended-Upgrade::SyslogEnable "true";
+
+      // Post-upgrade hook to update npm global packages (AI CLIs)
+      Unattended-Upgrade::Post-Invoke {
+          "/usr/local/bin/npm-global-update";
+      };
 
   - path: /etc/apt/apt.conf.d/20auto-upgrades
     permissions: '644'
@@ -101,12 +108,12 @@ write_files:
 
       # Build report from changes (format: pkg:ver for installed, pkg:old:new for upgraded)
       build_report() {
-        local installed="$1" upgraded="$2" removed="$3"
+        local installed="$1" upgraded="$2" removed="$3" npm_upgraded="$4"
         local NL=$'\n'
         local report=""
 
         if [ -n "$installed" ]; then
-          report+="=== NEW PACKAGES INSTALLED ===${NL}"
+          report+="=== APT: NEW PACKAGES INSTALLED ===${NL}"
           while IFS=: read -r pkg ver; do
             report+="  + $pkg ($ver)${NL}"
           done <<< "$installed"
@@ -114,7 +121,7 @@ write_files:
         fi
 
         if [ -n "$upgraded" ]; then
-          report+="=== PACKAGES UPGRADED ===${NL}"
+          report+="=== APT: PACKAGES UPGRADED ===${NL}"
           while IFS=: read -r pkg old new; do
             report+="  * $pkg: $old -> $new${NL}"
           done <<< "$upgraded"
@@ -122,17 +129,25 @@ write_files:
         fi
 
         if [ -n "$removed" ]; then
-          report+="=== PACKAGES REMOVED ===${NL}"
+          report+="=== APT: PACKAGES REMOVED ===${NL}"
           while read -r pkg; do
             report+="  - $pkg${NL}"
           done <<< "$removed"
           report+="${NL}"
         fi
 
+        if [ -n "$npm_upgraded" ]; then
+          report+="=== NPM: GLOBAL PACKAGES UPGRADED ===${NL}"
+          while IFS=: read -r pkg old new; do
+            report+="  * $pkg: $old -> $new${NL}"
+          done <<< "$npm_upgraded"
+          report+="${NL}"
+        fi
+
         # Show held packages
         local held=$(apt-mark showhold 2>/dev/null)
         if [ -n "$held" ]; then
-          report+="=== PACKAGES ON HOLD (skipped) ===${NL}"
+          report+="=== APT: PACKAGES ON HOLD (skipped) ===${NL}"
           while read -r pkg; do
             report+="  ~ $pkg (manually held)${NL}"
           done <<< "$held"
@@ -142,7 +157,7 @@ write_files:
         # Show packages kept back
         local kept_back=$(apt-get -s upgrade 2>/dev/null | grep "kept back" | sed 's/.*: //')
         if [ -n "$kept_back" ]; then
-          report+="=== PACKAGES KEPT BACK (would require new deps or removals) ===${NL}"
+          report+="=== APT: PACKAGES KEPT BACK (would require new deps or removals) ===${NL}"
           for pkg in $kept_back; do
             report+="  ~ $pkg${NL}"
           done
@@ -355,7 +370,7 @@ write_files:
       log "apt-notify-flush: processing queue with $queue_lines entries"
 
       # Deduplicate queue: keep final state for each package
-      declare -A pkg_installed pkg_upgraded pkg_removed
+      declare -A pkg_installed pkg_upgraded pkg_removed pkg_npm_upgraded
 
       while IFS=: read -r action pkg rest; do
         case "$action" in
@@ -371,12 +386,15 @@ write_files:
             unset pkg_upgraded["$pkg"]
             pkg_removed["$pkg"]=1
             ;;
+          NPM_UPGRADED)
+            pkg_npm_upgraded["$pkg"]="$rest"
+            ;;
         esac
       done < "$QUEUE_FILE"
 
       # Build deduplicated lists
       NL=$'\n'
-      INSTALLED="" UPGRADED="" REMOVED=""
+      INSTALLED="" UPGRADED="" REMOVED="" NPM_UPGRADED=""
 
       for pkg in "${!pkg_installed[@]}"; do
         [ -n "$INSTALLED" ] && INSTALLED+="$NL"
@@ -394,6 +412,12 @@ write_files:
         REMOVED+="$pkg"
       done
 
+      for pkg in "${!pkg_npm_upgraded[@]}"; do
+        [ -n "$NPM_UPGRADED" ] && NPM_UPGRADED+="$NL"
+        IFS=: read -r old new <<< "${pkg_npm_upgraded[$pkg]}"
+        NPM_UPGRADED+="$pkg:$old:$new"
+      done
+
       # Clear queue
       rm -f "$QUEUE_FILE"
 
@@ -401,14 +425,83 @@ write_files:
       n_installed=$(echo "${!pkg_installed[@]}" | wc -w)
       n_upgraded=$(echo "${!pkg_upgraded[@]}" | wc -w)
       n_removed=$(echo "${!pkg_removed[@]}" | wc -w)
-      log "apt-notify-flush: after dedup: $n_installed installed, $n_upgraded upgraded, $n_removed removed"
+      n_npm_upgraded=$(echo "${!pkg_npm_upgraded[@]}" | wc -w)
+      log "apt-notify-flush: after dedup: $n_installed installed, $n_upgraded upgraded, $n_removed removed, $n_npm_upgraded npm upgraded"
 
       # Build and send report if there are changes after dedup
-      if [ -n "$INSTALLED" ] || [ -n "$UPGRADED" ] || [ -n "$REMOVED" ]; then
+      if [ -n "$INSTALLED" ] || [ -n "$UPGRADED" ] || [ -n "$REMOVED" ] || [ -n "$NPM_UPGRADED" ]; then
         log "apt-notify-flush: building and sending report"
-        REPORT=$(build_report "$INSTALLED" "$UPGRADED" "$REMOVED")
+        REPORT=$(build_report "$INSTALLED" "$UPGRADED" "$REMOVED" "$NPM_UPGRADED")
         send_notification "$REPORT"
         log "apt-notify-flush: complete"
       else
         log "apt-notify-flush: no changes after dedup, nothing to send"
       fi
+
+  # npm global package update script (called by unattended-upgrades Post-Invoke)
+  # Output is appended to apt-notify queue for inclusion in the unified notification
+  - path: /usr/local/bin/npm-global-update
+    permissions: '755'
+    content: |
+      #!/bin/bash
+      # Update Node.js and npm global packages (opencode, claude-code, copilot-cli)
+      # Called by unattended-upgrades Post-Invoke hook after apt upgrades
+      # Results are written to apt-notify queue for unified email notification
+
+      source /usr/local/lib/apt-notify/common.sh
+
+      log "npm-global-update: starting"
+
+      # Update Node.js via apt first
+      if command -v apt-get &>/dev/null; then
+        log "npm-global-update: checking for Node.js updates"
+        apt-get update -qq 2>/dev/null
+        NODE_UPGRADABLE=$(apt-get -s upgrade nodejs 2>/dev/null | grep -c "^Inst nodejs")
+        if [ "$NODE_UPGRADABLE" -gt 0 ]; then
+          log "npm-global-update: upgrading Node.js"
+          apt-get install -y nodejs 2>&1 | while read line; do log "apt: $line"; done
+        fi
+      fi
+
+      if ! command -v npm &>/dev/null; then
+        log "npm-global-update: npm not installed, skipping"
+        exit 0
+      fi
+
+      # Get list of outdated global packages
+      OUTDATED=$(npm outdated -g --json 2>/dev/null || echo "{}")
+
+      if [ "$OUTDATED" = "{}" ] || [ "$OUTDATED" = "" ]; then
+        log "npm-global-update: all global packages up to date"
+        exit 0
+      fi
+
+      # Parse outdated packages
+      NPM_UPDATES=""
+      while IFS= read -r line; do
+        pkg=$(echo "$line" | jq -r '.key')
+        current=$(echo "$line" | jq -r '.value.current')
+        latest=$(echo "$line" | jq -r '.value.latest')
+        [ -n "$NPM_UPDATES" ] && NPM_UPDATES+=$'\n'
+        NPM_UPDATES+="NPM_UPGRADED:$pkg:$current:$latest"
+      done < <(echo "$OUTDATED" | jq -c 'to_entries[]' 2>/dev/null)
+
+      if [ -z "$NPM_UPDATES" ]; then
+        log "npm-global-update: no npm updates parsed"
+        exit 0
+      fi
+
+      log "npm-global-update: updating global packages"
+      npm update -g 2>&1 | while read line; do log "npm: $line"; done
+
+      # Append to apt-notify queue for unified notification
+      echo "$NPM_UPDATES" >> "$QUEUE_FILE"
+      log "npm-global-update: queued $(echo "$NPM_UPDATES" | wc -l) npm package updates"
+
+      # Schedule flush timer if not already active
+      if ! timer_active; then
+        log "npm-global-update: scheduling flush timer"
+        schedule_flush_timer
+      fi
+
+      log "npm-global-update: complete"
