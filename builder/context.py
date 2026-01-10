@@ -1,5 +1,6 @@
 """BuildContext loads configuration files and exposes them to templates."""
 
+import json
 import os
 import re
 from pathlib import Path
@@ -44,6 +45,9 @@ class BuildContext:
         # Apply testing config overrides (if testing: true)
         self._apply_testing_overrides()
 
+        # Load OAuth credentials from host files as fallback
+        self._apply_credential_fallbacks()
+
         # Build path index for env var matching
         self._index_paths(self._data, [])
 
@@ -71,6 +75,199 @@ class BuildContext:
             elif isinstance(value, dict):
                 # New config section from testing
                 self._data[key] = value
+
+    def _apply_credential_fallbacks(self):
+        """Load OAuth credentials from host files as fallback for AI CLI configs.
+
+        This allows the builder to automatically use credentials from authenticated
+        CLI instances on the build machine, without requiring explicit config.
+
+        Credential file locations:
+        - Claude Code: ~/.claude/.credentials.json, ~/.claude.json
+        - Copilot CLI: ~/.copilot/config.json (copilot_tokens key)
+
+        OpenCode auth is derived from Claude Code and Copilot CLI credentials
+        (not loaded from host directly).
+        """
+        home = Path.home()
+
+        # Claude Code OAuth fallback
+        self._apply_claude_code_fallback(home)
+
+        # Copilot CLI OAuth fallback
+        self._apply_copilot_cli_fallback(home)
+
+        # Derive OpenCode auth from Claude Code and Copilot CLI
+        self._derive_opencode_auth()
+
+    def _apply_claude_code_fallback(self, home):
+        """Load Claude Code OAuth credentials as fallback."""
+        creds_file = home / '.claude' / '.credentials.json'
+        state_file = home / '.claude.json'
+
+        if not creds_file.exists() or not state_file.exists():
+            return
+
+        # Check if claude_code config exists and has auth.oauth already set
+        claude_config = self._data.get('claude_code', {})
+        if not isinstance(claude_config, dict):
+            return
+
+        auth = claude_config.get('auth', {})
+        if auth.get('oauth') or auth.get('api_key'):
+            # Auth already configured, don't override
+            return
+
+        try:
+            with open(creds_file) as f:
+                creds = json.load(f)
+            with open(state_file) as f:
+                state = json.load(f)
+
+            oauth_data = creds.get('claudeAiOauth', {})
+            if not oauth_data.get('accessToken'):
+                return
+
+            # Build OAuth config from credential files
+            oauth_config = {
+                'access_token': oauth_data.get('accessToken'),
+                'refresh_token': oauth_data.get('refreshToken'),
+            }
+            if oauth_data.get('expiresAt'):
+                oauth_config['expires_at'] = oauth_data['expiresAt']
+            if oauth_data.get('subscriptionType'):
+                oauth_config['subscription_type'] = oauth_data['subscriptionType']
+            if state.get('lastOnboardingVersion'):
+                oauth_config['onboarding_version'] = state['lastOnboardingVersion']
+
+            # Apply as fallback
+            if 'claude_code' not in self._data:
+                self._data['claude_code'] = {}
+            if 'auth' not in self._data['claude_code']:
+                self._data['claude_code']['auth'] = {}
+            self._data['claude_code']['auth']['oauth'] = oauth_config
+
+        except (json.JSONDecodeError, KeyError, IOError):
+            # Silently skip if credential files are malformed
+            pass
+
+    def _apply_copilot_cli_fallback(self, home):
+        """Load Copilot CLI OAuth credentials as fallback from config.json."""
+        config_file = home / '.copilot' / 'config.json'
+
+        if not config_file.exists():
+            return
+
+        # Check if copilot_cli config exists and has auth already set
+        copilot_config = self._data.get('copilot_cli', {})
+        if not isinstance(copilot_config, dict):
+            return
+
+        auth = copilot_config.get('auth', {})
+        if auth.get('oauth') or auth.get('gh_token'):
+            # Auth already configured, don't override
+            return
+
+        try:
+            with open(config_file) as f:
+                config = json.load(f)
+
+            copilot_tokens = config.get('copilot_tokens', {})
+            if not copilot_tokens:
+                return
+
+            # Get the first token (format: "https://github.com:username": "gho_xxx")
+            account, token = next(iter(copilot_tokens.items()))
+            if not token:
+                return
+
+            # Parse username from account (format: "https://github.com:username")
+            parts = account.split(':')
+            if len(parts) < 2:
+                return
+            username = parts[-1]
+
+            # Build OAuth config from copilot config.json
+            oauth_config = {
+                'github_username': username,
+                'oauth_token': token,
+            }
+
+            # Apply as fallback
+            if 'copilot_cli' not in self._data:
+                self._data['copilot_cli'] = {}
+            if 'auth' not in self._data['copilot_cli']:
+                self._data['copilot_cli']['auth'] = {}
+            self._data['copilot_cli']['auth']['oauth'] = oauth_config
+
+        except (json.JSONDecodeError, KeyError, IOError, StopIteration):
+            # Silently skip if credential files are malformed
+            pass
+
+    def _derive_opencode_auth(self):
+        """Derive OpenCode auth.json credentials from Claude Code and Copilot CLI.
+
+        OpenCode uses auth.json at ~/.local/share/opencode/auth.json with structure:
+        {
+          "anthropic": {
+            "type": "oauth",
+            "access": "<access_token>",
+            "refresh": "<refresh_token>",
+            "expires": <timestamp>
+          },
+          "github-copilot": {
+            "type": "oauth",
+            "refresh": "<github_oauth_token>",
+            "access": "<copilot_api_token>",
+            "expires": <timestamp>
+          }
+        }
+
+        - anthropic credentials come from claude_code.auth.oauth
+        - github-copilot.refresh comes from copilot_cli.auth.oauth.oauth_token
+        - github-copilot.access (Copilot API token) is fetched dynamically by OpenCode
+        """
+        opencode_config = self._data.get('opencode', {})
+        if not isinstance(opencode_config, dict):
+            return
+
+        # Skip if opencode is not enabled
+        if not opencode_config.get('enabled', False):
+            return
+
+        # Skip if opencode.auth already has values
+        if opencode_config.get('auth'):
+            return
+
+        auth = {}
+
+        # Derive anthropic auth from Claude Code
+        claude_config = self._data.get('claude_code', {})
+        if isinstance(claude_config, dict):
+            claude_oauth = claude_config.get('auth', {}).get('oauth', {})
+            if claude_oauth.get('access_token') and claude_oauth.get('refresh_token'):
+                auth['anthropic'] = {
+                    'access_token': claude_oauth['access_token'],
+                    'refresh_token': claude_oauth['refresh_token'],
+                }
+                if claude_oauth.get('expires_at'):
+                    auth['anthropic']['expires_at'] = claude_oauth['expires_at']
+
+        # Derive github-copilot auth from Copilot CLI
+        copilot_config = self._data.get('copilot_cli', {})
+        if isinstance(copilot_config, dict):
+            copilot_oauth = copilot_config.get('auth', {}).get('oauth', {})
+            if copilot_oauth.get('oauth_token'):
+                auth['github_copilot'] = {
+                    'oauth_token': copilot_oauth['oauth_token'],
+                }
+                # Note: access_token (Copilot API token) is fetched dynamically by OpenCode
+
+        # Apply derived auth if any credentials were found
+        if auth:
+            if 'opencode' not in self._data:
+                self._data['opencode'] = {}
+            self._data['opencode']['auth'] = auth
 
     def _index_paths(self, obj, path):
         """Recursively index all paths in the config tree."""
