@@ -15,8 +15,10 @@ This section documents the cloud-init fragments that compose the final cloud-ini
 - [6.9 Security Monitoring Fragment](./SECURITY_MONITORING_FRAGMENT.md)
 - [6.10 Virtualization Fragment](./VIRTUALIZATION_FRAGMENT.md)
 - [6.11 Cockpit Fragment](./COCKPIT_FRAGMENT.md)
-- [6.12 OpenCode Fragment](./OPENCODE_FRAGMENT.md)
-- [6.13 UI Touches Fragment](./UI_TOUCHES_FRAGMENT.md)
+- [6.12 Claude Code Fragment](./CLAUDE_CODE_FRAGMENT.md)
+- [6.13 Copilot CLI Fragment](./COPILOT_CLI_FRAGMENT.md)
+- [6.14 OpenCode Fragment](./OPENCODE_FRAGMENT.md)
+- [6.15 UI Touches Fragment](./UI_TOUCHES_FRAGMENT.md)
 
 ## Fragment Composition
 

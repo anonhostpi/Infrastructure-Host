@@ -135,7 +135,7 @@ Login with the admin credentials from `src/config/identity.config.yaml`.
 
 ### SSH Config Snippet
 
-The system MOTD (see [6.12 UI Touches](./UI_TOUCHES_FRAGMENT.md)) displays an SSH config snippet on login that you can copy to your workstation's `~/.ssh/config`:
+The system MOTD (see [6.15 UI Touches](./UI_TOUCHES_FRAGMENT.md)) displays an SSH config snippet on login that you can copy to your workstation's `~/.ssh/config`:
 
 ```
 Host kvm-host

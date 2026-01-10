@@ -60,9 +60,9 @@ This document outlines the complete documentation structure. Each section is mai
   - [x] [6.9 Security Monitoring Fragment](./docs/CLOUD_INIT_CONFIGURATION/SECURITY_MONITORING_FRAGMENT.md)
   - [x] [6.10 Virtualization Fragment](./docs/CLOUD_INIT_CONFIGURATION/VIRTUALIZATION_FRAGMENT.md)
   - [x] [6.11 Cockpit Fragment](./docs/CLOUD_INIT_CONFIGURATION/COCKPIT_FRAGMENT.md)
-  - [x] [6.12 OpenCode Fragment](./docs/CLOUD_INIT_CONFIGURATION/OPENCODE_FRAGMENT.md)
+  - [x] [6.12 Claude Code Fragment](./docs/CLOUD_INIT_CONFIGURATION/CLAUDE_CODE_FRAGMENT.md)
   - [x] [6.13 Copilot CLI Fragment](./docs/CLOUD_INIT_CONFIGURATION/COPILOT_CLI_FRAGMENT.md)
-  - [x] [6.14 Claude Code Fragment](./docs/CLOUD_INIT_CONFIGURATION/CLAUDE_CODE_FRAGMENT.md)
+  - [x] [6.14 OpenCode Fragment](./docs/CLOUD_INIT_CONFIGURATION/OPENCODE_FRAGMENT.md)
   - [x] [6.15 UI Touches Fragment](./docs/CLOUD_INIT_CONFIGURATION/UI_TOUCHES_FRAGMENT.md)
 
 #### 7. Testing and Validation

@@ -1,6 +1,6 @@
-# 6.12 OpenCode Fragment
+# 6.14 OpenCode Fragment
 
-**Template:** `src/autoinstall/cloud-init/75-opencode.yaml.tpl`
+**Template:** `src/autoinstall/cloud-init/77-opencode.yaml.tpl`
 
 Installs and configures OpenCode, an open-source AI coding agent for terminal use.
 
@@ -14,7 +14,7 @@ OpenCode supports multiple authentication methods. The most streamlined approach
 
 ### Automatic Auth Derivation (Recommended)
 
-When Claude Code (6.14) and/or Copilot CLI (6.13) are configured with OAuth credentials, OpenCode's `auth.json` is automatically generated from those credentials:
+When Claude Code (6.12) and/or Copilot CLI (6.13) are configured with OAuth credentials, OpenCode's `auth.json` is automatically generated from those credentials:
 
 | OpenCode Provider | Source |
 |-------------------|--------|
@@ -365,13 +365,13 @@ cat ~/.config/opencode/opencode.json
 
 ## Fragment Ordering
 
-This fragment uses the `75-` prefix to run after Cockpit (70-) and before Copilot CLI (76-) and Claude Code (77-).
+This fragment uses the `77-` prefix to run after Claude Code (75-) and Copilot CLI (76-), since OpenCode can derive its auth from those CLI credentials.
 
 | Fragment | Prefix | Section |
 |----------|--------|---------|
-| OpenCode | 75- | 6.12 |
+| Claude Code | 75- | 6.12 |
 | Copilot CLI | 76- | 6.13 |
-| Claude Code | 77- | 6.14 |
+| OpenCode | 77- | 6.14 |
 | UI Touches | 90- | 6.15 |
 
 ---

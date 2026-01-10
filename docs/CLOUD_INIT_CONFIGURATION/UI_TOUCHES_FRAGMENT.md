@@ -1,4 +1,4 @@
-# 6.13 UI Touches Fragment
+# 6.15 UI Touches Fragment
 
 **Template:** `src/autoinstall/cloud-init/90-ui.yaml.tpl`
 
