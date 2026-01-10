@@ -1,7 +1,9 @@
 {% if copilot_cli.enabled | default(false) %}
 runcmd:
-  # Install GitHub Copilot CLI via official script
-  - curl -fsSL https://gh.io/copilot-install | bash
+  # Install Node.js LTS via apt (NodeSource repo for unattended-upgrades support)
+  - command -v node || (curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - && apt-get install -y nodejs)
+  # Install GitHub Copilot CLI globally via npm (updated by unattended-upgrades Post-Invoke hook)
+  - npm install -g @githubnext/github-copilot-cli
 
   # Create config directory for admin user
   - mkdir -p /home/{{ identity.username }}/.copilot

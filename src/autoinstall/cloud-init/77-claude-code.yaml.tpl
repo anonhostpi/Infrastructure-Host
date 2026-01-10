@@ -1,7 +1,9 @@
 {% if claude_code.enabled | default(false) %}
 runcmd:
-  # Install Claude Code via official script
-  - curl -fsSL https://claude.ai/install.sh | bash
+  # Install Node.js LTS via apt (NodeSource repo for unattended-upgrades support)
+  - command -v node || (curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - && apt-get install -y nodejs)
+  # Install Claude Code globally via npm (updated by unattended-upgrades Post-Invoke hook)
+  - npm install -g @anthropic-ai/claude-code
 
   # Create config directory for admin user
   - mkdir -p /home/{{ identity.username }}/.claude

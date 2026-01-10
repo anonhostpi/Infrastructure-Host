@@ -1,15 +1,9 @@
 {% if opencode.enabled | default(false) %}
 runcmd:
-{% if opencode.install_method | default('npm') == 'npm' %}
-  # Install Node.js via NodeSource (LTS)
-  - curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -
-  - apt-get install -y nodejs
-  # Install opencode globally
+  # Install Node.js LTS via apt (NodeSource repo for unattended-upgrades support)
+  - command -v node || (curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - && apt-get install -y nodejs)
+  # Install opencode globally via npm (updated by unattended-upgrades Post-Invoke hook)
   - npm install -g opencode-ai
-{% elif opencode.install_method == 'script' %}
-  # Install via official script
-  - curl -fsSL https://opencode.ai/install | bash
-{% endif %}
 
   # Create config directories for admin user
   - mkdir -p /home/{{ identity.username }}/.config/opencode
