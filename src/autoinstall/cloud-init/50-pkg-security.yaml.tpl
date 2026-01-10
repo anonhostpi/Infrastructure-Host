@@ -77,6 +77,13 @@ write_files:
       LOG_FILE="$STATE_DIR/apt-notify.log"
       BATCH_INTERVAL="{{ smtp.notification_interval | default('2m') }}"
       OPENCODE_HOME="/home/{{ identity.username }}"
+{% if testing | default(false) %}
+      TESTING_MODE=true
+      TEST_REPORT_FILE="$STATE_DIR/test-report.txt"
+      TEST_AI_SUMMARY_FILE="$STATE_DIR/test-ai-summary.txt"
+{% else %}
+      TESTING_MODE=false
+{% endif %}
 
       mkdir -p "$STATE_DIR"
 
@@ -162,6 +169,12 @@ write_files:
             report+="  ~ $pkg${NL}"
           done
           report+="${NL}"
+        fi
+
+        # Write to test file if in testing mode
+        if [ "$TESTING_MODE" = "true" ]; then
+          log "Testing mode: writing report to $TEST_REPORT_FILE"
+          echo "$report" > "$TEST_REPORT_FILE"
         fi
 
         echo "$report"
@@ -252,6 +265,11 @@ write_files:
         if [ -n "$ai_summary" ]; then
           local summary_len=$(echo -n "$ai_summary" | wc -c)
           log "AI summary generated ($summary_len chars)"
+          # Write AI summary to test file if in testing mode
+          if [ "$TESTING_MODE" = "true" ]; then
+            log "Testing mode: writing AI summary to $TEST_AI_SUMMARY_FILE"
+            echo "$ai_summary" > "$TEST_AI_SUMMARY_FILE"
+          fi
         else
           log "No AI summary (opencode not available or failed)"
         fi
