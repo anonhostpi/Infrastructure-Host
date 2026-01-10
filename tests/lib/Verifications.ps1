@@ -1320,6 +1320,32 @@ function Test-ClaudeCodeFragment {
         Output = $authOutput
     }
 
+    # 6.14.5: Claude Code AI response test (if auth configured)
+    if ($authConfigured) {
+        $testFile = "/tmp/claude-test-output.txt"
+        # Simple prompt to minimize tokens
+        $prompt = "Reply with exactly: Claude test OK"
+        $testCmd = @"
+HOME=/home/$username claude -p '$prompt' 2>&1 | head -10 > $testFile
+if [ -s $testFile ]; then
+  echo "response_saved"
+  cat $testFile
+else
+  echo "no_response"
+fi
+"@
+        $testResult = multipass exec $VMName -- bash -c $testCmd 2>&1
+        $hasResponse = ($testResult -match "response_saved")
+        $responseContent = if ($hasResponse) { ($testResult -split "`n" | Select-Object -Skip 1) -join " " } else { "No response" }
+
+        $results += @{
+            Test = "6.14.5"
+            Name = "Claude Code AI response test"
+            Pass = $hasResponse
+            Output = if ($hasResponse) { "Response: $($responseContent.Substring(0, [Math]::Min(80, $responseContent.Length)))..." } else { "AI response failed: $testResult" }
+        }
+    }
+
     return $results
 }
 
