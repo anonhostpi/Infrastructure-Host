@@ -25,6 +25,7 @@ New-Module -Name Test-Fragments -ScriptBlock {
             "6.13" = @{ Fragments = @("76-copilot-cli"); Name = "Copilot CLI" }
             "6.14" = @{ Fragments = @("77-opencode"); Name = "OpenCode" }
             "6.15" = @{ Fragments = @("90-ui"); Name = "UI Touches" }
+            "6.8-updates" = @{ Fragments = @("50-packages", "50-pkg-security", "999-pkg-upgrade"); Name = "Package Manager Updates" }
         }
     }
 
@@ -40,7 +41,8 @@ New-Module -Name Test-Fragments -ScriptBlock {
             $fragments += $cache.Map[$key].Fragments
             if ($key -eq $Level) { break }
         }
-        return $fragments
+        # Return unique fragments (preserving order)
+        return $fragments | Select-Object -Unique
     }
 
     function Get-TestName {

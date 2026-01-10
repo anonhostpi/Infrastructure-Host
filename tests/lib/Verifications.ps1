@@ -1478,6 +1478,250 @@ function Test-UIFragment {
     return $results
 }
 
+# Test package manager update detection (called when testing=true in build context)
+function Test-PackageManagerUpdates {
+    param([string]$VMName)
+
+    $results = @()
+    $testConfig = Get-TestConfig
+
+    # Check if testing mode is enabled
+    $testingMode = multipass exec $VMName -- bash -c 'source /usr/local/lib/apt-notify/common.sh && echo $TESTING_MODE' 2>&1
+    if ($testingMode -ne "true") {
+        $results += @{
+            Test = "6.8.19"
+            Name = "Testing mode enabled"
+            Pass = $false
+            Output = "Testing mode not enabled - rebuild with testing=true to run these tests"
+        }
+        return $results
+    }
+
+    $results += @{
+        Test = "6.8.19"
+        Name = "Testing mode enabled"
+        Pass = $true
+        Output = "TESTING_MODE=true"
+    }
+
+    # Clear queue and test files before tests
+    multipass exec $VMName -- bash -c 'sudo rm -f /var/lib/apt-notify/queue /var/lib/apt-notify/test-report.txt /var/lib/apt-notify/test-ai-summary.txt' 2>&1 | Out-Null
+
+    # 6.8.20: Test snap-update script
+    $snapInstalled = multipass exec $VMName -- which snap 2>&1
+    if ($snapInstalled -match "snap" -and $LASTEXITCODE -eq 0) {
+        # Run the actual snap-update script
+        $snapResult = multipass exec $VMName -- bash -c 'sudo /usr/local/bin/snap-update 2>&1; echo "exit_code:$?"' 2>&1
+        $snapExitOk = ($snapResult -match "exit_code:0")
+
+        # Check journal for snap-update execution
+        $snapLog = multipass exec $VMName -- bash -c 'grep "snap-update" /var/lib/apt-notify/apt-notify.log 2>/dev/null | tail -3' 2>&1
+
+        $results += @{
+            Test = "6.8.20"
+            Name = "snap-update script execution"
+            Pass = $snapExitOk
+            Output = if ($snapExitOk) { "Script ran successfully. Log: $($snapLog -replace "`n", ' ')" } else { "Script failed: $snapResult" }
+        }
+    } else {
+        $results += @{
+            Test = "6.8.20"
+            Name = "snap-update script execution"
+            Pass = $true
+            Output = "Skipped - snap not installed"
+        }
+    }
+
+    # 6.8.21: Test npm-global-update script with outdated package
+    $npmInstalled = multipass exec $VMName -- which npm 2>&1
+    if ($npmInstalled -match "npm" -and $LASTEXITCODE -eq 0) {
+        # Install an old version of a small test package globally
+        multipass exec $VMName -- bash -c 'sudo npm install -g is-odd@2.0.0 2>/dev/null' 2>&1 | Out-Null
+
+        # Clear queue before running script
+        multipass exec $VMName -- bash -c 'sudo rm -f /var/lib/apt-notify/queue' 2>&1 | Out-Null
+
+        # Run the actual npm-global-update script
+        $npmResult = multipass exec $VMName -- bash -c 'sudo /usr/local/bin/npm-global-update 2>&1; echo "exit_code:$?"' 2>&1
+        $npmExitOk = ($npmResult -match "exit_code:0")
+
+        # Check queue for npm entry
+        $queueContent = multipass exec $VMName -- bash -c 'cat /var/lib/apt-notify/queue 2>/dev/null || echo ""' 2>&1
+        $npmDetected = [bool]($queueContent -match "NPM_UPGRADED")
+
+        $results += @{
+            Test = "6.8.21"
+            Name = "npm-global-update script"
+            Pass = ($npmExitOk -and $npmDetected)
+            Output = if ($npmDetected) { "Detected npm update in queue" } elseif ($npmExitOk) { "Script ran but no updates found" } else { "Script failed" }
+        }
+
+        # Cleanup test package
+        multipass exec $VMName -- bash -c 'sudo npm uninstall -g is-odd 2>/dev/null' 2>&1 | Out-Null
+    } else {
+        $results += @{
+            Test = "6.8.21"
+            Name = "npm-global-update script"
+            Pass = $true
+            Output = "Skipped - npm not installed"
+        }
+    }
+
+    # 6.8.22: Test pip-global-update script with outdated package
+    $pipInstalled = multipass exec $VMName -- which pip3 2>&1
+    if ($pipInstalled -match "pip" -and $LASTEXITCODE -eq 0) {
+        # Install an old version of a small test package
+        multipass exec $VMName -- bash -c 'sudo pip3 install six==1.15.0 2>/dev/null' 2>&1 | Out-Null
+
+        # Clear queue before running script
+        multipass exec $VMName -- bash -c 'sudo rm -f /var/lib/apt-notify/queue' 2>&1 | Out-Null
+
+        # Run the actual pip-global-update script
+        $pipResult = multipass exec $VMName -- bash -c 'sudo /usr/local/bin/pip-global-update 2>&1; echo "exit_code:$?"' 2>&1
+        $pipExitOk = ($pipResult -match "exit_code:0")
+
+        # Check queue for pip entry
+        $queueContent = multipass exec $VMName -- bash -c 'cat /var/lib/apt-notify/queue 2>/dev/null || echo ""' 2>&1
+        $pipDetected = [bool]($queueContent -match "PIP_UPGRADED")
+
+        $results += @{
+            Test = "6.8.22"
+            Name = "pip-global-update script"
+            Pass = ($pipExitOk -and $pipDetected)
+            Output = if ($pipDetected) { "Detected pip update in queue" } elseif ($pipExitOk) { "Script ran but no updates found" } else { "Script failed" }
+        }
+    } else {
+        $results += @{
+            Test = "6.8.22"
+            Name = "pip-global-update script"
+            Pass = $true
+            Output = "Skipped - pip not installed"
+        }
+    }
+
+    # 6.8.23: Test brew-update script (if installed)
+    $brewInstalled = multipass exec $VMName -- bash -c 'command -v brew || test -x /home/linuxbrew/.linuxbrew/bin/brew' 2>&1
+    if ($LASTEXITCODE -eq 0) {
+        # Run the actual brew-update script
+        $brewResult = multipass exec $VMName -- bash -c 'sudo /usr/local/bin/brew-update 2>&1; echo "exit_code:$?"' 2>&1
+        $brewExitOk = ($brewResult -match "exit_code:0")
+
+        $results += @{
+            Test = "6.8.23"
+            Name = "brew-update script"
+            Pass = $brewExitOk
+            Output = if ($brewExitOk) { "Script ran successfully" } else { "Script failed: $brewResult" }
+        }
+    } else {
+        $results += @{
+            Test = "6.8.23"
+            Name = "brew-update script"
+            Pass = $true
+            Output = "Skipped - brew not installed"
+        }
+    }
+
+    # 6.8.24: Test deno-update script (if installed)
+    $denoInstalled = multipass exec $VMName -- which deno 2>&1
+    if ($denoInstalled -match "deno" -and $LASTEXITCODE -eq 0) {
+        # Run the actual deno-update script
+        $denoResult = multipass exec $VMName -- bash -c 'sudo /usr/local/bin/deno-update 2>&1; echo "exit_code:$?"' 2>&1
+        $denoExitOk = ($denoResult -match "exit_code:0")
+
+        $results += @{
+            Test = "6.8.24"
+            Name = "deno-update script"
+            Pass = $denoExitOk
+            Output = if ($denoExitOk) { "Script ran successfully" } else { "Script failed: $denoResult" }
+        }
+    } else {
+        $results += @{
+            Test = "6.8.24"
+            Name = "deno-update script"
+            Pass = $true
+            Output = "Skipped - deno not installed"
+        }
+    }
+
+    # 6.8.25: Test apt-notify-flush with populated queue and validate report generation
+    $flushTest = multipass exec $VMName -- bash -c @'
+source /usr/local/lib/apt-notify/common.sh
+
+# Create test queue with all package manager types
+cat > "$QUEUE_FILE" << 'QUEUEEOF'
+INSTALLED:testpkg:1.0.0
+UPGRADED:curl:7.81.0:7.82.0
+SNAP_UPGRADED:lxd:5.20:5.21
+BREW_UPGRADED:jq:1.6:1.7
+PIP_UPGRADED:requests:2.28.0:2.31.0
+NPM_UPGRADED:opencode:1.0.0:1.1.0
+DENO_UPGRADED:deno:1.40.0:1.41.0
+QUEUEEOF
+
+# Clear any existing test files
+rm -f "$TEST_REPORT_FILE" "$TEST_AI_SUMMARY_FILE"
+
+# Run apt-notify-flush (in testing mode, it writes to test files instead of emailing)
+/usr/local/bin/apt-notify-flush 2>&1
+
+# Small delay to ensure file is written
+sleep 1
+
+# Check if test report file was created and has content
+if [ -s "$TEST_REPORT_FILE" ]; then
+    echo "report_file_created"
+    cat "$TEST_REPORT_FILE"
+else
+    echo "report_file_missing"
+fi
+'@ 2>&1
+
+    $reportCreated = ($flushTest -match "report_file_created")
+    $results += @{
+        Test = "6.8.25"
+        Name = "apt-notify-flush generates test report"
+        Pass = $reportCreated
+        Output = if ($reportCreated) { "Test report file created at /var/lib/apt-notify/test-report.txt" } else { "Test report file not created" }
+    }
+
+    # 6.8.26: Validate report content contains all package manager sections
+    $reportContent = multipass exec $VMName -- bash -c 'cat /var/lib/apt-notify/test-report.txt 2>/dev/null || echo ""' 2>&1
+    $hasAptInstalled = ($reportContent -match "APT: NEW PACKAGES INSTALLED")
+    $hasAptUpgraded = ($reportContent -match "APT: PACKAGES UPGRADED")
+    $hasSnap = ($reportContent -match "SNAP: PACKAGES UPGRADED")
+    $hasBrew = ($reportContent -match "BREW: PACKAGES UPGRADED")
+    $hasPip = ($reportContent -match "PIP: PACKAGES UPGRADED")
+    $hasNpm = ($reportContent -match "NPM: GLOBAL PACKAGES UPGRADED")
+    $hasDeno = ($reportContent -match "DENO: PACKAGES UPGRADED")
+    $allSections = $hasAptInstalled -and $hasAptUpgraded -and $hasSnap -and $hasBrew -and $hasPip -and $hasNpm -and $hasDeno
+
+    $results += @{
+        Test = "6.8.26"
+        Name = "Report contains all pkg manager sections"
+        Pass = $allSections
+        Output = "APT:$hasAptInstalled,$hasAptUpgraded SNAP:$hasSnap BREW:$hasBrew PIP:$hasPip NPM:$hasNpm DENO:$hasDeno"
+    }
+
+    # 6.8.27: Verify flush execution via journal/log
+    $journalCheck = multipass exec $VMName -- bash -c @'
+# Check apt-notify log for flush execution
+if grep -q "apt-notify-flush: complete" /var/lib/apt-notify/apt-notify.log 2>/dev/null; then
+    echo "flush_logged"
+    grep "apt-notify-flush" /var/lib/apt-notify/apt-notify.log | tail -5
+fi
+'@ 2>&1
+
+    $flushLogged = ($journalCheck -match "flush_logged")
+    $results += @{
+        Test = "6.8.27"
+        Name = "apt-notify-flush logged execution"
+        Pass = $flushLogged
+        Output = if ($flushLogged) { "Flush execution logged: $($journalCheck -replace "`n", ' ' -replace 'flush_logged', '')" } else { "No flush log entry found" }
+    }
+
+    return $results
+}
+
 # Dispatcher function to run tests for a specific level
 function Invoke-TestForLevel {
     param(
@@ -1494,6 +1738,7 @@ function Invoke-TestForLevel {
         "6.6"  { return Test-SystemFragment -VMName $VMName }
         "6.7"  { return Test-MSMTPFragment -VMName $VMName }
         "6.8"  { return Test-PackageSecurityFragment -VMName $VMName }
+        "6.8-updates" { return Test-PackageManagerUpdates -VMName $VMName }
         "6.9"  { return Test-SecurityMonitoringFragment -VMName $VMName }
         "6.10" { return Test-VirtualizationFragment -VMName $VMName }
         "6.11" { return Test-CockpitFragment -VMName $VMName }
