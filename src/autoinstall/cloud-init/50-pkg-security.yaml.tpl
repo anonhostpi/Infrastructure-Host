@@ -6,10 +6,13 @@ packages:
   - apt-listchanges
 
 runcmd:
-  # Hold snap auto-refreshes - we'll refresh at unattended-upgrade time instead
+  # Hold snap auto-refreshes - we'll refresh via pkg-managers-update timer instead
   - snap set system refresh.hold="forever"
-  # Set snap refresh timer to match unattended-upgrades (metered to prevent background refreshes)
+  # Set snap refresh timer to metered to prevent background refreshes
   - snap set system refresh.metered=hold
+  # Enable the package managers update timer
+  - systemctl daemon-reload
+  - systemctl enable --now pkg-managers-update.timer
 
 write_files:
   - path: /etc/apt/apt.conf.d/50unattended-upgrades
@@ -36,15 +39,6 @@ write_files:
       // Verbose logging for detailed reports
       Unattended-Upgrade::Verbose "true";
       Unattended-Upgrade::SyslogEnable "true";
-
-      // Post-upgrade hooks to update package managers (snap, brew, pip, npm, deno)
-      Unattended-Upgrade::Post-Invoke {
-          "/usr/local/bin/snap-update";
-          "/usr/local/bin/brew-update";
-          "/usr/local/bin/pip-global-update";
-          "/usr/local/bin/npm-global-update";
-          "/usr/local/bin/deno-update";
-      };
 
   - path: /etc/apt/apt.conf.d/20auto-upgrades
     permissions: '644'
@@ -970,3 +964,35 @@ write_files:
       fi
 
       log "deno-update: complete"
+
+  # Systemd service to update non-apt package managers
+  - path: /etc/systemd/system/pkg-managers-update.service
+    permissions: '644'
+    content: |
+      [Unit]
+      Description=Update non-apt package managers (snap, brew, pip, npm, deno)
+      After=network-online.target
+      Wants=network-online.target
+
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/local/bin/snap-update
+      ExecStart=/usr/local/bin/brew-update
+      ExecStart=/usr/local/bin/pip-global-update
+      ExecStart=/usr/local/bin/npm-global-update
+      ExecStart=/usr/local/bin/deno-update
+
+  # Systemd timer for daily package manager updates
+  - path: /etc/systemd/system/pkg-managers-update.timer
+    permissions: '644'
+    content: |
+      [Unit]
+      Description=Daily update of non-apt package managers
+
+      [Timer]
+      OnCalendar=daily
+      RandomizedDelaySec=1h
+      Persistent=true
+
+      [Install]
+      WantedBy=timers.target
