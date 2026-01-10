@@ -770,6 +770,88 @@ function Test-PackageSecurityFragment {
         Output = "Verbose=true, MailReport=always"
     }
 
+    # 6.8.10: snap-update script exists and is executable
+    $snapUpdate = multipass exec $VMName -- bash -c 'test -x /usr/local/bin/snap-update && echo "exists"' 2>&1
+    $results += @{
+        Test = "6.8.10"
+        Name = "snap-update script"
+        Pass = ($snapUpdate -match "exists")
+        Output = "/usr/local/bin/snap-update"
+    }
+
+    # 6.8.11: snap refresh.hold is set to prevent auto-updates
+    $snapHold = multipass exec $VMName -- bash -c 'snap get system refresh.hold 2>/dev/null || echo "not-set"' 2>&1
+    $results += @{
+        Test = "6.8.11"
+        Name = "snap refresh.hold configured"
+        Pass = ($snapHold -match "forever" -or $snapHold -match "20[0-9]{2}")  # forever or a date
+        Output = "refresh.hold=$snapHold"
+    }
+
+    # 6.8.12: brew-update script exists and is executable
+    $brewUpdate = multipass exec $VMName -- bash -c 'test -x /usr/local/bin/brew-update && echo "exists"' 2>&1
+    $results += @{
+        Test = "6.8.12"
+        Name = "brew-update script"
+        Pass = ($brewUpdate -match "exists")
+        Output = "/usr/local/bin/brew-update"
+    }
+
+    # 6.8.13: pip-global-update script exists and is executable
+    $pipUpdate = multipass exec $VMName -- bash -c 'test -x /usr/local/bin/pip-global-update && echo "exists"' 2>&1
+    $results += @{
+        Test = "6.8.13"
+        Name = "pip-global-update script"
+        Pass = ($pipUpdate -match "exists")
+        Output = "/usr/local/bin/pip-global-update"
+    }
+
+    # 6.8.14: npm-global-update script exists and is executable
+    $npmUpdate = multipass exec $VMName -- bash -c 'test -x /usr/local/bin/npm-global-update && echo "exists"' 2>&1
+    $results += @{
+        Test = "6.8.14"
+        Name = "npm-global-update script"
+        Pass = ($npmUpdate -match "exists")
+        Output = "/usr/local/bin/npm-global-update"
+    }
+
+    # 6.8.15: deno-update script exists and is executable
+    $denoUpdate = multipass exec $VMName -- bash -c 'test -x /usr/local/bin/deno-update && echo "exists"' 2>&1
+    $results += @{
+        Test = "6.8.15"
+        Name = "deno-update script"
+        Pass = ($denoUpdate -match "exists")
+        Output = "/usr/local/bin/deno-update"
+    }
+
+    # 6.8.16: pkg-managers-update systemd timer enabled
+    $timerEnabled = multipass exec $VMName -- bash -c 'systemctl is-enabled pkg-managers-update.timer 2>/dev/null' 2>&1
+    $timerActive = multipass exec $VMName -- bash -c 'systemctl is-active pkg-managers-update.timer 2>/dev/null' 2>&1
+    $results += @{
+        Test = "6.8.16"
+        Name = "pkg-managers-update timer"
+        Pass = ($timerEnabled -match "enabled") -and ($timerActive -match "active")
+        Output = "enabled=$timerEnabled, active=$timerActive"
+    }
+
+    # 6.8.17: apt-notify common library exists
+    $commonLib = multipass exec $VMName -- bash -c 'test -f /usr/local/lib/apt-notify/common.sh && echo "exists"' 2>&1
+    $results += @{
+        Test = "6.8.17"
+        Name = "apt-notify common library"
+        Pass = ($commonLib -match "exists")
+        Output = "/usr/local/lib/apt-notify/common.sh"
+    }
+
+    # 6.8.18: apt-notify-flush script exists
+    $flushScript = multipass exec $VMName -- bash -c 'test -x /usr/local/bin/apt-notify-flush && echo "exists"' 2>&1
+    $results += @{
+        Test = "6.8.18"
+        Name = "apt-notify-flush script"
+        Pass = ($flushScript -match "exists")
+        Output = "/usr/local/bin/apt-notify-flush"
+    }
+
     return $results
 }
 
