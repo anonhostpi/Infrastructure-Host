@@ -1173,53 +1173,53 @@ function Test-OpenCodeFragment {
     $username = $testConfig.identity.username
     $smtp = $testConfig.smtp
 
-    # 6.12.1: Node.js installed
+    # 6.14.1: Node.js installed
     $node = multipass exec $VMName -- which node 2>&1
     $results += @{
-        Test = "6.12.1"
+        Test = "6.14.1"
         Name = "Node.js installed"
         Pass = ($node -match "node" -and $LASTEXITCODE -eq 0)
         Output = $node
     }
 
-    # 6.12.2: npm installed
+    # 6.14.2: npm installed
     $npm = multipass exec $VMName -- which npm 2>&1
     $results += @{
-        Test = "6.12.2"
+        Test = "6.14.2"
         Name = "npm installed"
         Pass = ($npm -match "npm" -and $LASTEXITCODE -eq 0)
         Output = $npm
     }
 
-    # 6.12.3: OpenCode setup
+    # 6.14.3: OpenCode setup
     $opencode = multipass exec $VMName -- which opencode 2>&1
     $results += @{
-        Test = "6.12.3"
+        Test = "6.14.3"
         Name = "OpenCode CLI installed"
         Pass = ($opencode -match "opencode" -and $LASTEXITCODE -eq 0)
         Output = $opencode
     }
 
-    # 6.12.4: OpenCode config directory exists
+    # 6.14.4: OpenCode config directory exists
     $configDir = multipass exec $VMName -- bash -c "test -d /home/$username/.config/opencode && echo 'exists'" 2>&1
     $results += @{
-        Test = "6.12.4"
+        Test = "6.14.4"
         Name = "OpenCode config directory"
         Pass = ($configDir -match "exists")
         Output = "/home/$username/.config/opencode"
     }
 
-    # 6.12.5: OpenCode auth.json (derived from Claude + Copilot)
+    # 6.14.5: OpenCode auth.json (derived from Claude + Copilot)
     $authFile = multipass exec $VMName -- bash -c "test -f /home/$username/.local/share/opencode/auth.json && echo 'exists'" 2>&1
     $authConfigured = ($authFile -match "exists")
     $results += @{
-        Test = "6.12.5"
+        Test = "6.14.5"
         Name = "OpenCode auth.json"
         Pass = $authConfigured
         Output = if ($authConfigured) { "/home/$username/.local/share/opencode/auth.json" } else { "No auth (derived from Claude+Copilot)" }
     }
 
-    # 6.12.6: OpenCode AI response test (if auth configured)
+    # 6.14.6: OpenCode AI response test (if auth configured)
     if ($authConfigured) {
         $testFile = "/tmp/opencode-test-output.txt"
         # Simple prompt to minimize tokens
@@ -1238,7 +1238,7 @@ fi
         $responseContent = if ($hasResponse) { ($testResult -split "`n" | Select-Object -Skip 1) -join " " } else { "No response" }
 
         $results += @{
-            Test = "6.12.6"
+            Test = "6.14.6"
             Name = "OpenCode AI response test"
             Pass = $hasResponse
             Output = if ($hasResponse) { "Response: $($responseContent.Substring(0, [Math]::Min(80, $responseContent.Length)))..." } else { "AI response failed: $testResult" }
@@ -1255,34 +1255,34 @@ function Test-ClaudeCodeFragment {
     $testConfig = Get-TestConfig
     $username = $testConfig.identity.username
 
-    # 6.14.1: Claude Code CLI installed
+    # 6.12.1: Claude Code CLI installed
     $claude = multipass exec $VMName -- which claude 2>&1
     $results += @{
-        Test = "6.14.1"
+        Test = "6.12.1"
         Name = "Claude Code installed"
         Pass = ($claude -match "claude" -and $LASTEXITCODE -eq 0)
         Output = $claude
     }
 
-    # 6.14.2: Claude Code config directory exists
+    # 6.12.2: Claude Code config directory exists
     $configDir = multipass exec $VMName -- bash -c "test -d /home/$username/.claude && echo 'exists'" 2>&1
     $results += @{
-        Test = "6.14.2"
+        Test = "6.12.2"
         Name = "Claude Code config directory"
         Pass = ($configDir -match "exists")
         Output = "/home/$username/.claude"
     }
 
-    # 6.14.3: Claude Code settings file exists
+    # 6.12.3: Claude Code settings file exists
     $settingsFile = multipass exec $VMName -- bash -c "test -f /home/$username/.claude/settings.json && echo 'exists'" 2>&1
     $results += @{
-        Test = "6.14.3"
+        Test = "6.12.3"
         Name = "Claude Code settings file"
         Pass = ($settingsFile -match "exists")
         Output = "/home/$username/.claude/settings.json"
     }
 
-    # 6.14.4: Check authentication configuration (OAuth or API Key)
+    # 6.12.4: Check authentication configuration (OAuth or API Key)
     $claudeCodeConfig = $testConfig.claude_code
     $authConfigured = $false
     $authOutput = "No pre-configured auth (run 'claude' to authenticate)"
@@ -1314,13 +1314,13 @@ function Test-ClaudeCodeFragment {
     }
 
     $results += @{
-        Test = "6.14.4"
+        Test = "6.12.4"
         Name = "Claude Code auth configured"
         Pass = $authConfigured
         Output = $authOutput
     }
 
-    # 6.14.5: Claude Code AI response test (if auth configured)
+    # 6.12.5: Claude Code AI response test (if auth configured)
     if ($authConfigured) {
         $testFile = "/tmp/claude-test-output.txt"
         # Simple prompt to minimize tokens
@@ -1339,7 +1339,7 @@ fi
         $responseContent = if ($hasResponse) { ($testResult -split "`n" | Select-Object -Skip 1) -join " " } else { "No response" }
 
         $results += @{
-            Test = "6.14.5"
+            Test = "6.12.5"
             Name = "Claude Code AI response test"
             Pass = $hasResponse
             Output = if ($hasResponse) { "Response: $($responseContent.Substring(0, [Math]::Min(80, $responseContent.Length)))..." } else { "AI response failed: $testResult" }
@@ -1497,9 +1497,9 @@ function Invoke-TestForLevel {
         "6.9"  { return Test-SecurityMonitoringFragment -VMName $VMName }
         "6.10" { return Test-VirtualizationFragment -VMName $VMName }
         "6.11" { return Test-CockpitFragment -VMName $VMName }
-        "6.12" { return Test-OpenCodeFragment -VMName $VMName }
+        "6.12" { return Test-ClaudeCodeFragment -VMName $VMName }
         "6.13" { return Test-CopilotCLIFragment -VMName $VMName }
-        "6.14" { return Test-ClaudeCodeFragment -VMName $VMName }
+        "6.14" { return Test-OpenCodeFragment -VMName $VMName }
         "6.15" { return Test-UIFragment -VMName $VMName }
         default { return @() }
     }
