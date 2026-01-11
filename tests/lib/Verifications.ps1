@@ -192,7 +192,7 @@ function Test-SSHFragment {
     }
 
     # 6.4.2: Key Settings
-    $permitroot = multipass exec $VMName -- bash -c "grep -r 'PermitRootLogin' /etc/ssh/sshd_config.d/" 2>&1
+    $permitroot = multipass exec $VMName -- bash -c "sudo grep -r 'PermitRootLogin' /etc/ssh/sshd_config.d/" 2>&1
     $results += @{
         Test = "6.4.2"
         Name = "PermitRootLogin no"
@@ -200,7 +200,7 @@ function Test-SSHFragment {
         Output = $permitroot
     }
 
-    $maxauth = multipass exec $VMName -- bash -c "grep -r 'MaxAuthTries' /etc/ssh/sshd_config.d/" 2>&1
+    $maxauth = multipass exec $VMName -- bash -c "sudo grep -r 'MaxAuthTries' /etc/ssh/sshd_config.d/" 2>&1
     $results += @{
         Test = "6.4.2"
         Name = "MaxAuthTries set"
