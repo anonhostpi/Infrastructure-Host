@@ -1158,12 +1158,15 @@ function Test-CockpitFragment {
         if (-not $sshProcess.HasExited) {
             try {
                 # Test Cockpit through the SSH tunnel
-                $response = Invoke-WebRequest -Uri "https://localhost:${localPort}/" -SkipCertificateCheck -TimeoutSec 10 -ErrorAction Stop
+                # Use curl.exe (included in Windows 10+) instead of Invoke-WebRequest
+                # PowerShell 5.1's Invoke-WebRequest has TLS issues with self-signed certs
+                $curlResult = & curl.exe -sk -o NUL -w "%{http_code}" "https://localhost:${localPort}/" 2>&1
+                $httpCode = [int]$curlResult
                 $results += @{
                     Test = "6.11.7"
                     Name = "Cockpit via SSH tunnel"
-                    Pass = ($response.StatusCode -eq 200)
-                    Output = "SSH tunnel localhost:${localPort} -> 127.0.0.1:${listenPort} - HTTP $($response.StatusCode)"
+                    Pass = ($httpCode -eq 200)
+                    Output = "SSH tunnel localhost:${localPort} -> 127.0.0.1:${listenPort} - HTTP $httpCode"
                 }
             } catch {
                 $errorMsg = $_.Exception.Message
