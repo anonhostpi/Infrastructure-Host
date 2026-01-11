@@ -225,8 +225,17 @@ function Test-SSHFragment {
     if ($vmIp) {
         # Attempt SSH as root - should be rejected immediately (not timeout)
         # BatchMode=yes prevents password prompts, ConnectTimeout keeps it short
-        $sshResult = ssh -o BatchMode=yes -o ConnectTimeout=5 -o StrictHostKeyChecking=no root@$vmIp exit 2>&1
-        $sshExitCode = $LASTEXITCODE
+        # Use try/catch to handle SSH stderr warnings (e.g., "Permanently added to known hosts")
+        try {
+            $oldErrorAction = $ErrorActionPreference
+            $ErrorActionPreference = "Continue"
+            $sshResult = ssh -o BatchMode=yes -o ConnectTimeout=5 -o StrictHostKeyChecking=no root@$vmIp exit 2>&1
+            $sshExitCode = $LASTEXITCODE
+            $ErrorActionPreference = $oldErrorAction
+        } catch {
+            $sshResult = $_.Exception.Message
+            $sshExitCode = 255
+        }
 
         # SSH should fail with "Permission denied" - exit code 255
         # Pass if we get permission denied (root login blocked)
@@ -255,8 +264,17 @@ function Test-SSHFragment {
         Write-TestFork -Test "6.4.5" -Decision "Testing SSH key auth" -Reason "$($sshKeys.Count) keys configured, VM IP available"
         # Attempt SSH as configured user using default SSH agent/identities
         # BatchMode=yes uses agent keys, won't prompt for password
-        $sshUserResult = ssh -o BatchMode=yes -o ConnectTimeout=5 -o StrictHostKeyChecking=no "${sshUser}@${vmIp}" "echo OK" 2>&1
-        $sshUserExitCode = $LASTEXITCODE
+        # Use try/catch to handle SSH stderr warnings (e.g., "Permanently added to known hosts")
+        try {
+            $oldErrorAction = $ErrorActionPreference
+            $ErrorActionPreference = "Continue"
+            $sshUserResult = ssh -o BatchMode=yes -o ConnectTimeout=5 -o StrictHostKeyChecking=no "${sshUser}@${vmIp}" "echo OK" 2>&1
+            $sshUserExitCode = $LASTEXITCODE
+            $ErrorActionPreference = $oldErrorAction
+        } catch {
+            $sshUserResult = $_.Exception.Message
+            $sshUserExitCode = 255
+        }
 
         $keyAuthWorks = ($sshUserResult -match "OK" -and $sshUserExitCode -eq 0)
         $results += @{
