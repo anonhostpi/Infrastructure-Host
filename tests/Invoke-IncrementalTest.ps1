@@ -110,239 +110,41 @@ multipass exec $VMName -- bash -c "cd /home/ubuntu/infra-host && pip3 install --
 Write-Host "  Done" -ForegroundColor Green
 Write-Host ""
 
-# Step 2b: Copy OAuth credentials from host to builder VM
-Write-Host "[2b/6] Setting up AI CLI credentials..." -ForegroundColor Cyan
+# Copy AI CLI credentials to builder VM if testing AI CLI fragments (6.12+)
+# Check if test level is 6.12 or higher (AI CLI fragments start at 6.12)
+$testLevelNum = [double]($TestLevel -replace '^(\d+)\.(\d+)$', '$1.$2')
+$needsAICreds = ($testLevelNum -ge 6.12) -or ($Level -eq "all")
 
-# Claude Code credentials
-$claudeCredsPath = "$env:USERPROFILE\.claude\.credentials.json"
-$claudeStatePath = "$env:USERPROFILE\.claude.json"
-$claudeCredsExist = (Test-Path $claudeCredsPath) -and (Test-Path $claudeStatePath)
+if ($needsAICreds) {
+    Write-Host "Setting up AI CLI credentials for builder..." -ForegroundColor Cyan
 
-if ($claudeCredsExist) {
-    Write-Host "  Found Claude Code credentials on host"
-    multipass exec $VMName -- bash -c "mkdir -p /home/ubuntu/.claude"
+    # Claude Code credentials (for 6.12+)
+    $claudeCredsPath = "$env:USERPROFILE\.claude\.credentials.json"
+    $claudeStatePath = "$env:USERPROFILE\.claude.json"
+    if ((Test-Path $claudeCredsPath) -and (Test-Path $claudeStatePath)) {
+        multipass exec $VMName -- bash -c "mkdir -p /home/ubuntu/.claude"
+        multipass transfer $claudeCredsPath ${VMName}:/home/ubuntu/.claude/.credentials.json
+        multipass transfer $claudeStatePath ${VMName}:/home/ubuntu/.claude.json
+        Write-Host "  Claude Code credentials copied" -ForegroundColor Green
+    } else {
+        Write-Host "  Claude Code credentials not found (optional)" -ForegroundColor Yellow
+    }
 
-    # Copy credentials.json
-    $credsContent = Get-Content $claudeCredsPath -Raw
-    $credsContent = $credsContent -replace '"', '\"'
-    multipass exec $VMName -- bash -c "cat > /home/ubuntu/.claude/.credentials.json << 'EOFCREDS'
-$(Get-Content $claudeCredsPath -Raw)
-EOFCREDS"
+    # Copilot CLI credentials (for 6.13+)
+    $copilotConfigPath = "$env:USERPROFILE\.copilot\config.json"
+    if (Test-Path $copilotConfigPath) {
+        multipass exec $VMName -- bash -c "mkdir -p /home/ubuntu/.copilot"
+        multipass transfer $copilotConfigPath ${VMName}:/home/ubuntu/.copilot/config.json
+        Write-Host "  Copilot CLI credentials copied" -ForegroundColor Green
+    } else {
+        Write-Host "  Copilot CLI credentials not found (optional)" -ForegroundColor Yellow
+    }
 
-    # Copy state file
-    multipass exec $VMName -- bash -c "cat > /home/ubuntu/.claude.json << 'EOFSTATE'
-$(Get-Content $claudeStatePath -Raw)
-EOFSTATE"
-
-    Write-Host "  Copied Claude Code credentials to builder VM" -ForegroundColor Green
-} else {
-    Write-Host "  Claude Code credentials not found on host" -ForegroundColor Yellow
-    Write-Host "  Please authenticate Claude Code on this machine:" -ForegroundColor Yellow
-    Write-Host "    1. Run 'claude' in a terminal" -ForegroundColor Gray
-    Write-Host "    2. Complete the OAuth flow" -ForegroundColor Gray
-    Write-Host "    3. Re-run this test script" -ForegroundColor Gray
     Write-Host ""
-    $response = Read-Host "  Continue without Claude Code auth? (y/N)"
-    if ($response -ne 'y' -and $response -ne 'Y') {
-        Write-Host "  Aborting. Please authenticate Claude Code first." -ForegroundColor Red
-        exit 1
-    }
 }
-
-# Copilot CLI credentials
-$copilotConfigPath = "$env:USERPROFILE\.copilot\config.json"
-$copilotCredsExist = $false
-
-if (Test-Path $copilotConfigPath) {
-    $copilotConfig = Get-Content $copilotConfigPath -Raw | ConvertFrom-Json
-    if ($copilotConfig.copilot_tokens -and ($copilotConfig.copilot_tokens.PSObject.Properties.Count -gt 0)) {
-        $copilotCredsExist = $true
-    }
-}
-
-if ($copilotCredsExist) {
-    Write-Host "  Found Copilot CLI credentials in config.json"
-    multipass exec $VMName -- bash -c "mkdir -p /home/ubuntu/.copilot"
-
-    # Copy config.json (contains copilot_tokens)
-    multipass exec $VMName -- bash -c "cat > /home/ubuntu/.copilot/config.json << 'EOFCOPILOT'
-$(Get-Content $copilotConfigPath -Raw)
-EOFCOPILOT"
-
-    Write-Host "  Copied Copilot CLI credentials to builder VM" -ForegroundColor Green
-} else {
-    # Try to extract from Windows Credential Manager using Node.js
-    $extractedToken = $false
-    $copilotDir = "$env:USERPROFILE\.copilot"
-
-    if (Test-Path $copilotDir) {
-        Write-Host "  Attempting to extract Copilot token from credential store..."
-
-        # Create extraction script
-        $extractScript = @'
-const path = require('path');
-const fs = require('fs');
-const os = require('os');
-
-const COPILOT_DIR = path.join(os.homedir(), '.copilot');
-const CONFIG_PATH = path.join(COPILOT_DIR, 'config.json');
-
-function findKeytar() {
-  const pkgDir = path.join(COPILOT_DIR, 'pkg');
-  const platforms = ['win32-x64', 'darwin-arm64', 'darwin-x64', 'linux-x64'];
-  for (const platform of platforms) {
-    const platformPath = path.join(pkgDir, platform);
-    if (fs.existsSync(platformPath)) {
-      const versions = fs.readdirSync(platformPath);
-      for (const version of versions) {
-        const nodePath = path.join(platformPath, version, 'prebuilds', platform, 'keytar.node');
-        if (fs.existsSync(nodePath)) return require(nodePath);
-      }
-    }
-  }
-  return null;
-}
-
-async function main() {
-  const keytar = findKeytar();
-  if (!keytar) { console.log('NO_KEYTAR'); return; }
-
-  const creds = await keytar.findCredentials('copilot-cli');
-  if (creds.length === 0) { console.log('NO_CREDS'); return; }
-
-  const config = fs.existsSync(CONFIG_PATH)
-    ? JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'))
-    : {};
-
-  config.copilot_tokens = config.copilot_tokens || {};
-  config.logged_in_users = config.logged_in_users || [];
-
-  for (const cred of creds) {
-    config.copilot_tokens[cred.account] = cred.password;
-    const [host, login] = cred.account.split(':');
-    if (!config.logged_in_users.find(u => u.host === host && u.login === login)) {
-      config.logged_in_users.push({ host, login });
-    }
-    if (!config.last_logged_in_user) {
-      config.last_logged_in_user = { host, login };
-    }
-  }
-
-  fs.writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2));
-  console.log('EXTRACTED');
-}
-
-main().catch(() => console.log('ERROR'));
-'@
-        $scriptPath = Join-Path $env:TEMP "extract-copilot-token.js"
-        $extractScript | Out-File -FilePath $scriptPath -Encoding utf8
-
-        try {
-            $result = node $scriptPath 2>&1
-            if ($result -eq "EXTRACTED") {
-                Write-Host "  Extracted token from credential store" -ForegroundColor Green
-                $extractedToken = $true
-
-                # Re-read and copy the updated config
-                multipass exec $VMName -- bash -c "mkdir -p /home/ubuntu/.copilot"
-                multipass exec $VMName -- bash -c "cat > /home/ubuntu/.copilot/config.json << 'EOFCOPILOT'
-$(Get-Content $copilotConfigPath -Raw)
-EOFCOPILOT"
-                Write-Host "  Copied Copilot CLI credentials to builder VM" -ForegroundColor Green
-            }
-        } catch {
-            # Node.js extraction failed
-        } finally {
-            Remove-Item $scriptPath -ErrorAction SilentlyContinue
-        }
-    }
-
-    if (-not $extractedToken) {
-        # Try environment variables (in order of precedence)
-        $envToken = $env:COPILOT_GITHUB_TOKEN
-        if (-not $envToken) { $envToken = $env:GH_TOKEN }
-        if (-not $envToken) { $envToken = $env:GITHUB_TOKEN }
-
-        if ($envToken) {
-            Write-Host "  Found Copilot token in environment variable"
-
-            # Create config.json with token
-            multipass exec $VMName -- bash -c "mkdir -p /home/ubuntu/.copilot"
-            multipass exec $VMName -- bash -c "cat > /home/ubuntu/.copilot/config.json << 'EOFCOPILOT'
-{
-  `"copilot_tokens`": {
-    `"https://github.com:env-user`": `"$envToken`"
-  },
-  `"logged_in_users`": [
-    { `"host`": `"https://github.com`", `"login`": `"env-user`" }
-  ],
-  `"last_logged_in_user`": {
-    `"host`": `"https://github.com`",
-    `"login`": `"env-user`"
-  }
-}
-EOFCOPILOT"
-            Write-Host "  Copied Copilot CLI token from env to builder VM" -ForegroundColor Green
-            $extractedToken = $true
-        }
-    }
-
-    if (-not $extractedToken) {
-        Write-Host "  Copilot CLI credentials not found" -ForegroundColor Yellow
-        Write-Host "  Please authenticate Copilot CLI on this machine:" -ForegroundColor Yellow
-        Write-Host "    1. Run 'copilot' in a terminal" -ForegroundColor Gray
-        Write-Host "    2. Use '/login' command to authenticate" -ForegroundColor Gray
-        Write-Host "    3. Or set COPILOT_GITHUB_TOKEN environment variable" -ForegroundColor Gray
-        Write-Host ""
-        $response = Read-Host "  Continue without Copilot CLI auth? (y/N)"
-        if ($response -ne 'y' -and $response -ne 'Y') {
-            Write-Host "  Aborting. Please authenticate Copilot CLI first." -ForegroundColor Red
-            exit 1
-        }
-    }
-}
-
-Write-Host "  Done" -ForegroundColor Green
-Write-Host ""
-
-# Step 2c: Verify AI CLI authentication on builder VM
-Write-Host "[2c/6] Verifying AI CLI authentication..." -ForegroundColor Cyan
-
-# Install the CLIs on builder VM for verification
-Write-Host "  Installing Node.js and AI CLIs on builder VM..."
-multipass exec $VMName -- bash -c "command -v node || (curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo bash - && sudo apt-get install -y nodejs) > /dev/null 2>&1"
-
-# Verify Claude Code auth if credentials were provided
-if ($claudeCredsExist) {
-    Write-Host "  Verifying Claude Code authentication..."
-    multipass exec $VMName -- bash -c "npm install -g @anthropic-ai/claude-code > /dev/null 2>&1"
-    $claudeVerify = multipass exec $VMName -- bash -c "HOME=/home/ubuntu claude --version 2>&1"
-    if ($LASTEXITCODE -ne 0) {
-        Write-Error "Claude Code verification failed: $claudeVerify"
-        Write-Host "  Auth credentials may be invalid or expired" -ForegroundColor Red
-        exit 1
-    }
-    Write-Host "  Claude Code: OK" -ForegroundColor Green
-}
-
-# Verify Copilot CLI auth if credentials were provided
-if ($copilotCredsExist -or $extractedToken) {
-    Write-Host "  Verifying Copilot CLI authentication..."
-    multipass exec $VMName -- bash -c "npm install -g @githubnext/github-copilot-cli > /dev/null 2>&1"
-    $copilotVerify = multipass exec $VMName -- bash -c "HOME=/home/ubuntu copilot --version 2>&1"
-    if ($LASTEXITCODE -ne 0) {
-        Write-Error "Copilot CLI verification failed: $copilotVerify"
-        Write-Host "  Auth credentials may be invalid or expired" -ForegroundColor Red
-        exit 1
-    }
-    Write-Host "  Copilot CLI: OK" -ForegroundColor Green
-}
-
-Write-Host "  Done" -ForegroundColor Green
-Write-Host ""
 
 # Step 3: Build cloud-init with selected fragments
-Write-Host "[3/6] Building cloud-init..." -ForegroundColor Cyan
+Write-Host "[3/4] Building cloud-init..." -ForegroundColor Cyan
 
 $fragments = Get-FragmentsForLevel -Level $TestLevel
 $includeArgs = Get-IncludeArgs -Level $TestLevel
@@ -364,7 +166,7 @@ Write-Host "  Done" -ForegroundColor Green
 Write-Host ""
 
 # Step 4: Launch runner VM with generated cloud-init
-Write-Host "[4/6] Launching runner VM..." -ForegroundColor Cyan
+Write-Host "[4/4] Launching runner VM..." -ForegroundColor Cyan
 
 Write-Host "  Name: $RunnerVMName"
 Write-Host "  Network: $RunnerNetwork"
@@ -383,7 +185,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 # Step 5: Enable nested virtualization (requires elevated shell)
-Write-Host "[5/6] Enabling nested virtualization..." -ForegroundColor Cyan
+Write-Host "Enabling nested virtualization..." -ForegroundColor Cyan
 
 # Check if running as administrator
 $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
@@ -436,7 +238,7 @@ Write-Host "  Done" -ForegroundColor Green
 Write-Host ""
 
 # Step 6: Run all tests up to the specified level
-Write-Host "[6/6] Running tests..." -ForegroundColor Cyan
+Write-Host "Running tests..." -ForegroundColor Cyan
 Write-Host ""
 
 $allResults = @()
