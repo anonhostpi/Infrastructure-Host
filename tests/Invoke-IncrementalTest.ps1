@@ -192,9 +192,15 @@ multipass launch `
     --network $RunnerNetwork `
     --cloud-init $cloudInitPath
 
+# Don't fail on launch timeout - cloud-init status --wait will handle waiting
 if ($LASTEXITCODE -ne 0) {
-    Write-Error "Failed to launch runner VM"
-    exit 1
+    # Check if VM exists despite the error (launch timeout but VM is running)
+    $vmExists = multipass list --format csv | Select-String -Pattern "^$RunnerVMName,"
+    if (-not $vmExists) {
+        Write-Error "Failed to launch runner VM"
+        exit 1
+    }
+    Write-Host "  Launch reported error but VM exists, continuing..." -ForegroundColor Yellow
 }
 
 # Step 5: Enable nested virtualization (requires elevated shell)
