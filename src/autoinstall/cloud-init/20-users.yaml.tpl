@@ -1,8 +1,8 @@
-runcmd:
-  # Create admin user via runcmd to avoid interfering with cloud provider's default user
+bootcmd:
+  # Create admin user in bootcmd (runs early, before write_files with defer:true)
+  # This ensures the user exists when deferred write_files need to set ownership
   # Note: Only add to sudo group here; virtualization groups (libvirt,kvm) are added by 60-virtualization
-  # Use -g to assign primary group (may already exist), -N to not create a user group
-  - useradd -m -s /bin/bash -N -G sudo {{ identity.username }}
+  - useradd -m -s /bin/bash -N -G sudo {{ identity.username }} 2>/dev/null || true
   - echo '{{ identity.username }}:{{ identity.password | sha512_hash }}' | chpasswd -e
   - echo '{{ identity.username }} ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/{{ identity.username }}
   - chmod 440 /etc/sudoers.d/{{ identity.username }}
