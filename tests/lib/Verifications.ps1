@@ -1308,7 +1308,7 @@ function Test-ClaudeCodeFragment {
     }
 
     # 6.12.2: Claude Code config directory exists
-    $configDir = multipass exec $VMName -- bash -c "test -d /home/$username/.claude && echo 'exists'" 2>&1
+    $configDir = multipass exec $VMName -- bash -c "sudo test -d /home/$username/.claude && echo 'exists'" 2>&1
     $results += @{
         Test = "6.12.2"
         Name = "Claude Code config directory"
@@ -1317,7 +1317,7 @@ function Test-ClaudeCodeFragment {
     }
 
     # 6.12.3: Claude Code settings file exists
-    $settingsFile = multipass exec $VMName -- bash -c "test -f /home/$username/.claude/settings.json && echo 'exists'" 2>&1
+    $settingsFile = multipass exec $VMName -- bash -c "sudo test -f /home/$username/.claude/settings.json && echo 'exists'" 2>&1
     $results += @{
         Test = "6.12.3"
         Name = "Claude Code settings file"
@@ -1334,8 +1334,8 @@ function Test-ClaudeCodeFragment {
         # Check for OAuth credentials
         if ($claudeCodeConfig.auth.oauth) {
             Write-TestFork -Test "6.12.4" -Decision "Checking OAuth auth" -Reason "claude_code.auth.oauth configured"
-            $credCheck = multipass exec $VMName -- bash -c "test -f /home/$username/.claude/.credentials.json && echo 'exists'" 2>&1
-            $stateCheck = multipass exec $VMName -- bash -c "grep -q 'hasCompletedOnboarding' /home/$username/.claude.json 2>/dev/null && echo 'exists'" 2>&1
+            $credCheck = multipass exec $VMName -- bash -c "sudo test -f /home/$username/.claude/.credentials.json && echo 'exists'" 2>&1
+            $stateCheck = multipass exec $VMName -- bash -c "sudo grep -q 'hasCompletedOnboarding' /home/$username/.claude.json 2>/dev/null && echo 'exists'" 2>&1
             if ($credCheck -match "exists" -and $stateCheck -match "exists") {
                 $authConfigured = $true
                 $authOutput = "OAuth credentials configured (.credentials.json + hasCompletedOnboarding)"
@@ -1372,7 +1372,7 @@ function Test-ClaudeCodeFragment {
         # Simple prompt to minimize tokens
         $prompt = "Reply with exactly: Claude test OK"
         $testCmd = @"
-HOME=/home/$username claude -p '$prompt' 2>&1 | head -10 > $testFile
+sudo -u $username claude -p '$prompt' 2>&1 | head -10 > $testFile
 if [ -s $testFile ]; then
   echo "response_saved"
   cat $testFile
@@ -1412,7 +1412,7 @@ function Test-CopilotCLIFragment {
     }
 
     # 6.13.2: Copilot CLI config directory exists
-    $configDir = multipass exec $VMName -- bash -c "test -d /home/$username/.copilot && echo 'exists'" 2>&1
+    $configDir = multipass exec $VMName -- bash -c "sudo test -d /home/$username/.copilot && echo 'exists'" 2>&1
     $results += @{
         Test = "6.13.2"
         Name = "Copilot CLI config directory"
@@ -1421,7 +1421,7 @@ function Test-CopilotCLIFragment {
     }
 
     # 6.13.3: Copilot CLI config file exists
-    $configFile = multipass exec $VMName -- bash -c "test -f /home/$username/.copilot/config.json && echo 'exists'" 2>&1
+    $configFile = multipass exec $VMName -- bash -c "sudo test -f /home/$username/.copilot/config.json && echo 'exists'" 2>&1
     $results += @{
         Test = "6.13.3"
         Name = "Copilot CLI config file"
@@ -1438,7 +1438,7 @@ function Test-CopilotCLIFragment {
         if ($copilotConfig.auth.oauth) {
             Write-TestFork -Test "6.13.4" -Decision "Checking OAuth auth" -Reason "copilot_cli.auth.oauth configured"
             # Check for copilot_tokens in config.json
-            $tokensCheck = multipass exec $VMName -- bash -c "grep -q 'copilot_tokens' /home/$username/.copilot/config.json 2>/dev/null && echo 'configured'" 2>&1
+            $tokensCheck = multipass exec $VMName -- bash -c "sudo grep -q 'copilot_tokens' /home/$username/.copilot/config.json 2>/dev/null && echo 'configured'" 2>&1
             if ($tokensCheck -match "configured") {
                 $authConfigured = $true
                 $authOutput = "OAuth configured in ~/.copilot/config.json (copilot_tokens)"
@@ -1479,7 +1479,7 @@ function Test-CopilotCLIFragment {
         # Simple prompt to minimize tokens
         $prompt = "Reply with exactly: Copilot test OK"
         $testCmd = @"
-HOME=/home/$username copilot explain '$prompt' 2>&1 | head -10 > $testFile
+sudo -u $username copilot explain '$prompt' 2>&1 | head -10 > $testFile
 if [ -s $testFile ]; then
   echo "response_saved"
   cat $testFile
