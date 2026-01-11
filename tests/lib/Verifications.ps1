@@ -671,17 +671,22 @@ function Test-MSMTPFragment {
         $hostname = multipass exec $VMName -- hostname 2>&1
         $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
         # Use sudo since /etc/msmtprc has 600 permissions owned by root
-        $testEmailCmd = @"
-echo -e "Subject: [Test] MSMTP Config Validation\n\nThis is an automated test email from Infrastructure-Host test framework.\n\nHostname: $hostname\nTimestamp: $timestamp\nProvider: $providerName" | sudo msmtp '$($smtp.recipient)'
-"@
-        $sendResult = multipass exec $VMName -- bash -c $testEmailCmd 2>&1
+        # Build command carefully - use single quotes for bash -c to avoid escaping issues
+        $recipient = $smtp.recipient
+        $subject = "[Test] MSMTP Config Validation - $hostname"
+        $body = "Automated test from Infrastructure-Host.`nTimestamp: $timestamp`nProvider: $providerName"
+        $sendResult = multipass exec $VMName -- bash -c "echo -e 'Subject: $subject\n\n$body' | sudo msmtp '$recipient'" 2>&1
         $sendExitCode = $LASTEXITCODE
+
+        # Verify email appears in msmtp log (not just exit code)
+        $logEntry = multipass exec $VMName -- bash -c "sudo tail -1 /var/log/msmtp.log 2>/dev/null" 2>&1
+        $logVerified = ($logEntry -match "recipients=$recipient" -and $logEntry -match "exitcode=EX_OK")
 
         $results += @{
             Test = "6.7.11"
             Name = "Test email sent"
-            Pass = ($sendExitCode -eq 0)
-            Output = if ($sendExitCode -eq 0) { "Email sent to $($smtp.recipient)" } else { "Send failed: $sendResult" }
+            Pass = ($sendExitCode -eq 0 -and $logVerified)
+            Output = if ($sendExitCode -eq 0 -and $logVerified) { "Email sent and logged: $recipient" } elseif ($sendExitCode -ne 0) { "Send failed: $sendResult" } else { "Send succeeded but not found in log" }
         }
     }
 
