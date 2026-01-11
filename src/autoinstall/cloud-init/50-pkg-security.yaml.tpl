@@ -791,13 +791,13 @@ write_files:
         fi
       done <<< "$REFRESH_LIST"
 
-      if [ ${#snap_current_versions[@]} -eq 0 ]; then
+      if [ ${{ '{#' }}snap_current_versions[@]} -eq 0 ]; then
         log "snap-update: no snap updates parsed"
         exit 0
       fi
 
       # Perform the refresh
-      log "snap-update: refreshing ${#snap_current_versions[@]} snaps"
+      log "snap-update: refreshing ${{ '{#' }}snap_current_versions[@]} snaps"
       snap refresh 2>&1 | while read line; do log "snap refresh: $line"; done
 
       # Build queue entries
@@ -809,7 +809,7 @@ write_files:
 
       # Append to apt-notify queue for unified notification
       echo "$SNAP_UPDATES" >> "$QUEUE_FILE"
-      log "snap-update: queued ${#snap_current_versions[@]} snap package updates"
+      log "snap-update: queued ${{ '{#' }}snap_current_versions[@]} snap package updates"
 
       # Schedule flush timer if not already active
       if ! timer_active; then
