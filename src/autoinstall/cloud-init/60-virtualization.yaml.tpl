@@ -10,7 +10,7 @@ snap:
 
 write_files:
   - path: /etc/libvirt/hooks/qemu
-    permissions: '755'
+    permissions: '0755'
     content: |
       #!/bin/bash
       # libvirt QEMU hook for VM lifecycle notifications

@@ -10,10 +10,19 @@ from .composer import deep_merge
 
 # Custom YAML representer for multiline strings using literal block scalars
 def str_representer(dumper, data):
-    """Use literal block scalar (|) for multiline strings."""
+    """Use literal block scalar (|) for multiline strings.
+
+    Also forces quoting for numeric-looking strings (like permissions '644')
+    to ensure cloud-init schema validation passes.
+    """
     if '\n' in data:
         # Use literal block style for multiline
         return dumper.represent_scalar('tag:yaml.org,2002:str', data, style='|')
+    # Force single quotes for strings that look like numbers (e.g., '0644', '0755')
+    # This ensures cloud-init doesn't interpret them as integers
+    # Matches: pure digits, or leading 0 followed by digits (octal-like permissions)
+    if data.isdigit() or (len(data) > 1 and data[0] == '0' and data[1:].isdigit()):
+        return dumper.represent_scalar('tag:yaml.org,2002:str', data, style="'")
     return dumper.represent_scalar('tag:yaml.org,2002:str', data)
 
 

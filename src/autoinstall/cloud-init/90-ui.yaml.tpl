@@ -10,13 +10,13 @@ packages:
 write_files:
   # Disable default Ubuntu MOTD components
   - path: /etc/default/motd-news
-    permissions: '644'
+    permissions: '0644'
     content: |
       ENABLED=0
 
   # Dynamic MOTD: System header
   - path: /etc/update-motd.d/00-header
-    permissions: '755'
+    permissions: '0755'
     content: |
       #!/bin/bash
       echo ""
@@ -26,7 +26,7 @@ write_files:
 
   # Dynamic MOTD: System status
   - path: /etc/update-motd.d/10-sysinfo
-    permissions: '755'
+    permissions: '0755'
     content: |
       #!/bin/bash
       UPTIME=$(uptime -p | sed 's/up //')
@@ -42,7 +42,7 @@ write_files:
 
   # Dynamic MOTD: VM status
   - path: /etc/update-motd.d/20-vms
-    permissions: '755'
+    permissions: '0755'
     content: |
       #!/bin/bash
       if command -v virsh &> /dev/null; then
@@ -56,7 +56,7 @@ write_files:
 
   # Dynamic MOTD: SSH config snippet for Cockpit access
   - path: /etc/update-motd.d/30-ssh-config
-    permissions: '755'
+    permissions: '0755'
     content: |
       #!/bin/bash
       IP=$(hostname -I | awk '{print $1}')
@@ -76,7 +76,7 @@ write_files:
 
   # Dynamic MOTD: Updates available
   - path: /etc/update-motd.d/90-updates
-    permissions: '755'
+    permissions: '0755'
     content: |
       #!/bin/bash
       if [ -f /var/run/reboot-required ]; then
@@ -92,7 +92,7 @@ write_files:
 
   # Shell aliases
   - path: /etc/profile.d/aliases.sh
-    permissions: '644'
+    permissions: '0644'
     content: |
       # Modern CLI tool aliases
       alias cat='batcat --paging=never'
@@ -116,7 +116,7 @@ write_files:
 
   # Neofetch on interactive login (optional)
   - path: /etc/profile.d/neofetch.sh
-    permissions: '644'
+    permissions: '0644'
     content: |
       # Run neofetch on interactive login
       # Uncomment to enable:

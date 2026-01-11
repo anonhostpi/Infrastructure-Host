@@ -4,7 +4,7 @@ packages:
 write_files:
   # SSH brute force protection
   - path: /etc/fail2ban/jail.d/sshd.conf
-    permissions: '644'
+    permissions: '0644'
     content: |
       [sshd]
       enabled = true
@@ -17,7 +17,7 @@ write_files:
 
   # SSH connection flooding
   - path: /etc/fail2ban/jail.d/sshd-ddos.conf
-    permissions: '644'
+    permissions: '0644'
     content: |
       [sshd-ddos]
       enabled = true
@@ -30,7 +30,7 @@ write_files:
 
   # Privilege escalation attempts
   - path: /etc/fail2ban/jail.d/sudo.conf
-    permissions: '644'
+    permissions: '0644'
     content: |
       [sudo]
       enabled = true
@@ -43,7 +43,7 @@ write_files:
 
   # Repeat offender escalation
   - path: /etc/fail2ban/jail.d/recidive.conf
-    permissions: '644'
+    permissions: '0644'
     content: |
       [recidive]
       enabled = true
@@ -55,7 +55,7 @@ write_files:
 
   # Email notifications via msmtp (optional - requires 6.7 MSMTP)
   - path: /etc/fail2ban/action.d/msmtp-mail.conf
-    permissions: '644'
+    permissions: '0644'
     content: |
       [Definition]
       actionstart =
@@ -69,7 +69,7 @@ write_files:
 
   # Libvirt log rotation
   - path: /etc/logrotate.d/libvirt
-    permissions: '644'
+    permissions: '0644'
     content: |
       /var/log/libvirt/*.log {
           daily

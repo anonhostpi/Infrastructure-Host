@@ -16,7 +16,7 @@ runcmd:
 
 write_files:
   - path: /etc/apt/apt.conf.d/50unattended-upgrades
-    permissions: '644'
+    permissions: '0644'
     content: |
       Unattended-Upgrade::Allowed-Origins {
           "${distro_id}:${distro_codename}-security";
@@ -41,7 +41,7 @@ write_files:
       Unattended-Upgrade::SyslogEnable "true";
 
   - path: /etc/apt/apt.conf.d/20auto-upgrades
-    permissions: '644'
+    permissions: '0644'
     content: |
       APT::Periodic::Update-Package-Lists "1";
       APT::Periodic::Unattended-Upgrade "1";
@@ -49,7 +49,7 @@ write_files:
 
   # apt-listchanges config for changelog notifications
   - path: /etc/apt/listchanges.conf
-    permissions: '644'
+    permissions: '0644'
     content: |
       [apt]
       frontend=mail
@@ -60,7 +60,7 @@ write_files:
 
   # dpkg hook to notify on any package install/upgrade/remove
   - path: /etc/apt/apt.conf.d/90pkg-notify
-    permissions: '644'
+    permissions: '0644'
     content: |
       // Email notifications for all package operations
       DPkg::Pre-Invoke { "/usr/local/bin/apt-notify pre"; };
@@ -68,7 +68,7 @@ write_files:
 
   # Shared library for apt-notify scripts
   - path: /usr/local/lib/apt-notify/common.sh
-    permissions: '644'
+    permissions: '0644'
     content: |
       #!/bin/bash
       # Shared functions for apt-notify and apt-notify-flush
@@ -529,7 +529,7 @@ write_files:
 
   # Package notification script with batching support
   - path: /usr/local/bin/apt-notify
-    permissions: '755'
+    permissions: '0755'
     content: |
       #!/bin/bash
       # Notify on package install/upgrade/remove operations
@@ -606,7 +606,7 @@ write_files:
 
   # Flush script for batched notifications
   - path: /usr/local/bin/apt-notify-flush
-    permissions: '755'
+    permissions: '0755'
     content: |
       #!/bin/bash
       # Flush queued package notifications with deduplication
@@ -745,7 +745,7 @@ write_files:
   # Snaps are held from auto-refresh; we refresh them here at unattended-upgrade time
   # Output is appended to apt-notify queue for inclusion in the unified notification
   - path: /usr/local/bin/snap-update
-    permissions: '755'
+    permissions: '0755'
     content: |
       #!/bin/bash
       # Update snap packages (held from auto-refresh via refresh.hold=forever)
@@ -822,7 +822,7 @@ write_files:
   # Homebrew package update script (called by unattended-upgrades Post-Invoke)
   # Output is appended to apt-notify queue for inclusion in the unified notification
   - path: /usr/local/bin/brew-update
-    permissions: '755'
+    permissions: '0755'
     content: |
       #!/bin/bash
       # Update Homebrew packages
@@ -897,7 +897,7 @@ write_files:
   # pip global package update script (called by unattended-upgrades Post-Invoke)
   # Output is appended to apt-notify queue for inclusion in the unified notification
   - path: /usr/local/bin/pip-global-update
-    permissions: '755'
+    permissions: '0755'
     content: |
       #!/bin/bash
       # Update pip and globally installed Python packages
@@ -974,7 +974,7 @@ write_files:
   # npm global package update script (called by unattended-upgrades Post-Invoke)
   # Output is appended to apt-notify queue for inclusion in the unified notification
   - path: /usr/local/bin/npm-global-update
-    permissions: '755'
+    permissions: '0755'
     content: |
       #!/bin/bash
       # Update Node.js and npm global packages (opencode, claude-code, copilot-cli)
@@ -1042,7 +1042,7 @@ write_files:
   # Deno package update script (called by unattended-upgrades Post-Invoke)
   # Output is appended to apt-notify queue for inclusion in the unified notification
   - path: /usr/local/bin/deno-update
-    permissions: '755'
+    permissions: '0755'
     content: |
       #!/bin/bash
       # Update Deno and installed Deno packages
@@ -1110,7 +1110,7 @@ write_files:
 
   # Systemd service to update non-apt package managers
   - path: /etc/systemd/system/pkg-managers-update.service
-    permissions: '644'
+    permissions: '0644'
     content: |
       [Unit]
       Description=Update non-apt package managers (snap, brew, pip, npm, deno)
@@ -1127,7 +1127,7 @@ write_files:
 
   # Systemd timer for daily package manager updates
   - path: /etc/systemd/system/pkg-managers-update.timer
-    permissions: '644'
+    permissions: '0644'
     content: |
       [Unit]
       Description=Daily update of non-apt package managers

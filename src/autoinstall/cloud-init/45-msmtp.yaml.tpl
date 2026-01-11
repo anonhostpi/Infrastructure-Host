@@ -5,7 +5,7 @@ packages:
 
 write_files:
   - path: /etc/msmtprc
-    permissions: '600'
+    permissions: '0600'
     content: |
       defaults
       auth           on
@@ -50,13 +50,13 @@ write_files:
 {% endif %}
 
   - path: /etc/aliases
-    permissions: '644'
+    permissions: '0644'
     content: |
       root: {{ smtp.recipient }}
       default: {{ smtp.recipient }}
 
   - path: /usr/local/bin/msmtp-config
-    permissions: '755'
+    permissions: '0755'
     content: |
       #!/bin/bash
       set -e
@@ -91,7 +91,7 @@ write_files:
       echo "Email configuration complete!"
 
   - path: /etc/logrotate.d/msmtp
-    permissions: '644'
+    permissions: '0644'
     content: |
       /var/log/msmtp.log {
         rotate 4
