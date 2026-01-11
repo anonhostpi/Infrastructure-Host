@@ -1,6 +1,18 @@
 # Test Verification Functions
 # Each function tests a specific fragment and returns pass/fail results
 
+# Helper function to log fork decisions to the transcript
+function Write-TestFork {
+    param(
+        [string]$Test,
+        [string]$Decision,
+        [string]$Reason = ""
+    )
+    $msg = "[FORK] $Test : $Decision"
+    if ($Reason) { $msg += " ($Reason)" }
+    Write-Host $msg -ForegroundColor DarkGray
+}
+
 function Test-NetworkFragment {
     param([string]$VMName)
 
@@ -240,6 +252,7 @@ function Test-SSHFragment {
     $sshUser = $testConfig.identity.username
 
     if ($sshKeys -and $sshKeys.Count -gt 0 -and $vmIp) {
+        Write-TestFork -Test "6.4.5" -Decision "Testing SSH key auth" -Reason "$($sshKeys.Count) keys configured, VM IP available"
         # Attempt SSH as configured user using default SSH agent/identities
         # BatchMode=yes uses agent keys, won't prompt for password
         $sshUserResult = ssh -o BatchMode=yes -o ConnectTimeout=5 -o StrictHostKeyChecking=no "${sshUser}@${vmIp}" "echo OK" 2>&1
@@ -253,14 +266,16 @@ function Test-SSHFragment {
             Output = if ($keyAuthWorks) { "Key authentication successful" } else { "Key auth failed (ensure private key is loaded in ssh-agent): $sshUserResult" }
         }
     } elseif ($sshKeys -and $sshKeys.Count -gt 0) {
+        Write-TestFork -Test "6.4.5" -Decision "SSH key auth skipped" -Reason "No VM IP available"
         $results += @{
             Test = "6.4.5"
             Name = "SSH key auth for $sshUser"
             Pass = $false
             Output = "Could not get VM IP address"
         }
+    } else {
+        Write-TestFork -Test "6.4.5" -Decision "SSH key auth skipped" -Reason "No SSH keys configured"
     }
-    # If no SSH keys configured, skip test 6.4.5
 
     return $results
 }
@@ -376,8 +391,10 @@ function Test-MSMTPFragment {
 
     # Skip config verification tests if smtp not configured
     if (-not $smtp -or -not $smtp.host) {
+        Write-TestFork -Test "6.7.4+" -Decision "Skipping SMTP config verification" -Reason "smtp.host not configured"
         return $results
     }
+    Write-TestFork -Test "6.7.4+" -Decision "Testing SMTP config verification" -Reason "smtp.host=$($smtp.host)"
 
     # Read the msmtprc content for verification (sudo needed due to 600 permissions)
     $msmtprc = multipass exec $VMName -- bash -c 'sudo cat /etc/msmtprc' 2>&1
@@ -1290,6 +1307,7 @@ function Test-ClaudeCodeFragment {
     if ($claudeCodeConfig -and $claudeCodeConfig.auth) {
         # Check for OAuth credentials
         if ($claudeCodeConfig.auth.oauth) {
+            Write-TestFork -Test "6.12.4" -Decision "Checking OAuth auth" -Reason "claude_code.auth.oauth configured"
             $credCheck = multipass exec $VMName -- bash -c "test -f /home/$username/.claude/.credentials.json && echo 'exists'" 2>&1
             $stateCheck = multipass exec $VMName -- bash -c "grep -q 'hasCompletedOnboarding' /home/$username/.claude.json 2>/dev/null && echo 'exists'" 2>&1
             if ($credCheck -match "exists" -and $stateCheck -match "exists") {
@@ -1301,6 +1319,7 @@ function Test-ClaudeCodeFragment {
         }
         # Check for API Key
         elseif ($claudeCodeConfig.auth.api_key) {
+            Write-TestFork -Test "6.12.4" -Decision "Checking API key auth" -Reason "claude_code.auth.api_key configured"
             $envCheck = multipass exec $VMName -- bash -c "grep -q 'ANTHROPIC_API_KEY' /etc/environment && echo 'configured'" 2>&1
             if ($envCheck -match "configured") {
                 $authConfigured = $true
@@ -1310,6 +1329,7 @@ function Test-ClaudeCodeFragment {
             }
         }
     } else {
+        Write-TestFork -Test "6.12.4" -Decision "No auth configured" -Reason "claude_code.auth not set"
         $authConfigured = $true  # No auth expected, that's OK
     }
 
@@ -1390,6 +1410,7 @@ function Test-CopilotCLIFragment {
 
     if ($copilotConfig -and $copilotConfig.auth) {
         if ($copilotConfig.auth.oauth) {
+            Write-TestFork -Test "6.13.4" -Decision "Checking OAuth auth" -Reason "copilot_cli.auth.oauth configured"
             # Check for copilot_tokens in config.json
             $tokensCheck = multipass exec $VMName -- bash -c "grep -q 'copilot_tokens' /home/$username/.copilot/config.json 2>/dev/null && echo 'configured'" 2>&1
             if ($tokensCheck -match "configured") {
@@ -1398,6 +1419,7 @@ function Test-CopilotCLIFragment {
             }
         }
         if (-not $authConfigured -and $copilotConfig.auth.gh_token) {
+            Write-TestFork -Test "6.13.4" -Decision "Checking GH_TOKEN auth" -Reason "copilot_cli.auth.gh_token configured"
             # Check for GH_TOKEN environment variable
             $envCheck = multipass exec $VMName -- bash -c "grep -q 'GH_TOKEN' /etc/environment && echo 'configured'" 2>&1
             if ($envCheck -match "configured") {
@@ -1405,6 +1427,8 @@ function Test-CopilotCLIFragment {
                 $authOutput = "GH_TOKEN in /etc/environment"
             }
         }
+    } else {
+        Write-TestFork -Test "6.13.4" -Decision "No auth configured" -Reason "copilot_cli.auth not set"
     }
 
     if ($authConfigured) {
@@ -1733,29 +1757,38 @@ fi
         if ($testConfig.claude_code -and $testConfig.claude_code.model) {
             $expectedProvider = "anthropic"
             $expectedModel = $testConfig.claude_code.model
+            Write-TestFork -Test "6.8.28" -Decision "OpenCode with Claude model" -Reason "claude_code.model=$expectedModel"
         } elseif ($testConfig.copilot_cli -and $testConfig.copilot_cli.model) {
             $expectedProvider = "github-copilot"
             $expectedModel = $testConfig.copilot_cli.model
+            Write-TestFork -Test "6.8.28" -Decision "OpenCode with Copilot model" -Reason "copilot_cli.model=$expectedModel"
         } else {
             $expectedProvider = "anthropic"
             $expectedModel = "claude-haiku-4-5"
+            Write-TestFork -Test "6.8.28" -Decision "OpenCode with fallback model" -Reason "No model configured, using $expectedModel"
         }
     } elseif ($testConfig.claude_code -and $testConfig.claude_code.enabled) {
         $cliName = "Claude Code"
         # Claude Code uses model from config, fallback to "claude-haiku-4-5"
         if ($testConfig.claude_code.model) {
             $expectedModel = $testConfig.claude_code.model
+            Write-TestFork -Test "6.8.28" -Decision "Claude Code CLI" -Reason "model=$expectedModel"
         } else {
             $expectedModel = "claude-haiku-4-5"
+            Write-TestFork -Test "6.8.28" -Decision "Claude Code CLI with fallback" -Reason "No model configured, using $expectedModel"
         }
     } elseif ($testConfig.copilot_cli -and $testConfig.copilot_cli.enabled) {
         $cliName = "Copilot CLI"
         # Copilot CLI uses model from config, fallback to "claude-haiku-4.5"
         if ($testConfig.copilot_cli.model) {
             $expectedModel = $testConfig.copilot_cli.model
+            Write-TestFork -Test "6.8.28" -Decision "Copilot CLI" -Reason "model=$expectedModel"
         } else {
             $expectedModel = "claude-haiku-4.5"
+            Write-TestFork -Test "6.8.28" -Decision "Copilot CLI with fallback" -Reason "No model configured, using $expectedModel"
         }
+    } else {
+        Write-TestFork -Test "6.8.28" -Decision "No AI CLI configured" -Reason "opencode/claude_code/copilot_cli not enabled"
     }
 
     if ($cliName) {
