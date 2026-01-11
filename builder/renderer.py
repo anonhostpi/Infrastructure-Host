@@ -112,6 +112,24 @@ def get_available_fragments():
     ])
 
 
+class FragmentValidationError(Exception):
+    """Raised when a cloud-init fragment produces invalid YAML."""
+    def __init__(self, fragment_name, original_error, rendered_content):
+        self.fragment_name = fragment_name
+        self.original_error = original_error
+        self.rendered_content = rendered_content
+        super().__init__(
+            f"Fragment '{fragment_name}' produced invalid YAML:\n"
+            f"  {original_error}\n"
+            f"Rendered content:\n{self._numbered_content()}"
+        )
+
+    def _numbered_content(self):
+        """Return rendered content with line numbers for debugging."""
+        lines = self.rendered_content.split('\n')
+        return '\n'.join(f"  {i+1:3d}: {line}" for i, line in enumerate(lines))
+
+
 def render_cloud_init(ctx, include=None, exclude=None):
     """Render and merge cloud-init fragments, return as dict.
 
@@ -122,6 +140,9 @@ def render_cloud_init(ctx, include=None, exclude=None):
 
     Fragment names are matched without path or extension, e.g.:
         "20-users" matches "src/autoinstall/cloud-init/20-users.yaml.tpl"
+
+    Raises:
+        FragmentValidationError: If a fragment produces invalid YAML
     """
     fragments_dir = Path('src/autoinstall/cloud-init')
     scripts = render_scripts(ctx)
@@ -145,7 +166,13 @@ def render_cloud_init(ctx, include=None, exclude=None):
         # Use forward slashes for Jinja2 (cross-platform)
         template_path = tpl_path.relative_to('src').as_posix()
         rendered = render_text(ctx, template_path, scripts=scripts)
-        fragment = yaml.safe_load(rendered)
+
+        # Validate YAML with helpful error message
+        try:
+            fragment = yaml.safe_load(rendered)
+        except yaml.YAMLError as e:
+            raise FragmentValidationError(fragment_name, e, rendered) from e
+
         if fragment:
             merged = deep_merge(merged, fragment)
 
