@@ -121,8 +121,12 @@ Write-Host ""
 
 # Copy AI CLI credentials to builder VM if testing AI CLI fragments (6.12+)
 # Check if test level is 6.12 or higher (AI CLI fragments start at 6.12)
-$testLevelNum = [double]($TestLevel -replace '^(\d+)\.(\d+)$', '$1.$2')
-$needsAICreds = ($testLevelNum -ge 6.12) -or ($Level -eq "all")
+# Note: Version comparison must compare major.minor as integers, not decimals
+# (6.2 as decimal = 6.20 > 6.12, but as version 6.2 < 6.12)
+$levelParts = $TestLevel -split '\.'
+$testMajor = [int]$levelParts[0]
+$testMinor = [int]$levelParts[1]
+$needsAICreds = (($testMajor -gt 6) -or ($testMajor -eq 6 -and $testMinor -ge 12)) -or ($Level -eq "all")
 
 if ($needsAICreds) {
     Write-Host "Setting up AI CLI credentials for builder..." -ForegroundColor Cyan
