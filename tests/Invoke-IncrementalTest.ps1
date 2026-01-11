@@ -55,6 +55,15 @@ $RepoRoot = Split-Path -Parent $ScriptDir
 # Determine actual test level
 $TestLevel = if ($Level -eq "all") { "6.15" } else { $Level }
 
+# Set up logging to output/logs directory
+$LogDir = Join-Path $RepoRoot "output\logs"
+if (-not (Test-Path $LogDir)) {
+    New-Item -ItemType Directory -Path $LogDir -Force | Out-Null
+}
+$timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
+$LogFile = Join-Path $LogDir "test-$Level-$timestamp.log"
+Start-Transcript -Path $LogFile -Append | Out-Null
+
 # Banner
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan
@@ -311,6 +320,11 @@ if (-not $SkipCleanup) {
 }
 
 Write-Host ""
+Write-Host "Log file: $LogFile" -ForegroundColor Gray
+Write-Host ""
+
+# Stop logging
+Stop-Transcript | Out-Null
 
 # Exit with appropriate code
 if ($failCount -gt 0) {
