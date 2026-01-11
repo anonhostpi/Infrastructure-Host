@@ -820,7 +820,7 @@ function Test-PackageSecurityFragment {
     }
 
     # 6.8.11: snap refresh.hold is set to prevent auto-updates
-    $snapHold = multipass exec $VMName -- bash -c 'snap get system refresh.hold 2>/dev/null || echo "not-set"' 2>&1
+    $snapHold = multipass exec $VMName -- bash -c 'sudo snap get system refresh.hold 2>/dev/null || echo "not-set"' 2>&1
     $results += @{
         Test = "6.8.11"
         Name = "snap refresh.hold configured"
