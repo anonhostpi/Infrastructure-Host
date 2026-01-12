@@ -1244,7 +1244,7 @@ function Test-OpenCodeFragment {
     }
 
     # 6.14.4: OpenCode config directory exists
-    $configDir = multipass exec $VMName -- bash -c "test -d /home/$username/.config/opencode && echo 'exists'" 2>&1
+    $configDir = multipass exec $VMName -- bash -c "sudo test -d /home/$username/.config/opencode && echo 'exists'" 2>&1
     <# (multi) return #> @{
         Test = "6.14.4"
         Name = "OpenCode config directory"
@@ -1253,7 +1253,7 @@ function Test-OpenCodeFragment {
     }
 
     # 6.14.5: OpenCode auth.json (derived from Claude + Copilot)
-    $authFile = multipass exec $VMName -- bash -c "test -f /home/$username/.local/share/opencode/auth.json && echo 'exists'" 2>&1
+    $authFile = multipass exec $VMName -- bash -c "sudo test -f /home/$username/.local/share/opencode/auth.json && echo 'exists'" 2>&1
     $authConfigured = ($authFile -match "exists")
     <# (multi) return #> @{
         Test = "6.14.5"
