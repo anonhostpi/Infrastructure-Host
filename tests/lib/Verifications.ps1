@@ -1423,7 +1423,7 @@ function Test-CopilotCLIFragment {
     $testConfig = Get-TestConfig
     $username = $testConfig.identity.username
 
-    # 6.13.1: Copilot CLI installed
+    # 6.13.1: Copilot CLI installed (npm package: @github/copilot)
     $copilot = multipass exec $VMName -- which copilot 2>&1
     <# (multi) return #> @{
         Test = "6.13.1"
@@ -1481,17 +1481,18 @@ function Test-CopilotCLIFragment {
         Output = $authOutput
     }
 
-    # 6.13.5: Copilot CLI AI response test (if auth configured)
+    # 6.13.5: Copilot CLI AI response test (only if actual auth configured)
     if ($authConfigured) {
         $prompt = "test"
         $timeoutSeconds = 60
 
         # Run multipass exec as a job with timeout
-        # Note: copilot may require a PTY to produce output, so we use 'script' to allocate one
+        # Note: copilot -p requires a PTY to produce output, so we use 'script' to allocate one
         # Also explicitly set HOME since multipass can inherit Windows HOME
+        # Must specify --model as copilot requires model selection
         $job = Start-Job -ScriptBlock {
             param($vm, $user, $p)
-            $cmd = "sudo -u $user env HOME=/home/$user script -q -c 'timeout 30 copilot explain $p' /dev/null 2>&1"
+            $cmd = "sudo -u $user env HOME=/home/$user script -q -c 'timeout 30 copilot --model gpt-4.1 -p $p' /dev/null 2>&1"
             multipass exec $vm -- bash -c $cmd
         } -ArgumentList $VMName, $username, $prompt
 
