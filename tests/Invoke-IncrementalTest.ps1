@@ -270,29 +270,28 @@ foreach ($testLevel in $levelsToTest) {
     $testName = Get-TestName -Level $testLevel
     Write-Host "--- Test $testLevel : $testName ---" -ForegroundColor Yellow
 
-    $results = Invoke-TestForLevel -Level $testLevel -VMName $RunnerVMName
+    Invoke-TestForLevel -Level $testLevel -VMName $RunnerVMName | ForEach-Object {
+        $status = if ($_.Pass) { "[PASS]" } else { "[FAIL]" }
+        $color = if ($_.Pass) { "Green" } else { "Red" }
 
-    foreach ($result in $results) {
-        $status = if ($result.Pass) { "[PASS]" } else { "[FAIL]" }
-        $color = if ($result.Pass) { "Green" } else { "Red" }
+        Write-Host "  $status $($_.Test): $($_.Name)" -ForegroundColor $color
 
-        Write-Host "  $status $($result.Test): $($result.Name)" -ForegroundColor $color
-
-        if ($result.Pass) {
+        if ($_.Pass) {
             $passCount++
         } else {
             $failCount++
-            Write-Host "         Output: $($result.Output)" -ForegroundColor Gray
+            Write-Host "         Output: $($_.Output)" -ForegroundColor Gray
         }
 
         $allResults += @{
             Level = $testLevel
-            Test = $result.Test
-            Name = $result.Name
-            Pass = $result.Pass
-            Output = $result.Output
+            Test = $_.Test
+            Name = $_.Name
+            Pass = $_.Pass
+            Output = $_.Output
         }
     }
+    
     Write-Host ""
 }
 
