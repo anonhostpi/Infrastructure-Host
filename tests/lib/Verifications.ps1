@@ -1264,27 +1264,38 @@ function Test-OpenCodeFragment {
 
     # 6.14.6: OpenCode AI response test (if auth configured)
     if ($authConfigured) {
-        $testFile = "/tmp/opencode-test-output.txt"
-        # Simple prompt to minimize tokens
-        $prompt = "Reply with exactly: OpenCode test OK"
-        $testCmd = @"
-HOME=/home/$username opencode run '$prompt' 2>&1 | head -10 > $testFile
-if [ -s $testFile ]; then
-  echo "response_saved"
-  cat $testFile
-else
-  echo "no_response"
-fi
-"@
-        $testResult = multipass exec $VMName -- bash -c $testCmd 2>&1
-        $hasResponse = ($testResult -match "response_saved")
-        $responseContent = if ($hasResponse) { ($testResult -split "`n" | Select-Object -Skip 1) -join " " } else { "No response" }
+        $prompt = "test"
+        $timeoutSeconds = 60
+
+        # Run multipass exec as a job with timeout
+        # Note: opencode may require a PTY to produce output, so we use 'script' to allocate one
+        # Also explicitly set HOME since multipass can inherit Windows HOME
+        $job = Start-Job -ScriptBlock {
+            param($vm, $user, $p)
+            $cmd = "sudo -u $user env HOME=/home/$user script -q -c 'timeout 30 opencode run $p' /dev/null 2>&1"
+            multipass exec $vm -- bash -c $cmd
+        } -ArgumentList $VMName, $username, $prompt
+
+        $completed = Wait-Job $job -Timeout $timeoutSeconds
+        if ($completed) {
+            $testResult = Receive-Job $job
+            Remove-Job $job -Force
+            # Clean up terminal escape codes from script output
+            $cleanResult = $testResult -replace '\x1b\[[0-9;]*[a-zA-Z]', '' -replace '\[[\?0-9;]*[a-zA-Z]', ''
+            $hasResponse = ($cleanResult -and $cleanResult.Length -gt 0 -and $cleanResult -notmatch "^error|failed|timeout")
+            $responseContent = if ($cleanResult) { ($cleanResult | Out-String).Trim() } else { "Empty response" }
+        } else {
+            Stop-Job $job
+            Remove-Job $job -Force
+            $hasResponse = $false
+            $responseContent = "Timed out after ${timeoutSeconds}s"
+        }
 
         <# (multi) return #> @{
             Test = "6.14.6"
             Name = "OpenCode AI response test"
             Pass = $hasResponse
-            Output = if ($hasResponse) { "Response: $($responseContent.Substring(0, [Math]::Min(80, $responseContent.Length)))..." } else { "AI response failed: $testResult" }
+            Output = if ($hasResponse) { "Response: $($responseContent.Substring(0, [Math]::Min(80, $responseContent.Length)))..." } else { "AI response failed: $responseContent" }
         }
     }
 
@@ -1472,27 +1483,38 @@ function Test-CopilotCLIFragment {
 
     # 6.13.5: Copilot CLI AI response test (if auth configured)
     if ($authConfigured) {
-        $testFile = "/tmp/copilot-test-output.txt"
-        # Simple prompt to minimize tokens
-        $prompt = "Reply with exactly: Copilot test OK"
-        $testCmd = @"
-sudo -u $username copilot explain '$prompt' 2>&1 | head -10 > $testFile
-if [ -s $testFile ]; then
-  echo "response_saved"
-  cat $testFile
-else
-  echo "no_response"
-fi
-"@
-        $testResult = multipass exec $VMName -- bash -c $testCmd 2>&1
-        $hasResponse = ($testResult -match "response_saved")
-        $responseContent = if ($hasResponse) { ($testResult -split "`n" | Select-Object -Skip 1) -join " " } else { "No response" }
+        $prompt = "test"
+        $timeoutSeconds = 60
+
+        # Run multipass exec as a job with timeout
+        # Note: copilot may require a PTY to produce output, so we use 'script' to allocate one
+        # Also explicitly set HOME since multipass can inherit Windows HOME
+        $job = Start-Job -ScriptBlock {
+            param($vm, $user, $p)
+            $cmd = "sudo -u $user env HOME=/home/$user script -q -c 'timeout 30 copilot explain $p' /dev/null 2>&1"
+            multipass exec $vm -- bash -c $cmd
+        } -ArgumentList $VMName, $username, $prompt
+
+        $completed = Wait-Job $job -Timeout $timeoutSeconds
+        if ($completed) {
+            $testResult = Receive-Job $job
+            Remove-Job $job -Force
+            # Clean up terminal escape codes from script output
+            $cleanResult = $testResult -replace '\x1b\[[0-9;]*[a-zA-Z]', '' -replace '\[[\?0-9;]*[a-zA-Z]', ''
+            $hasResponse = ($cleanResult -and $cleanResult.Length -gt 0 -and $cleanResult -notmatch "^error|failed|timeout")
+            $responseContent = if ($cleanResult) { ($cleanResult | Out-String).Trim() } else { "Empty response" }
+        } else {
+            Stop-Job $job
+            Remove-Job $job -Force
+            $hasResponse = $false
+            $responseContent = "Timed out after ${timeoutSeconds}s"
+        }
 
         <# (multi) return #> @{
             Test = "6.13.5"
             Name = "Copilot CLI AI response test"
             Pass = $hasResponse
-            Output = if ($hasResponse) { "Response: $($responseContent.Substring(0, [Math]::Min(80, $responseContent.Length)))..." } else { "AI response failed: $testResult" }
+            Output = if ($hasResponse) { "Response: $($responseContent.Substring(0, [Math]::Min(80, $responseContent.Length)))..." } else { "AI response failed: $responseContent" }
         }
     }
 
