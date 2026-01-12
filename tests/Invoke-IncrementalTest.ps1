@@ -203,8 +203,26 @@ if ($LASTEXITCODE -ne 0) {
     Write-Host "  Launch reported error but VM exists, continuing..." -ForegroundColor Yellow
 }
 
-# Step 5: Enable nested virtualization (requires elevated shell)
-Write-Host "[5/6] Enabling nested virtualization -- This may take a while. Please wait..." -ForegroundColor Cyan
+# Step 5: Wait for cloud-init to complete (before any VM restarts)
+Write-Host "[5/6] Waiting for cloud-init to complete -- This may take a while. Please wait..." -ForegroundColor Cyan
+multipass exec $RunnerVMName -- cloud-init status --wait
+
+# Check cloud-init status
+$ciStatus = multipass exec $RunnerVMName -- cloud-init status 2>&1
+if ($ciStatus -match "error" -or $ciStatus -match "degraded") {
+    Write-Host "  WARNING: Cloud-init reported issues" -ForegroundColor Yellow
+    Write-Host "  Status: $ciStatus"
+}
+
+# Brief delay to let services stabilize
+Write-Host "  Waiting for services to stabilize..."
+Start-Sleep -Seconds 5
+
+Write-Host "  Done" -ForegroundColor Green
+Write-Host ""
+
+# Step 6: Enable nested virtualization (requires elevated shell)
+Write-Host "[6/6] Enabling nested virtualization -- This may take a while. Please wait..." -ForegroundColor Cyan
 
 # Check if running as administrator
 $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
@@ -236,18 +254,6 @@ if ($isAdmin) {
     Write-Host "  Run this script in an elevated PowerShell to enable nested VM tests." -ForegroundColor Yellow
 }
 
-Write-Host "  Done" -ForegroundColor Green
-Write-Host ""
-
-Write-Host "[6/6] Waiting for cloud-init to complete -- This may take a while. Please wait..."
-multipass exec $RunnerVMName -- cloud-init status --wait
-
-# Check cloud-init status
-$ciStatus = multipass exec $RunnerVMName -- cloud-init status 2>&1
-if ($ciStatus -match "error" -or $ciStatus -match "degraded") {
-    Write-Host "  WARNING: Cloud-init reported issues" -ForegroundColor Yellow
-    Write-Host "  Status: $ciStatus"
-}
 
 # Brief delay to let services stabilize
 Write-Host "  Waiting for services to stabilize..."
