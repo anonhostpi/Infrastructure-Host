@@ -36,7 +36,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet("6.1", "6.2", "6.3", "6.4", "6.5", "6.6", "6.7", "6.8", "6.9", "6.10", "6.11", "6.12", "6.13", "6.14", "6.15", "all")]
+    [ValidateSet("6.1", "6.2", "6.3", "6.4", "6.5", "6.6", "6.7", "6.8", "6.9", "6.10", "6.11", "6.12", "6.13", "6.14", "6.15", "6.8-updates", "all")]
     [string]$Level,
 
     [switch]$SkipCleanup
@@ -53,7 +53,7 @@ $RepoRoot = Split-Path -Parent $ScriptDir
 . "$RepoRoot\vm.config.ps1"
 
 # Determine actual test level
-$TestLevel = if ($Level -eq "all") { "6.15" } else { $Level }
+$TestLevel = if ($Level -eq "all") { "6.8-updates" } else { $Level }
 
 # Set up logging to output/logs directory
 $LogDir = Join-Path $RepoRoot "output\logs"
@@ -123,10 +123,17 @@ Write-Host ""
 # Check if test level is 6.12 or higher (AI CLI fragments start at 6.12)
 # Note: Version comparison must compare major.minor as integers, not decimals
 # (6.2 as decimal = 6.20 > 6.12, but as version 6.2 < 6.12)
-$levelParts = $TestLevel -split '\.'
-$testMajor = [int]$levelParts[0]
-$testMinor = [int]$levelParts[1]
-$needsAICreds = (($testMajor -gt 6) -or ($testMajor -eq 6 -and $testMinor -ge 12)) -or ($Level -eq "all")
+# Special levels like "6.8-updates" run after all numeric levels, so they need AI creds
+$needsAICreds = $false
+if ($Level -eq "all" -or $TestLevel -match "-") {
+    # "all" or special levels like "6.8-updates" include AI CLI fragments
+    $needsAICreds = $true
+} else {
+    $levelParts = $TestLevel -split '\.'
+    $testMajor = [int]$levelParts[0]
+    $testMinor = [int]$levelParts[1]
+    $needsAICreds = ($testMajor -gt 6) -or ($testMajor -eq 6 -and $testMinor -ge 12)
+}
 
 if ($needsAICreds) {
     Write-Host "Setting up AI CLI credentials for builder..." -ForegroundColor Cyan
