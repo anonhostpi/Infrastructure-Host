@@ -1294,7 +1294,7 @@ fi
 function Test-ClaudeCodeFragment {
     param([string]$VMName)
 
-    $results = @()
+    # $results = @()
     $testConfig = Get-TestConfig
     $username = $testConfig.identity.username
 
@@ -1408,13 +1408,13 @@ function Test-ClaudeCodeFragment {
 function Test-CopilotCLIFragment {
     param([string]$VMName)
 
-    $results = @()
+    # $results = @()
     $testConfig = Get-TestConfig
     $username = $testConfig.identity.username
 
     # 6.13.1: Copilot CLI installed
     $copilot = multipass exec $VMName -- which copilot 2>&1
-    $results += @{
+    <# (multi) return #> @{
         Test = "6.13.1"
         Name = "Copilot CLI installed"
         Pass = ($copilot -match "copilot" -and $LASTEXITCODE -eq 0)
@@ -1423,7 +1423,7 @@ function Test-CopilotCLIFragment {
 
     # 6.13.2: Copilot CLI config directory exists
     $configDir = multipass exec $VMName -- bash -c "sudo test -d /home/$username/.copilot && echo 'exists'" 2>&1
-    $results += @{
+    <# (multi) return #> @{
         Test = "6.13.2"
         Name = "Copilot CLI config directory"
         Pass = ($configDir -match "exists")
@@ -1432,7 +1432,7 @@ function Test-CopilotCLIFragment {
 
     # 6.13.3: Copilot CLI config file exists
     $configFile = multipass exec $VMName -- bash -c "sudo test -f /home/$username/.copilot/config.json && echo 'exists'" 2>&1
-    $results += @{
+    <# (multi) return #> @{
         Test = "6.13.3"
         Name = "Copilot CLI config file"
         Pass = ($configFile -match "exists")
@@ -1463,7 +1463,7 @@ function Test-CopilotCLIFragment {
         }
     }
 
-    $results += @{
+    <# (multi) return #> @{
         Test = "6.13.4"
         Name = "Copilot CLI auth configured"
         Pass = $true
@@ -1488,7 +1488,7 @@ fi
         $hasResponse = ($testResult -match "response_saved")
         $responseContent = if ($hasResponse) { ($testResult -split "`n" | Select-Object -Skip 1) -join " " } else { "No response" }
 
-        $results += @{
+        <# (multi) return #> @{
             Test = "6.13.5"
             Name = "Copilot CLI AI response test"
             Pass = $hasResponse
@@ -1496,17 +1496,17 @@ fi
         }
     }
 
-    return $results
+    # return $results
 }
 
 function Test-UIFragment {
     param([string]$VMName)
 
-    $results = @()
+    # $results = @()
 
     # 6.15.1: MOTD configured
     $motd = multipass exec $VMName -- test -d /etc/update-motd.d 2>&1
-    $results += @{
+    <# (multi) return #> @{
         Test = "6.15.1"
         Name = "MOTD directory exists"
         Pass = ($LASTEXITCODE -eq 0)
@@ -1515,36 +1515,36 @@ function Test-UIFragment {
 
     # 6.15.2: Custom MOTD scripts
     $scripts = multipass exec $VMName -- bash -c "ls /etc/update-motd.d/ | wc -l" 2>&1
-    $results += @{
+    <# (multi) return #> @{
         Test = "6.15.2"
         Name = "MOTD scripts present"
         Pass = ([int]$scripts -gt 0)
         Output = "$scripts scripts"
     }
 
-    return $results
+    # return $results
 }
 
 # Test package manager update detection (called when testing=true in build context)
 function Test-PackageManagerUpdates {
     param([string]$VMName)
 
-    $results = @()
+    # $results = @()
     $testConfig = Get-TestConfig
 
     # Check if testing mode is enabled
     $testingMode = multipass exec $VMName -- bash -c 'source /usr/local/lib/apt-notify/common.sh && echo $TESTING_MODE' 2>&1
     if ($testingMode -ne "true") {
-        $results += @{
+        <# (multi) return #> @{
             Test = "6.8.19"
             Name = "Testing mode enabled"
             Pass = $false
             Output = "Testing mode not enabled - rebuild with testing=true to run these tests"
         }
-        return $results
+        return # $results
     }
 
-    $results += @{
+    <# (multi) return #> @{
         Test = "6.8.19"
         Name = "Testing mode enabled"
         Pass = $true
@@ -1564,14 +1564,14 @@ function Test-PackageManagerUpdates {
         # Check journal for snap-update execution
         $snapLog = multipass exec $VMName -- bash -c 'grep "snap-update" /var/lib/apt-notify/apt-notify.log 2>/dev/null | tail -3' 2>&1
 
-        $results += @{
+        <# (multi) return #> @{
             Test = "6.8.20"
             Name = "snap-update script execution"
             Pass = $snapExitOk
             Output = if ($snapExitOk) { "Script ran successfully. Log: $($snapLog -replace "`n", ' ')" } else { "Script failed: $snapResult" }
         }
     } else {
-        $results += @{
+        <# (multi) return #> @{
             Test = "6.8.20"
             Name = "snap-update script execution"
             Pass = $true
@@ -1596,7 +1596,7 @@ function Test-PackageManagerUpdates {
         $queueContent = multipass exec $VMName -- bash -c 'cat /var/lib/apt-notify/queue 2>/dev/null || echo ""' 2>&1
         $npmDetected = [bool]($queueContent -match "NPM_UPGRADED")
 
-        $results += @{
+        <# (multi) return #> @{
             Test = "6.8.21"
             Name = "npm-global-update script"
             Pass = ($npmExitOk -and $npmDetected)
@@ -1606,7 +1606,7 @@ function Test-PackageManagerUpdates {
         # Cleanup test package
         multipass exec $VMName -- bash -c 'sudo npm uninstall -g is-odd 2>/dev/null' 2>&1 | Out-Null
     } else {
-        $results += @{
+        <# (multi) return #> @{
             Test = "6.8.21"
             Name = "npm-global-update script"
             Pass = $true
@@ -1631,14 +1631,14 @@ function Test-PackageManagerUpdates {
         $queueContent = multipass exec $VMName -- bash -c 'cat /var/lib/apt-notify/queue 2>/dev/null || echo ""' 2>&1
         $pipDetected = [bool]($queueContent -match "PIP_UPGRADED")
 
-        $results += @{
+        <# (multi) return #> @{
             Test = "6.8.22"
             Name = "pip-global-update script"
             Pass = ($pipExitOk -and $pipDetected)
             Output = if ($pipDetected) { "Detected pip update in queue" } elseif ($pipExitOk) { "Script ran but no updates found" } else { "Script failed" }
         }
     } else {
-        $results += @{
+        <# (multi) return #> @{
             Test = "6.8.22"
             Name = "pip-global-update script"
             Pass = $true
@@ -1653,14 +1653,14 @@ function Test-PackageManagerUpdates {
         $brewResult = multipass exec $VMName -- bash -c 'sudo /usr/local/bin/brew-update 2>&1; echo "exit_code:$?"' 2>&1
         $brewExitOk = ($brewResult -match "exit_code:0")
 
-        $results += @{
+        <# (multi) return #> @{
             Test = "6.8.23"
             Name = "brew-update script"
             Pass = $brewExitOk
             Output = if ($brewExitOk) { "Script ran successfully" } else { "Script failed: $brewResult" }
         }
     } else {
-        $results += @{
+        <# (multi) return #> @{
             Test = "6.8.23"
             Name = "brew-update script"
             Pass = $true
@@ -1675,14 +1675,14 @@ function Test-PackageManagerUpdates {
         $denoResult = multipass exec $VMName -- bash -c 'sudo /usr/local/bin/deno-update 2>&1; echo "exit_code:$?"' 2>&1
         $denoExitOk = ($denoResult -match "exit_code:0")
 
-        $results += @{
+        <# (multi) return #> @{
             Test = "6.8.24"
             Name = "deno-update script"
             Pass = $denoExitOk
             Output = if ($denoExitOk) { "Script ran successfully" } else { "Script failed: $denoResult" }
         }
     } else {
-        $results += @{
+        <# (multi) return #> @{
             Test = "6.8.24"
             Name = "deno-update script"
             Pass = $true
@@ -1724,7 +1724,7 @@ fi
 '@ 2>&1
 
     $reportCreated = ($flushTest -match "report_file_created")
-    $results += @{
+    <# (multi) return #> @{
         Test = "6.8.25"
         Name = "apt-notify-flush generates test report"
         Pass = $reportCreated
@@ -1742,7 +1742,7 @@ fi
     $hasDeno = ($reportContent -match "DENO: PACKAGES UPGRADED")
     $allSections = $hasAptInstalled -and $hasAptUpgraded -and $hasSnap -and $hasBrew -and $hasPip -and $hasNpm -and $hasDeno
 
-    $results += @{
+    <# (multi) return #> @{
         Test = "6.8.26"
         Name = "Report contains all pkg manager sections"
         Pass = $allSections
@@ -1759,7 +1759,7 @@ fi
 '@ 2>&1
 
     $flushLogged = ($journalCheck -match "flush_logged")
-    $results += @{
+    <# (multi) return #> @{
         Test = "6.8.27"
         Name = "apt-notify-flush logged execution"
         Pass = $flushLogged
@@ -1838,7 +1838,7 @@ fi
             }
         }
 
-        $results += @{
+        <# (multi) return #> @{
             Test = "6.8.28"
             Name = "AI summary reports configured model"
             Pass = ($cliMatch -and $modelMatch -and $providerMatch)
@@ -1849,7 +1849,7 @@ fi
             }
         }
     } else {
-        $results += @{
+        <# (multi) return #> @{
             Test = "6.8.28"
             Name = "AI summary reports configured model"
             Pass = $true
@@ -1857,7 +1857,7 @@ fi
         }
     }
 
-    return $results
+    # return $results
 }
 
 # Dispatcher function to run tests for a specific level

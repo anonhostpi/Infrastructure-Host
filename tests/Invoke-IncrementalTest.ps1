@@ -270,11 +270,18 @@ foreach ($testLevel in $levelsToTest) {
     $testName = Get-TestName -Level $testLevel
     Write-Host "--- Test $testLevel : $testName ---" -ForegroundColor Yellow
 
+    $lastIterTime = Get-Date
     Invoke-TestForLevel -Level $testLevel -VMName $RunnerVMName | ForEach-Object {
+        $currentTime = Get-Date
+        $iterDuration = ($currentTime - $lastIterTime).TotalSeconds
+        $lastIterTime = $currentTime
+
         $status = if ($_.Pass) { "[PASS]" } else { "[FAIL]" }
         $color = if ($_.Pass) { "Green" } else { "Red" }
+        $durationTs = [TimeSpan]::FromSeconds($iterDuration)
+        $durationStr = " ({0:00}:{1:00}.{2:000})" -f [int]$durationTs.TotalMinutes, $durationTs.Seconds, $durationTs.Milliseconds
 
-        Write-Host "  $status $($_.Test): $($_.Name)" -ForegroundColor $color
+        Write-Host "  $status $($_.Test): $($_.Name)$durationStr" -ForegroundColor $color
 
         if ($_.Pass) {
             $passCount++
@@ -291,7 +298,7 @@ foreach ($testLevel in $levelsToTest) {
             Output = $_.Output
         }
     }
-    
+
     Write-Host ""
 }
 
