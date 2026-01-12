@@ -75,7 +75,7 @@ Write-Host "Levels to test: $(Get-LevelsUpTo -Level $TestLevel)" -ForegroundColo
 Write-Host ""
 
 # Step 1: Clean up any existing VMs
-Write-Host "[1/6] Cleaning up existing VMs..." -ForegroundColor Cyan
+Write-Host "[1/6] Cleaning up existing VMs -- This may take a while. Please wait..." -ForegroundColor Cyan
 
 $existingRunner = multipass list --format csv 2>$null | Select-String "^$RunnerVMName,"
 if ($existingRunner) {
@@ -93,7 +93,7 @@ Write-Host "  Done" -ForegroundColor Green
 Write-Host ""
 
 # Step 2: Set up builder VM
-Write-Host "[2/6] Setting up builder VM..." -ForegroundColor Cyan
+Write-Host "[2/6] Setting up builder VM -- This may take a while. Please wait..." -ForegroundColor Cyan
 
 Write-Host "  Launching: $VMName"
 multipass launch --name $VMName --cpus $VMCpus --memory $VMMemory --disk $VMDisk
@@ -157,7 +157,7 @@ if ($needsAICreds) {
 }
 
 # Step 3: Build cloud-init with selected fragments
-Write-Host "[3/4] Building cloud-init..." -ForegroundColor Cyan
+Write-Host "[3/6] Building cloud-init -- This may take a while. Please wait..." -ForegroundColor Cyan
 
 $fragments = Get-FragmentsForLevel -Level $TestLevel
 $includeArgs = Get-IncludeArgs -Level $TestLevel
@@ -179,7 +179,7 @@ Write-Host "  Done" -ForegroundColor Green
 Write-Host ""
 
 # Step 4: Launch runner VM with generated cloud-init
-Write-Host "[4/4] Launching runner VM..." -ForegroundColor Cyan
+Write-Host "[4/6] Launching runner VM -- This may take a while. Please wait..." -ForegroundColor Cyan
 
 Write-Host "  Name: $RunnerVMName"
 Write-Host "  Network: $RunnerNetwork"
@@ -204,7 +204,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 # Step 5: Enable nested virtualization (requires elevated shell)
-Write-Host "Enabling nested virtualization..." -ForegroundColor Cyan
+Write-Host "[5/6] Enabling nested virtualization -- This may take a while. Please wait..." -ForegroundColor Cyan
 
 # Check if running as administrator
 $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
@@ -239,7 +239,7 @@ if ($isAdmin) {
 Write-Host "  Done" -ForegroundColor Green
 Write-Host ""
 
-Write-Host "  Waiting for cloud-init to complete..."
+Write-Host "[6/6] Waiting for cloud-init to complete -- This may take a while. Please wait..."
 multipass exec $RunnerVMName -- cloud-init status --wait
 
 # Check cloud-init status
