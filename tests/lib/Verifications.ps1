@@ -1616,7 +1616,7 @@ function Test-PackageManagerUpdates {
         $npmExitOk = ($npmResult -match "exit_code:0")
 
         # Check queue for npm entry
-        $queueContent = multipass exec $VMName -- bash -c 'cat /var/lib/apt-notify/queue 2>/dev/null || echo ""' 2>&1
+        $queueContent = multipass exec $VMName -- bash -c "cat /var/lib/apt-notify/queue 2>/dev/null || echo ''" 2>&1
         $npmDetected = [bool]($queueContent -match "NPM_UPGRADED")
 
         <# (multi) return #> @{
@@ -1651,7 +1651,7 @@ function Test-PackageManagerUpdates {
         $pipExitOk = ($pipResult -match "exit_code:0")
 
         # Check queue for pip entry
-        $queueContent = multipass exec $VMName -- bash -c 'cat /var/lib/apt-notify/queue 2>/dev/null || echo ""' 2>&1
+        $queueContent = multipass exec $VMName -- bash -c "cat /var/lib/apt-notify/queue 2>/dev/null || echo ''" 2>&1
         $pipDetected = [bool]($queueContent -match "PIP_UPGRADED")
 
         <# (multi) return #> @{
@@ -1755,7 +1755,7 @@ fi
     }
 
     # 6.8.26: Validate report content contains all package manager sections
-    $reportContent = multipass exec $VMName -- bash -c 'cat /var/lib/apt-notify/test-report.txt 2>/dev/null || echo ""' 2>&1
+    $reportContent = multipass exec $VMName -- bash -c "cat /var/lib/apt-notify/test-report.txt 2>/dev/null || echo ''" 2>&1
     $hasAptInstalled = ($reportContent -match "APT: NEW PACKAGES INSTALLED")
     $hasAptUpgraded = ($reportContent -match "APT: PACKAGES UPGRADED")
     $hasSnap = ($reportContent -match "SNAP: PACKAGES UPGRADED")
@@ -1790,7 +1790,7 @@ fi
     }
 
     # 6.8.28: Validate AI summary reports model passed via --model flag
-    $aiSummaryFile = multipass exec $VMName -- bash -c 'cat /var/lib/apt-notify/test-ai-summary.txt 2>/dev/null || echo ""' 2>&1
+    $aiSummaryFile = multipass exec $VMName -- bash -c "cat /var/lib/apt-notify/test-ai-summary.txt 2>/dev/null || echo ''" 2>&1
 
     # Determine which CLI was used and expected model from config
     $cliName = $null
