@@ -240,7 +240,7 @@ function Test-SSHFragment {
         # SSH should fail with "Permission denied" - exit code 255
         # Pass if we get permission denied (root login blocked)
         $rootBlocked = ($sshResult -match "Permission denied" -or $sshResult -match "publickey")
-        <# (multi) return #> {
+        <# (multi) return #> @{
             Test = "6.4.4"
             Name = "Root SSH login rejected"
             Pass = $rootBlocked
