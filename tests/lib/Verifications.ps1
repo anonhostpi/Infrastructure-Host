@@ -1326,37 +1326,34 @@ function Test-ClaudeCodeFragment {
     }
 
     # 6.12.4: Check authentication configuration (OAuth or API Key)
-    $claudeCodeConfig = $testConfig.claude_code
+    # NOTE: Check actual runner VM state, not config file - builder auto-populates auth from host credentials
     $authConfigured = $false
-    $authOutput = "No pre-configured auth (run 'claude' to authenticate)"
+    $hasActualAuth = $false
+    $authOutput = "No auth found"
 
-    if ($claudeCodeConfig -and $claudeCodeConfig.auth) {
-        # Check for OAuth credentials
-        if ($claudeCodeConfig.auth.oauth) {
-            Write-TestFork -Test "6.12.4" -Decision "Checking OAuth auth" -Reason "claude_code.auth.oauth configured"
-            $credCheck = multipass exec $VMName -- bash -c "sudo test -f /home/$username/.claude/.credentials.json && echo 'exists'" 2>&1
-            $stateCheck = multipass exec $VMName -- bash -c "sudo grep -q 'hasCompletedOnboarding' /home/$username/.claude.json 2>/dev/null && echo 'exists'" 2>&1
-            if ($credCheck -match "exists" -and $stateCheck -match "exists") {
-                $authConfigured = $true
-                $authOutput = "OAuth credentials configured (.credentials.json + hasCompletedOnboarding)"
-            } else {
-                $authOutput = "OAuth configured but files missing"
-            }
-        }
-        # Check for API Key
-        elseif ($claudeCodeConfig.auth.api_key) {
-            Write-TestFork -Test "6.12.4" -Decision "Checking API key auth" -Reason "claude_code.auth.api_key configured"
-            $envCheck = multipass exec $VMName -- bash -c "grep -q 'ANTHROPIC_API_KEY' /etc/environment && echo 'configured'" 2>&1
-            if ($envCheck -match "configured") {
-                $authConfigured = $true
-                $authOutput = "API Key configured (ANTHROPIC_API_KEY in /etc/environment)"
-            } else {
-                $authOutput = "API Key configured but ANTHROPIC_API_KEY not found"
-            }
-        }
+    # Check for OAuth credentials on runner VM
+    $credCheck = multipass exec $VMName -- bash -c "sudo test -f /home/$username/.claude/.credentials.json && echo 'exists'" 2>&1
+    $stateCheck = multipass exec $VMName -- bash -c "sudo grep -q 'hasCompletedOnboarding' /home/$username/.claude.json 2>/dev/null && echo 'exists'" 2>&1
+
+    if ($credCheck -match "exists" -and $stateCheck -match "exists") {
+        Write-TestFork -Test "6.12.4" -Decision "OAuth auth found" -Reason ".credentials.json + hasCompletedOnboarding present"
+        $authConfigured = $true
+        $hasActualAuth = $true
+        $authOutput = "OAuth credentials configured (.credentials.json + hasCompletedOnboarding)"
     } else {
-        Write-TestFork -Test "6.12.4" -Decision "No auth configured" -Reason "claude_code.auth not set"
-        $authConfigured = $true  # No auth expected, that's OK
+        # Check for API Key as fallback
+        $envCheck = multipass exec $VMName -- bash -c "grep -q 'ANTHROPIC_API_KEY' /etc/environment && echo 'configured'" 2>&1
+        if ($envCheck -match "configured") {
+            Write-TestFork -Test "6.12.4" -Decision "API key auth found" -Reason "ANTHROPIC_API_KEY in /etc/environment"
+            $authConfigured = $true
+            $hasActualAuth = $true
+            $authOutput = "API Key configured (ANTHROPIC_API_KEY in /etc/environment)"
+        } else {
+            Write-TestFork -Test "6.12.4" -Decision "No auth found" -Reason "No OAuth credentials or API key detected"
+            # No auth found - test passes but AI test will be skipped
+            $authConfigured = $true
+            $authOutput = "No pre-configured auth (run 'claude' to authenticate)"
+        }
     }
 
     <# (multi) return #> @{
@@ -1366,33 +1363,46 @@ function Test-ClaudeCodeFragment {
         Output = $authOutput
     }
 
-    # 6.12.5: Claude Code AI response test (if auth configured)
-    if ($authConfigured) {
-        $testFile = "/tmp/claude-test-output.txt"
-        # Simple prompt to minimize tokens
-        $prompt = "Reply with exactly: Claude test OK"
-        $testCmd = @"
-sudo -u $username claude -p '$prompt' 2>&1 | head -10 > $testFile
-if [ -s $testFile ]; then
-  echo "response_saved"
-  cat $testFile
-else
-  echo "no_response"
-fi
-"@
-        $testResult = multipass exec $VMName -- bash -c $testCmd 2>&1
-        $hasResponse = ($testResult -match "response_saved")
-        $responseContent = if ($hasResponse) { ($testResult -split "`n" | Select-Object -Skip 1) -join " " } else { "No response" }
+    # 6.12.5: Claude Code AI response test (only if actual auth configured)
+    if ($hasActualAuth) {
+        $prompt = "test"
+        $timeoutSeconds = 60
 
-        $results += @{
+        # Run multipass exec as a job with timeout
+        # Note: claude -p requires a PTY to produce output, so we use 'script' to allocate one
+        # Also explicitly set HOME since multipass can inherit Windows HOME
+        $job = Start-Job -ScriptBlock {
+            param($vm, $user, $p)
+            # Build command separately to avoid quote escaping issues
+            $cmd = "sudo -u $user env HOME=/home/$user script -q -c 'timeout 30 claude -p $p' /dev/null 2>&1"
+            multipass exec $vm -- bash -c $cmd
+        } -ArgumentList $VMName, $username, $prompt
+
+        $completed = Wait-Job $job -Timeout $timeoutSeconds
+        if ($completed) {
+            $testResult = Receive-Job $job
+            Remove-Job $job -Force
+            # Clean up terminal escape codes from script output
+            $cleanResult = $testResult -replace '\x1b\[[0-9;]*[a-zA-Z]', '' -replace '\[[\?0-9;]*[a-zA-Z]', ''
+            $hasResponse = ($cleanResult -and $cleanResult.Length -gt 0 -and $cleanResult -notmatch "^error|failed|timeout")
+            $responseContent = if ($cleanResult) { ($cleanResult | Out-String).Trim() } else { "Empty response" }
+        } else {
+            Stop-Job $job
+            Remove-Job $job -Force
+            $hasResponse = $false
+            $responseContent = "Timed out after ${timeoutSeconds}s"
+        }
+
+
+        <# (multi) return #> @{
             Test = "6.12.5"
             Name = "Claude Code AI response test"
             Pass = $hasResponse
-            Output = if ($hasResponse) { "Response: $($responseContent.Substring(0, [Math]::Min(80, $responseContent.Length)))..." } else { "AI response failed: $testResult" }
+            Output = if ($hasResponse) { "Response: $($responseContent.Substring(0, [Math]::Min(80, $responseContent.Length)))..." } else { "AI response failed: $responseContent" }
         }
     }
 
-    return $results
+    # return $results
 }
 
 function Test-CopilotCLIFragment {
@@ -1429,48 +1439,35 @@ function Test-CopilotCLIFragment {
         Output = "/home/$username/.copilot/config.json"
     }
 
-    # 6.13.4: Check authentication (copilot_tokens in config.json or GH_TOKEN)
-    $copilotConfig = $testConfig.copilot_cli
+    # 6.13.4: Check authentication (OAuth tokens or GH_TOKEN)
+    # NOTE: Check actual runner VM state, not config file - builder auto-populates auth from host credentials
     $authConfigured = $false
-    $authOutput = ""
+    $authOutput = "No auth found"
 
-    if ($copilotConfig -and $copilotConfig.auth) {
-        if ($copilotConfig.auth.oauth) {
-            Write-TestFork -Test "6.13.4" -Decision "Checking OAuth auth" -Reason "copilot_cli.auth.oauth configured"
-            # Check for copilot_tokens in config.json
-            $tokensCheck = multipass exec $VMName -- bash -c "sudo grep -q 'copilot_tokens' /home/$username/.copilot/config.json 2>/dev/null && echo 'configured'" 2>&1
-            if ($tokensCheck -match "configured") {
-                $authConfigured = $true
-                $authOutput = "OAuth configured in ~/.copilot/config.json (copilot_tokens)"
-            }
-        }
-        if (-not $authConfigured -and $copilotConfig.auth.gh_token) {
-            Write-TestFork -Test "6.13.4" -Decision "Checking GH_TOKEN auth" -Reason "copilot_cli.auth.gh_token configured"
-            # Check for GH_TOKEN environment variable
-            $envCheck = multipass exec $VMName -- bash -c "grep -q 'GH_TOKEN' /etc/environment && echo 'configured'" 2>&1
-            if ($envCheck -match "configured") {
-                $authConfigured = $true
-                $authOutput = "GH_TOKEN in /etc/environment"
-            }
-        }
+    # Check for copilot_tokens in config.json on runner VM
+    $tokensCheck = multipass exec $VMName -- bash -c "sudo grep -q 'copilot_tokens' /home/$username/.copilot/config.json 2>/dev/null && echo 'configured'" 2>&1
+    if ($tokensCheck -match "configured") {
+        Write-TestFork -Test "6.13.4" -Decision "OAuth auth found" -Reason "copilot_tokens in config.json"
+        $authConfigured = $true
+        $authOutput = "OAuth configured in ~/.copilot/config.json (copilot_tokens)"
     } else {
-        Write-TestFork -Test "6.13.4" -Decision "No auth configured" -Reason "copilot_cli.auth not set"
+        # Check for GH_TOKEN environment variable as fallback
+        $envCheck = multipass exec $VMName -- bash -c "grep -q 'GH_TOKEN' /etc/environment && echo 'configured'" 2>&1
+        if ($envCheck -match "configured") {
+            Write-TestFork -Test "6.13.4" -Decision "GH_TOKEN auth found" -Reason "GH_TOKEN in /etc/environment"
+            $authConfigured = $true
+            $authOutput = "GH_TOKEN in /etc/environment"
+        } else {
+            Write-TestFork -Test "6.13.4" -Decision "No auth found" -Reason "No OAuth tokens or GH_TOKEN detected"
+            $authOutput = "No pre-configured auth (run 'copilot' then '/login' to authenticate)"
+        }
     }
 
-    if ($authConfigured) {
-        $results += @{
-            Test = "6.13.4"
-            Name = "Copilot CLI auth configured"
-            Pass = $true
-            Output = $authOutput
-        }
-    } else {
-        $results += @{
-            Test = "6.13.4"
-            Name = "Copilot CLI auth configured"
-            Pass = $true
-            Output = "No pre-configured auth (run 'copilot' then '/login' to authenticate)"
-        }
+    $results += @{
+        Test = "6.13.4"
+        Name = "Copilot CLI auth configured"
+        Pass = $true
+        Output = $authOutput
     }
 
     # 6.13.5: Copilot CLI AI response test (if auth configured)
