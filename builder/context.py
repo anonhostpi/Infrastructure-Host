@@ -273,18 +273,14 @@ class BuildContext:
             self._data['opencode']['auth'] = auth
 
     def _derive_opencode_providers(self):
-        """Derive OpenCode providers/models from Claude Code and Copilot CLI as fallback.
+        """Set OpenCode default model from Claude Code or Copilot CLI config.
 
-        When OpenCode is enabled but doesn't have explicit provider configs,
-        populate providers based on the configured models for Claude Code and
-        Copilot CLI. This allows OpenCode to use the same models without
-        redundant configuration.
+        OpenCode has built-in support for anthropic and github-copilot providers.
+        These don't need provider config - they only need auth.json (handled by
+        _derive_opencode_auth). We just set the default model if not already set.
 
-        OpenCode provider format:
-        {
-          "anthropic": { ... },
-          "github-copilot": { ... }
-        }
+        Note: Custom providers (ollama, openai, etc.) should be configured
+        explicitly in opencode.config.yaml under the 'providers' key.
         """
         opencode_config = self._data.get('opencode', {})
         if not isinstance(opencode_config, dict):
@@ -294,55 +290,37 @@ class BuildContext:
         if not opencode_config.get('enabled', False):
             return
 
-        # Skip if opencode.providers already has values
-        if opencode_config.get('providers'):
+        # Skip if model is already set
+        if opencode_config.get('model'):
             return
 
-        providers = {}
-
-        # Derive anthropic provider from Claude Code config
+        # Set default model from Claude Code config (anthropic provider)
         claude_config = self._data.get('claude_code', {})
         if isinstance(claude_config, dict) and claude_config.get('enabled', False):
-            claude_model = claude_config.get('model', 'claude-sonnet-4-5-20250514')
-            # OpenCode uses format "anthropic/<model>" - extract just the model name
-            # Claude Code model might be just the model ID
+            claude_model = claude_config.get('model', 'claude-sonnet-4-5-latest')
+            # OpenCode uses format "anthropic/<model>"
             if '/' not in claude_model:
-                # Prepend provider prefix for OpenCode
                 opencode_model = f"anthropic/{claude_model}"
             else:
                 opencode_model = claude_model
 
-            providers['anthropic'] = {
-                'models': {
-                    claude_model.split('/')[-1] if '/' in claude_model else claude_model: {
-                        'name': claude_model.split('/')[-1] if '/' in claude_model else claude_model
-                    }
-                }
-            }
+            if 'opencode' not in self._data:
+                self._data['opencode'] = {}
+            self._data['opencode']['model'] = opencode_model
+            return
 
-            # Set default model to anthropic model if not already set
-            if not opencode_config.get('model'):
-                if 'opencode' not in self._data:
-                    self._data['opencode'] = {}
-                self._data['opencode']['model'] = opencode_model
-
-        # Derive github-copilot provider from Copilot CLI config
+        # Fallback: Set default model from Copilot CLI config (github-copilot provider)
         copilot_config = self._data.get('copilot_cli', {})
         if isinstance(copilot_config, dict) and copilot_config.get('enabled', False):
             copilot_model = copilot_config.get('model', 'gpt-4')
-            providers['github-copilot'] = {
-                'models': {
-                    copilot_model: {
-                        'name': copilot_model
-                    }
-                }
-            }
+            if '/' not in copilot_model:
+                opencode_model = f"github-copilot/{copilot_model}"
+            else:
+                opencode_model = copilot_model
 
-        # Apply derived providers if any were found
-        if providers:
             if 'opencode' not in self._data:
                 self._data['opencode'] = {}
-            self._data['opencode']['providers'] = providers
+            self._data['opencode']['model'] = opencode_model
 
     def _index_paths(self, obj, path):
         """Recursively index all paths in the config tree."""
