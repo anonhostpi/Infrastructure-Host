@@ -1,33 +1,26 @@
 # Package upgrade - runs last after all other configuration
-# Separated from 50-pkg-security to ensure all packages are installed first,
-# then upgraded together at the end.
+# Triggers unattended-upgrades and pkg-managers-update.service so that:
+# 1. All packages get upgraded through the proper channels
+# 2. Notifications get sent out via apt-notify system
 
 runcmd:
-  # Full system upgrade (runs after all cloud-init packages are installed)
+  # Full system upgrade via unattended-upgrades and pkg-managers-update
   - |
-    echo "=== Starting full system upgrade ==="
+    echo "=== Starting full system upgrade via unattended-upgrades ==="
     export DEBIAN_FRONTEND=noninteractive
 
-    # Update package lists
+    # Update package lists first
     apt-get update -q
 
-    # Perform upgrade, capturing what would be held back
-    HELD_BACK=$(apt-get -s upgrade 2>/dev/null | grep "kept back" | sed 's/.*: //' || true)
+    # Trigger unattended-upgrades to handle apt packages
+    # This will use the configured notification system (apt-notify)
+    echo "Running unattended-upgrades..."
+    unattended-upgrade -v
 
-    # Standard upgrade (won't remove packages or install new deps)
-    apt-get upgrade -y -q \
-      -o Dpkg::Options::="--force-confdef" \
-      -o Dpkg::Options::="--force-confold"
-
-    # Log held-back packages for visibility
-    if [ -n "$HELD_BACK" ]; then
-      echo "=== Packages held back (run 'apt full-upgrade' to install): ==="
-      echo "$HELD_BACK"
-      logger -t cloud-init "Packages held back during upgrade: $HELD_BACK"
-    fi
-
-    # Autoremove unused packages
-    apt-get autoremove -y -q
+    # Trigger pkg-managers-update.service to handle snap, brew, pip, npm, deno
+    # This will queue changes to apt-notify for unified notification
+    echo "Running pkg-managers-update.service..."
+    systemctl start pkg-managers-update.service || true
 
     # Clean up apt cache
     apt-get clean
