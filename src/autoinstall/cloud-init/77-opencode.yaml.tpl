@@ -5,16 +5,20 @@ runcmd:
   # Install opencode globally via npm (updated by unattended-upgrades Post-Invoke hook)
   - npm install -g opencode-ai
 
-  # Create config directories for admin user
-  - mkdir -p /home/{{ identity.username }}/.config/opencode
-  - mkdir -p /home/{{ identity.username }}/.local/share/opencode
+  # Create config directories for admin user with proper ownership
+  # Ensure parent directories exist with correct ownership first
+  - install -d -o {{ identity.username }} -g {{ identity.username }} /home/{{ identity.username }}/.config
+  - install -d -o {{ identity.username }} -g {{ identity.username }} /home/{{ identity.username }}/.local
+  - install -d -o {{ identity.username }} -g {{ identity.username }} /home/{{ identity.username }}/.local/share
+  - install -d -o {{ identity.username }} -g {{ identity.username }} /home/{{ identity.username }}/.config/opencode
+  - install -d -o {{ identity.username }} -g {{ identity.username }} /home/{{ identity.username }}/.local/share/opencode
 
   # Write OpenCode config file (using heredoc to ensure order after mkdir)
   - |
     cat > /home/{{ identity.username }}/.config/opencode/opencode.json << 'OPENCODE_CONFIG_EOF'
     {
       "$schema": "https://opencode.ai/config.json",
-      "model": "{{ opencode.model | default('anthropic/claude-sonnet-4-5') }}",
+      "model": "{{ opencode.model | default('anthropic/claude-sonnet-4-5-latest') }}",
       "theme": "{{ opencode.theme | default('dark') }}",
       "autoupdate": {{ opencode.autoupdate | default(false) | tojson }}
       {%- if opencode.providers is defined %},
