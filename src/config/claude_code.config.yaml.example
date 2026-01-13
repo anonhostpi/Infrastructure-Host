@@ -12,7 +12,7 @@ claude_code:
 
   # Default model to use
   # Available models: claude-opus-4-5-20250514, claude-sonnet-4-5-20250514
-  model: claude-sonnet-4-5-20250514
+  model: claude-sonnet-4-5-latest
 
   # ==========================================================================
   # Authentication Configuration
