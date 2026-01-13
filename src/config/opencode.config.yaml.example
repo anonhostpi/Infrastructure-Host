@@ -36,6 +36,9 @@ opencode:
   # Theme: dark, light, or specific theme name
   theme: dark
 
+  # Auto-update: false to disable (updates managed via unattended-upgrades)
+  autoupdate: false
+
   # ==========================================================================
   # Provider configuration (OPTIONAL - for additional providers)
   # ==========================================================================

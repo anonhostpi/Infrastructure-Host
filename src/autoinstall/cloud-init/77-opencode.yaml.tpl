@@ -16,7 +16,7 @@ runcmd:
       "$schema": "https://opencode.ai/config.json",
       "model": "{{ opencode.model | default('anthropic/claude-sonnet-4-5') }}",
       "theme": "{{ opencode.theme | default('dark') }}",
-      "autoupdate": "notify"
+      "autoupdate": {{ opencode.autoupdate | default(false) | tojson }}
       {%- if opencode.providers is defined %},
       "provider": {
         {%- for provider_id, provider in opencode.providers.items() %}
