@@ -1004,8 +1004,12 @@ function Test-VirtualizationFragment {
     # 6.10.8: Nested VM test - only run if KVM is available
     if ($kvmAvailable) {
         $nestedVMName = "nested-test-vm"
+        # Use $ErrorActionPreference locally to avoid terminating on stderr warnings
+        $prevEAP = $ErrorActionPreference
+        $ErrorActionPreference = "Continue"
         $nestedLaunch = multipass exec $VMName -- bash -c "multipass launch --name $nestedVMName --memory 512M --disk 4G --cpus 1 --timeout 300 2>&1" 2>&1
         $nestedLaunchCode = $LASTEXITCODE
+        $ErrorActionPreference = $prevEAP
 
         if ($nestedLaunchCode -eq 0) {
             # Verify nested VM is running
