@@ -244,9 +244,9 @@ class BuildContext:
 
         auth = {}
 
-        # Derive anthropic auth from Claude Code
+        # Derive anthropic auth from Claude Code (only if claude_code is enabled)
         claude_config = self._data.get('claude_code', {})
-        if isinstance(claude_config, dict):
+        if isinstance(claude_config, dict) and claude_config.get('enabled', False):
             claude_oauth = claude_config.get('auth', {}).get('oauth', {})
             if claude_oauth.get('access_token') and claude_oauth.get('refresh_token'):
                 auth['anthropic'] = {
@@ -256,9 +256,9 @@ class BuildContext:
                 if claude_oauth.get('expires_at'):
                     auth['anthropic']['expires_at'] = claude_oauth['expires_at']
 
-        # Derive github-copilot auth from Copilot CLI
+        # Derive github-copilot auth from Copilot CLI (only if copilot_cli is enabled)
         copilot_config = self._data.get('copilot_cli', {})
-        if isinstance(copilot_config, dict):
+        if isinstance(copilot_config, dict) and copilot_config.get('enabled', False):
             copilot_oauth = copilot_config.get('auth', {}).get('oauth', {})
             if copilot_oauth.get('oauth_token'):
                 auth['github_copilot'] = {
