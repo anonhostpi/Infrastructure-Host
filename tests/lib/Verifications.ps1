@@ -1304,6 +1304,98 @@ function Test-OpenCodeFragment {
         }
     }
 
+    # 6.14.7: Verify OpenCode providers available based on credential chain
+    # Chain: host credentials → builder VM → BuildContext derives opencode.auth → auth.json → providers
+    #
+    # shouldHaveAnthropicAuth = host has Claude creds AND opencode enabled AND claude_code enabled
+    # shouldHaveCopilotAuth = host has Copilot creds AND opencode enabled AND copilot_cli enabled
+    # hasAnthropicAuth = auth.json actually has "anthropic" section
+    # hasCopilotAuth = auth.json actually has "github-copilot" section
+
+    # Determine what SHOULD have happened based on host state and config
+    $opencodeEnabled = $testConfig.opencode.enabled -eq $true
+    $claudeCodeEnabled = $testConfig.claude_code.enabled -eq $true
+    $copilotCliEnabled = $testConfig.copilot_cli.enabled -eq $true
+
+    # Check if host would have transferred credentials (same conditions as Invoke-IncrementalTest.ps1)
+    $hostHasClaudeCreds = (Test-Path "$env:USERPROFILE\.claude\.credentials.json") -and (Test-Path "$env:USERPROFILE\.claude.json")
+    $hostHasCopilotCreds = Test-Path "$env:USERPROFILE\.copilot\config.json"
+
+    # BuildContext derives opencode.auth if: opencode enabled AND respective CLI enabled AND host has creds
+    $shouldHaveAnthropicAuth = $hostHasClaudeCreds -and $opencodeEnabled -and $claudeCodeEnabled
+    $shouldHaveCopilotAuth = $hostHasCopilotCreds -and $opencodeEnabled -and $copilotCliEnabled
+
+    # Check what auth sections are actually present in the generated auth.json on runner VM
+    $authJsonPath = "/home/$username/.local/share/opencode/auth.json"
+    $hasAnthropicAuth = $false
+    $hasCopilotAuth = $false
+
+    # Use simple patterns without complex escaping - 'anthropic' and 'github-copilot' are unique enough
+    $anthropicAuthCheck = multipass exec $VMName -- bash -c "sudo grep -q anthropic $authJsonPath 2>/dev/null && echo present" 2>&1
+    if ($anthropicAuthCheck -match "present") {
+        $hasAnthropicAuth = $true
+    }
+
+    $copilotAuthCheck = multipass exec $VMName -- bash -c "sudo grep -q github-copilot $authJsonPath 2>/dev/null && echo present" 2>&1
+    if ($copilotAuthCheck -match "present") {
+        $hasCopilotAuth = $true
+    }
+
+    # Get opencode models list
+    $opencodeModels = multipass exec $VMName -- sudo su - admin -c 'opencode models 2>/dev/null' 2>&1
+    $hasAnthropicProvider = ($opencodeModels -match "anthropic/")
+    $hasGithubCopilotProvider = ($opencodeModels -match "github-copilot/")
+    $hasOpencodeProvider = ($opencodeModels -match "opencode/")
+
+    # Determine pass/fail - verify the full chain worked correctly
+    $testPass = $true
+    $issues = @()
+
+    # If we should have anthropic auth, verify it's present and provider works
+    if ($shouldHaveAnthropicAuth) {
+        if (-not $hasAnthropicAuth) {
+            $testPass = $false
+            $issues += "anthropic auth missing from auth.json (host had creds)"
+        }
+        if (-not $hasAnthropicProvider) {
+            $testPass = $false
+            $issues += "anthropic provider not available"
+        }
+    }
+
+    # If we should have copilot auth, verify it's present and provider works
+    if ($shouldHaveCopilotAuth) {
+        if (-not $hasCopilotAuth) {
+            $testPass = $false
+            $issues += "github-copilot auth missing from auth.json (host had creds)"
+        } 
+        if (-not $hasGithubCopilotProvider) {
+            $testPass = $false
+            $issues += "github-copilot provider not available"
+        }
+    }
+
+    # If neither should have auth, just verify opencode models command works
+    if (-not $shouldHaveAnthropicAuth -and -not $shouldHaveCopilotAuth) {
+        if (-not $opencodeModels -or $opencodeModels.Length -eq 0) {
+            $testPass = $false
+            $issues += "opencode models returned no output"
+        }
+    }
+
+    Write-TestFork -Test "6.14.7" -Decision "Credential chain" -Reason "should: anthropic=$shouldHaveAnthropicAuth copilot=$shouldHaveCopilotAuth | has: anthropic=$hasAnthropicAuth copilot=$hasCopilotAuth"
+
+    <# (multi) return #> @{
+        Test = "6.14.7"
+        Name = "OpenCode providers available"
+        Pass = $testPass
+        Output = if ($testPass) {
+            "Chain OK - should: anthropic=$shouldHaveAnthropicAuth copilot=$shouldHaveCopilotAuth | providers: anthropic=$hasAnthropicProvider github-copilot=$hasGithubCopilotProvider opencode=$hasOpencodeProvider"
+        } else {
+            "FAILED: $($issues -join '; ')"
+        }
+    }
+
     # return $results
 }
 
@@ -1721,44 +1813,45 @@ function Test-PackageManagerUpdates {
     }
 
     # 6.8.25: Test apt-notify-flush with populated queue and validate report generation
-    $flushTest = multipass exec $VMName -- bash -c @'
-source /usr/local/lib/apt-notify/common.sh
+    # Uses separate simple commands to avoid escaping issues
+    # Step 1a: Clear existing test files and log
+    multipass exec $VMName -- sudo rm -f /var/lib/apt-notify/test-report.txt /var/lib/apt-notify/test-ai-summary.txt /var/lib/apt-notify/apt-notify.log 2>&1 | Out-Null
 
-# Create test queue with all package manager types
-cat > "$QUEUE_FILE" << 'QUEUEEOF'
-INSTALLED:testpkg:1.0.0
-UPGRADED:curl:7.81.0:7.82.0
-SNAP_UPGRADED:lxd:5.20:5.21
-BREW_UPGRADED:jq:1.6:1.7
-PIP_UPGRADED:requests:2.28.0:2.31.0
-NPM_UPGRADED:opencode:1.0.0:1.1.0
-DENO_UPGRADED:deno:1.40.0:1.41.0
-QUEUEEOF
+    # Step 1b: Create queue file with test entries using printf (handles special chars safely)
+    $queuePath = "/var/lib/apt-notify/apt-notify.queue"
+    $queueLines = @(
+        "INSTALLED:testpkg:1.0.0"
+        "UPGRADED:curl:7.81.0:7.82.0"
+        "SNAP_UPGRADED:lxd:5.20:5.21"
+        "BREW_UPGRADED:jq:1.6:1.7"
+        "PIP_UPGRADED:requests:2.28.0:2.31.0"
+        "NPM_UPGRADED:opencode:1.0.0:1.1.0"
+        "DENO_UPGRADED:deno:1.40.0:1.41.0"
+    )
+    # Write queue file line by line to avoid escaping issues
+    multipass exec $VMName -- sudo bash -c "rm -f $queuePath" 2>&1 | Out-Null
+    foreach ($line in $queueLines) {
+        multipass exec $VMName -- sudo bash -c "echo '$line' >> $queuePath" 2>&1 | Out-Null
+    }
 
-# Clear any existing test files
-rm -f "$TEST_REPORT_FILE" "$TEST_AI_SUMMARY_FILE"
+    # Step 2: Run apt-notify-flush with timeout (AI summary can hang)
+    multipass exec $VMName -- sudo timeout 30 /usr/local/bin/apt-notify-flush 2>&1 | Out-Null
 
-# Run apt-notify-flush (in testing mode, it writes to test files instead of emailing)
-/usr/local/bin/apt-notify-flush 2>&1
+    # Step 3: Check if report file was created (use test -s for non-empty file)
+    multipass exec $VMName -- sudo test -s /var/lib/apt-notify/test-report.txt 2>&1 | Out-Null
+    $reportCreated = ($LASTEXITCODE -eq 0)
 
-# Small delay to ensure file is written
-sleep 1
-
-# Check if test report file was created and has content
-if [ -s "$TEST_REPORT_FILE" ]; then
-    echo "report_file_created"
-    cat "$TEST_REPORT_FILE"
-else
-    echo "report_file_missing"
-fi
-'@ 2>&1
-
-    $reportCreated = ($flushTest -match "report_file_created")
     <# (multi) return #> @{
         Test = "6.8.25"
         Name = "apt-notify-flush generates test report"
         Pass = $reportCreated
-        Output = if ($reportCreated) { "Test report file created at /var/lib/apt-notify/test-report.txt" } else { "Test report file not created" }
+        Output = if ($reportCreated) {
+            "Test report file created at /var/lib/apt-notify/test-report.txt"
+        } else {
+            # Show log for debugging
+            $logTail = multipass exec $VMName -- bash -c 'tail -5 /var/lib/apt-notify/apt-notify.log 2>/dev/null || echo "(no log)"' 2>&1
+            "Test report file not created. Log: $($logTail -join ' | ')"
+        }
     }
 
     # 6.8.26: Validate report content contains all package manager sections
@@ -1780,13 +1873,15 @@ fi
     }
 
     # 6.8.27: Verify flush execution via journal/log
-    $journalCheck = multipass exec $VMName -- bash -c @'
+    $journalScript = @'
 # Check apt-notify log for flush execution
 if grep -q "apt-notify-flush: complete" /var/lib/apt-notify/apt-notify.log 2>/dev/null; then
     echo "flush_logged"
     grep "apt-notify-flush" /var/lib/apt-notify/apt-notify.log | tail -5
 fi
-'@ 2>&1
+'@
+    $journalScriptB64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($journalScript))
+    $journalCheck = multipass exec $VMName -- bash -c "echo $journalScriptB64 | base64 -d | bash" 2>&1
 
     $flushLogged = ($journalCheck -match "flush_logged")
     <# (multi) return #> @{
@@ -1875,7 +1970,10 @@ fi
             Output = if ($cliMatch -and $modelMatch -and $providerMatch) {
                 "CLI: $cliName" + $(if ($expectedModel) { ", Model: $expectedModel" } else { "" }) + $(if ($expectedProvider) { ", Provider: $expectedProvider" } else { "" })
             } else {
-                "Expected $cliName" + $(if ($expectedModel) { " with model $expectedModel (fuzzy match)" } else { "" }) + $(if ($expectedProvider) { " (provider: $expectedProvider)" } else { "" }) + " - Got: $($aiSummaryFile.Substring(0, [Math]::Min(100, $aiSummaryFile.Length)))"
+                # Convert to string and handle empty/array cases
+                $summaryStr = if ($aiSummaryFile) { ($aiSummaryFile -join " ").Trim() } else { "(empty)" }
+                $summaryPreview = if ($summaryStr.Length -gt 100) { $summaryStr.Substring(0, 100) + "..." } else { $summaryStr }
+                "Expected $cliName" + $(if ($expectedModel) { " with model $expectedModel (fuzzy match)" } else { "" }) + $(if ($expectedProvider) { " (provider: $expectedProvider)" } else { "" }) + " - Got: $summaryPreview"
             }
         }
     } else {
