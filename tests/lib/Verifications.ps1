@@ -1282,15 +1282,16 @@ function Test-OpenCodeFragment {
 
         $completed = Wait-Job $job -Timeout $timeoutSeconds
         if ($completed) {
-            $testResult = Receive-Job $job
-            Remove-Job $job -Force
+            # Use SilentlyContinue to ignore stderr warnings from grpc/multipass
+            $testResult = Receive-Job $job -ErrorAction SilentlyContinue 2>&1
+            Remove-Job $job -Force -ErrorAction SilentlyContinue
             # Clean up terminal escape codes from script output
             $cleanResult = $testResult -replace '\x1b\[[0-9;]*[a-zA-Z]', '' -replace '\[[\?0-9;]*[a-zA-Z]', ''
             $hasResponse = ($cleanResult -and $cleanResult.Length -gt 0 -and $cleanResult -notmatch "^error|failed|timeout")
             $responseContent = if ($cleanResult) { ($cleanResult | Out-String).Trim() } else { "Empty response" }
         } else {
-            Stop-Job $job
-            Remove-Job $job -Force
+            Stop-Job $job -ErrorAction SilentlyContinue
+            Remove-Job $job -Force -ErrorAction SilentlyContinue
             $hasResponse = $false
             $responseContent = "Timed out after ${timeoutSeconds}s"
         }
@@ -1395,15 +1396,16 @@ function Test-ClaudeCodeFragment {
 
         $completed = Wait-Job $job -Timeout $timeoutSeconds
         if ($completed) {
-            $testResult = Receive-Job $job
-            Remove-Job $job -Force
+            # Use SilentlyContinue to ignore stderr warnings from grpc/multipass
+            $testResult = Receive-Job $job -ErrorAction SilentlyContinue 2>&1
+            Remove-Job $job -Force -ErrorAction SilentlyContinue
             # Clean up terminal escape codes from script output
             $cleanResult = $testResult -replace '\x1b\[[0-9;]*[a-zA-Z]', '' -replace '\[[\?0-9;]*[a-zA-Z]', ''
             $hasResponse = ($cleanResult -and $cleanResult.Length -gt 0 -and $cleanResult -notmatch "^error|failed|timeout")
             $responseContent = if ($cleanResult) { ($cleanResult | Out-String).Trim() } else { "Empty response" }
         } else {
-            Stop-Job $job
-            Remove-Job $job -Force
+            Stop-Job $job -ErrorAction SilentlyContinue
+            Remove-Job $job -Force -ErrorAction SilentlyContinue
             $hasResponse = $false
             $responseContent = "Timed out after ${timeoutSeconds}s"
         }
@@ -1502,8 +1504,9 @@ function Test-CopilotCLIFragment {
 
         $completed = Wait-Job $job -Timeout $timeoutSeconds
         if ($completed) {
-            $testResult = Receive-Job $job
-            Remove-Job $job -Force
+            # Use SilentlyContinue to ignore stderr warnings from grpc/multipass
+            $testResult = Receive-Job $job -ErrorAction SilentlyContinue 2>&1
+            Remove-Job $job -Force -ErrorAction SilentlyContinue
             # Clean up terminal escape codes from script output
             $cleanResult = $testResult -replace '\x1b\[[0-9;]*[a-zA-Z]', '' -replace '\[[\?0-9;]*[a-zA-Z]', ''
             $hasResponse = ($cleanResult -and $cleanResult.Length -gt 0 -and $cleanResult -notmatch "^error|failed|timeout")
