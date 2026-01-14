@@ -256,15 +256,9 @@ class BuildContext:
                 if claude_oauth.get('expires_at'):
                     auth['anthropic']['expires_at'] = claude_oauth['expires_at']
 
-        # Derive github-copilot auth from Copilot CLI (only if copilot_cli is enabled)
-        copilot_config = self._data.get('copilot_cli', {})
-        if isinstance(copilot_config, dict) and copilot_config.get('enabled', False):
-            copilot_oauth = copilot_config.get('auth', {}).get('oauth', {})
-            if copilot_oauth.get('oauth_token'):
-                auth['github_copilot'] = {
-                    'oauth_token': copilot_oauth['oauth_token'],
-                }
-                # Note: access_token (Copilot API token) is fetched dynamically by OpenCode
+        # Note: github-copilot auth CANNOT be derived from Copilot CLI
+        # Copilot CLI uses gho_ tokens while OpenCode expects ghu_ tokens (incompatible)
+        # Users must authenticate OpenCode separately for github-copilot provider
 
         # Apply derived auth if any credentials were found
         if auth:

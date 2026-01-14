@@ -25,13 +25,8 @@ runcmd:
       "model": "{{ opencode.model | default('anthropic/claude-sonnet-4-5-latest') }}",
       "theme": "{{ opencode.theme | default('dark') }}",
       "autoupdate": {{ opencode.autoupdate | default(false) | tojson }}
-      {%- if opencode.auth is defined %},
-      "enabled_providers": [
-        {%- set providers = [] %}
-        {%- if opencode.auth.anthropic is defined %}{% set _ = providers.append('"anthropic"') %}{% endif %}
-        {%- if opencode.auth.github_copilot is defined %}{% set _ = providers.append('"github-copilot"') %}{% endif %}
-        {{ providers | join(', ') }}
-      ]
+      {%- if opencode.auth.anthropic is defined %},
+      "enabled_providers": ["anthropic"]
       {%- endif %}
       {%- if opencode.providers is defined %},
       "provider": {
@@ -80,14 +75,12 @@ runcmd:
     OPENCODE_CONFIG_EOF
   - chmod 600 /home/{{ identity.username }}/.config/opencode/opencode.json
 
-{% if opencode.auth is defined %}
-  # Write OpenCode auth.json (derived from Claude Code and Copilot CLI credentials)
+{% if opencode.auth.anthropic is defined %}
+  # Write OpenCode auth.json (derived from Claude Code credentials)
+  # Note: github-copilot cannot be derived from Copilot CLI (incompatible token types)
   - |
     cat > /home/{{ identity.username }}/.local/share/opencode/auth.json << 'OPENCODE_AUTH_EOF'
     {
-      {%- set has_anthropic = opencode.auth.anthropic is defined %}
-      {%- set has_copilot = opencode.auth.github_copilot is defined %}
-      {%- if has_anthropic %}
       "anthropic": {
         "type": "oauth",
         "access": "{{ opencode.auth.anthropic.access_token }}",
@@ -96,20 +89,6 @@ runcmd:
         "expires": {{ opencode.auth.anthropic.expires_at }}
         {%- endif %}
       }
-      {%- endif %}
-      {%- if has_anthropic and has_copilot %},{% endif %}
-      {%- if has_copilot %}
-      "github-copilot": {
-        "type": "oauth",
-        "refresh": "{{ opencode.auth.github_copilot.oauth_token }}"
-        {%- if opencode.auth.github_copilot.access_token is defined %},
-        "access": "{{ opencode.auth.github_copilot.access_token }}"
-        {%- endif %}
-        {%- if opencode.auth.github_copilot.expires_at is defined %},
-        "expires": {{ opencode.auth.github_copilot.expires_at }}
-        {%- endif %}
-      }
-      {%- endif %}
     }
     OPENCODE_AUTH_EOF
   - chmod 600 /home/{{ identity.username }}/.local/share/opencode/auth.json
