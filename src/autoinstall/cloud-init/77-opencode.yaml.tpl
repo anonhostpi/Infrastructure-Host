@@ -21,6 +21,14 @@ runcmd:
       "model": "{{ opencode.model | default('anthropic/claude-sonnet-4-5-latest') }}",
       "theme": "{{ opencode.theme | default('dark') }}",
       "autoupdate": {{ opencode.autoupdate | default(false) | tojson }}
+      {%- if opencode.auth is defined %},
+      "enabled_providers": [
+        {%- set providers = [] %}
+        {%- if opencode.auth.anthropic is defined %}{% set _ = providers.append('"anthropic"') %}{% endif %}
+        {%- if opencode.auth.github_copilot is defined %}{% set _ = providers.append('"github-copilot"') %}{% endif %}
+        {{ providers | join(', ') }}
+      ]
+      {%- endif %}
       {%- if opencode.providers is defined %},
       "provider": {
         {%- for provider_id, provider in opencode.providers.items() %}
