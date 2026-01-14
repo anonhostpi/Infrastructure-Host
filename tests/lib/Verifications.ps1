@@ -1307,23 +1307,60 @@ function Test-OpenCodeFragment {
     # 6.14.7: Verify OpenCode providers available based on credential chain
     # Chain: host credentials → builder VM → BuildContext derives opencode.auth → auth.json → providers
     #
-    # shouldHaveAnthropicAuth = host has Claude creds AND opencode enabled AND claude_code enabled
-    # shouldHaveCopilotAuth = host has Copilot creds AND opencode enabled AND copilot_cli enabled
-    # hasAnthropicAuth = auth.json actually has "anthropic" section
-    # hasCopilotAuth = auth.json actually has "github-copilot" section
+    # shouldHaveAnthropicAuth = host has valid Claude token AND opencode enabled AND claude_code enabled
+    # shouldHaveCopilotAuth = host has valid Copilot token AND opencode enabled AND copilot_cli enabled
+    # hasAnthropicAuth = auth.json actually has "anthropic" section with matching token
+    # hasCopilotAuth = auth.json actually has "github-copilot" section with matching token
 
     # Determine what SHOULD have happened based on host state and config
     $opencodeEnabled = $testConfig.opencode.enabled -eq $true
     $claudeCodeEnabled = $testConfig.claude_code.enabled -eq $true
     $copilotCliEnabled = $testConfig.copilot_cli.enabled -eq $true
 
-    # Check if host would have transferred credentials (same conditions as Invoke-IncrementalTest.ps1)
-    $hostHasClaudeCreds = (Test-Path "$env:USERPROFILE\.claude\.credentials.json") -and (Test-Path "$env:USERPROFILE\.claude.json")
-    $hostHasCopilotCreds = Test-Path "$env:USERPROFILE\.copilot\config.json"
+    # Extract actual token values from host (not just file existence)
+    $hostClaudeAccessToken = $null
+    $hostClaudeRefreshToken = $null
+    $hostCopilotIdentity = $null
+    $hostCopilotToken = $null
 
-    # BuildContext derives opencode.auth if: opencode enabled AND respective CLI enabled AND host has creds
-    $shouldHaveAnthropicAuth = $hostHasClaudeCreds -and $opencodeEnabled -and $claudeCodeEnabled
-    $shouldHaveCopilotAuth = $hostHasCopilotCreds -and $opencodeEnabled -and $copilotCliEnabled
+    # Check for valid Claude token on host
+    $hostClaudeCreds = "$env:USERPROFILE\.claude\.credentials.json"
+    $hostClaudeState = "$env:USERPROFILE\.claude.json"
+    if ((Test-Path $hostClaudeCreds) -and (Test-Path $hostClaudeState)) {
+        try {
+            $hostClaudeJson = Get-Content $hostClaudeCreds -Raw | ConvertFrom-Json
+            $hostClaudeAccessToken = $hostClaudeJson.claudeAiOauth.accessToken
+            $hostClaudeRefreshToken = $hostClaudeJson.claudeAiOauth.refreshToken
+        } catch {
+            $hostClaudeAccessToken = $null
+            $hostClaudeRefreshToken = $null
+        }
+
+        Write-Host "  [DEBUG] Host Claude: access_token=$hostClaudeAccessToken refresh_token=$hostClaudeRefreshToken"
+    }
+
+    # Check for valid Copilot token on host
+    $hostCopilotConfig = "$env:USERPROFILE\.copilot\config.json"
+    if (Test-Path $hostCopilotConfig) {
+        try {
+            $hostCopilotJson = Get-Content $hostCopilotConfig -Raw | ConvertFrom-Json
+            $copilotTokens = $hostCopilotJson.copilot_tokens
+            if ($copilotTokens) {
+                $hostCopilotTokenPair = $copilotTokens.PSObject.Properties | Select-Object -First 1
+                $hostCopilotIdentity = $hostCopilotTokenPair.Name
+                $hostCopilotToken = $hostCopilotTokenPair.Value
+            }
+        } catch {
+            $hostCopilotIdentity = $null
+            $hostCopilotToken = $null
+        }
+
+        Write-Host "  [DEBUG] Host Copilot: identity=$hostCopilotIdentity oauth_token=$hostCopilotToken"
+    }
+
+    # BuildContext derives opencode.auth if: opencode enabled AND respective CLI enabled AND host has valid token
+    $shouldHaveAnthropicAuth = ($null -ne $hostClaudeAccessToken) -and ($null -ne $hostClaudeRefreshToken) -and $opencodeEnabled -and $claudeCodeEnabled
+    $shouldHaveCopilotAuth = ($null -ne $hostCopilotToken) -and $opencodeEnabled -and $copilotCliEnabled
 
     # Check what auth sections are actually present in the generated auth.json on runner VM
     $authJsonPath = "/home/$username/.local/share/opencode/auth.json"
