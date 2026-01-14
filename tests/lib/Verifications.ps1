@@ -1814,6 +1814,16 @@ function Test-PackageManagerUpdates {
         }
     }
 
+    # return $results
+}
+
+# Test update summary generation (6.8-summary)
+function Test-UpdateSummary {
+    param([string]$VMName)
+
+    # $results = @()
+    $testConfig = Get-TestConfig
+
     # 6.8.25: Test apt-notify-flush with populated queue and validate report generation
     # Uses separate simple commands to avoid escaping issues
     # Step 1a: Clear existing test files and log
@@ -1874,26 +1884,7 @@ function Test-PackageManagerUpdates {
         Output = "APT:$hasAptInstalled,$hasAptUpgraded SNAP:$hasSnap BREW:$hasBrew PIP:$hasPip NPM:$hasNpm DENO:$hasDeno"
     }
 
-    # 6.8.27: Verify flush execution via journal/log
-    $journalScript = @'
-# Check apt-notify log for flush execution
-if grep -q "apt-notify-flush: complete" /var/lib/apt-notify/apt-notify.log 2>/dev/null; then
-    echo "flush_logged"
-    grep "apt-notify-flush" /var/lib/apt-notify/apt-notify.log | tail -5
-fi
-'@
-    $journalScriptB64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($journalScript))
-    $journalCheck = multipass exec $VMName -- bash -c "echo $journalScriptB64 | base64 -d | bash" 2>&1
-
-    $flushLogged = ($journalCheck -match "flush_logged")
-    <# (multi) return #> @{
-        Test = "6.8.27"
-        Name = "apt-notify-flush logged execution"
-        Pass = $flushLogged
-        Output = if ($flushLogged) { "Flush execution logged: $($journalCheck -replace "`n", ' ' -replace 'flush_logged', '')" } else { "No flush log entry found" }
-    }
-
-    # 6.8.28: Validate AI summary reports model passed via --model flag
+    # 6.8.27: Validate AI summary reports model passed via --model flag
     $aiSummaryFile = multipass exec $VMName -- bash -c "cat /var/lib/apt-notify/test-ai-summary.txt 2>/dev/null || echo ''" 2>&1
 
     # Determine which CLI was used and expected model from config
@@ -1907,38 +1898,38 @@ fi
         if ($testConfig.claude_code -and $testConfig.claude_code.model) {
             $expectedProvider = "anthropic"
             $expectedModel = $testConfig.claude_code.model
-            Write-TestFork -Test "6.8.28" -Decision "OpenCode with Claude model" -Reason "claude_code.model=$expectedModel"
+            Write-TestFork -Test "6.8.27" -Decision "OpenCode with Claude model" -Reason "claude_code.model=$expectedModel"
         } elseif ($testConfig.copilot_cli -and $testConfig.copilot_cli.model) {
             $expectedProvider = "github-copilot"
             $expectedModel = $testConfig.copilot_cli.model
-            Write-TestFork -Test "6.8.28" -Decision "OpenCode with Copilot model" -Reason "copilot_cli.model=$expectedModel"
+            Write-TestFork -Test "6.8.27" -Decision "OpenCode with Copilot model" -Reason "copilot_cli.model=$expectedModel"
         } else {
             $expectedProvider = "anthropic"
             $expectedModel = "claude-haiku-4-5"
-            Write-TestFork -Test "6.8.28" -Decision "OpenCode with fallback model" -Reason "No model configured, using $expectedModel"
+            Write-TestFork -Test "6.8.27" -Decision "OpenCode with fallback model" -Reason "No model configured, using $expectedModel"
         }
     } elseif ($testConfig.claude_code -and $testConfig.claude_code.enabled) {
         $cliName = "Claude Code"
         # Claude Code uses model from config, fallback to "claude-haiku-4-5"
         if ($testConfig.claude_code.model) {
             $expectedModel = $testConfig.claude_code.model
-            Write-TestFork -Test "6.8.28" -Decision "Claude Code CLI" -Reason "model=$expectedModel"
+            Write-TestFork -Test "6.8.27" -Decision "Claude Code CLI" -Reason "model=$expectedModel"
         } else {
             $expectedModel = "claude-haiku-4-5"
-            Write-TestFork -Test "6.8.28" -Decision "Claude Code CLI with fallback" -Reason "No model configured, using $expectedModel"
+            Write-TestFork -Test "6.8.27" -Decision "Claude Code CLI with fallback" -Reason "No model configured, using $expectedModel"
         }
     } elseif ($testConfig.copilot_cli -and $testConfig.copilot_cli.enabled) {
         $cliName = "Copilot CLI"
         # Copilot CLI uses model from config, fallback to "claude-haiku-4.5"
         if ($testConfig.copilot_cli.model) {
             $expectedModel = $testConfig.copilot_cli.model
-            Write-TestFork -Test "6.8.28" -Decision "Copilot CLI" -Reason "model=$expectedModel"
+            Write-TestFork -Test "6.8.27" -Decision "Copilot CLI" -Reason "model=$expectedModel"
         } else {
             $expectedModel = "claude-haiku-4.5"
-            Write-TestFork -Test "6.8.28" -Decision "Copilot CLI with fallback" -Reason "No model configured, using $expectedModel"
+            Write-TestFork -Test "6.8.27" -Decision "Copilot CLI with fallback" -Reason "No model configured, using $expectedModel"
         }
     } else {
-        Write-TestFork -Test "6.8.28" -Decision "No AI CLI configured" -Reason "opencode/claude_code/copilot_cli not enabled"
+        Write-TestFork -Test "6.8.27" -Decision "No AI CLI configured" -Reason "opencode/claude_code/copilot_cli not enabled"
     }
 
     if ($cliName) {
@@ -1966,7 +1957,7 @@ fi
         }
 
         <# (multi) return #> @{
-            Test = "6.8.28"
+            Test = "6.8.27"
             Name = "AI summary reports configured model"
             Pass = ($cliMatch -and $modelMatch -and $providerMatch)
             Output = if ($cliMatch -and $modelMatch -and $providerMatch) {
@@ -1980,7 +1971,7 @@ fi
         }
     } else {
         <# (multi) return #> @{
-            Test = "6.8.28"
+            Test = "6.8.27"
             Name = "AI summary reports configured model"
             Pass = $true
             Output = "Skipped - no AI CLI configured"
@@ -1988,6 +1979,30 @@ fi
     }
 
     # return $results
+}
+
+# Test notification flush logging (6.8-flush) - runs at the end
+function Test-NotificationFlush {
+    param([string]$VMName)
+
+    # 6.8.28: Verify flush execution via journal/log
+    $journalScript = @'
+# Check apt-notify log for flush execution
+if grep -q "apt-notify-flush: complete" /var/lib/apt-notify/apt-notify.log 2>/dev/null; then
+    echo "flush_logged"
+    grep "apt-notify-flush" /var/lib/apt-notify/apt-notify.log | tail -5
+fi
+'@
+    $journalScriptB64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($journalScript))
+    $journalCheck = multipass exec $VMName -- bash -c "echo $journalScriptB64 | base64 -d | bash" 2>&1
+
+    $flushLogged = ($journalCheck -match "flush_logged")
+    <# (multi) return #> @{
+        Test = "6.8.28"
+        Name = "apt-notify-flush logged execution"
+        Pass = $flushLogged
+        Output = if ($flushLogged) { "Flush execution logged: $($journalCheck -replace "`n", ' ' -replace 'flush_logged', '')" } else { "No flush log entry found" }
+    }
 }
 
 # Dispatcher function to run tests for a specific level
@@ -2007,6 +2022,8 @@ function Invoke-TestForLevel {
         "6.7"  { return Test-MSMTPFragment -VMName $VMName }
         "6.8"  { return Test-PackageSecurityFragment -VMName $VMName }
         "6.8-updates" { return Test-PackageManagerUpdates -VMName $VMName }
+        "6.8-summary" { return Test-UpdateSummary -VMName $VMName }
+        "6.8-flush" { return Test-NotificationFlush -VMName $VMName }
         "6.9"  { return Test-SecurityMonitoringFragment -VMName $VMName }
         "6.10" { return Test-VirtualizationFragment -VMName $VMName }
         "6.11" { return Test-CockpitFragment -VMName $VMName }
