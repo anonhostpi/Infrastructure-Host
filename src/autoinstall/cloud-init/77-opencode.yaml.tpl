@@ -12,6 +12,10 @@ runcmd:
   - install -d -o {{ identity.username }} -g {{ identity.username }} /home/{{ identity.username }}/.local/share
   - install -d -o {{ identity.username }} -g {{ identity.username }} /home/{{ identity.username }}/.config/opencode
   - install -d -o {{ identity.username }} -g {{ identity.username }} /home/{{ identity.username }}/.local/share/opencode
+  # Create runtime directories that OpenCode expects (log, bin, storage)
+  - install -d -o {{ identity.username }} -g {{ identity.username }} /home/{{ identity.username }}/.local/share/opencode/log
+  - install -d -o {{ identity.username }} -g {{ identity.username }} /home/{{ identity.username }}/.local/share/opencode/bin
+  - install -d -o {{ identity.username }} -g {{ identity.username }} /home/{{ identity.username }}/.local/share/opencode/storage
 
   # Write OpenCode config file (using heredoc to ensure order after mkdir)
   - |
