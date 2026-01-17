@@ -1866,22 +1866,18 @@ function Test-UpdateSummary {
         }
     }
 
-    # 6.8.26: Validate report content contains all package manager sections
+    # 6.8.26: Validate report content contains expected sections
+    # The report only includes sections with actual changes (not empty sections)
+    # Test 6.8.21 installs is-odd via npm, so NPM section should be present
     $reportContent = multipass exec $VMName -- bash -c "cat /var/lib/apt-notify/test-report.txt 2>/dev/null || echo ''" 2>&1
-    $hasAptInstalled = ($reportContent -match "APT: NEW PACKAGES INSTALLED")
-    $hasAptUpgraded = ($reportContent -match "APT: PACKAGES UPGRADED")
-    $hasSnap = ($reportContent -match "SNAP: PACKAGES UPGRADED")
-    $hasBrew = ($reportContent -match "BREW: PACKAGES UPGRADED")
-    $hasPip = ($reportContent -match "PIP: PACKAGES UPGRADED")
     $hasNpm = ($reportContent -match "NPM: GLOBAL PACKAGES UPGRADED")
-    $hasDeno = ($reportContent -match "DENO: PACKAGES UPGRADED")
-    $allSections = $hasAptInstalled -and $hasAptUpgraded -and $hasSnap -and $hasBrew -and $hasPip -and $hasNpm -and $hasDeno
+    $hasIsOdd = ($reportContent -match "is-odd")
 
     <# (multi) return #> @{
         Test = "6.8.26"
-        Name = "Report contains all pkg manager sections"
-        Pass = $allSections
-        Output = "APT:$hasAptInstalled,$hasAptUpgraded SNAP:$hasSnap BREW:$hasBrew PIP:$hasPip NPM:$hasNpm DENO:$hasDeno"
+        Name = "Report contains npm section with is-odd"
+        Pass = ($hasNpm -and $hasIsOdd)
+        Output = if ($hasNpm -and $hasIsOdd) { "NPM section present with is-odd upgrade" } else { "Expected NPM section with is-odd. Got: $($reportContent -join ' ')" }
     }
 
     # 6.8.27: Validate AI summary reports model passed via --model flag
@@ -1945,9 +1941,26 @@ function Test-UpdateSummary {
             return ($Content -match $pattern)
         }
 
+        # OpenCode fallback models (from apt-notify-flush script)
+        $opencodeAllowedModels = @(
+            "claude-sonnet-4-5-latest",
+            "claude-haiku-4-5",
+            "gpt-5-nano"
+        )
+
         if ($cliMatch) {
             if ($cliName -eq "OpenCode" -and $expectedModel) {
+                # Accept configured model OR any fallback model (model validation may choose fallback)
                 $modelMatch = (Test-FuzzyModelMatch -Content $aiSummaryFile -Model $expectedModel)
+                if (-not $modelMatch) {
+                    # Check if any fallback model was used
+                    foreach ($fallback in $opencodeAllowedModels) {
+                        if (Test-FuzzyModelMatch -Content $aiSummaryFile -Model $fallback) {
+                            $modelMatch = $true
+                            break
+                        }
+                    }
+                }
                 $providerMatch = ($aiSummaryFile -match "provider: $expectedProvider")
             } elseif ($cliName -eq "Claude Code" -and $expectedModel) {
                 $modelMatch = (Test-FuzzyModelMatch -Content $aiSummaryFile -Model $expectedModel)
@@ -1958,15 +1971,17 @@ function Test-UpdateSummary {
 
         <# (multi) return #> @{
             Test = "6.8.27"
-            Name = "AI summary reports configured model"
+            Name = "AI summary reports valid model"
             Pass = ($cliMatch -and $modelMatch -and $providerMatch)
             Output = if ($cliMatch -and $modelMatch -and $providerMatch) {
-                "CLI: $cliName" + $(if ($expectedModel) { ", Model: $expectedModel" } else { "" }) + $(if ($expectedProvider) { ", Provider: $expectedProvider" } else { "" })
+                # Extract actual model from summary
+                $actualModel = if ($aiSummaryFile -match 'model: ([^\]]+)') { $matches[1] } else { $expectedModel }
+                "CLI: $cliName, Model: $actualModel (config: $expectedModel)" + $(if ($expectedProvider) { ", Provider: $expectedProvider" } else { "" })
             } else {
                 # Convert to string and handle empty/array cases
                 $summaryStr = if ($aiSummaryFile) { ($aiSummaryFile -join " ").Trim() } else { "(empty)" }
                 $summaryPreview = if ($summaryStr.Length -gt 100) { $summaryStr.Substring(0, 100) + "..." } else { $summaryStr }
-                "Expected $cliName" + $(if ($expectedModel) { " with model $expectedModel (fuzzy match)" } else { "" }) + $(if ($expectedProvider) { " (provider: $expectedProvider)" } else { "" }) + " - Got: $summaryPreview"
+                "Expected $cliName" + $(if ($expectedModel) { " with model $expectedModel or fallback" } else { "" }) + $(if ($expectedProvider) { " (provider: $expectedProvider)" } else { "" }) + " - Got: $summaryPreview"
             }
         }
     } else {
