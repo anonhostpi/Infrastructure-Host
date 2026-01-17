@@ -35,12 +35,24 @@ Cloud-init fragments are tested **incrementally** - each test level includes all
 | 6.5 | 30-ufw | + 30-ufw |
 | 6.6 | 40-system | + 40-system |
 | 6.7 | 45-msmtp | + 45-msmtp |
-| 6.8 | 50-packages, 50-pkg-security | + 50-packages, 50-pkg-security |
+| 6.8 | 50-packages, 50-pkg-security, 999-pkg-upgrade | + 50-packages, 50-pkg-security, 999-pkg-upgrade |
 | 6.9 | 55-security-mon | + 55-security-mon |
 | 6.10 | 60-virtualization | + 60-virtualization |
 | 6.11 | 70-cockpit | + 70-cockpit |
-| 6.12 | 75-opencode | + 75-opencode |
-| 6.13 | 90-ui | + 90-ui (all fragments) |
+| 6.12 | 75-claude-code | + 75-claude-code |
+| 6.13 | 76-copilot-cli | + 76-copilot-cli |
+| 6.14 | 77-opencode | + 77-opencode |
+| 6.15 | 90-ui | + 90-ui (all fragments) |
+
+### Extended Test Levels
+
+These levels run after all fragment tests to validate cross-fragment functionality:
+
+| Level | Tests | Description |
+|-------|-------|-------------|
+| 6.8-updates | 6.8.19-6.8.24 | Execute package manager update scripts |
+| 6.8-summary | 6.8.25-6.8.27 | Validate apt-notify-flush report generation and AI summary |
+| 6.8-flush | 6.8.28 | Verify notification flush logging |
 
 ---
 
@@ -84,52 +96,62 @@ Each invocation performs a **complete fresh test cycle**:
 ========================================
 
 Test Level: 6.3
-Levels to test: 6.1, 6.2, 6.3
+Levels to test: 6.1 6.2 6.3
 
-[1/5] Cleaning up existing VMs...
+[1/6] Cleaning up existing VMs -- This may take a while. Please wait...
   Done
 
-[2/5] Setting up builder VM...
+[2/6] Setting up builder VM -- This may take a while. Please wait...
   Launching: cloud-init-test
   Waiting for cloud-init...
   Mounting repository...
   Installing dependencies...
   Done
 
-[3/5] Building cloud-init...
+[3/6] Building cloud-init -- This may take a while. Please wait...
   Fragments: 10-network, 15-kernel, 20-users
   Builder args: -i 10-network -i 15-kernel -i 20-users
+  Output: D:\Orchestrations\Infrastructure-Host\output\cloud-init.yaml
   Done
 
-[4/5] Launching runner VM...
+[4/6] Launching runner VM -- This may take a while. Please wait...
   Name: cloud-init-runner
   Network: Ethernet 3
-  Waiting for cloud-init to complete...
   Done
 
-[5/5] Running tests...
+[5/6] Waiting for cloud-init to complete -- This may take a while. Please wait...
+  Done
+
+[6/6] Enabling nested virtualization -- This may take a while. Please wait...
+  Stopping VM for reconfiguration...
+  Enabling ExposeVirtualizationExtensions...
+  Nested virtualization enabled
+  Starting VM...
+  Done
+
+Running tests...
 
 --- Test 6.1 : Network ---
-  [PASS] 6.1.1: Short hostname set
-  [PASS] 6.1.1: FQDN has domain
-  [PASS] 6.1.2: Hostname in /etc/hosts
-  [PASS] 6.1.3: Netplan config exists
-  [PASS] 6.1.4: IP address assigned
-  [PASS] 6.1.4: Default gateway configured
-  [PASS] 6.1.4: DNS resolution works
+  [PASS] 6.1.1: Short hostname set (00:02.314)
+  [PASS] 6.1.1: FQDN has domain (00:02.564)
+  [PASS] 6.1.2: Hostname in /etc/hosts (00:02.666)
+  [PASS] 6.1.3: Netplan config exists (00:02.776)
+  [PASS] 6.1.4: IP address assigned (00:02.752)
+  [PASS] 6.1.4: Default gateway configured (00:02.432)
+  [PASS] 6.1.4: DNS resolution works (00:02.747)
 
 --- Test 6.2 : Kernel Hardening ---
-  [PASS] 6.2.1: Security sysctl config exists
-  [PASS] 6.2.2: Reverse path filtering enabled
-  [PASS] 6.2.2: SYN cookies enabled
-  [PASS] 6.2.2: ICMP redirects disabled
+  [PASS] 6.2.1: Security sysctl config exists (00:02.641)
+  [PASS] 6.2.2: Reverse path filtering enabled (00:03.269)
+  [PASS] 6.2.2: SYN cookies enabled (00:03.017)
+  [PASS] 6.2.2: ICMP redirects disabled (00:04.109)
 
 --- Test 6.3 : Users ---
-  [PASS] 6.3.1: Admin user exists
-  [PASS] 6.3.1: Admin shell is bash
-  [PASS] 6.3.2: Admin in sudo group
-  [PASS] 6.3.3: NOPASSWD sudo configured
-  [PASS] 6.3.4: Root account locked
+  [PASS] 6.3.1: admin user exists (00:02.845)
+  [PASS] 6.3.1: admin shell is bash (00:02.967)
+  [PASS] 6.3.2: admin in sudo group (00:02.608)
+  [PASS] 6.3.3: Sudoers file exists (00:02.617)
+  [PASS] 6.3.4: Root account locked (00:02.813)
 
 ========================================
  Test Summary
@@ -156,12 +178,14 @@ Detailed test specifications for each fragment are in [CLOUD_INIT_TESTS/](./CLOU
 | [TEST_6.5](./CLOUD_INIT_TESTS/TEST_6.5_UFW.md) | UFW | Firewall rules, rate limiting |
 | [TEST_6.6](./CLOUD_INIT_TESTS/TEST_6.6_SYSTEM_SETTINGS.md) | System Settings | Locale, timezone |
 | [TEST_6.7](./CLOUD_INIT_TESTS/TEST_6.7_MSMTP.md) | MSMTP | Mail configuration |
-| [TEST_6.8](./CLOUD_INIT_TESTS/TEST_6.8_PACKAGE_SECURITY.md) | Package Security | Unattended upgrades |
+| [TEST_6.8](./CLOUD_INIT_TESTS/TEST_6.8_PACKAGE_SECURITY.md) | Package Security | Unattended upgrades, pkg manager scripts |
 | [TEST_6.9](./CLOUD_INIT_TESTS/TEST_6.9_SECURITY_MONITORING.md) | Security Monitoring | fail2ban jails |
-| [TEST_6.10](./CLOUD_INIT_TESTS/TEST_6.10_VIRTUALIZATION.md) | Virtualization | KVM, libvirt |
+| [TEST_6.10](./CLOUD_INIT_TESTS/TEST_6.10_VIRTUALIZATION.md) | Virtualization | KVM, libvirt, nested VMs |
 | [TEST_6.11](./CLOUD_INIT_TESTS/TEST_6.11_COCKPIT.md) | Cockpit | Web console, localhost binding |
-| [TEST_6.12](./CLOUD_INIT_TESTS/TEST_6.12_OPENCODE.md) | OpenCode | AI coding agent |
-| [TEST_6.13](./CLOUD_INIT_TESTS/TEST_6.13_UI_TOUCHES.md) | UI Touches | CLI tools, MOTD, aliases |
+| [TEST_6.12](./CLOUD_INIT_TESTS/TEST_6.12_CLAUDE_CODE.md) | Claude Code | Anthropic's Claude Code CLI |
+| [TEST_6.13](./CLOUD_INIT_TESTS/TEST_6.13_COPILOT_CLI.md) | Copilot CLI | GitHub Copilot CLI |
+| [TEST_6.14](./CLOUD_INIT_TESTS/TEST_6.14_OPENCODE.md) | OpenCode | OpenCode AI coding agent |
+| [TEST_6.15](./CLOUD_INIT_TESTS/TEST_6.15_UI_TOUCHES.md) | UI Touches | MOTD scripts |
 
 ---
 
