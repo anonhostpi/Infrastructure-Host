@@ -36,7 +36,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet("6.1", "6.2", "6.3", "6.4", "6.5", "6.6", "6.7", "6.8", "6.9", "6.10", "6.11", "6.12", "6.13", "6.14", "6.15", "6.8-updates", "all")]
+    [ValidateSet("6.1", "6.2", "6.3", "6.4", "6.5", "6.6", "6.7", "6.8", "6.9", "6.10", "6.11", "6.12", "6.13", "6.14", "6.15", "6.8-updates", "6.8-summary", "6.8-flush", "all")]
     [string]$Level,
 
     [switch]$SkipCleanup
@@ -53,7 +53,7 @@ $RepoRoot = Split-Path -Parent $ScriptDir
 . "$RepoRoot\vm.config.ps1"
 
 # Determine actual test level
-$TestLevel = if ($Level -eq "all") { "6.8-updates" } else { $Level }
+$TestLevel = if ($Level -eq "all") { "6.8-flush" } else { $Level }
 
 # Set up logging to output/logs directory
 $LogDir = Join-Path $RepoRoot "output\logs"
