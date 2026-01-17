@@ -133,9 +133,11 @@ See [3.3 Render CLI](../BUILD_SYSTEM/RENDER_CLI.md) for render function details.
 
 | Layout | Description |
 |--------|-------------|
-| `zfs` | ZFS root filesystem (recommended for virtualization hosts) |
+| `direct` | Direct ext4 partitioning (recommended - simplest for disposable root) |
 | `lvm` | LVM with single volume group |
-| `direct` | Direct partitioning without LVM |
+| `zfs` | ZFS root filesystem |
+
+**Design decision:** The root filesystem uses `direct` (ext4) for simplicity. The host OS is disposable and rebuilt via autoinstall on failure. VM storage with redundancy should use a separate ZFS pool on additional drives added post-deployment.
 
 ### Disk Selection
 

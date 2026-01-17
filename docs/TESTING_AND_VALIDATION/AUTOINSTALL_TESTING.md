@@ -12,17 +12,17 @@ Build and test the full autoinstall ISO with VirtualBox.
 |--------|------------------|-------------------|
 | **Platform** | Multipass | VirtualBox |
 | **What's tested** | Cloud-init fragments only | Full ISO installation cycle |
-| **Storage** | Multipass default | ZFS root filesystem |
+| **Storage** | Multipass default | ext4 root filesystem |
 | **Network** | Multipass bridged | NAT + early-net.sh detection |
 | **Build artifact** | `cloud-init.yaml` | `ubuntu-autoinstall.iso` |
 | **Install time** | Instant | 10-15 minutes |
-| **Can test ZFS** | No | Yes |
+| **Can test storage layout** | No | Yes |
 | **Can test early-commands** | No | Yes |
 | **Can test GRUB/boot** | No | Yes |
 
 ### What 7.2 Validates (That 7.1 Cannot)
 
-- **ZFS root filesystem** - Pool creation, datasets, properties
+- **Root filesystem** - Partitioning, ext4 formatting, mount points
 - **early-commands** - Network detection during installation
 - **late-commands** - Post-install configuration
 - **Boot configuration** - UEFI, GRUB menu, boot order
@@ -235,19 +235,20 @@ multipass stop $BuilderVMName
 
 These tests validate components that **cannot be tested with multipass** (7.1).
 
-### ZFS Root Filesystem
+### Root Filesystem
 
 ```bash
-# Verify ZFS pool exists and is healthy
-zpool status
-# Expected: pool "rpool" with state: ONLINE
+# Verify root filesystem type (ext4 with direct layout)
+df -T /
+# Expected: ext4 filesystem
 
-# Verify ZFS datasets
-zfs list
-# Expected: rpool/ROOT/ubuntu mounted at /
+# Verify root is mounted
+mount | grep ' / '
+# Expected: /dev/... on / type ext4 ...
 
-# Check ZFS properties
-zfs get compression,atime rpool
+# Verify boot partition
+df /boot
+# Expected: separate boot partition or part of root
 ```
 
 ### Installation Artifacts
@@ -338,8 +339,8 @@ virsh list --all
 # Cockpit (6.11)
 ss -tlnp | grep 443
 
-# AI CLIs (6.12-6.14)
-which claude opencode copilot 2>/dev/null
+# AI CLIs (6.12-6.13)
+which claude copilot 2>/dev/null
 
 # UI Touches (6.15)
 cat /run/motd.dynamic
@@ -355,8 +356,8 @@ After successful autoinstall, verify:
 | Component | Check | Command |
 |-----------|-------|---------|
 | **Autoinstall-Specific** | | |
-| ZFS | Root on ZFS | `zpool status` |
-| ZFS datasets | Mounted correctly | `zfs list` |
+| Root FS | ext4 filesystem | `df -T /` |
+| Mount | Root mounted | `mount \| grep ' / '` |
 | Boot | UEFI entry exists | `efibootmgr -v` |
 | Installer | Artifacts present | `ls /var/log/installer/` |
 | **Cloud-init (from 7.1)** | | |
@@ -402,7 +403,7 @@ This allows testing multiple scenarios without full reinstall (~15 min saved per
 | "No autoinstall config found" | Missing datasource | Verify GRUB has `ds=nocloud\;s=/cdrom/nocloud/` |
 | Installation drops to shell | early-commands failed | Check network config, arping availability |
 | Boot loop after install | Wrong boot order | Eject ISO or change boot order in VM |
-| ZFS pool not created | Disk too small | Use 30GB+ disk |
+| Disk too small | Insufficient space for partitions | Use 25GB+ disk |
 | cloud-init errors on first boot | Fragment merge issues | Test with 7.1 first |
 
 ## Debug Commands
@@ -452,25 +453,62 @@ tar xzf test-failure-logs.tar.gz
 
 ---
 
-## Future: Automated Testing
+## Automated Testing
 
-The manual workflow above can be automated similar to 7.1. The test infrastructure would include:
+The manual workflow above is automated via `Invoke-AutoinstallTest.ps1`:
 
 ```
 tests/
-├── Invoke-IncrementalTest.ps1        # Existing (7.1 - multipass)
-├── Invoke-AutoinstallTest.ps1        # Future (7.2 - VirtualBox)
+├── Invoke-IncrementalTest.ps1        # 7.1 - multipass cloud-init testing
+├── Invoke-AutoinstallTest.ps1        # 7.2 - VirtualBox autoinstall testing
 ├── lib/
 │   ├── Config.ps1                    # Shared config loading
-│   ├── Verifications.ps1             # Shared test functions
-│   └── VBoxHelpers.ps1               # Future - VirtualBox management
+│   ├── Verifications.ps1             # Shared test functions (7.1)
+│   └── VBoxHelpers.ps1               # VirtualBox CLI management
 ```
 
-Key differences from 7.1 automation:
-- VM management via VBoxManage instead of multipass
-- SSH transport instead of `multipass exec`
-- Additional ZFS/boot tests
-- Longer timeouts (installation takes 10-15 min)
+### Running Automated Tests
+
+```powershell
+# Full test: build ISO, install, run all tests
+.\tests\Invoke-AutoinstallTest.ps1
+
+# Use existing ISO (skip build)
+.\tests\Invoke-AutoinstallTest.ps1 -SkipBuild
+
+# Keep VMs running after tests (for debugging)
+.\tests\Invoke-AutoinstallTest.ps1 -SkipCleanup
+
+# Headless mode (no VirtualBox GUI window)
+.\tests\Invoke-AutoinstallTest.ps1 -Headless
+```
+
+### What the Automated Tests Cover
+
+**Autoinstall-Specific Tests (7.2.x):**
+- 7.2.1: Root filesystem is ext4
+- 7.2.2: Root mounted correctly
+- 7.2.3: Boot partition exists
+- 7.2.4: Installer logs present
+- 7.2.5: Autoinstall user-data captured
+- 7.2.6: UEFI boot entry exists
+- 7.2.7: No cdrom mounted (ISO ejected)
+- 7.2.8: Cloud-init status done
+
+**Cloud-init Fragment Tests (6.x):**
+- All tests from 7.1 re-run via SSH transport
+- Network, users, SSH hardening, UFW, etc.
+
+### Key Differences from 7.1 Automation
+
+| Aspect | 7.1 (Invoke-IncrementalTest.ps1) | 7.2 (Invoke-AutoinstallTest.ps1) |
+|--------|----------------------------------|----------------------------------|
+| Platform | Multipass | VirtualBox |
+| Transport | `multipass exec` | SSH (port 2222) |
+| VM management | Multipass CLI | VBoxManage via VBoxHelpers.ps1 |
+| Test functions | Verifications.ps1 | Inline (SSH-based) |
+| Timeouts | ~5 minutes | ~20 minutes |
+| Prerequisites | Multipass | VirtualBox + SSH client |
 
 ---
 

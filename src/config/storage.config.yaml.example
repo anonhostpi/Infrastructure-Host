@@ -3,7 +3,9 @@
 # THIS FILE IS TRACKED IN GIT - storage.config.yaml IS NOT
 
 storage:
-  layout: zfs
+  # direct = ext4, simplest option for disposable root filesystem
+  # VM storage with redundancy should use a separate ZFS pool on additional drives
+  layout: direct
   sizing_policy: all
   match:
     size: largest

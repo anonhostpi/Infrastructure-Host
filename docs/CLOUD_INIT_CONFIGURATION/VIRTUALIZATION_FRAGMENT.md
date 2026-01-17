@@ -100,11 +100,24 @@ multipass delete test-vm && multipass purge
 
 ## VM Storage
 
-Default VM storage is at `/var/lib/libvirt/images/`. This uses the ZFS root filesystem configured during autoinstall.
+Default VM storage is at `/var/lib/libvirt/images/` on the root ext4 filesystem.
 
-For production, consider:
-- Dedicated ZFS dataset for VM images
-- Separate storage pool in libvirt
+For production with redundancy, create a separate ZFS pool on additional drives:
+
+```bash
+# Create ZFS pool on additional drives (post-deployment)
+zpool create vmpool raidz /dev/sda /dev/sdb /dev/sdc
+zfs create vmpool/images
+
+# Create libvirt storage pool
+virsh pool-define-as vmpool dir --target /vmpool/images
+virsh pool-autostart vmpool
+virsh pool-start vmpool
+```
+
+This separates concerns:
+- **Root filesystem** (ext4): Disposable, rebuild via autoinstall
+- **VM storage** (ZFS): Redundant, snapshot-capable
 
 ## VM Lifecycle Notifications
 
