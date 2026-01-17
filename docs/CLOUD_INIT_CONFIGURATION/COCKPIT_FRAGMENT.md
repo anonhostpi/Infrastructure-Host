@@ -36,7 +36,7 @@ cockpit:
 | `enabled` | `true` | Set to `false` to omit Cockpit from build entirely |
 | `listen_address` | `127.0.0.1` | Bind address (`0.0.0.0` for network access) |
 | `listen_port` | `443` | Listen port |
-| `packages` | `[cockpit, cockpit-machines]` | Packages to install |
+| `packages` | `[]` | Additional packages to install (e.g., `cockpit-machines`) |
 | `require_https` | `true` | Require HTTPS connections |
 | `idle_timeout` | `0` | Session timeout in minutes (0 = disabled) |
 | `origins` | `[]` | Additional allowed origins for cross-origin access |
@@ -47,9 +47,11 @@ cockpit:
 {% if cockpit.enabled | default(true) %}
 packages:
   - cockpit
-{% for pkg in cockpit.packages | default(['cockpit-machines']) %}
+{% if cockpit.packages is defined %}
+{% for pkg in cockpit.packages %}
   - {{ pkg }}
 {% endfor %}
+{% endif %}
 
 write_files:
   - path: /etc/cockpit/cockpit.conf

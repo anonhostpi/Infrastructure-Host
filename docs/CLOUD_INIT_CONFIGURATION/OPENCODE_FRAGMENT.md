@@ -10,22 +10,23 @@ Installs and configures OpenCode, an open-source AI coding agent for terminal us
 
 ## Authentication
 
-OpenCode supports multiple authentication methods. The most streamlined approach is **automatic credential derivation** from Claude Code and Copilot CLI.
+OpenCode supports multiple authentication methods. The most streamlined approach is **automatic credential derivation** from Claude Code.
 
 ### Automatic Auth Derivation (Recommended)
 
-When Claude Code (6.12) and/or Copilot CLI (6.13) are configured with OAuth credentials, OpenCode's `auth.json` is automatically generated from those credentials:
+When Claude Code (6.12) is configured with OAuth credentials, OpenCode's `auth.json` is automatically generated from those credentials:
 
 | OpenCode Provider | Source |
 |-------------------|--------|
 | `anthropic` | Claude Code OAuth credentials (`claude_code.auth.oauth`) |
-| `github-copilot` | Copilot CLI OAuth token (`copilot_cli.auth.oauth`) |
+
+**Note:** GitHub Copilot auth cannot be derived from Copilot CLI (incompatible token types).
 
 **How it works:**
 
-1. Configure Claude Code and/or Copilot CLI with OAuth credentials
+1. Configure Claude Code with OAuth credentials
 2. The builder automatically derives OpenCode's auth from those credentials
-3. At render time, `auth.json` is generated with the appropriate tokens
+3. At render time, `auth.json` is generated with the Anthropic tokens
 
 **Generated auth.json structure:**
 
@@ -36,15 +37,9 @@ When Claude Code (6.12) and/or Copilot CLI (6.13) are configured with OAuth cred
     "access": "<access_token>",
     "refresh": "<refresh_token>",
     "expires": 1736500000000
-  },
-  "github-copilot": {
-    "type": "oauth",
-    "refresh": "<github_oauth_token>"
   }
 }
 ```
-
-**Note:** The `github-copilot.access` token (Copilot API token) is fetched dynamically by OpenCode using the GitHub OAuth token.
 
 ### Manual Auth Configuration
 
@@ -55,78 +50,50 @@ You can also configure OpenCode auth directly in the config file or use environm
 ```yaml
 {% if opencode.enabled | default(false) %}
 runcmd:
-{% if opencode.install_method | default('npm') == 'npm' %}
-  # Install Node.js via NodeSource (LTS)
-  - curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -
-  - apt-get install -y nodejs
-  # Install opencode globally
+  # Install Node.js LTS via apt (NodeSource repo for unattended-upgrades support)
+  - command -v node || (curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - && apt-get install -y nodejs)
+  # Install opencode globally via npm (updated by unattended-upgrades Post-Invoke hook)
   - npm install -g opencode-ai
-{% elif opencode.install_method == 'script' %}
-  # Install via official script
-  - curl -fsSL https://opencode.ai/install | bash
+
+  # Create config directories with proper ownership
+  - install -d -o {{ identity.username }} -g {{ identity.username }} /home/{{ identity.username }}/.config/opencode
+  - install -d -o {{ identity.username }} -g {{ identity.username }} /home/{{ identity.username }}/.local/share/opencode
+  # Create runtime directories (log, bin, storage)
+  - install -d -o {{ identity.username }} -g {{ identity.username }} /home/{{ identity.username }}/.local/share/opencode/log
+  - install -d -o {{ identity.username }} -g {{ identity.username }} /home/{{ identity.username }}/.local/share/opencode/bin
+  - install -d -o {{ identity.username }} -g {{ identity.username }} /home/{{ identity.username }}/.local/share/opencode/storage
+
+  # Write OpenCode config via heredoc
+  - |
+    cat > /home/{{ identity.username }}/.config/opencode/opencode.json << 'OPENCODE_CONFIG_EOF'
+    {
+      "$schema": "https://opencode.ai/config.json",
+      "model": "{{ opencode.model | default('anthropic/claude-sonnet-4-5-latest') }}",
+      ...
+    }
+    OPENCODE_CONFIG_EOF
+
+{% if opencode.auth.anthropic is defined %}
+  # Write auth.json (derived from Claude Code credentials)
+  - |
+    cat > /home/{{ identity.username }}/.local/share/opencode/auth.json << 'OPENCODE_AUTH_EOF'
+    {
+      "anthropic": { ... }
+    }
+    OPENCODE_AUTH_EOF
 {% endif %}
 
-  # Create global config directory for admin user
-  - mkdir -p /home/{{ identity.username }}/.config/opencode
+  # Set ownership after all files are written
   - chown -R {{ identity.username }}:{{ identity.username }} /home/{{ identity.username }}/.config/opencode
-
-write_files:
-  # OpenCode global configuration
-  - path: /home/{{ identity.username }}/.config/opencode/opencode.json
-    owner: {{ identity.username }}:{{ identity.username }}
-    permissions: '0600'
-    content: |
-      {
-        "$schema": "https://opencode.ai/config.json",
-        "model": "{{ opencode.model | default('anthropic/claude-sonnet-4-5') }}",
-        "theme": "{{ opencode.theme | default('dark') }}",
-        "autoupdate": "notify"
-        {%- if opencode.providers is defined %},
-        "provider": {
-          {%- for provider_id, provider in opencode.providers.items() %}
-          "{{ provider_id }}": {
-            {%- if provider.name is defined %}
-            "name": "{{ provider.name }}",
-            {%- endif %}
-            {%- if provider_id == 'ollama' or provider.name is defined %}
-            "npm": "@ai-sdk/openai-compatible",
-            {%- endif %}
-            "options": {
-              {%- if provider.base_url is defined %}
-              "baseURL": "{{ provider.base_url }}"
-              {%- endif %}
-              {%- if provider.api_key is defined %}
-              {%- if provider.base_url is defined %},{% endif %}
-              "apiKey": "{{ provider.api_key }}"
-              {%- endif %}
-            }
-            {%- if provider.models is defined %},
-            "models": {
-              {%- for model_id, model in provider.models.items() %}
-              "{{ model_id }}": {
-                "name": "{{ model.name }}"
-                {%- if model.context is defined or model.output is defined %},
-                "limit": {
-                  {%- if model.context is defined %}
-                  "context": {{ model.context }}
-                  {%- endif %}
-                  {%- if model.output is defined %}
-                  {%- if model.context is defined %},{% endif %}
-                  "output": {{ model.output }}
-                  {%- endif %}
-                }
-                {%- endif %}
-              }{% if not loop.last %},{% endif %}
-              {%- endfor %}
-            }
-            {%- endif %}
-          }{% if not loop.last %},{% endif %}
-          {%- endfor %}
-        }
-        {%- endif %}
-      }
+  - chown -R {{ identity.username }}:{{ identity.username }} /home/{{ identity.username }}/.local/share/opencode
 {% endif %}
 ```
+
+See the full template at `src/autoinstall/cloud-init/77-opencode.yaml.tpl`.
+
+**Installation notes:**
+- Node.js is installed from NodeSource repository for unattended-upgrades support
+- OpenCode is installed via npm for automatic updates via npm-global-update
 
 ## Configuration
 
@@ -135,8 +102,7 @@ Create `src/config/opencode.config.yaml`:
 ```yaml
 opencode:
   enabled: true
-  install_method: npm
-  model: anthropic/claude-sonnet-4-5
+  model: anthropic/claude-sonnet-4-5-latest
   theme: dark
 
   providers:
@@ -147,13 +113,12 @@ opencode:
 | Field | Description | Default |
 |-------|-------------|---------|
 | `enabled` | Install opencode during cloud-init | `false` |
-| `install_method` | Installation method (`npm`, `script`) | `npm` |
-| `model` | Default model (provider/model-id) | `anthropic/claude-sonnet-4-5` |
+| `model` | Default model (provider/model-id) | `anthropic/claude-sonnet-4-5-latest` |
 | `theme` | UI theme | `dark` |
+| `autoupdate` | Enable auto-updates | `false` |
 | `providers` | Provider configurations | - |
-| `auth` | OAuth credentials (auto-derived from Claude Code and Copilot CLI) | - |
+| `auth` | OAuth credentials (auto-derived from Claude Code) | - |
 | `auth.anthropic` | Anthropic OAuth (from Claude Code) | - |
-| `auth.github_copilot` | GitHub Copilot OAuth (from Copilot CLI) | - |
 
 ---
 
@@ -273,9 +238,9 @@ The template generates two files:
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
-  "model": "anthropic/claude-sonnet-4-5",
+  "model": "anthropic/claude-sonnet-4-5-latest",
   "theme": "dark",
-  "autoupdate": "notify",
+  "autoupdate": false,
   "provider": {
     "anthropic": {
       "options": {
@@ -288,7 +253,7 @@ The template generates two files:
 
 ### Auth: `~/.local/share/opencode/auth.json`
 
-When Claude Code and/or Copilot CLI are configured with OAuth credentials:
+When Claude Code is configured with OAuth credentials:
 
 ```json
 {
@@ -297,17 +262,11 @@ When Claude Code and/or Copilot CLI are configured with OAuth credentials:
     "access": "<access_token>",
     "refresh": "<refresh_token>",
     "expires": 1736500000000
-  },
-  "github-copilot": {
-    "type": "oauth",
-    "refresh": "<github_oauth_token>"
   }
 }
 ```
 
-This file is automatically derived from:
-- `claude_code.auth.oauth` for the `anthropic` provider
-- `copilot_cli.auth.oauth` for the `github-copilot` provider
+This file is automatically derived from `claude_code.auth.oauth` for the `anthropic` provider.
 
 ---
 

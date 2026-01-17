@@ -11,16 +11,22 @@ packages:
   - ufw
 
 runcmd:
-  # Set default policies
   - ufw default deny incoming
   - ufw default allow outgoing
-  # Rate-limit SSH (prevents brute force)
+{% if testing is defined and testing %}
+  # TESTING MODE: Use allow instead of limit to avoid rate-limiting multipass connections
+  - ufw allow ssh
+{% else %}
+  # PRODUCTION: Rate-limit SSH to protect against brute force (6 connections per 30 seconds)
   - ufw limit ssh
-  # Enable logging
+{% endif %}
   - ufw logging medium
-  # Enable firewall
   - ufw --force enable
 ```
+
+## Testing Mode
+
+When `testing.config.yaml` has `testing: true`, the fragment uses `ufw allow ssh` instead of `ufw limit ssh`. This prevents rate-limiting issues during automated testing with multipass, which makes many rapid SSH connections.
 
 ## Default Policy
 

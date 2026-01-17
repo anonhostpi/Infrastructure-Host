@@ -58,32 +58,46 @@ If you have Claude Code authenticated on your build host, you can copy the OAuth
 ```yaml
 {% if claude_code.enabled | default(false) %}
 runcmd:
-  # Install Claude Code via official script
-  - curl -fsSL https://claude.ai/install.sh | bash
+  # Install Node.js LTS via apt (NodeSource repo for unattended-upgrades support)
+  - command -v node || (curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - && apt-get install -y nodejs)
+  # Install Claude Code globally via npm (updated by unattended-upgrades Post-Invoke hook)
+  - npm install -g @anthropic-ai/claude-code
 
   # Create config directory for admin user
   - mkdir -p /home/{{ identity.username }}/.claude
-  - chown -R {{ identity.username }}:{{ identity.username }} /home/{{ identity.username }}/.claude
+
+  # Write settings.json via heredoc
+  - |
+    cat > /home/{{ identity.username }}/.claude/settings.json << 'CLAUDE_SETTINGS_EOF'
+    {
+      "model": "{{ claude_code.model | default('claude-sonnet-4-5-20250514') }}"
+      ...
+    }
+    CLAUDE_SETTINGS_EOF
+
+{% if claude_code.auth.oauth is defined %}
+  # Write OAuth credentials and state file
+  - |
+    cat > /home/{{ identity.username }}/.claude/.credentials.json << 'CLAUDE_CREDS_EOF'
+    ...
+    CLAUDE_CREDS_EOF
+{% endif %}
 
 {% if claude_code.auth.api_key is defined %}
   # Set ANTHROPIC_API_KEY environment variable system-wide
   - echo 'ANTHROPIC_API_KEY={{ claude_code.auth.api_key }}' >> /etc/environment
 {% endif %}
 
-write_files:
-  # Claude Code settings configuration
-  - path: /home/{{ identity.username }}/.claude/settings.json
-    owner: {{ identity.username }}:{{ identity.username }}
-    permissions: '600'
-    content: |
-      {
-        "model": "{{ claude_code.model | default('claude-sonnet-4-5-20250514') }}"
-        ...
-      }
+  # Set ownership of .claude directory after all files are written
+  - chown -R {{ identity.username }}:{{ identity.username }} /home/{{ identity.username }}/.claude
 {% endif %}
 ```
 
 See the full template at `src/autoinstall/cloud-init/75-claude-code.yaml.tpl`.
+
+**Installation notes:**
+- Node.js is installed from NodeSource repository for unattended-upgrades support
+- Claude Code is installed via npm for automatic updates via npm-global-update
 
 ---
 

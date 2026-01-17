@@ -188,28 +188,38 @@ export GH_TOKEN=gho_...
 ```yaml
 {% if copilot_cli.enabled | default(false) %}
 runcmd:
-  # Install GitHub Copilot CLI via official script
-  - curl -fsSL https://gh.io/copilot-install | bash
+  # Install Node.js LTS via apt (NodeSource repo for unattended-upgrades support)
+  - command -v node || (curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - && apt-get install -y nodejs)
+  # Install GitHub Copilot CLI globally via npm (updated by unattended-upgrades Post-Invoke hook)
+  - npm install -g @github/copilot
 
   # Create config directory for admin user
   - mkdir -p /home/{{ identity.username }}/.copilot
-  - chown -R {{ identity.username }}:{{ identity.username }} /home/{{ identity.username }}/.copilot
 
-write_files:
-  # Copilot CLI configuration with OAuth token
-  - path: /home/{{ identity.username }}/.copilot/config.json
-    owner: {{ identity.username }}:{{ identity.username }}
-    permissions: '600'
-    content: |
-      {
-        "$schema": "https://copilot.github.com/config.json",
-        "copilot_tokens": { ... },
-        ...
-      }
+  # Write config.json via heredoc
+  - |
+    cat > /home/{{ identity.username }}/.copilot/config.json << 'COPILOT_CONFIG_EOF'
+    {
+      "$schema": "https://copilot.github.com/config.json"
+      ...
+    }
+    COPILOT_CONFIG_EOF
+
+{% if copilot_cli.auth.gh_token is defined %}
+  # Set GH_TOKEN environment variable system-wide (fallback auth method)
+  - echo 'GH_TOKEN={{ copilot_cli.auth.gh_token }}' >> /etc/environment
+{% endif %}
+
+  # Set ownership of .copilot directory after all files are written
+  - chown -R {{ identity.username }}:{{ identity.username }} /home/{{ identity.username }}/.copilot
 {% endif %}
 ```
 
 See the full template at `src/autoinstall/cloud-init/76-copilot-cli.yaml.tpl`.
+
+**Installation notes:**
+- Node.js is installed from NodeSource repository for unattended-upgrades support
+- Copilot CLI is installed via npm for automatic updates via npm-global-update
 
 ---
 
@@ -372,7 +382,7 @@ copilot
 
 ## Fragment Ordering
 
-This fragment uses the `76-` prefix to run after OpenCode (75-).
+This fragment uses the `76-` prefix to run after Claude Code (75-).
 
 ---
 

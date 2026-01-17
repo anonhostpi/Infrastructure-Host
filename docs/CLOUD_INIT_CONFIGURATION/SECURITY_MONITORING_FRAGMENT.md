@@ -204,46 +204,6 @@ sudo fail2ban-client set sshd unbanip 192.168.1.100
 
 ---
 
-## auditd
-
-Linux audit daemon for security event logging.
-
-```yaml
-packages:
-  - auditd
-  - audispd-plugins
-
-write_files:
-  - path: /etc/audit/rules.d/99-custom.rules
-    permissions: '0640'
-    content: |
-      # Log all commands executed as root
-      -a always,exit -F arch=b64 -F euid=0 -S execve -k root-commands
-      # Log file deletions
-      -a always,exit -F arch=b64 -S unlink -S unlinkat -S rename -S renameat -k delete
-      # Log permission changes
-      -a always,exit -F arch=b64 -S chmod -S fchmod -S fchmodat -k perm_mod
-      # Monitor SSH configuration
-      -w /etc/ssh/ -p wa -k ssh_config
-      # Monitor user/group changes
-      -w /etc/passwd -p wa -k user_changes
-      -w /etc/shadow -p wa -k user_changes
-      -w /etc/group -p wa -k user_changes
-      # Monitor sudo configuration
-      -w /etc/sudoers -p wa -k sudo_config
-      -w /etc/sudoers.d/ -p wa -k sudo_config
-      # Monitor libvirt configuration
-      -w /etc/libvirt/ -p wa -k libvirt_config
-      # Monitor netplan configuration
-      -w /etc/netplan/ -p wa -k network_config
-
-runcmd:
-  - systemctl enable auditd
-  - systemctl start auditd
-```
-
----
-
 ## Integration with Other Fragments
 
 ### SSH Hardening (6.4)
@@ -300,6 +260,7 @@ write_files:
 
 ## Future Considerations
 
+- **auditd** - Linux audit daemon for security event logging (root commands, file deletions, permission changes)
 - **Log aggregation** - Shipping logs to central SIEM
 - **Alerting** - Notifications on security events (see email action above)
 - **AIDE** - File integrity monitoring

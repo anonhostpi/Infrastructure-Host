@@ -55,14 +55,16 @@ src/autoinstall/cloud-init/
 ├── 30-ufw.yaml.tpl          # Firewall base
 ├── 40-system.yaml.tpl       # System settings
 ├── 45-msmtp.yaml.tpl        # Email notifications
-├── 50-pkg-security.yaml.tpl # Package security
+├── 50-packages.yaml.tpl     # Base packages
+├── 50-pkg-security.yaml.tpl # Package security scripts
 ├── 55-security-mon.yaml.tpl # Security monitoring
 ├── 60-virtualization.yaml.tpl
 ├── 70-cockpit.yaml.tpl
 ├── 75-claude-code.yaml.tpl  # Anthropic Claude Code
 ├── 76-copilot-cli.yaml.tpl  # GitHub Copilot CLI
 ├── 77-opencode.yaml.tpl     # OpenCode (uses Claude/Copilot auth)
-└── 90-ui.yaml.tpl           # Final touches
+├── 90-ui.yaml.tpl           # Final touches
+└── 999-pkg-upgrade.yaml.tpl # Package upgrade (runs last)
 ```
 
 Later fragments can override scalar values from earlier ones, and append to arrays.
