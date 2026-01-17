@@ -68,9 +68,9 @@ This document outlines the complete documentation structure. Each section is mai
 #### 7. Testing and Validation
 **Directory:** `docs/TESTING_AND_VALIDATION/`
 - [ ] [Overview](./docs/TESTING_AND_VALIDATION/OVERVIEW.md)
-  - [ ] [7.1 Cloud-init Testing](./docs/TESTING_AND_VALIDATION/CLOUD_INIT_TESTING.md)
-    - [ ] Tests written
-    - [ ] All tests pass
+  - [x] [7.1 Cloud-init Testing](./docs/TESTING_AND_VALIDATION/CLOUD_INIT_TESTING.md)
+    - [x] Tests written
+    - [x] All tests pass
   - [ ] [7.2 Autoinstall Testing](./docs/TESTING_AND_VALIDATION/AUTOINSTALL_TESTING.md)
     - [ ] Tests written
     - [ ] All tests pass
