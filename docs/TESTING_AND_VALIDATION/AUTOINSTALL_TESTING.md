@@ -4,29 +4,91 @@ Build and test the full autoinstall ISO with VirtualBox.
 
 **Prerequisite:** Complete [7.1 Cloud-init Testing](./CLOUD_INIT_TESTING.md) first.
 
+## Overview
+
+### 7.1 vs 7.2: What Each Tests
+
+| Aspect | 7.1 (Cloud-init) | 7.2 (Autoinstall) |
+|--------|------------------|-------------------|
+| **Platform** | Multipass | VirtualBox |
+| **What's tested** | Cloud-init fragments only | Full ISO installation cycle |
+| **Storage** | Multipass default | ZFS root filesystem |
+| **Network** | Multipass bridged | NAT + early-net.sh detection |
+| **Build artifact** | `cloud-init.yaml` | `ubuntu-autoinstall.iso` |
+| **Install time** | Instant | 10-15 minutes |
+| **Can test ZFS** | No | Yes |
+| **Can test early-commands** | No | Yes |
+| **Can test GRUB/boot** | No | Yes |
+
+### What 7.2 Validates (That 7.1 Cannot)
+
+- **ZFS root filesystem** - Pool creation, datasets, properties
+- **early-commands** - Network detection during installation
+- **late-commands** - Post-install configuration
+- **Boot configuration** - UEFI, GRUB menu, boot order
+- **Storage layout** - Disk selection, partitioning
+- **Full installation cycle** - From ISO boot to running system
+
+---
+
 ## Phase 2: Autoinstall Testing
 
-### Step 1: Build All Artifacts
+### Step 1: Launch Builder VM
+
+The build system requires Linux tools (Python, Jinja2, xorriso). All build commands run inside a multipass VM.
 
 ```powershell
-# From repository root - render all templates
-make all
+# Load VM configuration
+. .\vm.config.ps1
+
+# Launch builder VM (or start existing)
+$existingBuilder = multipass list --format csv 2>$null | Select-String "^$BuilderVMName,"
+if (-not $existingBuilder) {
+    multipass launch --name $BuilderVMName --cpus $BuilderCpus --memory $BuilderMemory --disk $BuilderDisk
+}
+multipass start $BuilderVMName 2>$null
+
+# Wait for cloud-init
+multipass exec $BuilderVMName -- cloud-init status --wait
 ```
 
-This generates:
-- `output/user-data` - Autoinstall configuration with embedded cloud-init
-- `output/cloud-init.yaml` - Standalone cloud-init (for testing)
-- `output/scripts/build-iso.sh` - ISO build script
-- `output/scripts/early-net.sh` - Network detection script
-
-### Step 2: Validate user-data Structure
+### Step 2: Transfer Repository to Builder VM
 
 ```powershell
-# Validate YAML syntax
-python -c "import yaml; yaml.safe_load(open('output/user-data'))"
+# Mount repository (preferred - changes sync automatically)
+multipass mount . ${BuilderVMName}:/home/ubuntu/infra-host
 
-# Check structure
-python -c "
+# Or transfer (one-time copy)
+# multipass transfer . ${BuilderVMName}:/home/ubuntu/infra-host/
+```
+
+### Step 3: Install Dependencies and Build
+
+```powershell
+# Install build dependencies
+multipass exec $BuilderVMName -- bash -c "
+    sudo apt-get update -qq
+    sudo apt-get install -y -qq python3-pip python3-yaml python3-jinja2 make xorriso cloud-image-utils wget
+    cd /home/ubuntu/infra-host && pip3 install --break-system-packages -q -e . 2>/dev/null
+"
+
+# Build all artifacts (user-data, cloud-init.yaml, scripts)
+multipass exec $BuilderVMName -- bash -c "cd /home/ubuntu/infra-host && make all"
+```
+
+This generates inside the builder VM:
+- `output/user-data` - Autoinstall configuration with embedded cloud-init
+- `output/cloud-init.yaml` - Standalone cloud-init (for 7.1 testing)
+- `output/scripts/build-iso.sh` - ISO build script (rendered from template)
+- `output/scripts/early-net.sh` - Network detection script
+
+### Step 4: Validate user-data Structure
+
+```powershell
+# Validate YAML syntax and structure (inside builder VM)
+multipass exec $BuilderVMName -- bash -c "
+cd /home/ubuntu/infra-host
+python3 -c \"
 import yaml
 with open('output/user-data') as f:
     data = yaml.safe_load(f)
@@ -37,62 +99,55 @@ print('has user-data:', 'user-data' in ai)
 print('storage layout:', ai.get('storage', {}).get('layout', {}).get('name'))
 ud = ai.get('user-data', {})
 print('user-data has packages:', 'packages' in ud)
-print('user-data has users:', 'users' in ud)
+print('user-data has runcmd:', 'runcmd' in ud)
 print('user-data has write_files:', 'write_files' in ud)
+\"
 "
 ```
 
-### Step 3: Build ISO in Multipass VM
-
-Follow the workflow from [5.3 Bootable Media Creation](../AUTOINSTALL_MEDIA_CREATION/TESTED_BOOTABLE_MEDIA_CREATION.md):
+### Step 5: Build ISO
 
 ```powershell
-# Load VM configuration
-. .\vm.config.ps1
-
-# Ensure builder VM exists
-multipass launch --name $BuilderVMName --cpus $BuilderCpus --memory $BuilderMemory --disk $BuilderDisk 2>$null
-# Or start existing
-multipass start $BuilderVMName
-
-# Transfer repository to builder VM
-multipass transfer . ${BuilderVMName}:/home/ubuntu/build/
-
-# Build ISO inside VM
-multipass exec $BuilderVMName -- bash -c "cd ~/build && chmod +x output/scripts/build-iso.sh && ./output/scripts/build-iso.sh"
+# Build autoinstall ISO (inside builder VM)
+multipass exec $BuilderVMName -- bash -c "
+    cd /home/ubuntu/infra-host
+    chmod +x output/scripts/build-iso.sh
+    ./output/scripts/build-iso.sh
+"
 ```
 
-### Step 4: Validate ISO
+This downloads the Ubuntu ISO (cached for subsequent builds) and creates `output/ubuntu-autoinstall.iso`.
+
+### Step 6: Validate ISO
 
 ```powershell
 # Verify nocloud directory exists
-multipass exec $BuilderVMName -- xorriso -indev ~/build/output/ubuntu-autoinstall.iso -ls /nocloud 2>/dev/null
+multipass exec $BuilderVMName -- xorriso -indev /home/ubuntu/infra-host/output/ubuntu-autoinstall.iso -ls /nocloud 2>/dev/null
 
 # Verify GRUB has autoinstall entry
 multipass exec $BuilderVMName -- bash -c "
-  xorriso -indev ~/build/output/ubuntu-autoinstall.iso -extract /boot/grub/grub.cfg /tmp/grub.cfg 2>/dev/null
-  grep -A5 'Autoinstall' /tmp/grub.cfg
+    xorriso -indev /home/ubuntu/infra-host/output/ubuntu-autoinstall.iso -extract /boot/grub/grub.cfg /tmp/grub.cfg 2>/dev/null
+    grep -A5 'Autoinstall' /tmp/grub.cfg
 "
 ```
 
-### Step 5: Transfer ISO to Host
+### Step 7: Transfer ISO to Host
 
 ```powershell
+# Ensure output directory exists
+New-Item -ItemType Directory -Path ./output -Force | Out-Null
+
 # Transfer ISO from builder VM
-multipass transfer "$BuilderVMName`:/home/ubuntu/build/output/ubuntu-autoinstall.iso" ./output/
+multipass transfer "${BuilderVMName}:/home/ubuntu/infra-host/output/ubuntu-autoinstall.iso" ./output/
 
 # Verify
 Get-Item ./output/ubuntu-autoinstall.iso | Select-Object Name, Length, LastWriteTime
 ```
 
-### Step 6: Test with VirtualBox
+### Step 8: Test with VirtualBox
 
 ```powershell
 # Load VM configuration
-if (-not (Test-Path ".\vm.config.ps1")) {
-    Write-Error "Missing vm.config.ps1 - copy from vm.config.ps1.example"
-    exit 1
-}
 . .\vm.config.ps1
 
 $isoPath = (Resolve-Path './output/ubuntu-autoinstall.iso').Path
@@ -114,7 +169,7 @@ if (Test-Path $vdiPath) { Remove-Item $vdiPath -Force }
 # Add storage controller
 & $VBoxManage storagectl $VBoxVMName --name 'SATA' --add sata --controller IntelAhci
 
-# Create and attach disk (use larger size to test ZFS)
+# Create and attach disk (30GB+ for ZFS)
 & $VBoxManage createmedium disk --filename $vdiPath --size $VBoxDiskSize --format VDI
 & $VBoxManage storageattach $VBoxVMName --storagectl 'SATA' --port 0 --device 0 --type hdd --medium $vdiPath
 
@@ -125,21 +180,23 @@ if (Test-Path $vdiPath) { Remove-Item $vdiPath -Force }
 & $VBoxManage startvm $VBoxVMName --type gui
 ```
 
-### Step 7: Monitor Installation
+### Step 9: Monitor Installation
 
 Watch the VM window. The autoinstall process:
 
 1. **GRUB menu** - "Autoinstall Ubuntu Server" selected (5 second timeout)
 2. **Kernel boot** - Linux kernel loads
-3. **Installer starts** - Ubuntu installer runs unattended
-4. **Storage setup** - ZFS pool created on largest disk
-5. **Package installation** - Base system + configured packages
-6. **Cloud-init preparation** - user-data embedded for first boot
-7. **Reboot** - System restarts automatically
+3. **early-commands** - Network detection script runs
+4. **Installer starts** - Ubuntu installer runs unattended
+5. **Storage setup** - ZFS pool created on largest disk
+6. **Package installation** - Base system + configured packages
+7. **late-commands** - Post-install configuration
+8. **Reboot** - System restarts automatically
+9. **Cloud-init** - First-boot configuration runs
 
 Installation typically takes 10-15 minutes.
 
-### Step 8: Validate Installation
+### Step 10: Validate Installation
 
 After reboot, add SSH port forwarding and connect:
 
@@ -147,51 +204,14 @@ After reboot, add SSH port forwarding and connect:
 # Add SSH port forwarding
 & $VBoxManage controlvm $VBoxVMName natpf1 'ssh,tcp,,2222,,22'
 
-# Wait for VM to be ready
-Start-Sleep 30
+# Wait for VM to be ready (cloud-init completion)
+Start-Sleep 60
 
 # Connect via SSH (use password from src/config/identity.config.yaml)
-ssh -p 2222 admin@localhost
+ssh -p 2222 -o StrictHostKeyChecking=no admin@localhost
 ```
 
-**Validation commands** (run inside VM):
-
-```bash
-# Verify autoinstall completed
-ls /var/log/installer/
-
-# Verify cloud-init completed
-cloud-init status
-
-# Verify ZFS root
-zfs list
-zpool status
-
-# Verify network configured
-ip addr show
-cat /etc/netplan/*.yaml
-
-# Verify services running
-systemctl status cockpit.socket libvirtd fail2ban ssh
-
-# Verify packages installed
-dpkg -l | grep -E "qemu-kvm|libvirt|cockpit|fail2ban|bat|fd-find"
-
-# Verify user and groups
-id admin
-groups admin
-
-# Verify firewall
-sudo ufw status
-
-# Verify dynamic MOTD
-cat /run/motd.dynamic
-
-# Verify Cockpit on localhost only
-ss -tlnp | grep 443
-```
-
-### Step 9: Cleanup
+### Step 11: Cleanup
 
 ```powershell
 # Stop and remove VirtualBox VM
@@ -211,64 +231,14 @@ multipass stop $BuilderVMName
 
 ---
 
-## Common Errors
-
-| Error | Cause | Fix |
-|-------|-------|-----|
-| "Malformed autoinstall config" | YAML syntax error | Check for inline comments in list items |
-| "No autoinstall config found" | Missing datasource | Verify GRUB has `ds=nocloud\;s=/cdrom/nocloud/` |
-| Installation drops to shell | early-commands failed | Check network config, arping availability |
-| Boot loop after install | Wrong boot order | Eject ISO or change boot order in VM |
-| ZFS pool not created | Disk too small | Use 25GB+ disk |
-| cloud-init errors on first boot | Fragment merge issues | Test cloud-init separately first |
-
-## Debug Commands
-
-```bash
-# Inside installed VM
-
-# Autoinstall log
-cat /var/log/installer/autoinstall-user-data
-
-# Cloud-init logs
-cat /var/log/cloud-init.log
-cat /var/log/cloud-init-output.log
-
-# Early network script output (if failed)
-cat /var/log/installer/curtin-install.log | grep -A20 "early-commands"
-```
-
----
-
-## Validation Checklist
-
-After successful autoinstall, verify:
-
-| Component | Check | Command |
-|-----------|-------|---------|
-| ZFS | Root on ZFS | `zfs list` |
-| Network | Static IP applied | `ip addr show` |
-| User | Admin user created | `id admin` |
-| Groups | libvirt, kvm membership | `groups admin` |
-| SSH | Service running | `systemctl status ssh` |
-| Cockpit | Localhost only | `ss -tlnp \| grep 443` |
-| libvirt | Daemon running | `virsh list --all` |
-| fail2ban | Jails active | `sudo fail2ban-client status` |
-| UFW | Firewall enabled | `sudo ufw status` |
-| MOTD | Dynamic content | `cat /run/motd.dynamic` |
-| CLI tools | bat, fd, htop | `which batcat fdfind htop` |
-| OpenCode | AI agent (if enabled) | `which opencode` |
-
----
-
 ## Autoinstall-Specific Tests
 
-These tests validate components that **cannot be tested with multipass** - they require the full autoinstall process.
+These tests validate components that **cannot be tested with multipass** (7.1).
 
 ### ZFS Root Filesystem
 
 ```bash
-# Verify ZFS pool exists
+# Verify ZFS pool exists and is healthy
 zpool status
 # Expected: pool "rpool" with state: ONLINE
 
@@ -280,49 +250,126 @@ zfs list
 zfs get compression,atime rpool
 ```
 
-### Network Verification
-
-Network is fully tested in [7.1 Cloud-init Testing](./CLOUD_INIT_TESTING.md#scenario-1-network-configuration-test) with bridged multipass. Quick verification after autoinstall:
-
-```bash
-# Confirm IP matches config
-ip addr show | grep "inet "
-
-# Confirm gateway
-ip route | grep default
-```
-
 ### Installation Artifacts
 
 ```bash
 # Verify autoinstall completed
 ls -la /var/log/installer/
-cat /var/log/installer/autoinstall-user-data | head -20
+
+# View captured autoinstall config
+cat /var/log/installer/autoinstall-user-data | head -30
 
 # Verify cloud-init ran after install
 cloud-init status
+# Expected: status: done
+
+# Check cloud-init output
 cat /var/log/cloud-init-output.log | tail -50
 ```
 
 ### Boot Configuration
 
 ```bash
-# Verify GRUB installed correctly
+# Verify UEFI boot entry
 efibootmgr -v
 # Expected: ubuntu entry pointing to correct disk
 
 # Verify no installer remnants
 mount | grep cdrom
 # Expected: no output (ISO ejected)
+
+# Verify GRUB
+cat /boot/grub/grub.cfg | grep -A3 "menuentry"
+```
+
+### early-commands Verification
+
+```bash
+# Check early network detection ran
+cat /var/log/installer/curtin-install.log | grep -A20 "early-commands"
+
+# Verify static IP was configured
+cat /etc/netplan/90-static.yaml
 ```
 
 ---
 
-## Cloud-init Tests (Reference)
+## Cloud-init Tests (Reused from 7.1)
 
-For fragment-specific testing (security, virtualization, monitoring, user experience), see the automated test scenarios in [7.1 Cloud-init Testing](./CLOUD_INIT_TESTING.md#automated-test-scenarios).
+Most tests from [7.1 Cloud-init Testing](./CLOUD_INIT_TESTING.md) work in 7.2 via SSH instead of multipass. These validate cloud-init fragments, not autoinstall-specific behavior.
 
-These tests work identically in multipass (7.1) and VirtualBox (7.2) since they validate cloud-init configuration, not autoinstall-specific behavior.
+**Validation commands** (run inside VM via SSH):
+
+```bash
+# Network (6.1)
+hostname -f
+ip addr show
+
+# Kernel Hardening (6.2)
+sysctl net.ipv4.conf.all.rp_filter
+
+# Users (6.3)
+id admin
+groups admin
+
+# SSH Hardening (6.4)
+sudo grep PermitRootLogin /etc/ssh/sshd_config.d/*.conf
+
+# UFW (6.5)
+sudo ufw status verbose
+
+# System Settings (6.6)
+timedatectl
+
+# MSMTP (6.7)
+which msmtp
+test -f /etc/msmtprc && echo "msmtp configured"
+
+# Package Security (6.8)
+systemctl status unattended-upgrades
+
+# Security Monitoring (6.9)
+sudo fail2ban-client status
+
+# Virtualization (6.10)
+systemctl status libvirtd
+virsh list --all
+
+# Cockpit (6.11)
+ss -tlnp | grep 443
+
+# AI CLIs (6.12-6.14)
+which claude opencode copilot 2>/dev/null
+
+# UI Touches (6.15)
+cat /run/motd.dynamic
+which batcat fdfind htop
+```
+
+---
+
+## Validation Checklist
+
+After successful autoinstall, verify:
+
+| Component | Check | Command |
+|-----------|-------|---------|
+| **Autoinstall-Specific** | | |
+| ZFS | Root on ZFS | `zpool status` |
+| ZFS datasets | Mounted correctly | `zfs list` |
+| Boot | UEFI entry exists | `efibootmgr -v` |
+| Installer | Artifacts present | `ls /var/log/installer/` |
+| **Cloud-init (from 7.1)** | | |
+| Network | Connectivity | `ping -c1 8.8.8.8` |
+| User | Admin user created | `id admin` |
+| Groups | libvirt, kvm membership | `groups admin` |
+| SSH | Service running | `systemctl status ssh` |
+| Cockpit | Localhost only | `ss -tlnp \| grep 443` |
+| libvirt | Daemon running | `virsh list --all` |
+| fail2ban | Jails active | `sudo fail2ban-client status` |
+| UFW | Firewall enabled | `sudo ufw status` |
+| MOTD | Dynamic content | `cat /run/motd.dynamic` |
+| CLI tools | bat, fd, htop | `which batcat fdfind htop` |
 
 ---
 
@@ -343,7 +390,40 @@ For iterative testing, use VirtualBox snapshots to quickly restore state:
 & $VBoxManage snapshot $VBoxVMName list
 ```
 
-This allows testing multiple scenarios without full reinstall.
+This allows testing multiple scenarios without full reinstall (~15 min saved per iteration).
+
+---
+
+## Common Errors
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| "Malformed autoinstall config" | YAML syntax error | Check for inline comments in list items |
+| "No autoinstall config found" | Missing datasource | Verify GRUB has `ds=nocloud\;s=/cdrom/nocloud/` |
+| Installation drops to shell | early-commands failed | Check network config, arping availability |
+| Boot loop after install | Wrong boot order | Eject ISO or change boot order in VM |
+| ZFS pool not created | Disk too small | Use 30GB+ disk |
+| cloud-init errors on first boot | Fragment merge issues | Test with 7.1 first |
+
+## Debug Commands
+
+```bash
+# Inside installed VM
+
+# Autoinstall log
+cat /var/log/installer/autoinstall-user-data
+
+# Curtin install log (early-commands, storage)
+cat /var/log/installer/curtin-install.log
+
+# Cloud-init logs
+cat /var/log/cloud-init.log
+cat /var/log/cloud-init-output.log
+
+# Service failures
+systemctl --failed
+journalctl -xe
+```
 
 ---
 
@@ -369,6 +449,28 @@ tar xzf test-failure-logs.tar.gz
 | Install starts but fails | YAML syntax error | Check `/var/log/installer/autoinstall-user-data` |
 | Install completes, services fail | Fragment issue | Check `cloud-init status`, specific service logs |
 | Network unreachable | early-commands failed | Check `/var/log/installer/curtin-install.log` |
+
+---
+
+## Future: Automated Testing
+
+The manual workflow above can be automated similar to 7.1. The test infrastructure would include:
+
+```
+tests/
+├── Invoke-IncrementalTest.ps1        # Existing (7.1 - multipass)
+├── Invoke-AutoinstallTest.ps1        # Future (7.2 - VirtualBox)
+├── lib/
+│   ├── Config.ps1                    # Shared config loading
+│   ├── Verifications.ps1             # Shared test functions
+│   └── VBoxHelpers.ps1               # Future - VirtualBox management
+```
+
+Key differences from 7.1 automation:
+- VM management via VBoxManage instead of multipass
+- SSH transport instead of `multipass exec`
+- Additional ZFS/boot tests
+- Longer timeouts (installation takes 10-15 min)
 
 ---
 
