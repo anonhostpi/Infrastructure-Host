@@ -48,15 +48,9 @@ else
 fi
 echo "ISO URL: $ISO_URL"
 
-echo "=== Downloading Ubuntu ISO (if not cached) ==="
-if [ ! -f "$HOME/$ISO_NAME" ]; then
-    wget -q --show-progress "$ISO_URL" -O "$HOME/$ISO_NAME"
-else
-    echo "Using cached ISO: $ISO_NAME"
-fi
-
-echo "=== Copying ISO for modification ==="
-cp "$HOME/$ISO_NAME" "$OUTPUT_ISO"
+echo "=== Downloading Ubuntu ISO ==="
+wget -q --show-progress "$ISO_URL" -O "$HOME/$ISO_NAME"
+echo "Downloaded: $(ls -lh "$HOME/$ISO_NAME" | awk '{print $5}')"
 
 echo "=== Creating config directories ==="
 mkdir -p "$HOME/nocloud_add" "$HOME/grub_mod"
