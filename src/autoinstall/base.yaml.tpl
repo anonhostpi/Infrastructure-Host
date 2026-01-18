@@ -6,6 +6,12 @@ autoinstall:
   keyboard:
     layout: us
 
+  # Identity: user created during installation (required for unattended autoinstall)
+  identity:
+    hostname: {{ network.hostname }}
+    username: {{ identity.username }}
+    password: {{ identity.password | sha512_hash }}
+
   # Network: disabled during install - configured via early-commands
   network:
     version: 2
