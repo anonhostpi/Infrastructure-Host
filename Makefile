@@ -1,4 +1,4 @@
-.PHONY: all clean scripts cloud-init autoinstall iso help list-fragments cloud-init-test
+.PHONY: all clean scripts cloud-init autoinstall iso cidata-iso autoinstall-iso help list-fragments cloud-init-test
 
 # Source dependencies
 CONFIGS := $(wildcard src/config/*.config.yaml)
@@ -23,7 +23,9 @@ help:
 	@echo "  scripts        - Generate shell scripts"
 	@echo "  cloud-init     - Generate cloud-init config (all fragments)"
 	@echo "  autoinstall    - Generate user-data"
-	@echo "  iso            - Build bootable ISO (requires multipass)"
+	@echo "  iso            - Build both ISOs (cidata + autoinstall)"
+	@echo "  cidata-iso     - Build CIDATA ISO only"
+	@echo "  autoinstall-iso - Build autoinstall ISO only"
 	@echo "  list-fragments - List available cloud-init fragments"
 	@echo "  clean          - Remove generated files"
 	@echo ""
@@ -58,9 +60,14 @@ autoinstall: output/user-data
 output/user-data: $(AUTOINSTALL_TEMPLATES) $(CLOUD_INIT_FRAGMENTS) $(SCRIPTS) $(CONFIGS)
 	python3 -m builder render autoinstall -o $@
 
-# Build ISO (runs build script in multipass)
-iso: output/user-data scripts
-	@echo "Run: multipass exec iso-builder -- bash -c 'cd ~/build && ./output/scripts/build-iso.sh'"
+# Build ISOs (run inside multipass VM where output/ is mounted)
+cidata-iso: output/user-data scripts
+	bash output/scripts/build-iso.sh cidata
+
+autoinstall-iso: scripts
+	bash output/scripts/build-iso.sh autoinstall
+
+iso: cidata-iso autoinstall-iso
 
 clean:
 	rm -rf output/*
