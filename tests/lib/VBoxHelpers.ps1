@@ -63,12 +63,17 @@ New-Module -Name VBox-Helpers -ScriptBlock {
             [Parameter(Mandatory = $true)]
             [string]$VDIPath,
 
+            [string]$CIDATAPath,
+
             [int]$MemoryMB = 4096,
-            [int]$CPUs = 2,
-            [int]$DiskSizeMB = 40960
+            [int]$CPUs = 1,  # Use 1 CPU to avoid kernel soft lockup in VirtualBox
+            [int]$DiskSizeMB = 40960,
+
+            [ValidateSet("efi", "bios")]
+            [string]$Firmware = "efi"
         )
 
-        Write-Host "  Creating VM: $VMName"
+        Write-Host "  Creating VM: $VMName (firmware: $Firmware)"
 
         # Cleanup existing VM if present
         if (Test-VMExists -VMName $VMName) {
@@ -80,9 +85,13 @@ New-Module -Name VBox-Helpers -ScriptBlock {
             Remove-Item $VDIPath -Force
         }
 
-        # Create VM with UEFI (matches bare metal)
+        # Create VM with specified firmware (efi or bios)
         Invoke-VBoxManage -Arguments @("createvm", "--name", $VMName, "--ostype", "Ubuntu_64", "--register") | Out-Null
-        Invoke-VBoxManage -Arguments @("modifyvm", $VMName, "--memory", $MemoryMB, "--cpus", $CPUs, "--nic1", "nat", "--firmware", "efi") | Out-Null
+        Invoke-VBoxManage -Arguments @("modifyvm", $VMName, "--memory", $MemoryMB, "--cpus", $CPUs, "--nic1", "nat", "--firmware", $Firmware) | Out-Null
+
+        # Additional VM settings for stability (avoid kernel soft lockups)
+        Invoke-VBoxManage -Arguments @("modifyvm", $VMName, "--pae", "on", "--nestedpaging", "on", "--hwvirtex", "on", "--largepages", "on") | Out-Null
+        Invoke-VBoxManage -Arguments @("modifyvm", $VMName, "--graphicscontroller", "vmsvga", "--vram", "16") | Out-Null
 
         # Add storage controller
         Invoke-VBoxManage -Arguments @("storagectl", $VMName, "--name", "SATA", "--add", "sata", "--controller", "IntelAhci") | Out-Null
@@ -93,6 +102,22 @@ New-Module -Name VBox-Helpers -ScriptBlock {
 
         # Attach ISO
         Invoke-VBoxManage -Arguments @("storageattach", $VMName, "--storagectl", "SATA", "--port", "1", "--device", "0", "--type", "dvddrive", "--medium", $ISOPath) | Out-Null
+
+        # Attach CIDATA for cloud-init nocloud datasource (Ubuntu 24.04 requires this)
+        if ($CIDATAPath -and (Test-Path $CIDATAPath)) {
+            # Use VDI format for SATA attachment, ISO for DVD, or floppy for raw img
+            if ($CIDATAPath -match '\.vdi$') {
+                Write-Host "  Attaching CIDATA VDI for cloud-init: $CIDATAPath"
+                Invoke-VBoxManage -Arguments @("storageattach", $VMName, "--storagectl", "SATA", "--port", "2", "--device", "0", "--type", "hdd", "--medium", $CIDATAPath) | Out-Null
+            } elseif ($CIDATAPath -match '\.iso$') {
+                Write-Host "  Attaching CIDATA ISO for cloud-init: $CIDATAPath"
+                Invoke-VBoxManage -Arguments @("storageattach", $VMName, "--storagectl", "SATA", "--port", "2", "--device", "0", "--type", "dvddrive", "--medium", $CIDATAPath) | Out-Null
+            } else {
+                Write-Host "  Attaching CIDATA floppy for cloud-init: $CIDATAPath"
+                Invoke-VBoxManage -Arguments @("storagectl", $VMName, "--name", "Floppy", "--add", "floppy") | Out-Null
+                Invoke-VBoxManage -Arguments @("storageattach", $VMName, "--storagectl", "Floppy", "--port", "0", "--device", "0", "--type", "fdd", "--medium", $CIDATAPath) | Out-Null
+            }
+        }
 
         Write-Host "  VM created successfully"
         return $true
@@ -273,30 +298,26 @@ New-Module -Name VBox-Helpers -ScriptBlock {
         param(
             [Parameter(Mandatory = $true)]
             [string]$VMName,
-            [int]$TimeoutMinutes = 20
+            [int]$TimeoutMinutes = 30,  # Full install with packages can take longer
+            [ValidateSet("gui", "headless")]
+            [string]$StartType = "gui"
         )
 
         Write-Host "  Waiting for autoinstall to complete (timeout: ${TimeoutMinutes}m)..."
-        Write-Host "  (VM will reboot when installation finishes)"
+        Write-Host "  (VM will stop/reboot when installation finishes)"
 
         $timeoutSeconds = $TimeoutMinutes * 60
         $elapsed = 0
         $checkInterval = 30
-        $rebootDetected = $false
+        $installComplete = $false
 
-        # Phase 1: Wait for VM to be running (installation in progress)
+        # Phase 1: Wait for VM to stop (installation complete triggers shutdown/reboot)
         while ($elapsed -lt $timeoutSeconds) {
             if (-not (Test-VMRunning -VMName $VMName)) {
-                # VM stopped - might be rebooting
-                Write-Host "  VM stopped, waiting for reboot..."
-                Start-Sleep -Seconds 10
-
-                # Check if it comes back
-                if (Test-VMRunning -VMName $VMName) {
-                    $rebootDetected = $true
-                    Write-Host "  Reboot detected - installation may be complete"
-                    break
-                }
+                # VM stopped - installation is complete
+                Write-Host "  VM stopped - installation complete"
+                $installComplete = $true
+                break
             }
 
             Start-Sleep -Seconds $checkInterval
@@ -306,14 +327,25 @@ New-Module -Name VBox-Helpers -ScriptBlock {
             Write-Host "  Installing... (${mins}m ${secs}s / ${TimeoutMinutes}m)"
         }
 
-        if (-not $rebootDetected -and (Test-VMRunning -VMName $VMName)) {
+        if (-not $installComplete) {
             # VM still running after timeout - installation may be stuck
             Write-Host "  WARNING: Installation timeout - VM still running" -ForegroundColor Yellow
             return $false
         }
 
-        # Phase 2: Wait for VM to fully boot after reboot
-        Write-Host "  Waiting for post-install boot..."
+        # Phase 2: Eject ISO and start VM to boot from disk
+        Write-Host "  Ejecting ISO to boot from installed disk..."
+        Remove-DVDISO -VMName $VMName
+
+        Write-Host "  Starting VM to boot installed system ($StartType)..."
+        $result = Invoke-VBoxManage -Arguments @("startvm", $VMName, "--type", $StartType)
+        if ($result.ExitCode -ne 0) {
+            Write-Host "  WARNING: Failed to start VM after installation" -ForegroundColor Yellow
+            return $false
+        }
+
+        # Wait for VM to fully boot
+        Write-Host "  Waiting for post-install boot (30s)..."
         Start-Sleep -Seconds 30
 
         return (Test-VMRunning -VMName $VMName)
