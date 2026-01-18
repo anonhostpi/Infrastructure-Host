@@ -20,7 +20,7 @@ autoinstall:
   # Early commands: run network detection script
   early-commands:
     - |
-{{ scripts["early-net.sh"] | indent(6) }}
+{{ scripts["early-net.sh"] | indent(6, first=True) }}
 
   # Storage configuration
   storage:
@@ -46,4 +46,4 @@ autoinstall:
 
   # Embedded cloud-init configuration (direct YAML, not a string)
   user-data:
-{{ cloud_init | to_yaml | indent(4) }}
+{{ cloud_init | to_yaml | indent(4, first=True) }}
