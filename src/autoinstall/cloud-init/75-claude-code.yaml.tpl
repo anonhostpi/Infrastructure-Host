@@ -27,7 +27,7 @@ runcmd:
     CLAUDE_SETTINGS_EOF
   - chmod 600 /home/{{ identity.username }}/.claude/settings.json
 
-{% if claude_code.auth.oauth is defined %}
+{% if claude_code.auth is defined and claude_code.auth.oauth is defined %}
   # Write OAuth credentials from authenticated Claude Code instance
   - |
     cat > /home/{{ identity.username }}/.claude/.credentials.json << 'CLAUDE_CREDS_EOF'
@@ -64,7 +64,7 @@ runcmd:
   - chown {{ identity.username }}:{{ identity.username }} /home/{{ identity.username }}/.claude.json
 {% endif %}
 
-{% if claude_code.auth.api_key is defined %}
+{% if claude_code.auth is defined and claude_code.auth.api_key is defined %}
   # Set ANTHROPIC_API_KEY environment variable system-wide
   - echo 'ANTHROPIC_API_KEY={{ claude_code.auth.api_key }}' >> /etc/environment
 

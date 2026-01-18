@@ -25,7 +25,7 @@ runcmd:
       "model": "{{ opencode.model | default('anthropic/claude-sonnet-4-5-latest') }}",
       "theme": "{{ opencode.theme | default('dark') }}",
       "autoupdate": {{ opencode.autoupdate | default(false) | tojson }}
-      {%- if opencode.auth.anthropic is defined %},
+      {%- if opencode.auth is defined and opencode.auth.anthropic is defined %},
       "enabled_providers": ["anthropic"]
       {%- endif %}
       {%- if opencode.providers is defined %},
@@ -75,7 +75,7 @@ runcmd:
     OPENCODE_CONFIG_EOF
   - chmod 600 /home/{{ identity.username }}/.config/opencode/opencode.json
 
-{% if opencode.auth.anthropic is defined %}
+{% if opencode.auth is defined and opencode.auth.anthropic is defined %}
   # Write OpenCode auth.json (derived from Claude Code credentials)
   # Note: github-copilot cannot be derived from Copilot CLI (incompatible token types)
   - |

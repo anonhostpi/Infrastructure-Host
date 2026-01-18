@@ -21,7 +21,7 @@ runcmd:
       "allowAllUrls": {{ 'true' if copilot_cli.settings.allow_all_urls else 'false' }}
       {%- endif %}
       {%- endif %}
-      {%- if copilot_cli.auth.oauth is defined %},
+      {%- if copilot_cli.auth is defined and copilot_cli.auth.oauth is defined %},
       "copilot_tokens": {
         "https://github.com:{{ copilot_cli.auth.oauth.github_username }}": "{{ copilot_cli.auth.oauth.oauth_token }}"
       },
@@ -40,7 +40,7 @@ runcmd:
     COPILOT_CONFIG_EOF
   - chmod 600 /home/{{ identity.username }}/.copilot/config.json
 
-{% if copilot_cli.auth.gh_token is defined %}
+{% if copilot_cli.auth is defined and copilot_cli.auth.gh_token is defined %}
   # Set GH_TOKEN environment variable system-wide (fallback auth method)
   - echo 'GH_TOKEN={{ copilot_cli.auth.gh_token }}' >> /etc/environment
 
