@@ -39,8 +39,10 @@ autoinstall:
   late-commands:
     - curtin in-target --target=/target -- systemctl enable ssh
 
-  # Reboot after installation
-  shutdown: reboot
+  # Shutdown behavior after installation
+  # poweroff: allows test script to detect completion and eject ISO
+  # reboot: normal production behavior
+  shutdown: {{ 'poweroff' if testing.testing else 'reboot' }}
 
   # Embedded cloud-init configuration (direct YAML, not a string)
   user-data:
