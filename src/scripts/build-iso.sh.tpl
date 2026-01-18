@@ -14,11 +14,39 @@ ARCH="{{ image.arch }}"
 
 echo "=== Installing dependencies ==="
 sudo apt-get update -qq
-sudo apt-get install -y -qq xorriso cloud-image-utils wget
+sudo apt-get install -y -qq xorriso cloud-image-utils wget distro-info
 
 echo "=== Querying latest Ubuntu ISO ==="
-ISO_URL=$(ubuntu-cloudimg-query "$RELEASE" "$TYPE" "$ARCH" --format "%{url}\n")
-ISO_NAME=$(ubuntu-cloudimg-query "$RELEASE" "$TYPE" "$ARCH" --format "%{filename}\n")
+if [ "$TYPE" = "live-server" ]; then
+    # Live-server ISOs are on releases.ubuntu.com, not cloud-images
+    # ubuntu-cloudimg-query doesn't support live-server, so we query dynamically
+
+    # Get base version from codename (e.g., noble -> 24.04)
+    BASE_VERSION=$(ubuntu-distro-info --series="$RELEASE" -r 2>/dev/null | cut -d' ' -f1)
+    if [ -z "$BASE_VERSION" ]; then
+        # Assume RELEASE is already a version number
+        BASE_VERSION="$RELEASE"
+    fi
+
+    # Find latest point release from releases.ubuntu.com
+    VERSION=$(curl -sL "https://releases.ubuntu.com/" | grep -oE "href=\"${BASE_VERSION}(\.[0-9]+)?/\"" | sed 's/href="//;s/\/"$//' | sort -V | tail -1)
+    if [ -z "$VERSION" ]; then
+        VERSION="$BASE_VERSION"
+    fi
+
+    # Scrape actual ISO filename from directory listing
+    ISO_NAME=$(curl -sL "https://releases.ubuntu.com/${VERSION}/" | grep -oE "href=\"[^\"]+live-server[^\"]+\.iso\"" | sed 's/href="//;s/"$//' | grep "$ARCH" | head -1)
+    if [ -z "$ISO_NAME" ]; then
+        echo "ERROR: Could not find live-server ISO for ${VERSION} ${ARCH}"
+        exit 1
+    fi
+    ISO_URL="https://releases.ubuntu.com/${VERSION}/${ISO_NAME}"
+else
+    # Use ubuntu-cloudimg-query for cloud images
+    ISO_URL=$(ubuntu-cloudimg-query "$RELEASE" "$TYPE" "$ARCH" --format "%{url}\n")
+    ISO_NAME=$(ubuntu-cloudimg-query "$RELEASE" "$TYPE" "$ARCH" --format "%{filename}\n")
+fi
+echo "ISO URL: $ISO_URL"
 
 echo "=== Downloading Ubuntu ISO (if not cached) ==="
 if [ ! -f "$HOME/$ISO_NAME" ]; then
