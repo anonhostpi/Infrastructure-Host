@@ -6,6 +6,11 @@ import os
 import yaml
 
 
+def to_base64(value):
+    """Encode string to base64."""
+    return base64.b64encode(value.encode('utf-8')).decode('ascii')
+
+
 def shell_quote(value):
     """Escape for shell single quotes."""
     return "'" + str(value).replace("'", "'\\''") + "'"

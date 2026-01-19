@@ -44,6 +44,7 @@ def create_environment(template_dir='src'):
     env.filters['ip_only'] = filters.ip_only
     env.filters['cidr_only'] = filters.cidr_only
     env.filters['to_yaml'] = filters.to_yaml
+    env.filters['to_base64'] = filters.to_base64
 
     return env
 
