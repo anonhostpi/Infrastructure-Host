@@ -13,7 +13,7 @@ DNS_SEARCH={{ network.dns_search | shell_quote }}
 STATIC_IP={{ network.ip_address | ip_only | shell_quote }}
 CIDR={{ network.ip_address | cidr_only | shell_quote }}
 
-logger "cloud-init net-setup: Starting network detection (GW=$GATEWAY, IP=$STATIC_IP/$CIDR)"
+echo "net-setup: Starting network detection (GW=$GATEWAY, IP=$STATIC_IP/$CIDR)"
 
 {% if testing is defined and testing %}
 # TESTING MODE: Detect multipass environment by looking for non-optional interfaces in netplan
@@ -41,7 +41,7 @@ PYTHON
 )
 
   if [ -n "$PROTECTED_MAC" ]; then
-    logger "cloud-init net-setup: Multipass detected - protecting interface with MAC $PROTECTED_MAC"
+    echo "net-setup: Multipass detected - protecting interface with MAC $PROTECTED_MAC"
   fi
 fi
 {% endif %}
@@ -56,11 +56,11 @@ while [ $WAIT_COUNT -lt 30 ]; do
 done
 
 if [ "$IFACES" -eq 0 ]; then
-  logger "cloud-init net-setup: WARNING - No ethernet interfaces found after 30s, falling back to DHCP"
+  echo "net-setup: WARNING - No ethernet interfaces found after 30s, falling back to DHCP"
   exit 0
 fi
 
-logger "cloud-init net-setup: Found $IFACES ethernet interface(s)"
+echo "net-setup: Found $IFACES ethernet interface(s)"
 
 # Find interface by ARP probing the gateway
 FOUND_INTERFACE=""
@@ -73,13 +73,13 @@ for iface in /sys/class/net/e*; do
   if [ -n "$PROTECTED_MAC" ]; then
     PROTECTED_MAC_LOWER=$(echo "$PROTECTED_MAC" | tr '[:upper:]' '[:lower:]')
     if [ "$NIC_MAC" = "$PROTECTED_MAC_LOWER" ]; then
-      logger "cloud-init net-setup: Skipping $NIC (protected multipass interface)"
+      echo "net-setup: Skipping $NIC (protected multipass interface)"
       continue
     fi
   fi
 {% endif %}
 
-  logger "cloud-init net-setup: Checking interface $NIC ($NIC_MAC)"
+  echo "net-setup: Checking interface $NIC ($NIC_MAC)"
 
   # Bring interface up
   ip link set "$NIC" up 2>/dev/null
@@ -94,11 +94,11 @@ for iface in /sys/class/net/e*; do
   done
 
   if [ "$CARRIER" != "1" ]; then
-    logger "cloud-init net-setup: $NIC has no carrier (cable/link down)"
+    echo "net-setup: $NIC has no carrier (cable/link down)"
     continue
   fi
 
-  logger "cloud-init net-setup: $NIC carrier up, probing gateway"
+  echo "net-setup: $NIC carrier up, probing gateway"
 
   # ARP probe the gateway - retry a few times for slow links
   # Use busybox arping (arping isn't standalone in minimal Ubuntu)
@@ -112,22 +112,22 @@ for iface in /sys/class/net/e*; do
   done
 
   if [ "$ARP_OK" != "1" ]; then
-    logger "cloud-init net-setup: $NIC cannot reach gateway $GATEWAY via ARP"
+    echo "net-setup: $NIC cannot reach gateway $GATEWAY via ARP"
     continue
   fi
 
-  logger "cloud-init net-setup: $NIC can reach gateway $GATEWAY"
+  echo "net-setup: $NIC can reach gateway $GATEWAY"
   FOUND_INTERFACE="$NIC"
   break
 done
 
 if [ -z "$FOUND_INTERFACE" ]; then
-  logger "cloud-init net-setup: WARNING - No interface can reach gateway $GATEWAY, falling back to DHCP"
+  echo "net-setup: WARNING - No interface can reach gateway $GATEWAY, falling back to DHCP"
   exit 0
 fi
 
 NIC="$FOUND_INTERFACE"
-logger "cloud-init net-setup: Configuring $NIC with $STATIC_IP/$CIDR"
+echo "net-setup: Configuring $NIC with $STATIC_IP/$CIDR"
 
 # Apply temporary IP configuration
 ip addr add "$STATIC_IP/$CIDR" dev "$NIC" 2>/dev/null
@@ -135,13 +135,13 @@ ip route add default via "$GATEWAY" dev "$NIC" 2>/dev/null
 
 # Verify connectivity by pinging the gateway
 if ! ping -c 2 -W 3 "$GATEWAY" >/dev/null 2>&1; then
-  logger "cloud-init net-setup: ERROR - Cannot ping gateway after IP config"
+  echo "net-setup: ERROR - Cannot ping gateway after IP config"
   ip route del default via "$GATEWAY" dev "$NIC" 2>/dev/null
   ip addr del "$STATIC_IP/$CIDR" dev "$NIC" 2>/dev/null
   exit 1
 fi
 
-logger "cloud-init net-setup: Gateway reachable, writing netplan config"
+echo "net-setup: Gateway reachable, writing netplan config"
 
 # Write permanent netplan configuration (with secure permissions)
 umask 077
@@ -161,8 +161,5 @@ network:
         search: [$DNS_SEARCH]
 EOF
 
-# Note: We do NOT call netplan apply here - it can disrupt other interfaces
-# The config will take effect on next boot, or can be applied manually
-logger "cloud-init net-setup: Static network configuration written to $NIC"
-logger "cloud-init net-setup: Config will apply on next boot (run 'sudo netplan apply' to apply now)"
+echo "net-setup: Static network configuration written to $NIC"
 exit 0

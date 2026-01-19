@@ -78,6 +78,23 @@ function Test-NetworkFragment {
         Output = $dns
     }
 
+    # 6.1.5: net-setup.sh execution log
+    $logExists = multipass exec $VMName -- test -f /var/lib/cloud/scripts/net-setup/net-setup.log 2>&1
+    <# (multi) return #> @{
+        Test = "6.1.5"
+        Name = "net-setup.log exists"
+        Pass = ($LASTEXITCODE -eq 0)
+        Output = "/var/lib/cloud/scripts/net-setup/net-setup.log"
+    }
+
+    $logContent = multipass exec $VMName -- cat /var/lib/cloud/scripts/net-setup/net-setup.log 2>&1
+    <# (multi) return #> @{
+        Test = "6.1.5"
+        Name = "net-setup.sh executed"
+        Pass = ($logContent -match "net-setup:")
+        Output = if ($logContent) { ($logContent | Select-Object -First 3) -join "; " } else { "(empty)" }
+    }
+
     # return $results
 }
 
