@@ -106,5 +106,26 @@ New-Module -Name Helpers.PowerShell -ScriptBlock {
         }
     }
 
-    Export-ModuleMember -Function ConvertTo-OrderedHashtable,Add-ScriptMethods,Test-Primitive
+    function Add-ScriptProperties {
+        param(
+            [psobject] $Target,
+            [System.Collections.IDictionary] $GetterSetters
+        )
+
+        $keys = $GetterSetters.Keys | ForEach-Object { $_ }
+
+        If( $keys.Count ){
+            $keys | ForEach-Object {
+                If( $GetterSetters[$_] -is [scriptblock] ){
+                    $GetterSetters[$_] = @{
+                        Getter = $GetterSetters[$_]
+                        Setter = $null
+                    }
+                }
+                $target | Add-Member -MemberType ScriptProperty -Name $_ -Value $GetterSetters[$_].Getter -SecondValue $GetterSetters[$_].Setter -Force
+            }
+        }
+    }
+
+    Export-ModuleMember -Function ConvertTo-OrderedHashtable,Add-ScriptMethods,Test-Primitive,Add-ScriptProperties
 } | Import-Module -Force
