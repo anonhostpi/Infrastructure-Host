@@ -48,18 +48,12 @@ New-Module -Name VBox-Helpers -ScriptBlock {
             [Parameter(Mandatory = $true)]
             [string]$VDIPath,
 
-            [string]$CIDATAPath,
-
             [int]$MemoryMB = 4096,
             [int]$CPUs = 1,  # Use 1 CPU to avoid kernel soft lockup in VirtualBox
             [int]$DiskSizeMB = 40960,
 
             [ValidateSet("efi", "bios")]
             [string]$Firmware = "efi",
-
-            # Network mode: "nat" for isolated testing, "bridged" for real network access
-            [ValidateSet("nat", "bridged")]
-            [string]$NetworkMode = "bridged",
 
             # Host network adapter for bridged mode (e.g., "Ethernet", "Wi-Fi")
             [string]$BridgeAdapter = "Ethernet"
