@@ -89,13 +89,12 @@ New-Module -Name SDK.Network -ScriptBlock {
         SSH = {
             param(
                 [Parameter(Mandatory = $true)]
-                [string]$KeyPath,
-                [Parameter(Mandatory = $true)]
                 [string]$Username,
                 [Parameter(Mandatory = $true)]
                 [string]$Address,
                 [int]$Port = 22,
-                [string]$Command = ""
+                [string]$Command = "",
+                [string]$KeyPath = $mod.SDK.General.KeyPath
             )
 
             $key_path = If( Test-Path $KeyPath ) {
