@@ -50,6 +50,7 @@ $RepoRoot = Split-Path -Parent $ScriptDir
 
 . "$ScriptDir\lib\Config.ps1"
 . "$ScriptDir\lib\Verifications.ps1"
+. "$ScriptDir\lib\VBoxHelpers.ps1"
 . "$RepoRoot\vm.config.ps1"
 
 # Determine actual test level
@@ -338,12 +339,9 @@ if ($failCount -gt 0) {
 
 # Cleanup
 if (-not $SkipCleanup) {
-    Write-Host "Cleaning up VMs..." -ForegroundColor Gray
-    multipass delete $RunnerVMName --purge 2>$null
-    multipass delete $VMName --purge 2>$null
-    Write-Host "Done" -ForegroundColor Gray
+    Remove-MultipassTestVMs -VMNames @($RunnerVMName, $VMName)
 } else {
-    Write-Host "VMs kept running (use -SkipCleanup:$false to clean up)" -ForegroundColor Gray
+    Write-Host "VMs kept running (use -SkipCleanup:`$false to clean up)" -ForegroundColor Gray
     Write-Host "  Builder: $VMName"
     Write-Host "  Runner:  $RunnerVMName"
 }
