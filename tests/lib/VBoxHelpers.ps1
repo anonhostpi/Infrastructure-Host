@@ -5,62 +5,6 @@ New-Module -Name VBox-Helpers -ScriptBlock {
 
     . "$PSScriptRoot\SDK.ps1"
 
-    # Create new VM for autoinstall testing
-    function New-AutoinstallVM {
-        param(
-            [Parameter(Mandatory = $true)]
-            [string]$VMName,
-
-            [Parameter(Mandatory = $true)]
-            [string]$ISOPath,
-
-            [Parameter(Mandatory = $true)]
-            [string]$VDIPath,
-
-            [int]$MemoryMB = 4096,
-            [int]$CPUs = 1,  # Use 1 CPU to avoid kernel soft lockup in VirtualBox
-            [int]$DiskSizeMB = 40960,
-
-            [ValidateSet("efi", "bios")]
-            [string]$Firmware = "efi",
-
-            # Host network adapter for bridged mode (e.g., "Ethernet", "Wi-Fi")
-            [string]$BridgeAdapter = "Ethernet"
-        )
-
-        Write-Host "  Creating VM: $VMName (firmware: $Firmware)"
-
-        # Cleanup existing VM if present
-        if ($SDK.Vbox.Exists($VMName)) {
-            $SDK.Vbox.Destroy($VMName)
-        }
-
-        # Remove existing VDI (close from media registry first, then delete file)
-        if (Test-Path $VDIPath) {
-            Try {
-                $SDK.Vbox.Delete($VDIPath)
-            } Catch {
-                Write-Warning "  Failed to delete existing VDI: $VDIPath"
-            }
-        }
-
-        $SDK.Vbox.Create(
-            $VMName,
-            $VDIPath,
-            $ISOPath,
-            $BridgeAdapter,
-            "Ubuntu_64",
-            $Firmware,
-            "SATA", $DiskSizeMB,
-            $MemoryMB, $CPUs,
-            $true,
-            $true
-        )
-
-        Write-Host "  VM created successfully"
-        return $true
-    }
-
     # Start VM
     function Start-AutoinstallVM {
         param(
@@ -338,7 +282,6 @@ New-Module -Name VBox-Helpers -ScriptBlock {
     }
 
     Export-ModuleMember -Function @(
-        "New-AutoinstallVM",
         "Start-AutoinstallVM",
         "Stop-AutoinstallVM",
         "Wait-SSHReady",

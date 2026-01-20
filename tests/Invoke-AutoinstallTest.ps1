@@ -294,15 +294,34 @@ foreach ($currentFirmware in $FirmwareList) {
     # Step: Create VirtualBox VM
     Write-Step "Creating VirtualBox VM ($currentFirmware)..."
 
-    $vmCreated = New-AutoinstallVM `
-        -VMName $vmName `
-        -ISOPath $ISOPath `
-        -CIDATAPath $CIDATAPath `
-        -VDIPath $vdiPath `
-        -MemoryMB $VBoxMemory `
-        -CPUs $VBoxCpus `
-        -DiskSizeMB $VBoxDiskSize `
-        -Firmware $currentFirmware
+    if( $SDK.Vbox.Exists($vmName) ){
+        Write-Host "  VM $vmName already exists. Removing existing VM..." -ForegroundColor Gray
+        $SDK.Vbox.Destroy($vmName)
+    }
+
+    if( Test-Path $vdiPath ){
+        Write-Host "  VDI $vdiPath already exists. Deleting existing VDI..." -ForegroundColor Gray
+        Try {
+            $SDK.Vbox.Delete($vdiPath)
+        } Catch {
+            Write-Warning "  Failed to delete existing VDI: $vdiPath"
+        }
+    }
+
+    $vmCreated = $SDK.Vbox.Create(
+        $vmName,
+        $vdiPath,
+        $ISOPath,
+        $VMNetwork,
+        "Ubuntu_64",
+        $currentFirmware,
+        "SATA",
+        $VBoxDiskSize,
+        $VBoxMemory,
+        $VBoxCpus,
+        $true,  # Optimize
+        $true   # Enable Nested Virtualization
+    )
 
     if (-not $vmCreated) {
         Write-Error "Failed to create VirtualBox VM"
