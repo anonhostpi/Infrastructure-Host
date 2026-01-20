@@ -72,15 +72,27 @@ New-Module -Name VBox-Helpers -ScriptBlock {
             throw "VBoxManage not found at: $vboxmanage"
         }
 
-        if ($SuppressError) {
-            $result = & $vboxmanage @Arguments 2>$null
-        } else {
-            $result = & $vboxmanage @Arguments
+        # VBoxManage outputs progress (0%...10%...) to stderr which triggers
+        # PowerShell errors when ErrorActionPreference is set to Stop
+        # Temporarily set to Continue to prevent this
+        $savedEAP = $ErrorActionPreference
+        $ErrorActionPreference = 'Continue'
+
+        try {
+            $result = & $vboxmanage @Arguments 2>&1
+            $exitCode = $LASTEXITCODE
+        } finally {
+            $ErrorActionPreference = $savedEAP
+        }
+
+        # Filter out progress lines from output
+        $filteredResult = $result | Where-Object {
+            $_ -notmatch '^\d+%\.{3}'
         }
 
         return @{
-            Output = $result
-            ExitCode = $LASTEXITCODE
+            Output = $filteredResult
+            ExitCode = $exitCode
         }
     }
 
