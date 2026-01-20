@@ -5,16 +5,6 @@ New-Module -Name VBox-Helpers -ScriptBlock {
 
     . "$PSScriptRoot\SDK.ps1"
 
-    # Run VBoxManage command and return output
-    function Invoke-VBoxManage {
-        param(
-            [Parameter(Mandatory = $true)]
-            [string[]]$Arguments
-        )
-
-        return $SDK.Vbox.Invoke($Arguments)
-    }
-
     # Check if VM exists
     function Test-VMExists {
         param([string]$VMName)
@@ -251,9 +241,7 @@ New-Module -Name VBox-Helpers -ScriptBlock {
             # VirtualBox sometimes gets stuck on "Loading essential drivers..."
             # Pausing and resuming kicks it out of the stuck state
             Write-Host "  VM still running - trying pause/resume workaround..." -ForegroundColor Yellow
-            Invoke-VBoxManage -Arguments @("controlvm", $VMName, "pause") | Out-Null
-            Start-Sleep -Seconds 15
-            Invoke-VBoxManage -Arguments @("controlvm", $VMName, "resume") | Out-Null
+            $SDK.Vbox.Bump($VMName) | Out-Null
             Write-Host "  Resumed VM, waiting additional 10 minutes..."
 
             # Wait additional 10 minutes after pause/resume
@@ -284,7 +272,7 @@ New-Module -Name VBox-Helpers -ScriptBlock {
         Remove-DVDISO -VMName $VMName
 
         Write-Host "  Starting VM to boot installed system ($StartType)..."
-        $result = Invoke-VBoxManage -Arguments @("startvm", $VMName, "--type", $StartType)
+        $result = $SDK.Vbox.Start($VMName, $StartType)
         if ($result.ExitCode -ne 0) {
             Write-Host "  WARNING: Failed to start VM after installation" -ForegroundColor Yellow
             return $false
@@ -376,7 +364,6 @@ New-Module -Name VBox-Helpers -ScriptBlock {
     }
 
     Export-ModuleMember -Function @(
-        "Invoke-VBoxManage",
         "Test-VMExists",
         "Test-VMRunning",
         "New-AutoinstallVM",
