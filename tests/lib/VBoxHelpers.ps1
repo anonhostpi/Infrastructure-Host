@@ -16,59 +16,18 @@ New-Module -Name VBox-Helpers -ScriptBlock {
         )
 
         Write-Host "  Waiting for autoinstall to complete (timeout: ${TimeoutMinutes}m)..."
-        Write-Host "  (VM will stop/reboot when installation finishes)"
 
-        $timeoutSeconds = $TimeoutMinutes * 60
-        $elapsed = 0
-        $checkInterval = 30
-        $installComplete = $false
-
-        # Phase 1: Wait for VM to stop (installation complete triggers shutdown/reboot)
-        while ($elapsed -lt $timeoutSeconds) {
-            if (-not ($SDK.Vbox.Running($VMName))) {
-                # VM stopped - installation is complete
-                Write-Host "  VM stopped - installation complete"
-                $installComplete = $true
-                break
-            }
-
-            Start-Sleep -Seconds $checkInterval
-            $elapsed += $checkInterval
-            $mins = [math]::Floor($elapsed / 60)
-            $secs = $elapsed % 60
-            Write-Host "  Installing... (${mins}m ${secs}s / ${TimeoutMinutes}m)"
-        }
-
-        if (-not $installComplete) {
-            # VM still running after timeout - try pause/resume trick
-            # VirtualBox sometimes gets stuck on "Loading essential drivers..."
-            # Pausing and resuming kicks it out of the stuck state
+        $timedOut = $SDK.Vbox.UntilShutdown($VMName, $TimeoutMinutes * 60)
+        if ($timedOut) {
             Write-Host "  VM still running - trying pause/resume workaround..." -ForegroundColor Yellow
             $SDK.Vbox.Bump($VMName) | Out-Null
-            Write-Host "  Resumed VM, waiting additional 10 minutes..."
-
-            # Wait additional 10 minutes after pause/resume
-            $additionalTimeout = 600
-            $additionalElapsed = 0
-            while ($additionalElapsed -lt $additionalTimeout) {
-                if (-not ($SDK.Vbox.Running($VMName))) {
-                    Write-Host "  VM stopped - installation complete (after pause/resume)"
-                    $installComplete = $true
-                    break
-                }
-
-                Start-Sleep -Seconds $checkInterval
-                $additionalElapsed += $checkInterval
-                $mins = [math]::Floor($additionalElapsed / 60)
-                $secs = $additionalElapsed % 60
-                Write-Host "  Installing... (${mins}m ${secs}s / 10m after resume)"
-            }
-
-            if (-not $installComplete) {
+            $timedOut = $SDK.Vbox.UntilShutdown($VMName, 600)
+            if ($timedOut) {
                 Write-Host "  WARNING: Installation timeout - VM still running after pause/resume" -ForegroundColor Yellow
                 return $false
             }
         }
+        Write-Host "  VM stopped - installation complete"
 
         # Phase 2: Eject ISO and start VM to boot from disk
         Write-Host "  Ejecting ISO to boot from installed disk..."
