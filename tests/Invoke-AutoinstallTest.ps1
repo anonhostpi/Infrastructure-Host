@@ -354,9 +354,40 @@ foreach ($currentFirmware in $FirmwareList) {
 
     # Wait for installation to complete (VM stops, then we eject ISO and restart)
     # Full autoinstall with package installation can take 25-30 minutes
-    $installComplete = Wait-InstallComplete -VMName $vmName -TimeoutMinutes 35 -StartType $vmType
-    if (-not $installComplete) {
+    $timeOut = $SDK.Vbox.UntilShutdown($vmName, 35 * 60)
+    $installTimedOut = $false
+    if ($timeOut) {
+        Write-Host "  VM still running - trying pause/resume workaround..." -ForegroundColor Yellow
+        $SDK.Vbox.Bump($vmName) | Out-Null
+        $timeOut = $SDK.Vbox.UntilShutdown($vmName, 10 * 60)
+        if ($timeOut) {
+            Write-Error "Installation timeout - VM still running after pause/resume"
+            $installTimedOut = $true
+        }
+    }
+    if ($installTimedOut) {
         Write-Error "Installation did not complete within timeout"
+        exit 1
+    }
+    Try {
+        Write-Host "  Ejecting ISO to boot from installed disk..."
+        $SDK.Vbox.Eject($vmName) | Out-Null
+    } Catch {
+        Write-Warning "  Failed to eject ISO from VM: $vmName"
+    }
+
+    Write-Host "  Starting VM to boot installed system ($vmType)..."
+    $result = $SDK.Vbox.Start($vmName, $vmType)
+    if ($result.ExitCode -ne 0) {
+        Write-Error "Failed to start VM after installation"
+        exit 1
+    }
+
+    Write-Host "  Waiting for post-install boot (30s)..."
+    Start-Sleep -Seconds 30
+    $booted = $SDK.Vbox.Running($vmName)
+    if (-not $booted) {
+        Write-Error "VM is not running after installation reboot"
         exit 1
     }
     Write-Host "  Done" -ForegroundColor Green
