@@ -3,6 +3,8 @@
 
 New-Module -Name VBox-Helpers -ScriptBlock {
 
+    . "$PSScriptRoot\SDK.ps1"
+
     # Get VBoxManage path from config or default
     function Get-VBoxManagePath {
         if ($script:VBoxManage) { return $script:VBoxManage }
@@ -63,53 +65,24 @@ New-Module -Name VBox-Helpers -ScriptBlock {
     function Invoke-VBoxManage {
         param(
             [Parameter(Mandatory = $true)]
-            [string[]]$Arguments,
-            [switch]$SuppressError
+            [string[]]$Arguments
         )
 
-        $vboxmanage = Get-VBoxManagePath
-        if (-not (Test-Path $vboxmanage)) {
-            throw "VBoxManage not found at: $vboxmanage"
-        }
-
-        # VBoxManage outputs progress (0%...10%...) to stderr which triggers
-        # PowerShell errors when ErrorActionPreference is set to Stop
-        # Temporarily set to Continue to prevent this
-        $savedEAP = $ErrorActionPreference
-        $ErrorActionPreference = 'Continue'
-
-        try {
-            $result = & $vboxmanage @Arguments 2>&1
-            $exitCode = $LASTEXITCODE
-        } finally {
-            $ErrorActionPreference = $savedEAP
-        }
-
-        # Filter out progress lines from output
-        $filteredResult = $result | Where-Object {
-            $_ -notmatch '^\d+%\.{3}'
-        }
-
-        return @{
-            Output = $filteredResult
-            ExitCode = $exitCode
-        }
+        return $SDK.Vbox.Invoke($Arguments)
     }
 
     # Check if VM exists
     function Test-VMExists {
         param([string]$VMName)
 
-        $result = Invoke-VBoxManage -Arguments @("list", "vms") -SuppressError
-        return ($result.Output | Select-String -Pattern "^`"$VMName`"" -Quiet)
+        return $SDK.Vbox.Exists($VMName)
     }
 
     # Check if VM is running
     function Test-VMRunning {
         param([string]$VMName)
 
-        $result = Invoke-VBoxManage -Arguments @("list", "runningvms") -SuppressError
-        return ($result.Output | Select-String -Pattern "^`"$VMName`"" -Quiet)
+        return $SDK.Vbox.Running($VMName)
     }
 
     # Create new VM for autoinstall testing
@@ -150,61 +123,25 @@ New-Module -Name VBox-Helpers -ScriptBlock {
 
         # Remove existing VDI (close from media registry first, then delete file)
         if (Test-Path $VDIPath) {
-            # Unregister from VirtualBox media registry (ignore errors if not registered)
-            Invoke-VBoxManage -Arguments @("closemedium", "disk", $VDIPath, "--delete") -SuppressError | Out-Null
-            # Delete file if closemedium didn't (e.g., if it wasn't registered)
-            if (Test-Path $VDIPath) {
-                Remove-Item $VDIPath -Force -ErrorAction SilentlyContinue
+            Try {
+                $SDK.Vbox.Delete($VDIPath)
+            } Catch {
+                Write-Warning "  Failed to delete existing VDI: $VDIPath"
             }
         }
 
-        # Create VM with specified firmware (efi or bios)
-        Invoke-VBoxManage -Arguments @("createvm", "--name", $VMName, "--ostype", "Ubuntu_64", "--register") | Out-Null
-
-        # Configure network based on mode
-        if ($NetworkMode -eq "bridged") {
-            # Translate Windows adapter name to VirtualBox adapter name
-            $vboxAdapter = Get-VBoxBridgeAdapter -WindowsAdapterName $BridgeAdapter
-            if (-not $vboxAdapter) {
-                Write-Host "  ERROR: Could not find VirtualBox bridge adapter for '$BridgeAdapter'" -ForegroundColor Red
-                return $false
-            }
-            Write-Host "  Network: bridged to $vboxAdapter (from $BridgeAdapter)"
-            Invoke-VBoxManage -Arguments @("modifyvm", $VMName, "--memory", $MemoryMB, "--cpus", $CPUs, "--nic1", "bridged", "--bridgeadapter1", $vboxAdapter, "--firmware", $Firmware) | Out-Null
-        } else {
-            Write-Host "  Network: NAT"
-            Invoke-VBoxManage -Arguments @("modifyvm", $VMName, "--memory", $MemoryMB, "--cpus", $CPUs, "--nic1", "nat", "--firmware", $Firmware) | Out-Null
-        }
-
-        # Additional VM settings for stability (avoid kernel soft lockups)
-        Invoke-VBoxManage -Arguments @("modifyvm", $VMName, "--pae", "on", "--nestedpaging", "on", "--hwvirtex", "on", "--largepages", "on") | Out-Null
-        Invoke-VBoxManage -Arguments @("modifyvm", $VMName, "--graphicscontroller", "vmsvga", "--vram", "16") | Out-Null
-
-        # Add storage controller
-        Invoke-VBoxManage -Arguments @("storagectl", $VMName, "--name", "SATA", "--add", "sata", "--controller", "IntelAhci") | Out-Null
-
-        # Create and attach disk
-        Invoke-VBoxManage -Arguments @("createmedium", "disk", "--filename", $VDIPath, "--size", $DiskSizeMB, "--format", "VDI") | Out-Null
-        Invoke-VBoxManage -Arguments @("storageattach", $VMName, "--storagectl", "SATA", "--port", "0", "--device", "0", "--type", "hdd", "--medium", $VDIPath) | Out-Null
-
-        # Attach ISO
-        Invoke-VBoxManage -Arguments @("storageattach", $VMName, "--storagectl", "SATA", "--port", "1", "--device", "0", "--type", "dvddrive", "--medium", $ISOPath) | Out-Null
-
-        # Attach CIDATA for cloud-init nocloud datasource (Ubuntu 24.04 requires this)
-        if ($CIDATAPath -and (Test-Path $CIDATAPath)) {
-            # Use VDI format for SATA attachment, ISO for DVD, or floppy for raw img
-            if ($CIDATAPath -match '\.vdi$') {
-                Write-Host "  Attaching CIDATA VDI for cloud-init: $CIDATAPath"
-                Invoke-VBoxManage -Arguments @("storageattach", $VMName, "--storagectl", "SATA", "--port", "2", "--device", "0", "--type", "hdd", "--medium", $CIDATAPath) | Out-Null
-            } elseif ($CIDATAPath -match '\.iso$') {
-                Write-Host "  Attaching CIDATA ISO for cloud-init: $CIDATAPath"
-                Invoke-VBoxManage -Arguments @("storageattach", $VMName, "--storagectl", "SATA", "--port", "2", "--device", "0", "--type", "dvddrive", "--medium", $CIDATAPath) | Out-Null
-            } else {
-                Write-Host "  Attaching CIDATA floppy for cloud-init: $CIDATAPath"
-                Invoke-VBoxManage -Arguments @("storagectl", $VMName, "--name", "Floppy", "--add", "floppy") | Out-Null
-                Invoke-VBoxManage -Arguments @("storageattach", $VMName, "--storagectl", "Floppy", "--port", "0", "--device", "0", "--type", "fdd", "--medium", $CIDATAPath) | Out-Null
-            }
-        }
+        $SDK.Vbox.Create(
+            $VMName,
+            $VDIPath,
+            $ISOPath,
+            $BridgeAdapter,
+            "Ubuntu_64",
+            $Firmware,
+            "SATA", $DiskSizeMB,
+            $MemoryMB, $CPUs,
+            $true,
+            $true
+        )
 
         Write-Host "  VM created successfully"
         return $true
@@ -214,29 +151,12 @@ New-Module -Name VBox-Helpers -ScriptBlock {
     function Remove-AutoinstallVM {
         param(
             [Parameter(Mandatory = $true)]
-            [string]$VMName,
-            [string]$VDIPath
+            [string]$VMName
         )
 
         Write-Host "  Removing VM: $VMName"
 
-        # Stop if running
-        if (Test-VMRunning -VMName $VMName) {
-            Invoke-VBoxManage -Arguments @("controlvm", $VMName, "poweroff") -SuppressError | Out-Null
-            Start-Sleep -Seconds 3
-        }
-
-        # Unregister and delete
-        if (Test-VMExists -VMName $VMName) {
-            Invoke-VBoxManage -Arguments @("unregistervm", $VMName, "--delete") -SuppressError | Out-Null
-        }
-
-        # Remove VDI if specified and exists
-        if ($VDIPath -and (Test-Path $VDIPath)) {
-            Remove-Item $VDIPath -Force -ErrorAction SilentlyContinue
-        }
-
-        return $true
+        $SDK.Vbox.Destroy($VMName)
     }
 
     # Start VM
@@ -249,8 +169,7 @@ New-Module -Name VBox-Helpers -ScriptBlock {
         )
 
         Write-Host "  Starting VM: $VMName ($Type)"
-        $result = Invoke-VBoxManage -Arguments @("startvm", $VMName, "--type", $Type)
-        return ($result.ExitCode -eq 0)
+        return $SDK.Vbox.Start($VMName, $Type)
     }
 
     # Stop VM
@@ -261,27 +180,18 @@ New-Module -Name VBox-Helpers -ScriptBlock {
             [switch]$Force
         )
 
-        if (-not (Test-VMRunning -VMName $VMName)) {
-            return $true
-        }
-
         if ($Force) {
             Write-Host "  Force stopping VM: $VMName"
-            Invoke-VBoxManage -Arguments @("controlvm", $VMName, "poweroff") -SuppressError | Out-Null
+            $SDK.Vbox.Shutdown($VMName, $true) | Out-Null
         } else {
             Write-Host "  Gracefully stopping VM: $VMName"
-            Invoke-VBoxManage -Arguments @("controlvm", $VMName, "acpipowerbutton") -SuppressError | Out-Null
+            $SDK.Vbox.Shutdown($VMName, $false) | Out-Null
         }
 
         # Wait for VM to stop
         $timeout = 60
-        $elapsed = 0
-        while ((Test-VMRunning -VMName $VMName) -and ($elapsed -lt $timeout)) {
-            Start-Sleep -Seconds 2
-            $elapsed += 2
-        }
 
-        return (-not (Test-VMRunning -VMName $VMName))
+        return (-not ($SDK.Vbox.UntilShutdown($VMName, $timeout)))
     }
 
     # Add SSH port forwarding
@@ -525,8 +435,13 @@ New-Module -Name VBox-Helpers -ScriptBlock {
         )
 
         Write-Host "  Ejecting ISO from VM"
-        $result = Invoke-VBoxManage -Arguments @("storageattach", $VMName, "--storagectl", "SATA", "--port", "1", "--device", "0", "--type", "dvddrive", "--medium", "emptydrive")
-        return ($result.ExitCode -eq 0)
+        Try {
+            $SDK.Vbox.Eject($VMName) | Out-Null
+            return $true
+        } Catch {
+            Write-Warning "  Failed to eject ISO from VM: $VMName"
+            return $false
+        }
     }
 
     Export-ModuleMember -Function @(
