@@ -62,9 +62,11 @@ $ISOPath = Join-Path $RepoRoot "output\ubuntu-autoinstall.iso"
 $CIDATAPath = Join-Path $RepoRoot "output\cidata.iso"
 $VDIPath = Join-Path $RepoRoot "output\ubuntu-autoinstall-test.vdi"
 
-# SSH settings
-$SSHPort = 2222
-$SSHUser = (Get-TestConfig).identity.username
+# SSH settings - use static IP from config for bridged networking
+$testConfig = $SDK.Settings
+$SSHHost = ($testConfig.network.ip_address -split '/')[0]  # Extract IP without CIDR
+$SSHPort = 22  # Direct connection to VM (bridged mode, not NAT port forwarding)
+$SSHUser = $testConfig.identity.username
 
 # Set up logging
 $LogDir = Join-Path $RepoRoot "output\logs"

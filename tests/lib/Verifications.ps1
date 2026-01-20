@@ -144,7 +144,7 @@ function Test-UsersFragment {
     param([string]$VMName)
 
     # $results = @()
-    $config = Get-TestConfig
+    $config = $SDK.Settings
     $username = $config.identity.username
 
     # 6.3.1: User Exists
@@ -273,7 +273,7 @@ function Test-SSHFragment {
     }
 
     # 6.4.5: Verify SSH key authentication works (if configured)
-    $testConfig = Get-TestConfig
+    $testConfig = $SDK.Settings
     $sshKeys = $testConfig.identity.ssh_authorized_keys
     $sshUser = $testConfig.identity.username
 
@@ -389,7 +389,7 @@ function Test-MSMTPFragment {
     param([string]$VMName)
 
     # $results = @()
-    $config = Get-TestConfig
+    $config = $SDK.Settings
     $smtp = $config.smtp
 
     # 6.7.1: msmtp installed
@@ -1157,7 +1157,7 @@ function Test-CockpitFragment {
 
     # 6.11.7: Test Cockpit via SSH tunnel (if SSH keys configured)
     # Cockpit is localhost-only by design, accessed via SSH local port forwarding
-    $testConfig = Get-TestConfig
+    $testConfig = $SDK.Settings
     $sshKeys = $testConfig.identity.ssh_authorized_keys
     $sshUser = $testConfig.identity.username
 
@@ -1233,7 +1233,7 @@ function Test-OpenCodeFragment {
     param([string]$VMName)
 
     # $results = @()
-    $testConfig = Get-TestConfig
+    $testConfig = $SDK.Settings
     $username = $testConfig.identity.username
     $smtp = $testConfig.smtp
 
@@ -1422,7 +1422,7 @@ function Test-ClaudeCodeFragment {
     param([string]$VMName)
 
     # $results = @()
-    $testConfig = Get-TestConfig
+    $testConfig = $SDK.Settings
     $username = $testConfig.identity.username
 
     # 6.12.1: Claude Code CLI installed
@@ -1537,7 +1537,7 @@ function Test-CopilotCLIFragment {
     param([string]$VMName)
 
     # $results = @()
-    $testConfig = Get-TestConfig
+    $testConfig = $SDK.Settings
     $username = $testConfig.identity.username
 
     # 6.13.1: Copilot CLI installed (npm package: @github/copilot)
@@ -1671,7 +1671,7 @@ function Test-PackageManagerUpdates {
     param([string]$VMName)
 
     # $results = @()
-    $testConfig = Get-TestConfig
+    $testConfig = $SDK.Settings
 
     # Check if testing mode is enabled
     $testingMode = multipass exec $VMName -- bash -c 'source /usr/local/lib/apt-notify/common.sh && echo $TESTING_MODE' 2>&1
@@ -1839,7 +1839,7 @@ function Test-UpdateSummary {
     param([string]$VMName)
 
     # $results = @()
-    $testConfig = Get-TestConfig
+    $testConfig = $SDK.Settings
 
     # 6.8.25: Test apt-notify-flush with populated queue and validate report generation
     # Uses separate simple commands to avoid escaping issues
