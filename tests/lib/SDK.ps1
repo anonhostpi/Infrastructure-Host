@@ -75,6 +75,7 @@ New-Module -Name SDK -ScriptBlock {
     & "$PSScriptRoot/General.ps1" -SDK $SDK
     & "$PSScriptRoot/Vbox.ps1" -SDK $SDK
     & "$PSScriptRoot/Multipass.ps1" -SDK $SDK
+    & "$PSScriptRoot/Builder.ps1" -SDK $SDK
 
     Export-ModuleMember -Variable SDK
 } -ArgumentList ([bool] $Globalize) | Import-Module -Force
