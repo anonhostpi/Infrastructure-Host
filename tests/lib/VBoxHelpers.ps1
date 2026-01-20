@@ -5,13 +5,6 @@ New-Module -Name VBox-Helpers -ScriptBlock {
 
     . "$PSScriptRoot\SDK.ps1"
 
-    # Get VBoxManage path from config or default
-    function Get-VBoxManagePath {
-        if ($script:VBoxManage) { return $script:VBoxManage }
-        if ($global:VBoxManage) { return $global:VBoxManage }
-        return "C:\Program Files\Oracle\VirtualBox\VBoxManage.exe"
-    }
-
     # Run VBoxManage command and return output
     function Invoke-VBoxManage {
         param(
@@ -402,7 +395,6 @@ New-Module -Name VBox-Helpers -ScriptBlock {
     }
 
     Export-ModuleMember -Function @(
-        "Get-VBoxManagePath",
         "Invoke-VBoxManage",
         "Test-VMExists",
         "Test-VMRunning",
