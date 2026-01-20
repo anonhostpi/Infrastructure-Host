@@ -1,0 +1,27 @@
+# VM Test Configuration
+# Copy to vm.config.yaml and customize for your environment
+# THIS FILE IS TRACKED IN GIT - vm.config.yaml IS NOT
+#
+# Find available networks: multipass networks
+
+# ISO Builder VM (for building autoinstall ISO)
+builder:
+  name: "autoinstall-builder"
+  cpus: 2
+  memory: "4G"
+  disk: "40G"
+
+# Cloud-init Runner VM (tests generated cloud-init.yaml)
+runner:
+  name: "cloud-init-runner"
+  cpus: 2
+  memory: "4G"
+  disk: "20G"
+  network: "Ethernet 1"  # Must match vm.network for network tests
+
+# VirtualBox VM settings (for autoinstall ISO testing)
+vbox:
+  name: "ubuntu-autoinstall-test"
+  memory: 4096
+  cpus: 2
+  disk_size: 40960  # MB (40GB for ZFS)
