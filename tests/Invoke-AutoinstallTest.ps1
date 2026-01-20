@@ -56,7 +56,7 @@ $RepoRoot = Split-Path -Parent $ScriptDir
 . "$ScriptDir\lib\Config.ps1"
 . "$ScriptDir\lib\VBoxHelpers.ps1"
 . "$RepoRoot\vm.config.ps1"
-
+. "$ScriptDir\SDK.ps1"
 # Paths
 $ISOPath = Join-Path $RepoRoot "output\ubuntu-autoinstall.iso"
 $CIDATAPath = Join-Path $RepoRoot "output\cidata.iso"
@@ -463,7 +463,7 @@ foreach ($currentFirmware in $FirmwareList) {
     # Cleanup VM for this firmware (unless SkipCleanup)
     if (-not $SkipCleanup) {
         Write-Host "  Cleaning up $vmName..." -ForegroundColor Gray
-        Remove-AutoinstallVM -VMName $vmName -VDIPath $vdiPath
+        $SDK.Vbox.Destroy($vmName)
     }
 }
 

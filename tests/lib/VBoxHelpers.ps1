@@ -32,7 +32,7 @@ New-Module -Name VBox-Helpers -ScriptBlock {
 
         # Cleanup existing VM if present
         if ($SDK.Vbox.Exists($VMName)) {
-            Remove-AutoinstallVM -VMName $VMName
+            $SDK.Vbox.Destroy($VMName)
         }
 
         # Remove existing VDI (close from media registry first, then delete file)
@@ -59,18 +59,6 @@ New-Module -Name VBox-Helpers -ScriptBlock {
 
         Write-Host "  VM created successfully"
         return $true
-    }
-
-    # Remove VM and associated files
-    function Remove-AutoinstallVM {
-        param(
-            [Parameter(Mandatory = $true)]
-            [string]$VMName
-        )
-
-        Write-Host "  Removing VM: $VMName"
-
-        $SDK.Vbox.Destroy($VMName)
     }
 
     # Start VM
@@ -351,7 +339,6 @@ New-Module -Name VBox-Helpers -ScriptBlock {
 
     Export-ModuleMember -Function @(
         "New-AutoinstallVM",
-        "Remove-AutoinstallVM",
         "Start-AutoinstallVM",
         "Stop-AutoinstallVM",
         "Wait-SSHReady",
