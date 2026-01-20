@@ -134,11 +134,20 @@ New-Module -Name SDK.Vbox -ScriptBlock {
                 [int] $Size
             )
 
-            $this.Invoke(
+            $result = $this.Invoke(
                 "createmedium", "disk",
                 "--filename", $MediumPath,
                 "--size", $Size
-            ) | Out-Null
+            )
+            if( $result.ExitCode -ne 0 ){
+                $msg = @(
+                    "Failed to create disk medium at '$MediumPath'.",
+                    "VBoxManage output:",
+                    ""
+                    $result.Output
+                ) -join "`n"
+                throw $msg
+            }
 
             $existing = $this.Drives($VMName) | Where-Object {
                 $_.Controller -eq $ControllerName
@@ -154,14 +163,17 @@ New-Module -Name SDK.Vbox -ScriptBlock {
                 }
             }
 
-            $this.Attach(
+            $attached = $this.Attach(
                 $VMName,
                 $ControllerName,
                 $MediumPath,
                 "hdd",
                 $port,
                 $device
-            ) | Out-Null
+            )
+            if (-not $attached) {
+                throw "Failed to attach disk medium at '$MediumPath' to VM: $VMName"
+            }
         }
         Delete = {
             param(
@@ -421,60 +433,102 @@ New-Module -Name SDK.Vbox -ScriptBlock {
                 [bool] $Optimize = $true,
                 [bool] $Hypervisor = $true
             )
-            $this.Invoke(
-                "createvm",
-                "--name", $VMName,
-                "--ostype", $OSType,
-                "--register"
-            ) | Out-Null
+            try {
+                $result = $this.Invoke(
+                    "createvm",
+                    "--name", $VMName,
+                    "--ostype", $OSType,
+                    "--register"
+                )
 
-            $this.Configure($VMName, @{
-                "memory" = $RAM
-                "cpus" = $CPU
-                "firmware" = $Firmware
-            }) | Out-Null
-
-            $adapter = $this.GetGuestAdapter($AdapterName)
-            if( $adapter ){
-                $this.Configure($VMName, @{
-                    "nic1" = "bridged"
-                    "bridgeadapter1" = $adapter
-                }) | Out-Null
-            } else {
-                If( -not [string]::IsNullOrWhiteSpace($AdapterName) ){
-                    Write-Warning "Could not find adapter '$AdapterName' for VM '$VMName'. Using NAT instead."
+                if( $result.ExitCode -ne 0 ){
+                    $msg = @(
+                        "Failed to create VM '$VMName'.",
+                        "VBoxManage output:",
+                        ""
+                        $result.Output
+                    ) -join "`n"
+                    throw $msg
                 }
-                $this.Configure($VMName, @{
-                    "nic1" = "nat"
-                }) | Out-Null
-            }
 
-            $this.Invoke(
-                "storagectl", $VMName,
-                "--name", $ControllerName,
-                "--add", "sata",
-                "--controller", "IntelAhci"
-            ) | Out-Null
+                $configured = $this.Configure($VMName, @{
+                    "memory" = $RAM
+                    "cpus" = $CPU
+                    "firmware" = $Firmware
+                })
+                if( -not $configured ){
+                    throw "Failed to configure VM '$VMName' after creation."
+                }
 
-            $this.Give(
-                $VMName,
-                $ControllerName,
-                $MediumPath,
-                $Size
-            )
+                $adapter = $this.GetGuestAdapter($AdapterName)
+                if( $adapter ){
+                    $configured = $this.Configure($VMName, @{
+                        "nic1" = "bridged"
+                        "bridgeadapter1" = $adapter
+                    })
+                    if( -not $configured ){
+                        throw "Failed to configure network adapter for VM '$VMName'."
+                    }
+                } else {
+                    If( -not [string]::IsNullOrWhiteSpace($AdapterName) ){
+                        Write-Warning "Could not find adapter '$AdapterName' for VM '$VMName'. Using NAT instead."
+                    }
+                    $configured = $this.Configure($VMName, @{
+                        "nic1" = "nat"
+                    })
+                    if( -not $configured ){
+                        throw "Failed to configure network adapter for VM '$VMName'."
+                    }
+                }
 
-            if ($Optimize) {
-                $this.Optimize($VMName) | Out-Null
-            }
-            if ($Hypervisor) {
-                $this.Hypervisor($VMName) | Out-Null
-            }
+                $result = $this.Invoke(
+                    "storagectl", $VMName,
+                    "--name", $ControllerName,
+                    "--add", "sata",
+                    "--controller", "IntelAhci"
+                )
+                if( $result.ExitCode -ne 0 ){
+                    $msg = @(
+                        "Failed to create storage controller '$ControllerName' for VM '$VMName'.",
+                        "VBoxManage output:",
+                        ""
+                        $result.Output
+                    ) -join "`n"
+                    throw $msg
+                }
 
-            if( Test-Path $DVDPath ){
-                $this.Insert(
+                $this.Give(
                     $VMName,
-                    $DVDPath
-                ) | Out-Null
+                    $ControllerName,
+                    $MediumPath,
+                    $Size
+                )
+
+                if ($Optimize) {
+                    $configured = $this.Optimize($VMName) | Out-Null
+                    if (-not $configured) {
+                        throw "Failed to optimize VM '$VMName' after creation."
+                    }
+                }
+                if ($Hypervisor) {
+                    $configured = $this.Hypervisor($VMName) | Out-Null
+                    if (-not $configured) {
+                        throw "Failed to enable nested virtualization for VM '$VMName' after creation."
+                    }
+                }
+
+                if( Test-Path $DVDPath ){
+                    $inserted = $this.Insert(
+                        $VMName,
+                        $DVDPath
+                    )
+                    if( -not $inserted ){
+                        throw "Failed to insert DVD '$DVDPath' into VM '$VMName'."
+                    }
+                }
+            } catch {
+                Write-Error "Error creating VM '$VMName': $_"
+                return $false
             }
         }
     }
