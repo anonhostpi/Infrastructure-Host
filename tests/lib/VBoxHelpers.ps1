@@ -273,9 +273,36 @@ New-Module -Name VBox-Helpers -ScriptBlock {
         }
 
         if (-not $installComplete) {
-            # VM still running after timeout - installation may be stuck
-            Write-Host "  WARNING: Installation timeout - VM still running" -ForegroundColor Yellow
-            return $false
+            # VM still running after timeout - try pause/resume trick
+            # VirtualBox sometimes gets stuck on "Loading essential drivers..."
+            # Pausing and resuming kicks it out of the stuck state
+            Write-Host "  VM still running - trying pause/resume workaround..." -ForegroundColor Yellow
+            Invoke-VBoxManage -Arguments @("controlvm", $VMName, "pause") | Out-Null
+            Start-Sleep -Seconds 15
+            Invoke-VBoxManage -Arguments @("controlvm", $VMName, "resume") | Out-Null
+            Write-Host "  Resumed VM, waiting additional 10 minutes..."
+
+            # Wait additional 10 minutes after pause/resume
+            $additionalTimeout = 600
+            $additionalElapsed = 0
+            while ($additionalElapsed -lt $additionalTimeout) {
+                if (-not (Test-VMRunning -VMName $VMName)) {
+                    Write-Host "  VM stopped - installation complete (after pause/resume)"
+                    $installComplete = $true
+                    break
+                }
+
+                Start-Sleep -Seconds $checkInterval
+                $additionalElapsed += $checkInterval
+                $mins = [math]::Floor($additionalElapsed / 60)
+                $secs = $additionalElapsed % 60
+                Write-Host "  Installing... (${mins}m ${secs}s / 10m after resume)"
+            }
+
+            if (-not $installComplete) {
+                Write-Host "  WARNING: Installation timeout - VM still running after pause/resume" -ForegroundColor Yellow
+                return $false
+            }
         }
 
         # Phase 2: Eject ISO and start VM to boot from disk
