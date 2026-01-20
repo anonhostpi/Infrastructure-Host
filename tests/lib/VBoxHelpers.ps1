@@ -131,7 +131,14 @@ New-Module -Name VBox-Helpers -ScriptBlock {
             [int]$DiskSizeMB = 40960,
 
             [ValidateSet("efi", "bios")]
-            [string]$Firmware = "efi"
+            [string]$Firmware = "efi",
+
+            # Network mode: "nat" for isolated testing, "bridged" for real network access
+            [ValidateSet("nat", "bridged")]
+            [string]$NetworkMode = "bridged",
+
+            # Host network adapter for bridged mode (e.g., "Ethernet", "Wi-Fi")
+            [string]$BridgeAdapter = "Ethernet"
         )
 
         Write-Host "  Creating VM: $VMName (firmware: $Firmware)"
@@ -153,7 +160,21 @@ New-Module -Name VBox-Helpers -ScriptBlock {
 
         # Create VM with specified firmware (efi or bios)
         Invoke-VBoxManage -Arguments @("createvm", "--name", $VMName, "--ostype", "Ubuntu_64", "--register") | Out-Null
-        Invoke-VBoxManage -Arguments @("modifyvm", $VMName, "--memory", $MemoryMB, "--cpus", $CPUs, "--nic1", "nat", "--firmware", $Firmware) | Out-Null
+
+        # Configure network based on mode
+        if ($NetworkMode -eq "bridged") {
+            # Translate Windows adapter name to VirtualBox adapter name
+            $vboxAdapter = Get-VBoxBridgeAdapter -WindowsAdapterName $BridgeAdapter
+            if (-not $vboxAdapter) {
+                Write-Host "  ERROR: Could not find VirtualBox bridge adapter for '$BridgeAdapter'" -ForegroundColor Red
+                return $false
+            }
+            Write-Host "  Network: bridged to $vboxAdapter (from $BridgeAdapter)"
+            Invoke-VBoxManage -Arguments @("modifyvm", $VMName, "--memory", $MemoryMB, "--cpus", $CPUs, "--nic1", "bridged", "--bridgeadapter1", $vboxAdapter, "--firmware", $Firmware) | Out-Null
+        } else {
+            Write-Host "  Network: NAT"
+            Invoke-VBoxManage -Arguments @("modifyvm", $VMName, "--memory", $MemoryMB, "--cpus", $CPUs, "--nic1", "nat", "--firmware", $Firmware) | Out-Null
+        }
 
         # Additional VM settings for stability (avoid kernel soft lockups)
         Invoke-VBoxManage -Arguments @("modifyvm", $VMName, "--pae", "on", "--nestedpaging", "on", "--hwvirtex", "on", "--largepages", "on") | Out-Null
