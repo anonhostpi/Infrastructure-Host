@@ -72,7 +72,13 @@ New-Module -Name VBox-Helpers -ScriptBlock {
 
         # Phase 2: Eject ISO and start VM to boot from disk
         Write-Host "  Ejecting ISO to boot from installed disk..."
-        Remove-DVDISO -VMName $VMName
+        Try {
+            $SDK.Vbox.Eject($VMName) | Out-Null
+            return $true
+        } Catch {
+            Write-Warning "  Failed to eject ISO from VM: $VMName"
+            return $false
+        }
 
         Write-Host "  Starting VM to boot installed system ($StartType)..."
         $result = $SDK.Vbox.Start($VMName, $StartType)
@@ -134,23 +140,6 @@ New-Module -Name VBox-Helpers -ScriptBlock {
         return $false
     }
 
-    # Eject ISO after installation
-    function Remove-DVDISO {
-        param(
-            [Parameter(Mandatory = $true)]
-            [string]$VMName
-        )
-
-        Write-Host "  Ejecting ISO from VM"
-        Try {
-            $SDK.Vbox.Eject($VMName) | Out-Null
-            return $true
-        } Catch {
-            Write-Warning "  Failed to eject ISO from VM: $VMName"
-            return $false
-        }
-    }
-
     # Clean up multipass VMs to avoid IP conflicts with VirtualBox VMs
     # Idempotent - no-op if VMs don't exist
     function Remove-MultipassTestVMs {
@@ -175,7 +164,6 @@ New-Module -Name VBox-Helpers -ScriptBlock {
     Export-ModuleMember -Function @(
         "Wait-InstallComplete",
         "Wait-CloudInitComplete",
-        "Remove-DVDISO",
         "Remove-MultipassTestVMs"
     )
 } | Import-Module -Force
