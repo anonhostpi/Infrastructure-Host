@@ -5,13 +5,6 @@ New-Module -Name VBox-Helpers -ScriptBlock {
 
     . "$PSScriptRoot\SDK.ps1"
 
-    # Check if VM exists
-    function Test-VMExists {
-        param([string]$VMName)
-
-        return $SDK.Vbox.Exists($VMName)
-    }
-
     # Check if VM is running
     function Test-VMRunning {
         param([string]$VMName)
@@ -45,7 +38,7 @@ New-Module -Name VBox-Helpers -ScriptBlock {
         Write-Host "  Creating VM: $VMName (firmware: $Firmware)"
 
         # Cleanup existing VM if present
-        if (Test-VMExists -VMName $VMName) {
+        if ($SDK.Vbox.Exists($VMName)) {
             Remove-AutoinstallVM -VMName $VMName
         }
 
@@ -364,7 +357,6 @@ New-Module -Name VBox-Helpers -ScriptBlock {
     }
 
     Export-ModuleMember -Function @(
-        "Test-VMExists",
         "Test-VMRunning",
         "New-AutoinstallVM",
         "Remove-AutoinstallVM",
