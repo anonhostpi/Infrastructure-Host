@@ -12,55 +12,6 @@ New-Module -Name VBox-Helpers -ScriptBlock {
         return "C:\Program Files\Oracle\VirtualBox\VBoxManage.exe"
     }
 
-    # Convert Windows network adapter name (e.g., "Ethernet 3") to VirtualBox bridge adapter name
-    # VirtualBox uses the InterfaceDescription from Windows, sometimes with a #N suffix
-    # Also handles Hyper-V virtual switches - if the adapter has an associated vEthernet, use that instead
-    function Get-VBoxBridgeAdapter {
-        param(
-            [Parameter(Mandatory = $true)]
-            [string]$WindowsAdapterName
-        )
-
-        # Get the InterfaceDescription from Windows
-        $adapter = Get-NetAdapter -Name $WindowsAdapterName -ErrorAction SilentlyContinue
-        if (-not $adapter) {
-            Write-Warning "Windows adapter '$WindowsAdapterName' not found"
-            return $null
-        }
-
-        # Check if there's a Hyper-V virtual switch for this adapter
-        # Pattern: vEthernet (*Switch*($WindowsAdapterName))
-        $vSwitchAdapter = Get-NetAdapter -ErrorAction SilentlyContinue | Where-Object {
-            $_.Name -match "^vEthernet\s*\(.*$([regex]::Escape($WindowsAdapterName)).*\)$"
-        } | Select-Object -First 1
-
-        if ($vSwitchAdapter) {
-            # Use the Hyper-V virtual switch adapter instead
-            $description = $vSwitchAdapter.InterfaceDescription
-            Write-Host "  Detected Hyper-V virtual switch: $($vSwitchAdapter.Name)"
-        } else {
-            $description = $adapter.InterfaceDescription
-        }
-
-        # Get list of VirtualBox bridge adapters
-        $vboxmanage = Get-VBoxManagePath
-        $bridgedifs = & $vboxmanage list bridgedifs 2>&1
-
-        # Find matching adapter (exact match or with #N suffix)
-        $vboxAdapter = $bridgedifs | Where-Object { $_ -match "^Name:\s+(.+)$" } | ForEach-Object {
-            if ($_ -match "^Name:\s+(.+)$") { $matches[1].Trim() }
-        } | Where-Object {
-            $_ -eq $description -or $_ -match "^$([regex]::Escape($description))(\s+#\d+)?$"
-        } | Select-Object -First 1
-
-        if (-not $vboxAdapter) {
-            Write-Warning "No VirtualBox bridge adapter found matching '$description'"
-            return $null
-        }
-
-        return $vboxAdapter
-    }
-
     # Run VBoxManage command and return output
     function Invoke-VBoxManage {
         param(
