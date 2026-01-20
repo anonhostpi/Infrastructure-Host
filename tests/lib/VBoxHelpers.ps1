@@ -44,47 +44,6 @@ New-Module -Name VBox-Helpers -ScriptBlock {
         return $false
     }
 
-    # Run command via SSH
-    function Invoke-SSHCommand {
-        param(
-            [Parameter(Mandatory = $true)]
-            [string]$Command,
-
-            [string]$User = "admin",
-            [string]$Address = "localhost",
-            [int]$Port = 2222,
-            [int]$TimeoutSeconds = 60
-        )
-
-        # Use default SSH key if available
-        $sshKeyPath = Join-Path $env:USERPROFILE ".ssh\id_ed25519"
-        $sshArgs = @(
-            "-o", "BatchMode=yes",
-            "-o", "StrictHostKeyChecking=no",
-            "-o", "UserKnownHostsFile=/dev/null",
-            "-o", "ConnectTimeout=10"
-        )
-        if (Test-Path $sshKeyPath) {
-            $sshArgs += @("-i", $sshKeyPath)
-        }
-        $sshArgs += @("-p", $Port, "${User}@${Address}", $Command)
-
-        try {
-            $output = & ssh @sshArgs 2>&1
-            return @{
-                Output = $output
-                ExitCode = $LASTEXITCODE
-                Success = ($LASTEXITCODE -eq 0)
-            }
-        } catch {
-            return @{
-                Output = $_.Exception.Message
-                ExitCode = -1
-                Success = $false
-            }
-        }
-    }
-
     # Wait for installation to complete (VM reboots after install)
     function Wait-InstallComplete {
         param(
@@ -184,7 +143,13 @@ New-Module -Name VBox-Helpers -ScriptBlock {
         $checkInterval = 15
 
         while ($elapsed -lt $timeoutSeconds) {
-            $result = Invoke-SSHCommand -Command "cloud-init status" -User $User -Host $Address -Port $Port
+            $result = $SDK.Network.SSH(
+                "~/.ssh/id_ed25519.pub",
+                $User,
+                $Address,
+                $Port,
+                "cloud-init status"
+            )
 
             if ($result.Success) {
                 $status = $result.Output -join " "
@@ -248,7 +213,6 @@ New-Module -Name VBox-Helpers -ScriptBlock {
 
     Export-ModuleMember -Function @(
         "Wait-SSHReady",
-        "Invoke-SSHCommand",
         "Wait-InstallComplete",
         "Wait-CloudInitComplete",
         "Remove-DVDISO",

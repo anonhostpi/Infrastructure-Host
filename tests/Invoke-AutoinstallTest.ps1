@@ -236,7 +236,13 @@ function Test-ViaSSH {
         return
     }
 
-    $result = Invoke-SSHCommand -Command $Command -User $SSHUser -Port $script:currentTestPort
+    $result = $SDK.Network.SSH(
+        "~/.ssh/id_ed25519.pub",
+        $SSHUser,
+        $script:currentTestHost,
+        $script:currentTestPort,
+        $Command
+    )
 
     $pass = $false
     if ($ExpectFailure) {
