@@ -132,25 +132,6 @@ New-Module -Name VBox-Helpers -ScriptBlock {
         return (-not ($SDK.Vbox.UntilShutdown($VMName, $timeout)))
     }
 
-    # Add SSH port forwarding
-    function Add-SSHPortForward {
-        param(
-            [Parameter(Mandatory = $true)]
-            [string]$VMName,
-            [int]$HostPort = 2222,
-            [int]$GuestPort = 22
-        )
-
-        Write-Host "  Adding SSH port forward: localhost:$HostPort -> VM:$GuestPort"
-
-        # Remove existing rule if present
-        Invoke-VBoxManage -Arguments @("controlvm", $VMName, "natpf1", "delete", "ssh") -SuppressError | Out-Null
-
-        # Add new rule
-        $result = Invoke-VBoxManage -Arguments @("controlvm", $VMName, "natpf1", "ssh,tcp,,$HostPort,,$GuestPort")
-        return ($result.ExitCode -eq 0)
-    }
-
     # Wait for SSH to be available
     function Wait-SSHReady {
         param(
@@ -402,7 +383,6 @@ New-Module -Name VBox-Helpers -ScriptBlock {
         "Remove-AutoinstallVM",
         "Start-AutoinstallVM",
         "Stop-AutoinstallVM",
-        "Add-SSHPortForward",
         "Wait-SSHReady",
         "Invoke-SSHCommand",
         "Wait-InstallComplete",
