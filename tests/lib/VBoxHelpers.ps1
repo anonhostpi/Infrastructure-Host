@@ -336,45 +336,6 @@ New-Module -Name VBox-Helpers -ScriptBlock {
         return $false
     }
 
-    # Create snapshot
-    function New-VMSnapshot {
-        param(
-            [Parameter(Mandatory = $true)]
-            [string]$VMName,
-            [Parameter(Mandatory = $true)]
-            [string]$SnapshotName,
-            [string]$Description = ""
-        )
-
-        Write-Host "  Creating snapshot: $SnapshotName"
-        $args = @("snapshot", $VMName, "take", $SnapshotName)
-        if ($Description) {
-            $args += @("--description", $Description)
-        }
-
-        $result = Invoke-VBoxManage -Arguments $args
-        return ($result.ExitCode -eq 0)
-    }
-
-    # Restore snapshot
-    function Restore-VMSnapshot {
-        param(
-            [Parameter(Mandatory = $true)]
-            [string]$VMName,
-            [Parameter(Mandatory = $true)]
-            [string]$SnapshotName
-        )
-
-        # Stop VM first if running
-        if (Test-VMRunning -VMName $VMName) {
-            Stop-AutoinstallVM -VMName $VMName -Force
-        }
-
-        Write-Host "  Restoring snapshot: $SnapshotName"
-        $result = Invoke-VBoxManage -Arguments @("snapshot", $VMName, "restore", $SnapshotName)
-        return ($result.ExitCode -eq 0)
-    }
-
     # Eject ISO after installation
     function Remove-DVDISO {
         param(
@@ -406,8 +367,6 @@ New-Module -Name VBox-Helpers -ScriptBlock {
         "Invoke-SSHCommand",
         "Wait-InstallComplete",
         "Wait-CloudInitComplete",
-        "New-VMSnapshot",
-        "Restore-VMSnapshot",
         "Remove-DVDISO"
     )
 } | Import-Module -Force
