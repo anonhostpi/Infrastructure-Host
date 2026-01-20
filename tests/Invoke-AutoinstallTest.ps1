@@ -119,7 +119,7 @@ if (-not $SkipBuild) {
     $existingBuilder = multipass list --format csv 2>$null | Select-String "^$VMName,"
     if (-not $existingBuilder) {
         Write-Host "  Creating new builder VM..."
-        multipass launch --name $VMName --cpus $BuilderCpus --memory $BuilderMemory --disk $BuilderDisk
+        multipass launch --name $VMName --cpus $VMCpus --memory $VMMemory --disk $VMDisk
         if ($LASTEXITCODE -ne 0) {
             Write-Error "Failed to launch builder VM"
             exit 1

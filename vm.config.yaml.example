@@ -4,7 +4,8 @@
 #
 # Find available networks: multipass networks
 
-# ISO Builder VM (for building autoinstall ISO)
+# ISO and Cloud-Init Builder VM (for building autoinstall ISO and cloud-init artifacts)
+# Needs 40G+ for: source ISO (~3GB) + extracted contents (~3GB) + output ISO (~3GB)
 builder:
   name: "autoinstall-builder"
   cpus: 2
