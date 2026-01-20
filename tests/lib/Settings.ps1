@@ -9,10 +9,15 @@ New-Module -Name SDK.Settings -ScriptBlock {
         $SDK
     )
 
-    $mod = @{ SDK = $SDK }
-
     Import-Module powershell-yaml -ErrorAction Stop
     . "$PSScriptRoot\helpers\PowerShell.ps1"
+    . "$PSScriptRoot\helpers\Config.ps1"
+
+    $mod = @{
+        SDK = $SDK
+        BuildConfig = Build-TestConfig
+        VirtConfig = $null
+    }
 
     $Settings = New-Object PSObject -Property @{
         KeyPath = "~/.ssh/id_ed25519.pub"
@@ -36,10 +41,32 @@ New-Module -Name SDK.Settings -ScriptBlock {
             $content = Get-Content -Path $source -Raw
             return $content | ConvertFrom-Yaml
         }
+    }
+
+    $mod.VirtConfig = $Settings.Load("vm.config.yaml")
+
+    Add-ScriptProperties $Settings @{
         Virtualization = {
-            return $this.Load("vm.config.yaml")
+            return $mod.VirtConfig
         }
     }
+
+    $keys = $mod.BuildConfig.Keys | ForEach-Object { $_ }
+    $methods = @{}
+
+    foreach( $key in $keys ) {
+        $src = @(
+            "",
+            "`$key = '$key'",
+            {
+                return $mod.BuildConfig[$key]
+            }.ToString(),
+            ""
+        ) -join "`n"
+        $sb = iex "{ $src }"
+        $methods[$key] = $sb
+    }
+    Add-ScriptProperties $Settings $methods
 
     $SDK.Extend("Settings", $Settings)
 
