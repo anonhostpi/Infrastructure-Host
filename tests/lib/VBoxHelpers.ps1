@@ -94,52 +94,6 @@ New-Module -Name VBox-Helpers -ScriptBlock {
         return ($SDK.Vbox.Running($VMName))
     }
 
-    # Wait for cloud-init to complete
-    function Wait-CloudInitComplete {
-        param(
-            [string]$User = "admin",
-            [string]$Address = "localhost",
-            [int]$Port = 2222,
-            [int]$TimeoutMinutes = 10
-        )
-
-        Write-Host "  Waiting for cloud-init to complete (timeout: ${TimeoutMinutes}m)..."
-
-        $timeoutSeconds = $TimeoutMinutes * 60
-        $elapsed = 0
-        $checkInterval = 15
-
-        while ($elapsed -lt $timeoutSeconds) {
-            $result = $SDK.Network.SSH(
-                "~/.ssh/id_ed25519.pub",
-                $User,
-                $Address,
-                $Port,
-                "cloud-init status"
-            )
-
-            if ($result.Success) {
-                $status = $result.Output -join " "
-                if ($status -match "status: done") {
-                    Write-Host "  Cloud-init complete!"
-                    return $true
-                } elseif ($status -match "status: error" -or $status -match "status: degraded") {
-                    Write-Host "  Cloud-init finished with errors" -ForegroundColor Yellow
-                    return $true  # Still continue with tests
-                }
-            }
-
-            Start-Sleep -Seconds $checkInterval
-            $elapsed += $checkInterval
-            $mins = [math]::Floor($elapsed / 60)
-            $secs = $elapsed % 60
-            Write-Host "  Waiting... (${mins}m ${secs}s / ${TimeoutMinutes}m)"
-        }
-
-        Write-Host "  Cloud-init timeout" -ForegroundColor Yellow
-        return $false
-    }
-
     # Clean up multipass VMs to avoid IP conflicts with VirtualBox VMs
     # Idempotent - no-op if VMs don't exist
     function Remove-MultipassTestVMs {
@@ -163,7 +117,6 @@ New-Module -Name VBox-Helpers -ScriptBlock {
 
     Export-ModuleMember -Function @(
         "Wait-InstallComplete",
-        "Wait-CloudInitComplete",
         "Remove-MultipassTestVMs"
     )
 } | Import-Module -Force

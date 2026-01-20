@@ -237,7 +237,6 @@ function Test-ViaSSH {
     }
 
     $result = $SDK.Network.SSH(
-        "~/.ssh/id_ed25519.pub",
         $SSHUser,
         $script:currentTestHost,
         $script:currentTestPort,
@@ -352,7 +351,8 @@ foreach ($currentFirmware in $FirmwareList) {
     Write-Host ""
 
     # Wait for installation to complete (VM stops, then we eject ISO and restart)
-    $installComplete = Wait-InstallComplete -VMName $vmName -TimeoutMinutes 20 -StartType $vmType
+    # Full autoinstall with package installation can take 25-30 minutes
+    $installComplete = Wait-InstallComplete -VMName $vmName -TimeoutMinutes 35 -StartType $vmType
     if (-not $installComplete) {
         Write-Error "Installation did not complete within timeout"
         exit 1
@@ -375,8 +375,18 @@ foreach ($currentFirmware in $FirmwareList) {
     # Step: Wait for cloud-init
     Write-Step "Waiting for cloud-init to complete..."
 
-    $cloudInitComplete = Wait-CloudInitComplete -User $SSHUser -Port $fwSSHPort -TimeoutMinutes 10
-    if (-not $cloudInitComplete) {
+    $cloudInitComplete = $SDK.General.UntilInstalled(
+        $SSHUser,
+        $SSHHost,
+        $SSHPort,
+        900  # 15 minutes
+    )
+    $cloudInitErrored = $SDK.General.Errored(
+        $SSHUser,
+        $SSHHost,
+        $SSHPort
+    )
+    if ((-not $cloudInitComplete) -or $cloudInitErrored) {
         Write-Warning "Cloud-init did not complete cleanly"
     }
     Write-Host "  Done" -ForegroundColor Green
@@ -389,8 +399,9 @@ foreach ($currentFirmware in $FirmwareList) {
     Write-Step "Running validation tests ($currentFirmware)..."
     Write-Host ""
 
-    # Set script-scoped port for Test-ViaSSH
-    $script:currentTestPort = $fwSSHPort
+    # Set script-scoped variables for Test-ViaSSH
+    $script:currentTestHost = $SSHHost
+    $script:currentTestPort = $SSHPort
     $script:currentTestFirmware = $currentFirmware
 
     # --- Autoinstall-Specific Tests ---
