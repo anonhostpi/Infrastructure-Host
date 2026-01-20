@@ -361,9 +361,10 @@ foreach ($currentFirmware in $FirmwareList) {
     Write-Host ""
 
     # Step: Wait for SSH to be ready (bridged mode - connect directly to static IP)
+    Write-Step "Waiting for SSH access (${SSHHost}:${SSHPort})..."
 
-    # Wait for SSH to be ready
-    $sshReady = Wait-SSHReady -Port $fwSSHPort -TimeoutSeconds 180
+    # Wait for SSH to be ready on the static IP
+    $sshReady = $SDK.Network.UntilSSH($SSHHost, $SSHPort, 180)
     if (-not $sshReady) {
         Write-Error "SSH not available after installation"
         exit 1

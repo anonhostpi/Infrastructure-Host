@@ -5,45 +5,6 @@ New-Module -Name VBox-Helpers -ScriptBlock {
 
     . "$PSScriptRoot\SDK.ps1"
 
-    # Wait for SSH to be available
-    function Wait-SSHReady {
-        param(
-            [string]$Address = "localhost",
-            [int]$Port = 2222,
-            [int]$TimeoutSeconds = 300,
-            [int]$RetryIntervalSeconds = 10
-        )
-
-        Write-Host "  Waiting for SSH to be ready (timeout: ${TimeoutSeconds}s)..."
-
-        $elapsed = 0
-        while ($elapsed -lt $TimeoutSeconds) {
-            # Try to connect with a short timeout
-            $tcpClient = New-Object System.Net.Sockets.TcpClient
-            try {
-                $asyncResult = $tcpClient.BeginConnect($Address, $Port, $null, $null)
-                $waitResult = $asyncResult.AsyncWaitHandle.WaitOne(5000, $false)
-
-                if ($waitResult -and $tcpClient.Connected) {
-                    $tcpClient.Close()
-                    Write-Host "  SSH is ready!"
-                    return $true
-                }
-            } catch {
-                # Connection failed, continue waiting
-            } finally {
-                $tcpClient.Dispose()
-            }
-
-            Start-Sleep -Seconds $RetryIntervalSeconds
-            $elapsed += $RetryIntervalSeconds
-            Write-Host "  Still waiting... (${elapsed}s / ${TimeoutSeconds}s)"
-        }
-
-        Write-Host "  SSH timeout after ${TimeoutSeconds}s" -ForegroundColor Yellow
-        return $false
-    }
-
     # Wait for installation to complete (VM reboots after install)
     function Wait-InstallComplete {
         param(
@@ -212,7 +173,6 @@ New-Module -Name VBox-Helpers -ScriptBlock {
     }
 
     Export-ModuleMember -Function @(
-        "Wait-SSHReady",
         "Wait-InstallComplete",
         "Wait-CloudInitComplete",
         "Remove-DVDISO",
