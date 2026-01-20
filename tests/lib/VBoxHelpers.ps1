@@ -161,7 +161,7 @@ New-Module -Name VBox-Helpers -ScriptBlock {
     # Wait for SSH to be available
     function Wait-SSHReady {
         param(
-            [string]$Host = "localhost",
+            [string]$Address = "localhost",
             [int]$Port = 2222,
             [int]$TimeoutSeconds = 300,
             [int]$RetryIntervalSeconds = 10
@@ -174,7 +174,7 @@ New-Module -Name VBox-Helpers -ScriptBlock {
             # Try to connect with a short timeout
             $tcpClient = New-Object System.Net.Sockets.TcpClient
             try {
-                $asyncResult = $tcpClient.BeginConnect($Host, $Port, $null, $null)
+                $asyncResult = $tcpClient.BeginConnect($Address, $Port, $null, $null)
                 $waitResult = $asyncResult.AsyncWaitHandle.WaitOne(5000, $false)
 
                 if ($waitResult -and $tcpClient.Connected) {
@@ -204,20 +204,23 @@ New-Module -Name VBox-Helpers -ScriptBlock {
             [string]$Command,
 
             [string]$User = "admin",
-            [string]$Host = "localhost",
+            [string]$Address = "localhost",
             [int]$Port = 2222,
             [int]$TimeoutSeconds = 60
         )
 
+        # Use default SSH key if available
+        $sshKeyPath = Join-Path $env:USERPROFILE ".ssh\id_ed25519"
         $sshArgs = @(
             "-o", "BatchMode=yes",
             "-o", "StrictHostKeyChecking=no",
             "-o", "UserKnownHostsFile=/dev/null",
-            "-o", "ConnectTimeout=10",
-            "-p", $Port,
-            "${User}@${Host}",
-            $Command
+            "-o", "ConnectTimeout=10"
         )
+        if (Test-Path $sshKeyPath) {
+            $sshArgs += @("-i", $sshKeyPath)
+        }
+        $sshArgs += @("-p", $Port, "${User}@${Address}", $Command)
 
         try {
             $output = & ssh @sshArgs 2>&1
@@ -297,7 +300,7 @@ New-Module -Name VBox-Helpers -ScriptBlock {
     function Wait-CloudInitComplete {
         param(
             [string]$User = "admin",
-            [string]$Host = "localhost",
+            [string]$Address = "localhost",
             [int]$Port = 2222,
             [int]$TimeoutMinutes = 10
         )
@@ -309,7 +312,7 @@ New-Module -Name VBox-Helpers -ScriptBlock {
         $checkInterval = 15
 
         while ($elapsed -lt $timeoutSeconds) {
-            $result = Invoke-SSHCommand -Command "cloud-init status" -User $User -Host $Host -Port $Port
+            $result = Invoke-SSHCommand -Command "cloud-init status" -User $User -Host $Address -Port $Port
 
             if ($result.Success) {
                 $status = $result.Output -join " "
