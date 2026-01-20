@@ -5,13 +5,6 @@ New-Module -Name VBox-Helpers -ScriptBlock {
 
     . "$PSScriptRoot\SDK.ps1"
 
-    # Check if VM is running
-    function Test-VMRunning {
-        param([string]$VMName)
-
-        return $SDK.Vbox.Running($VMName)
-    }
-
     # Create new VM for autoinstall testing
     function New-AutoinstallVM {
         param(
@@ -215,7 +208,7 @@ New-Module -Name VBox-Helpers -ScriptBlock {
 
         # Phase 1: Wait for VM to stop (installation complete triggers shutdown/reboot)
         while ($elapsed -lt $timeoutSeconds) {
-            if (-not (Test-VMRunning -VMName $VMName)) {
+            if (-not ($SDK.Vbox.Running($VMName))) {
                 # VM stopped - installation is complete
                 Write-Host "  VM stopped - installation complete"
                 $installComplete = $true
@@ -241,7 +234,7 @@ New-Module -Name VBox-Helpers -ScriptBlock {
             $additionalTimeout = 600
             $additionalElapsed = 0
             while ($additionalElapsed -lt $additionalTimeout) {
-                if (-not (Test-VMRunning -VMName $VMName)) {
+                if (-not ($SDK.Vbox.Running($VMName))) {
                     Write-Host "  VM stopped - installation complete (after pause/resume)"
                     $installComplete = $true
                     break
@@ -275,7 +268,7 @@ New-Module -Name VBox-Helpers -ScriptBlock {
         Write-Host "  Waiting for post-install boot (30s)..."
         Start-Sleep -Seconds 30
 
-        return (Test-VMRunning -VMName $VMName)
+        return ($SDK.Vbox.Running($VMName))
     }
 
     # Wait for cloud-init to complete
@@ -357,7 +350,6 @@ New-Module -Name VBox-Helpers -ScriptBlock {
     }
 
     Export-ModuleMember -Function @(
-        "Test-VMRunning",
         "New-AutoinstallVM",
         "Remove-AutoinstallVM",
         "Start-AutoinstallVM",
