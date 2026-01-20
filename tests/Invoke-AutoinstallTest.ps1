@@ -59,7 +59,6 @@ $RepoRoot = Split-Path -Parent $ScriptDir
 . "$ScriptDir\SDK.ps1"
 # Paths
 $ISOPath = Join-Path $RepoRoot "output\ubuntu-autoinstall.iso"
-$CIDATAPath = Join-Path $RepoRoot "output\cidata.iso"
 $VDIPath = Join-Path $RepoRoot "output\ubuntu-autoinstall-test.vdi"
 
 # SSH settings - use static IP from config for bridged networking
@@ -91,8 +90,13 @@ Write-Host " Infrastructure-Host Autoinstall Testing (7.2)" -ForegroundColor Cya
 Write-Host "================================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "VirtualBox VM: $VBoxVMName" -ForegroundColor Yellow
-Write-Host "Builder VM:    $BuilderVMName" -ForegroundColor Yellow
+Write-Host "Builder VM:    $VMName" -ForegroundColor Yellow
 Write-Host "Firmware(s):   $($FirmwareList -join ', ')" -ForegroundColor Yellow
+Write-Host ""
+
+# Clean up multipass test VMs to avoid IP conflicts
+# (VirtualBox VMs use the same static IP as multipass runner)
+Remove-MultipassTestVMs
 Write-Host ""
 
 $stepCount = if ($SkipBuild) { 8 } else { 11 }
@@ -112,21 +116,21 @@ if (-not $SkipBuild) {
     # Step 1: Launch builder VM
     Write-Step "Launching builder VM..."
 
-    $existingBuilder = multipass list --format csv 2>$null | Select-String "^$BuilderVMName,"
+    $existingBuilder = multipass list --format csv 2>$null | Select-String "^$VMName,"
     if (-not $existingBuilder) {
         Write-Host "  Creating new builder VM..."
-        multipass launch --name $BuilderVMName --cpus $BuilderCpus --memory $BuilderMemory --disk $BuilderDisk
+        multipass launch --name $VMName --cpus $BuilderCpus --memory $BuilderMemory --disk $BuilderDisk
         if ($LASTEXITCODE -ne 0) {
             Write-Error "Failed to launch builder VM"
             exit 1
         }
     } else {
         Write-Host "  Starting existing builder VM..."
-        multipass start $BuilderVMName 2>$null
+        multipass start $VMName 2>$null
     }
 
     Write-Host "  Waiting for cloud-init..."
-    multipass exec $BuilderVMName -- cloud-init status --wait 2>$null
+    multipass exec $VMName -- cloud-init status --wait 2>$null
     Write-Host "  Done" -ForegroundColor Green
     Write-Host ""
 
@@ -134,11 +138,11 @@ if (-not $SkipBuild) {
     Write-Step "Mounting repository to builder VM..."
 
     # Check if already mounted
-    $mounts = multipass info $BuilderVMName --format json 2>$null | ConvertFrom-Json
-    $alreadyMounted = $mounts.info.$BuilderVMName.mounts.PSObject.Properties | Where-Object { $_.Value.source_path -eq $RepoRoot }
+    $mounts = multipass info $VMName --format json 2>$null | ConvertFrom-Json
+    $alreadyMounted = $mounts.info.$VMName.mounts.PSObject.Properties | Where-Object { $_.Value.source_path -eq $RepoRoot }
 
     if (-not $alreadyMounted) {
-        multipass mount $RepoRoot ${BuilderVMName}:/home/ubuntu/infra-host
+        multipass mount $RepoRoot ${VMName}:/home/ubuntu/infra-host
         if ($LASTEXITCODE -ne 0) {
             Write-Error "Failed to mount repository"
             exit 1
@@ -151,11 +155,11 @@ if (-not $SkipBuild) {
     Write-Step "Installing dependencies and building artifacts..."
 
     Write-Host "  Installing dependencies..."
-    multipass exec $BuilderVMName -- bash -c "sudo apt-get update -qq && sudo apt-get install -y -qq python3-pip python3-yaml python3-jinja2 make xorriso cloud-image-utils wget > /dev/null 2>&1"
-    multipass exec $BuilderVMName -- bash -c "cd /home/ubuntu/infra-host && pip3 install --break-system-packages -q -e . 2>/dev/null"
+    multipass exec $VMName -- bash -c "sudo apt-get update -qq && sudo apt-get install -y -qq python3-pip python3-yaml python3-jinja2 make xorriso cloud-image-utils wget > /dev/null 2>&1"
+    multipass exec $VMName -- bash -c "cd /home/ubuntu/infra-host && pip3 install --break-system-packages -q -e . 2>/dev/null"
 
     Write-Host "  Building artifacts (make all)..."
-    multipass exec $BuilderVMName -- bash -c "cd /home/ubuntu/infra-host && make all"
+    multipass exec $VMName -- bash -c "cd /home/ubuntu/infra-host && make all"
     if ($LASTEXITCODE -ne 0) {
         Write-Error "Failed to build artifacts"
         exit 1
@@ -167,7 +171,7 @@ if (-not $SkipBuild) {
     Write-Step "Building autoinstall ISO..."
 
     Write-Host "  This may take several minutes (downloads Ubuntu ISO if not cached)..."
-    multipass exec $BuilderVMName -- bash -c "cd /home/ubuntu/infra-host && make iso"
+    multipass exec $VMName -- bash -c "cd /home/ubuntu/infra-host && make iso"
     if ($LASTEXITCODE -ne 0) {
         Write-Error "Failed to build ISO"
         exit 1
@@ -175,17 +179,28 @@ if (-not $SkipBuild) {
     Write-Host "  Done" -ForegroundColor Green
     Write-Host ""
 
-    # Step 5: Validate ISO
+    # Step 5: Validate ISO (Modified ISO method)
     Write-Step "Validating ISO structure..."
 
-    $vmIsoPath = "/home/ubuntu/infra-host/output/ubuntu-autoinstall.iso"
+    # ISO is built in /tmp to avoid multipass mount 2GB file size limit
+    $vmIsoPath = "/tmp/ubuntu-autoinstall.iso"
 
-    $grubCheck = multipass exec $BuilderVMName -- bash -c "xorriso -osirrox on -indev $vmIsoPath -extract /boot/grub/grub.cfg /tmp/grub.cfg 2>/dev/null && grep -q 'Autoinstall' /tmp/grub.cfg && echo OK"
-    if ($grubCheck -ne "OK") {
-        Write-Error "ISO validation failed: Autoinstall GRUB entry not found"
+    # Check 1: user-data is embedded in ISO root
+    $userDataCheck = multipass exec $VMName -- bash -c "xorriso -indev $vmIsoPath -find / -name user-data 2>/dev/null | grep -q user-data && echo OK"
+    if ($userDataCheck -ne "OK") {
+        Write-Error "ISO validation failed: user-data not found in ISO"
         exit 1
     }
-    Write-Host "  GRUB autoinstall entry: OK"
+    Write-Host "  Embedded user-data: OK"
+
+    # Check 2: GRUB has autoinstall and nocloud parameters
+    $grubCheck = multipass exec $VMName -- bash -c "xorriso -osirrox on -indev $vmIsoPath -extract /boot/grub/grub.cfg /tmp/grub.cfg 2>/dev/null && grep -q 'autoinstall.*ds=nocloud' /tmp/grub.cfg && echo OK"
+    if ($grubCheck -ne "OK") {
+        Write-Error "ISO validation failed: GRUB autoinstall parameters not found"
+        exit 1
+    }
+    Write-Host "  GRUB autoinstall + nocloud: OK"
+
     Write-Host "  Done" -ForegroundColor Green
     Write-Host ""
 
@@ -198,10 +213,19 @@ if (-not $SkipBuild) {
         New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
     }
 
-    # ISO should already be in output/ due to mount, but verify
-    if (-not (Test-Path $ISOPath)) {
-        Write-Host "  Copying ISO from builder VM via multipass transfer..."
-        multipass transfer "${BuilderVMName}:${vmIsoPath}" $outputDir
+    # Transfer ISO from VM /tmp to host (required due to 2GB multipass mount limit)
+    Write-Host "  Copying ISO from builder VM via multipass transfer..."
+    Write-Host "  (ISO built in /tmp to avoid multipass 2GB file size limit)"
+
+    # Remove existing ISO if present
+    if (Test-Path $ISOPath) {
+        Remove-Item $ISOPath -Force
+    }
+
+    multipass transfer "${VMName}:${vmIsoPath}" $ISOPath
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Failed to transfer ISO from builder VM"
+        exit 1
     }
 
     $isoInfo = Get-Item $ISOPath
@@ -449,13 +473,16 @@ foreach ($currentFirmware in $FirmwareList) {
     Test-ViaSSH -TestId "7.2.4" -Name "Installer log exists" -Command "test -d /var/log/installer && echo EXISTS" -ExpectedPattern "EXISTS"
     Test-ViaSSH -TestId "7.2.5" -Name "Autoinstall user-data captured" -Command "test -f /var/log/installer/autoinstall-user-data && echo EXISTS" -ExpectedPattern "EXISTS"
 
+    # Modified ISO Method Validation
+    Test-ViaSSH -TestId "7.2.6" -Name "Cloud-init nocloud datasource" -Command "cloud-init query ds" -ExpectedPattern "nocloud|NoCloud"
+
     # Boot Configuration (firmware-specific)
-    Test-ViaSSH -TestId "7.2.6" -Name "UEFI boot entry" -Command "efibootmgr | grep -i ubuntu" -ExpectedPattern "ubuntu" -SkipOnBios
-    Test-ViaSSH -TestId "7.2.6b" -Name "BIOS GRUB installed" -Command "test -d /boot/grub && echo EXISTS" -ExpectedPattern "EXISTS" -SkipOnEfi
-    Test-ViaSSH -TestId "7.2.7" -Name "No cdrom mounted" -Command "mount | grep -q cdrom && echo MOUNTED || echo OK" -ExpectedPattern "OK"
+    Test-ViaSSH -TestId "7.2.7" -Name "UEFI boot entry" -Command "efibootmgr | grep -i ubuntu" -ExpectedPattern "ubuntu" -SkipOnBios
+    Test-ViaSSH -TestId "7.2.7b" -Name "BIOS GRUB installed" -Command "test -d /boot/grub && echo EXISTS" -ExpectedPattern "EXISTS" -SkipOnEfi
+    Test-ViaSSH -TestId "7.2.8" -Name "No cdrom mounted" -Command "mount | grep -q cdrom && echo MOUNTED || echo OK" -ExpectedPattern "OK"
 
     # Cloud-init
-    Test-ViaSSH -TestId "7.2.8" -Name "Cloud-init status done" -Command "cloud-init status" -ExpectedPattern "status: done|status: degraded"
+    Test-ViaSSH -TestId "7.2.9" -Name "Cloud-init status done" -Command "cloud-init status" -ExpectedPattern "status: done|status: degraded"
 
     Write-Host ""
 
@@ -572,7 +599,7 @@ if (-not $SkipCleanup) {
     # Stop builder VM (but keep it for cached ISO)
     if (-not $SkipBuild) {
         Write-Host "Stopping builder VM..." -ForegroundColor Gray
-        multipass stop $BuilderVMName 2>$null
+        multipass stop $VMName 2>$null
     }
     Write-Host "Done" -ForegroundColor Gray
 } else {
@@ -581,7 +608,7 @@ if (-not $SkipCleanup) {
         $fwPort = if ($fw -eq "bios") { $SSHPort } else { $SSHPort + 1 }
         Write-Host "  VirtualBox VM: ${VBoxVMName}-${fw} (SSH: ssh -p $fwPort $SSHUser@localhost)"
     }
-    Write-Host "  Builder VM:    $BuilderVMName"
+    Write-Host "  Builder VM:    $VMName"
 }
 
 Write-Host ""
