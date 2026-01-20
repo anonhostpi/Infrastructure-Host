@@ -141,9 +141,14 @@ New-Module -Name VBox-Helpers -ScriptBlock {
             Remove-AutoinstallVM -VMName $VMName
         }
 
-        # Remove existing VDI
+        # Remove existing VDI (close from media registry first, then delete file)
         if (Test-Path $VDIPath) {
-            Remove-Item $VDIPath -Force
+            # Unregister from VirtualBox media registry (ignore errors if not registered)
+            Invoke-VBoxManage -Arguments @("closemedium", "disk", $VDIPath, "--delete") -SuppressError | Out-Null
+            # Delete file if closemedium didn't (e.g., if it wasn't registered)
+            if (Test-Path $VDIPath) {
+                Remove-Item $VDIPath -Force -ErrorAction SilentlyContinue
+            }
         }
 
         # Create VM with specified firmware (efi or bios)
