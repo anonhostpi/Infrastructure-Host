@@ -5,19 +5,6 @@ New-Module -Name VBox-Helpers -ScriptBlock {
 
     . "$PSScriptRoot\SDK.ps1"
 
-    # Start VM
-    function Start-AutoinstallVM {
-        param(
-            [Parameter(Mandatory = $true)]
-            [string]$VMName,
-            [ValidateSet("gui", "headless")]
-            [string]$Type = "gui"
-        )
-
-        Write-Host "  Starting VM: $VMName ($Type)"
-        return $SDK.Vbox.Start($VMName, $Type)
-    }
-
     # Stop VM
     function Stop-AutoinstallVM {
         param(
@@ -282,7 +269,6 @@ New-Module -Name VBox-Helpers -ScriptBlock {
     }
 
     Export-ModuleMember -Function @(
-        "Start-AutoinstallVM",
         "Stop-AutoinstallVM",
         "Wait-SSHReady",
         "Invoke-SSHCommand",

@@ -334,7 +334,8 @@ foreach ($currentFirmware in $FirmwareList) {
     Write-Step "Starting autoinstall (this takes 10-15 minutes)..."
 
     $vmType = if ($Headless) { "headless" } else { "gui" }
-    $started = Start-AutoinstallVM -VMName $vmName -Type $vmType
+    Write-Host "  Starting VM $vmName in $vmType mode..."
+    $started = $SDK.Vbox.Start($vmName, $vmType)
     if (-not $started) {
         Write-Error "Failed to start VM"
         exit 1
