@@ -360,14 +360,7 @@ foreach ($currentFirmware in $FirmwareList) {
     Write-Host "  Done" -ForegroundColor Green
     Write-Host ""
 
-    # Step: Add SSH port forwarding (use different ports for each firmware)
-    $fwSSHPort = if ($currentFirmware -eq "bios") { $SSHPort } else { $SSHPort + 1 }
-    Write-Step "Configuring SSH access (port $fwSSHPort)..."
-
-    $sshConfigured = Add-SSHPortForward -VMName $vmName -HostPort $fwSSHPort
-    if (-not $sshConfigured) {
-        Write-Warning "Failed to configure SSH port forwarding"
-    }
+    # Step: Wait for SSH to be ready (bridged mode - connect directly to static IP)
 
     # Wait for SSH to be ready
     $sshReady = Wait-SSHReady -Port $fwSSHPort -TimeoutSeconds 180
