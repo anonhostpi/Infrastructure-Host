@@ -50,8 +50,8 @@ $RepoRoot = Split-Path -Parent $ScriptDir
 
 . "$ScriptDir\lib\Config.ps1"
 . "$ScriptDir\lib\Verifications.ps1"
-. "$ScriptDir\lib\VBoxHelpers.ps1"
 . "$RepoRoot\vm.config.ps1"
+. "$ScriptDir\SDK.ps1"
 
 # Determine actual test level
 $TestLevel = if ($Level -eq "all") { "6.8-flush" } else { $Level }
@@ -339,7 +339,7 @@ if ($failCount -gt 0) {
 
 # Cleanup
 if (-not $SkipCleanup) {
-    Remove-MultipassTestVMs -VMNames @($RunnerVMName, $VMName)
+    $SDK.Builder.Flush()
 } else {
     Write-Host "VMs kept running (use -SkipCleanup:`$false to clean up)" -ForegroundColor Gray
     Write-Host "  Builder: $VMName"

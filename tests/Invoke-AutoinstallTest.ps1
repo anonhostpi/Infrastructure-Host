@@ -54,7 +54,6 @@ $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RepoRoot = Split-Path -Parent $ScriptDir
 
 . "$ScriptDir\lib\Config.ps1"
-. "$ScriptDir\lib\VBoxHelpers.ps1"
 . "$RepoRoot\vm.config.ps1"
 . "$ScriptDir\SDK.ps1"
 # Paths
@@ -96,7 +95,7 @@ Write-Host ""
 
 # Clean up multipass test VMs to avoid IP conflicts
 # (VirtualBox VMs use the same static IP as multipass runner)
-Remove-MultipassTestVMs
+$SDK.Builder.Flush()
 Write-Host ""
 
 $stepCount = if ($SkipBuild) { 8 } else { 11 }
