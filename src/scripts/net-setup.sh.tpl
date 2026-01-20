@@ -162,4 +162,16 @@ network:
 EOF
 
 echo "net-setup: Static network configuration written to $NIC"
+
+# Decide whether to call netplan apply based on PROTECTED_MAC detection from earlier.
+# If PROTECTED_MAC is set, we detected a non-optional (hypervisor-managed) interface
+# and should not call netplan apply during bootcmd as it would disrupt that interface.
+if [ -n "$PROTECTED_MAC" ]; then
+  echo "net-setup: Managed interface detected - skipping netplan apply"
+else
+  echo "net-setup: Applying netplan configuration..."
+  netplan apply 2>/dev/null || echo "net-setup: WARNING - netplan apply failed"
+fi
+
+echo "net-setup: Network configuration complete"
 exit 0
