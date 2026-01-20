@@ -5,28 +5,6 @@ New-Module -Name VBox-Helpers -ScriptBlock {
 
     . "$PSScriptRoot\SDK.ps1"
 
-    # Stop VM
-    function Stop-AutoinstallVM {
-        param(
-            [Parameter(Mandatory = $true)]
-            [string]$VMName,
-            [switch]$Force
-        )
-
-        if ($Force) {
-            Write-Host "  Force stopping VM: $VMName"
-            $SDK.Vbox.Shutdown($VMName, $true) | Out-Null
-        } else {
-            Write-Host "  Gracefully stopping VM: $VMName"
-            $SDK.Vbox.Shutdown($VMName, $false) | Out-Null
-        }
-
-        # Wait for VM to stop
-        $timeout = 60
-
-        return (-not ($SDK.Vbox.UntilShutdown($VMName, $timeout)))
-    }
-
     # Wait for SSH to be available
     function Wait-SSHReady {
         param(
@@ -269,7 +247,6 @@ New-Module -Name VBox-Helpers -ScriptBlock {
     }
 
     Export-ModuleMember -Function @(
-        "Stop-AutoinstallVM",
         "Wait-SSHReady",
         "Invoke-SSHCommand",
         "Wait-InstallComplete",
