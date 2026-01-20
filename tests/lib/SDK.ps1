@@ -18,6 +18,9 @@ New-Module -Name SDK -ScriptBlock {
     }
 
     Add-ScriptMethods $SDK @{
+        Root = {
+            git rev-parse --show-toplevel
+        }
         Extend = {
             param(
                 [Parameter(Mandatory = $true)]
@@ -67,6 +70,7 @@ New-Module -Name SDK -ScriptBlock {
         }
     }
 
+    & "$PSScriptRoot/Settings.ps1" -SDK $SDK
     & "$PSScriptRoot/Network.ps1" -SDK $SDK
     & "$PSScriptRoot/General.ps1" -SDK $SDK
     & "$PSScriptRoot/Vbox.ps1" -SDK $SDK

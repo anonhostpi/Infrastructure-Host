@@ -13,9 +13,7 @@ New-Module -Name SDK.General -ScriptBlock {
 
     . "$PSScriptRoot\helpers\PowerShell.ps1"
 
-    $General = New-Object PSObject -Property @{
-        KeyPath = "~/.ssh/id_ed25519.pub"
-    }
+    $General = New-Object PSObject
 
     Add-ScriptMethods $General @{
         UntilInstalled = {
@@ -29,7 +27,7 @@ New-Module -Name SDK.General -ScriptBlock {
             )
 
             return $mod.SDK.Network.SSH(
-                $this.KeyPath,
+                $mod.SDK.Settings.KeyPath,
                 $Username,
                 $Address,
                 $Port,
@@ -39,7 +37,7 @@ New-Module -Name SDK.General -ScriptBlock {
         }
         Errored = {
             $status = $mod.SDK.Network.SSH(
-                $this.KeyPath,
+                $mod.SDK.Settings.KeyPath,
                 $Username,
                 $Address,
                 $Port,

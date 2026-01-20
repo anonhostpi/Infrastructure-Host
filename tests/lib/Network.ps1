@@ -94,7 +94,7 @@ New-Module -Name SDK.Network -ScriptBlock {
                 [string]$Address,
                 [int]$Port = 22,
                 [string]$Command = "",
-                [string]$KeyPath = $mod.SDK.General.KeyPath
+                [string]$KeyPath = $mod.SDK.Settings.KeyPath
             )
 
             $key_path = If( Test-Path $KeyPath ) {
