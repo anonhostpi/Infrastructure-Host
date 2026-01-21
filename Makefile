@@ -1,4 +1,4 @@
-.PHONY: all clean scripts cloud-init autoinstall iso cidata-iso autoinstall-iso help list-fragments cloud-init-test
+.PHONY: all clean scripts cloud-init autoinstall iso help list-fragments cloud-init-test
 
 # Source dependencies
 CONFIGS := $(wildcard src/config/*.config.yaml)
@@ -14,7 +14,7 @@ INCLUDE ?=
 EXCLUDE ?=
 
 # Default: build everything
-all: scripts cloud-init autoinstall
+all: scripts cloud-init autoinstall iso
 
 # Help
 help:
@@ -23,9 +23,7 @@ help:
 	@echo "  scripts        - Generate shell scripts"
 	@echo "  cloud-init     - Generate cloud-init config (all fragments)"
 	@echo "  autoinstall    - Generate user-data"
-	@echo "  iso            - Build both ISOs (cidata + autoinstall)"
-	@echo "  cidata-iso     - Build CIDATA ISO only"
-	@echo "  autoinstall-iso - Build autoinstall ISO only"
+	@echo "  iso            - Build modified Ubuntu ISO with embedded user-data"
 	@echo "  list-fragments - List available cloud-init fragments"
 	@echo "  clean          - Remove generated files"
 	@echo ""
@@ -60,14 +58,12 @@ autoinstall: output/user-data
 output/user-data: $(AUTOINSTALL_TEMPLATES) $(CLOUD_INIT_FRAGMENTS) $(SCRIPTS) $(CONFIGS)
 	python3 -m builder render autoinstall -o $@
 
-# Build ISOs (run inside multipass VM where output/ is mounted)
-cidata-iso: output/user-data scripts
-	bash output/scripts/build-iso.sh cidata
-
-autoinstall-iso: scripts
-	bash output/scripts/build-iso.sh autoinstall
-
-iso: cidata-iso autoinstall-iso
+# Build ISO (Modified ISO method - embeds user-data in Ubuntu ISO)
+# Run inside multipass VM where output/ is mounted
+# ISO is built in /tmp to avoid multipass mount 2GB file size limit
+# Use 'multipass transfer' to copy ISO to host
+iso: output/user-data scripts
+	bash output/scripts/build-iso.sh
 
 clean:
 	rm -rf output/*
