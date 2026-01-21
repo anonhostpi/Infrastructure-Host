@@ -47,6 +47,9 @@ New-Module -Name SDK.Builder -ScriptBlock {
                 $mod.SDK.Multipass.Destroy($_)
             }
         }
+        Exists = {
+            return $mod.SDK.Multipass.Exists($this.Name)
+        }
     }
 
     $SDK.Extend("Builder", $Builder)
