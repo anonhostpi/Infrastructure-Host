@@ -15,12 +15,19 @@ New-Module -Name SDK.Builder -ScriptBlock {
 
     $mod = @{ SDK = $SDK }
 
-    $Builder = New-Object PSObject
+    Add-ScriptProperties $Builder @{
+        Name = {
+            return $mod.SDK.Settings.Virtualization.Builder.Name
+        }
+        Runner = {
+            return $mod.SDK.Settings.Virtualization.Runner.Name
+        }
+    }
 
     Add-ScriptMethods $Builder @{
         Flush = {
-            $builder_name = $mod.SDK.Settings.Virtualization.Builder.Name
-            $runner_name = $mod.SDK.Settings.Virtualization.Runner.Name
+            $builder_name = $this.Name
+            $runner_name = $this.Runner
 
             @(
                 $builder_name,
