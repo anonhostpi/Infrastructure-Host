@@ -68,6 +68,27 @@ New-Module -Name SDK.Multipass -ScriptBlock {
             $result = $this.Exec($VMName, "cloud-init status")
             return $result.Output
         }
+        Mounts = {
+            param(
+                [Parameter(Mandatory = $true)]
+                [string]$VMName
+            )
+            $info = $this.Info($VMName, "json")
+            if ($info -and $info.$VMName -and $info.$VMName.mounts) {
+                return $info.$VMName.mounts
+            }
+            return @()
+        }
+        Mounted = {
+            param(
+                [Parameter(Mandatory = $true)]
+                [string]$VMName,
+                [Parameter(Mandatory = $true)]
+                [string]$HostPath
+            )
+            $mounts = $this.Mounts($VMName)
+            return $mounts.PSObject.Properties | Where-Object { $_.Value.source_path -eq $HostPath }
+        }
     }
 
     #region: VM lifecycle methods
