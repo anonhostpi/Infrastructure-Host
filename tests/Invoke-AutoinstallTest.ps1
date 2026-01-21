@@ -95,7 +95,9 @@ Write-Host ""
 
 # Clean up multipass test VMs to avoid IP conflicts
 # (VirtualBox VMs use the same static IP as multipass runner)
-$SDK.Builder.Flush()
+If( -not $SDK.Builder.Flush() ) {
+    Write-Warning "Failed to destroy existing builder/runner VMs"
+}
 Write-Host ""
 
 $stepCount = if ($SkipBuild) { 8 } else { 11 }
