@@ -73,7 +73,13 @@ New-Module -Name SDK.Builder -ScriptBlock {
                 "pip3 install --break-system-packages -q -e . 2>/dev/null"
             ) -join " && "
 
-            return $this.Exec($apt) -and $this.Exec($pip)
+            $apt_result = $this.Exec($apt)
+            $pip_result = $this.Exec($pip)
+
+            $apt_success = $apt_result.ExitCode -eq 0
+            $pip_success = $pip_result.ExitCode -eq 0
+
+            return $apt_success -and $pip_success
         }
         Build = {
             $make = @(
@@ -81,12 +87,17 @@ New-Module -Name SDK.Builder -ScriptBlock {
                 "make all"
             ) -join " && "
 
-            return $this.Exec($make)
+            $make_result = $this.Exec($make)
+
+            return $make_result.ExitCode -eq 0
         }
         Stage = {
-            $this.Setup()
+            $setup_success = $this.Setup($true)
+            if( -not $setup_success ) {
+                throw "Failed to initialize builder VM"
+            }
 
-            $mounted = if( -not $this.Mounted($mod.SDK.Root()) ) {
+            $mounted = if( $null -eq $this.Mounted($mod.SDK.Root()) ) {
                 $this.Mount($mod.SDK.Root(), "/home/ubuntu/infra-host")
             } else {
                 $true

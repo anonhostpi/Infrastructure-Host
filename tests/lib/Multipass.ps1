@@ -22,7 +22,7 @@ New-Module -Name SDK.Multipass -ScriptBlock {
                 $Table.Keys | ForEach-Object { $_ }
             }) | Sort-Object -Unique
             foreach( $key in $keys ) {
-                $result[$key] = & $mod.Defaulter $Table.$key $Defaults.$key
+                $result[$key] = & $mod.Configurator.Defaulter $Table.$key $Defaults.$key
             }
             return $result
         }
@@ -125,22 +125,19 @@ New-Module -Name SDK.Multipass -ScriptBlock {
                 return $mod.SDK.Multipass.Status($this.Name)
             }
             UntilInstalled = {
-                param(
-                    [int]$TimeoutSeconds = 600
-                )
-                return $mod.SDK.Multipass.UntilInstalled($this.Name, $TimeoutSeconds)
+                return $mod.SDK.Multipass.UntilInstalled($this.Name)
             }
             Setup = {
-                param( [bool]$FailOnTimeout )
+                param( [bool]$FailOnNotInitialized )
                 $created = $this.Ensure()
                 if( -not $created ) {
                     throw "Failed to create VM '$($this.Name)'"
                 }
-                $timedout = $this.UntilInstalled( $mod.SDK.Settings.Virtualization.TimeoutSeconds )
-                if( $timedout -and $FailOnTimeout ) {
-                    throw "Timed out waiting for VM '$($this.Name)' to finish installation"
+                $initialized = $this.UntilInstalled()
+                if( -not $initialized -and $FailOnNotInitialized ) {
+                    throw "Cloud-init failed for VM '$($this.Name)'"
                 }
-                return $timedout
+                return $initialized
             }
 
             #region: Worker File Sharing
@@ -329,8 +326,7 @@ New-Module -Name SDK.Multipass -ScriptBlock {
         UntilInstalled = {
             param(
                 [Parameter(Mandatory = $true)]
-                [string]$VMName,
-                [int]$TimeoutSeconds = 600
+                [string]$VMName
             )
             $result = $this.Exec($VMName, "cloud-init status --wait")
             return $result.ExitCode -eq 0
