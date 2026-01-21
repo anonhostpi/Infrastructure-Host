@@ -213,7 +213,7 @@ New-Module -Name SDK.Multipass -ScriptBlock {
         }
     }
 
-    #region: VM configuration methods
+    #region: VM file sharing methods
     Add-ScriptMethods $Multipass @{
         Mount = {
             param(
