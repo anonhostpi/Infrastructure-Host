@@ -41,16 +41,23 @@ New-Module -Name SDK.Multipass -ScriptBlock {
             }
             return $result
         }
-        Address = {
+        Addresses = {
             param(
                 [Parameter(Mandatory = $true)]
                 [string]$VMName
             )
             $info = $this.Info($VMName, "json")
             if ($info -and $info.$VMName -and $info.$VMName.ipv4) {
-                return $info.$VMName.ipv4 | Select-Object -First 1
+                return $info.$VMName.ipv4
             }
-            return $null
+            return @()
+        }
+        Address = {
+            param(
+                [Parameter(Mandatory = $true)]
+                [string]$VMName
+            )
+            return ($this.Addresses($VMName) | Select-Object -First 1)
         }
         List = {
             $result = $this.Invoke("list", "--format", "csv")

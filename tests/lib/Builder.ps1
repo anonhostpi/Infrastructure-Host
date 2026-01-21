@@ -14,12 +14,19 @@ New-Module -Name SDK.Builder -ScriptBlock {
     . "$PSScriptRoot\helpers\Config.ps1"
 
     $mod = @{ SDK = $SDK }
+    $Runner = New-Object PSObject -Property @{}
+    
+    $mod.Builder = $Builder
+    $mod.Runner = $Runner
 
     Add-ScriptProperties $Builder @{
         Name = {
             return $mod.SDK.Settings.Virtualization.Builder.Name
         }
-        Runner = {
+    }
+
+    Add-ScriptProperties $Runner @{
+        Name = {
             return $mod.SDK.Settings.Virtualization.Runner.Name
         }
     }
