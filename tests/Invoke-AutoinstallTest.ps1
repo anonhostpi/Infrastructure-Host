@@ -127,13 +127,16 @@ if (-not $SkipBuild) {
 
     # Step 5: Validate ISO (Modified ISO method)
     Write-Step "Validating ISO structure..."
+    $artifacts = $SDK.Builder.Artifacts
+
+    If( $null -eq $artifacts ){
+        Write-Error "No build artifacts found. Build may have failed."
+        exit 1
+    }
 
     # ISO is built in /tmp to avoid multipass mount 2GB file size limit
-    $vmIsoPath = "/tmp/ubuntu-autoinstall.iso"
-
-    # Check 1: user-data is embedded in ISO root
-    $userDataCheck = multipass exec $VMName -- bash -c "xorriso -indev $vmIsoPath -find / -name user-data 2>/dev/null | grep -q user-data && echo OK"
-    if ($userDataCheck -ne "OK") {
+    $result = $SDK.Builder.Exec("xorriso -indev $($artifacts.iso) -find / -name user-data 2>/dev/null | grep -q user-data && echo OK")
+    if( (-not $result.Success) -or $result.Output -ne "OK" ){
         Write-Error "ISO validation failed: user-data not found in ISO"
         exit 1
     }
