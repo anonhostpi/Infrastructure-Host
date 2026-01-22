@@ -15,14 +15,32 @@ New-Module -Name SDK.Multipass -ScriptBlock {
 
     $mod.Configurator = @{
         Defaulter = {
-            param($Table, $Defaults)
+            param(
+                $Table = @{},
+                $Defaults = @{}
+            )
+
+            $converted = @{
+                table = (ConvertTo-OrderedHashtable $Table)
+                defaults = (ConvertTo-OrderedHashtable $Defaults)
+            }
+
             $result = [ordered]@{}
             $keys = (& {
-                $Defaults.Keys | ForEach-Object { $_ }
-                $Table.Keys | ForEach-Object { $_ }
+                $converted.defaults.Keys | ForEach-Object { $_ }
+                $converted.table.Keys | ForEach-Object { $_ }
             }) | Sort-Object -Unique
             foreach( $key in $keys ) {
-                $result[$key] = & $mod.Configurator.Defaulter $Table.$key $Defaults.$key
+                $tVal = $converted.table[$key]
+                $dVal = $converted.defaults[$key]
+
+                $result[$key] = if ($tVal -is [System.Collections.IDictionary] -and $dVal -is [System.Collections.IDictionary]) {
+                    & $mod.Configurator.Defaulter $tVal $dVal
+                } elseif ($null -ne $tVal) {
+                    $tVal
+                } else {
+                    $dVal
+                }
             }
             return $result
         }
