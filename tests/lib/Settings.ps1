@@ -9,7 +9,6 @@ New-Module -Name SDK.Settings -ScriptBlock {
         $SDK
     )
 
-    Import-Module powershell-yaml -ErrorAction Stop
     . "$PSScriptRoot\helpers\PowerShell.ps1"
     . "$PSScriptRoot\helpers\Config.ps1"
 

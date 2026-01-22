@@ -129,3 +129,5 @@ New-Module -Name Helpers.PowerShell -ScriptBlock {
 
     Export-ModuleMember -Function ConvertTo-OrderedHashtable,Add-ScriptMethods,Test-Primitive,Add-ScriptProperties
 } | Import-Module -Force
+
+Import-Module powershell-yaml -ErrorAction Stop
