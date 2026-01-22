@@ -4,6 +4,7 @@ from pathlib import Path
 import yaml
 from jinja2 import Environment, FileSystemLoader
 
+from . import artifacts
 from . import filters
 from .composer import deep_merge
 
@@ -96,10 +97,7 @@ def render_script(ctx, input_path, output_path):
         template_path = input_path
 
     result = render_text(ctx, template_path)
-
-    Path(output_path).parent.mkdir(parents=True, exist_ok=True)
-    with open(output_path, 'w', newline='\n') as f:
-        f.write(result)
+    artifacts.write('scripts', Path(output_path).name, output_path, content=result)
 
 
 def get_available_fragments():
@@ -190,11 +188,11 @@ def render_cloud_init_to_file(ctx, output_path, include=None, exclude=None):
         exclude: List of fragment names to exclude (default: none)
     """
     merged = render_cloud_init(ctx, include=include, exclude=exclude)
-
-    Path(output_path).parent.mkdir(parents=True, exist_ok=True)
-    with open(output_path, 'w', newline='\n') as f:
-        f.write('#cloud-config\n')
-        yaml.dump(merged, f, default_flow_style=False, sort_keys=False, width=1000)
+    artifacts.write(
+        None, 'cloud_init', output_path,
+        content='#cloud-config\n',
+        writer=lambda f: yaml.dump(merged, f, default_flow_style=False, sort_keys=False, width=1000)
+    )
 
 
 def render_autoinstall(ctx):
@@ -213,7 +211,4 @@ def render_autoinstall(ctx):
 def render_autoinstall_to_file(ctx, output_path):
     """Render autoinstall to output file."""
     result = render_autoinstall(ctx)
-
-    Path(output_path).parent.mkdir(parents=True, exist_ok=True)
-    with open(output_path, 'w', newline='\n') as f:
-        f.write(result)
+    artifacts.write(None, 'autoinstall', output_path, content=result)
