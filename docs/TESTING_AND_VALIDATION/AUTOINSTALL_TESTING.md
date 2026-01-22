@@ -6,6 +6,16 @@ Build and test the full autoinstall ISO with VirtualBox.
 
 ## Overview
 
+### Modified ISO Method
+
+This project uses the **Modified ISO method** - a single self-contained ISO with embedded user-data:
+
+- **Single ISO**: user-data and meta-data are embedded directly in the ISO at `/`
+- **GRUB modified**: Kernel command line includes `autoinstall ds=nocloud\;s=/cdrom/`
+- **No CIDATA needed**: Unlike the separate CIDATA disk method, everything is in one ISO
+
+The installer boots, GRUB passes the nocloud datasource parameter, and cloud-init finds the configuration at `/cdrom/user-data`.
+
 ### 7.1 vs 7.2: What Each Tests
 
 | Aspect | 7.1 (Cloud-init) | 7.2 (Autoinstall) |
@@ -121,14 +131,15 @@ This downloads the Ubuntu ISO (cached for subsequent builds) and creates `output
 ### Step 6: Validate ISO
 
 ```powershell
-# Verify nocloud directory exists
-multipass exec $BuilderVMName -- xorriso -indev /home/ubuntu/infra-host/output/ubuntu-autoinstall.iso -ls /nocloud 2>/dev/null
+# Verify user-data is embedded at ISO root
+multipass exec $BuilderVMName -- xorriso -indev /home/ubuntu/infra-host/output/ubuntu-autoinstall.iso -find / -name user-data 2>/dev/null
 
-# Verify GRUB has autoinstall entry
+# Verify GRUB has autoinstall and nocloud parameters
 multipass exec $BuilderVMName -- bash -c "
     xorriso -indev /home/ubuntu/infra-host/output/ubuntu-autoinstall.iso -extract /boot/grub/grub.cfg /tmp/grub.cfg 2>/dev/null
-    grep -A5 'Autoinstall' /tmp/grub.cfg
+    grep 'autoinstall.*ds=nocloud' /tmp/grub.cfg
 "
+# Expected output should include: autoinstall ds=nocloud\;s=/cdrom/
 ```
 
 ### Step 7: Transfer ISO to Host
@@ -400,7 +411,7 @@ This allows testing multiple scenarios without full reinstall (~15 min saved per
 | Error | Cause | Fix |
 |-------|-------|-----|
 | "Malformed autoinstall config" | YAML syntax error | Check for inline comments in list items |
-| "No autoinstall config found" | Missing datasource | Verify GRUB has `ds=nocloud\;s=/cdrom/nocloud/` |
+| "No autoinstall config found" | Missing datasource | Verify GRUB has `ds=nocloud\;s=/cdrom/` and user-data at ISO root |
 | Installation drops to shell | early-commands failed | Check network config, arping availability |
 | Boot loop after install | Wrong boot order | Eject ISO or change boot order in VM |
 | Disk too small | Insufficient space for partitions | Use 25GB+ disk |
@@ -446,7 +457,7 @@ tar xzf test-failure-logs.tar.gz
 | Symptom | Likely Cause | Diagnostic |
 |---------|--------------|------------|
 | VM won't boot | ISO build issue | Check xorriso output, verify GRUB config |
-| Drops to shell at GRUB | Missing autoinstall datasource | Verify `ds=nocloud;s=/cdrom/nocloud/` |
+| Drops to shell at GRUB | Missing autoinstall datasource | Verify GRUB has `ds=nocloud\;s=/cdrom/` and user-data at ISO root |
 | Install starts but fails | YAML syntax error | Check `/var/log/installer/autoinstall-user-data` |
 | Install completes, services fail | Fragment issue | Check `cloud-init status`, specific service logs |
 | Network unreachable | early-commands failed | Check `/var/log/installer/curtin-install.log` |
@@ -491,9 +502,10 @@ tests/
 - 7.2.3: Boot partition exists
 - 7.2.4: Installer logs present
 - 7.2.5: Autoinstall user-data captured
-- 7.2.6: UEFI boot entry exists
-- 7.2.7: No cdrom mounted (ISO ejected)
-- 7.2.8: Cloud-init status done
+- 7.2.6: Cloud-init nocloud datasource (Modified ISO method validation)
+- 7.2.7: UEFI boot entry exists (EFI only) / BIOS GRUB installed (BIOS only)
+- 7.2.8: No cdrom mounted (ISO ejected)
+- 7.2.9: Cloud-init status done
 
 **Cloud-init Fragment Tests (6.x):**
 - All tests from 7.1 re-run via SSH transport

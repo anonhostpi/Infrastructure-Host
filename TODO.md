@@ -1,0 +1,25 @@
+- [ ] Add Agent Configurations
+  - [ ] gh search repo and gh search code as well as gitlab equivalents
+  - [ ] PM -> QA (TTD) -> Dev -> QA -> Reviewer -> Human Review -> Merge
+  - [ ] VM Orchestrator
+
+- [ ] Refactor this repo
+  - [ ] Layers:
+    - [ ] Builder layer (Book 0)
+    - [ ] Foundation layer (Book 1)
+    - [ ] Cloud layer (Book 2)
+  - [ ] All 3 layers should have the same architecture (or at least similar for Book 0)
+    - [ ] Architecture/Overview docs
+    - [ ] CI/CD
+      - [ ] Configs
+      - [ ] Build
+        - [ ] Docs
+        - [ ] Source
+          - [ ] Script/File Templates
+          - [ ] Autoconfig/Cloud-Init Fragments
+      - [ ] Tests
+        - [ ] Docs
+        - [ ] Source
+          - [ ] Script/File Templates
+          - [ ] Autoconfig/Cloud-Init Fragments
+      - **NOTE:** Tests and Build should be complimentary, ideally where tests is conceptually a superset of build documentation-wise, deployment-wise, and configuration-wise 

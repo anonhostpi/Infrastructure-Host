@@ -352,7 +352,7 @@ foreach ($currentFirmware in $FirmwareList) {
 
     Write-Host "  Starting VM to boot installed system ($vmType)..."
     $result = $SDK.Vbox.Start($vmName, $vmType)
-    if ($result.ExitCode -ne 0) {
+    if (-not $result.Success) {
         Write-Error "Failed to start VM after installation"
         exit 1
     }

@@ -339,7 +339,9 @@ if ($failCount -gt 0) {
 
 # Cleanup
 if (-not $SkipCleanup) {
-    $SDK.Builder.Flush()
+    If( -not $SDK.Builder.Flush() ) {
+        Write-Warning "Failed to cleanup builder/runner VMs"
+    }
 } else {
     Write-Host "VMs kept running (use -SkipCleanup:`$false to clean up)" -ForegroundColor Gray
     Write-Host "  Builder: $VMName"
