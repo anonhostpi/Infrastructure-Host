@@ -493,6 +493,12 @@ main() {
     repackage_iso
     verify_output_iso
 
+    # Update artifacts.yaml with ISO path
+    if command -v python3 &> /dev/null; then
+        python3 -m builder artifacts set iso "$OUTPUT_ISO" -f "$SCRIPT_DIR/artifacts.yaml"
+        log "Updated artifacts.yaml with ISO path"
+    fi
+
     log ""
     log "=============================================="
     log " Build Complete"
