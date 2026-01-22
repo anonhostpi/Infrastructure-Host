@@ -11,15 +11,46 @@ New-Module -Name SDK.Vbox -ScriptBlock {
 
     $mod = @{ SDK = $SDK }
 
-    . "$PSScriptRoot\helpers\VBox.ps1"
     . "$PSScriptRoot\helpers\PowerShell.ps1"
 
     $Vbox = New-Object PSObject
 
-    #region: Main utility method
+    #region: Main utilities
+    Add-ScriptProperty $Vbox @{
+        Path = {
+            if ( -not [string]::IsNullOrWhiteSpace($script:VBoxManage) ) { return $script:VBoxManage }
+            if ( -not [string]::IsNullOrWhiteSpace($global:VBoxManage) ) { return $global:VBoxManage }
+            return "C:\Program Files\Oracle\VirtualBox\VBoxManage.exe"
+        }
+    }
     Add-ScriptMethods $Vbox @{
         Invoke = {
-            return Invoke-VBoxManage -Arguments $args
+            $path = $this.Path
+
+            if (-not (Test-Path $path)) {
+                throw "VBoxManage not found at: $path"
+            }
+
+            $EAP = $ErrorActionPreference
+            $ErrorActionPreference = 'Continue'
+
+            try {
+                $result = & $path @args 2>&1
+                $exitCode = $LASTEXITCODE
+            } finally {
+                $ErrorActionPreference = $EAP
+            }
+
+            # Filter out progress lines from output
+            $filteredResult = $result | Where-Object {
+                $_ -notmatch '^\d+%\.{3}'
+            }
+
+            return @{
+                Output = $filteredResult
+                ExitCode = $exitCode
+                Success = ($exitCode -eq 0)
+            }
         }
     }
 
