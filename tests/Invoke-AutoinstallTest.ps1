@@ -143,8 +143,8 @@ if (-not $SkipBuild) {
     Write-Host "  Embedded user-data: OK"
 
     # Check 2: GRUB has autoinstall and nocloud parameters
-    $grubCheck = multipass exec $VMName -- bash -c "xorriso -osirrox on -indev $vmIsoPath -extract /boot/grub/grub.cfg /tmp/grub.cfg 2>/dev/null && grep -q 'autoinstall.*ds=nocloud' /tmp/grub.cfg && echo OK"
-    if ($grubCheck -ne "OK") {
+    $result = $SDK.Builder.Exec("xorriso -osirrox on -indev $($artifacts.iso) -extract /boot/grub/grub.cfg /tmp/grub.cfg 2>/dev/null && grep -q 'autoinstall.*ds=nocloud' /tmp/grub.cfg && echo OK")
+    if( -not $result.Success -or $result.Output -ne "OK" ){
         Write-Error "ISO validation failed: GRUB autoinstall parameters not found"
         exit 1
     }
@@ -171,8 +171,9 @@ if (-not $SkipBuild) {
         Remove-Item $ISOPath -Force
     }
 
-    multipass transfer "${VMName}:${vmIsoPath}" $ISOPath
-    if ($LASTEXITCODE -ne 0) {
+    $transferred = $SDK.Builder.Pull($artifacts.iso, $ISOPath)
+
+    if ( (-not $transferred) -or (-not (Test-Path $ISOPath)) ) {
         Write-Error "Failed to transfer ISO from builder VM"
         exit 1
     }
