@@ -184,14 +184,23 @@ New-Module -Name SDK.Multipass -ScriptBlock {
                 )
                 return $mod.SDK.Multipass.Mounted($this.Name, $HostPath)
             }
-            Transfer = {
+            Pull = {
                 param(
                     [Parameter(Mandatory = $true)]
                     [string]$Source,
                     [Parameter(Mandatory = $true)]
                     [string]$Destination
                 )
-                return $mod.SDK.Multipass.Transfer($Source, $Destination)
+                return $mod.SDK.Multipass.Transfer("$(this.Name):$($Source)", $Destination)
+            }
+            Push = {
+                param(
+                    [Parameter(Mandatory = $true)]
+                    [string]$Source,
+                    [Parameter(Mandatory = $true)]
+                    [string]$Destination
+                )
+                return $mod.SDK.Multipass.Transfer($Source, "$(this.Name):$($Destination)")
             }
 
             #region: Worker Command Execution
