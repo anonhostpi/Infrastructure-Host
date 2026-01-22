@@ -89,7 +89,7 @@ Write-Host " Infrastructure-Host Autoinstall Testing (7.2)" -ForegroundColor Cya
 Write-Host "================================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "VirtualBox VM: $VBoxVMName" -ForegroundColor Yellow
-Write-Host "Builder VM:    $VMName" -ForegroundColor Yellow
+Write-Host "Builder VM:    $($SDK.Builder.Name)" -ForegroundColor Yellow
 Write-Host "Firmware(s):   $($FirmwareList -join ', ')" -ForegroundColor Yellow
 Write-Host ""
 
@@ -114,71 +114,16 @@ function Write-Step {
 # ============================================================================
 
 if (-not $SkipBuild) {
-    # Step 1: Launch builder VM
-    Write-Step "Launching builder VM..."
-
-    $existingBuilder = multipass list --format csv 2>$null | Select-String "^$VMName,"
-    if (-not $existingBuilder) {
-        Write-Host "  Creating new builder VM..."
-        multipass launch --name $VMName --cpus $VMCpus --memory $VMMemory --disk $VMDisk
-        if ($LASTEXITCODE -ne 0) {
-            Write-Error "Failed to launch builder VM"
-            exit 1
-        }
-    } else {
-        Write-Host "  Starting existing builder VM..."
-        multipass start $VMName 2>$null
-    }
-
-    Write-Host "  Waiting for cloud-init..."
-    multipass exec $VMName -- cloud-init status --wait 2>$null
-    Write-Host "  Done" -ForegroundColor Green
-    Write-Host ""
-
-    # Step 2: Mount repository
-    Write-Step "Mounting repository to builder VM..."
-
-    # Check if already mounted
-    $mounts = multipass info $VMName --format json 2>$null | ConvertFrom-Json
-    $alreadyMounted = $mounts.info.$VMName.mounts.PSObject.Properties | Where-Object { $_.Value.source_path -eq $RepoRoot }
-
-    if (-not $alreadyMounted) {
-        multipass mount $RepoRoot ${VMName}:/home/ubuntu/infra-host
-        if ($LASTEXITCODE -ne 0) {
-            Write-Error "Failed to mount repository"
-            exit 1
-        }
-    }
-    Write-Host "  Done" -ForegroundColor Green
-    Write-Host ""
-
-    # Step 3: Install dependencies and build
-    Write-Step "Installing dependencies and building artifacts..."
-
-    Write-Host "  Installing dependencies..."
-    multipass exec $VMName -- bash -c "sudo apt-get update -qq && sudo apt-get install -y -qq python3-pip python3-yaml python3-jinja2 make xorriso cloud-image-utils wget > /dev/null 2>&1"
-    multipass exec $VMName -- bash -c "cd /home/ubuntu/infra-host && pip3 install --break-system-packages -q -e . 2>/dev/null"
-
-    Write-Host "  Building artifacts (make all)..."
-    multipass exec $VMName -- bash -c "cd /home/ubuntu/infra-host && make all"
-    if ($LASTEXITCODE -ne 0) {
-        Write-Error "Failed to build artifacts"
+    Write-Step "Staging build system..."
+    If( -not $SDK.Builder.Stage() ){
+        Write-Error "Failed to stage builder VM"
         exit 1
     }
-    Write-Host "  Done" -ForegroundColor Green
-    Write-Host ""
-
-    # Step 4: Build ISO
     Write-Step "Building autoinstall ISO..."
-
-    Write-Host "  This may take several minutes (downloads Ubuntu ISO if not cached)..."
-    multipass exec $VMName -- bash -c "cd /home/ubuntu/infra-host && make iso"
-    if ($LASTEXITCODE -ne 0) {
-        Write-Error "Failed to build ISO"
+    If( -not $SDK.Builder.Build() ){
+        Write-Error "Failed to build autoinstall ISO"
         exit 1
     }
-    Write-Host "  Done" -ForegroundColor Green
-    Write-Host ""
 
     # Step 5: Validate ISO (Modified ISO method)
     Write-Step "Validating ISO structure..."
