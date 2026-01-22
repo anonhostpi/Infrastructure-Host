@@ -152,7 +152,7 @@ New-Module -Name SDK.Vbox -ScriptBlock {
                 "--device", $Device,
                 "--type", $Type,
                 "--medium", $MediumPath
-            ).ExitCode -eq 0
+            ).Success
         }
         Give = {
             param(
@@ -170,7 +170,7 @@ New-Module -Name SDK.Vbox -ScriptBlock {
                 "--filename", $MediumPath,
                 "--size", $Size
             )
-            if( $result.ExitCode -ne 0 ){
+            if( -not $result.Success ){
                 $msg = @(
                     "Failed to create disk medium at '$MediumPath'.",
                     "VBoxManage output:",
@@ -309,14 +309,14 @@ New-Module -Name SDK.Vbox -ScriptBlock {
                 [Parameter(Mandatory = $true)]
                 [string] $VMName
             )
-            return $this.Invoke("controlvm", $VMName, "pause").ExitCode -eq 0
+            return $this.Invoke("controlvm", $VMName, "pause").Success
         }
         Resume = {
             param(
                 [Parameter(Mandatory = $true)]
                 [string] $VMName
             )
-            return $this.Invoke("controlvm", $VMName, "resume").ExitCode -eq 0
+            return $this.Invoke("controlvm", $VMName, "resume").Success
         }
         Bump = {
             param(
@@ -342,7 +342,7 @@ New-Module -Name SDK.Vbox -ScriptBlock {
                 [string] $Type = "gui"
             )
 
-            return $this.Invoke("startvm", $VMName, "--type", $Type).ExitCode -eq 0
+            return $this.Invoke("startvm", $VMName, "--type", $Type).Success
         }
         Shutdown = {
             param(
@@ -354,9 +354,9 @@ New-Module -Name SDK.Vbox -ScriptBlock {
                 return $true
             }
             if ($Force) {
-                return $this.Invoke("controlvm", $VMName, "poweroff").ExitCode -eq 0
+                return $this.Invoke("controlvm", $VMName, "poweroff").Success
             } else {
-                return $this.Invoke("controlvm", $VMName, "acpipowerbutton").ExitCode -eq 0
+                return $this.Invoke("controlvm", $VMName, "acpipowerbutton").Success
             }
         }
         UntilShutdown = {
@@ -397,7 +397,7 @@ New-Module -Name SDK.Vbox -ScriptBlock {
                 $params += "$value"
             }
 
-            return $this.Invoke($params).ExitCode -eq 0
+            return $this.Invoke($params).Success
         }
         Optimize = {
             param(
@@ -472,7 +472,7 @@ New-Module -Name SDK.Vbox -ScriptBlock {
                     "--register"
                 )
 
-                if( $result.ExitCode -ne 0 ){
+                if( -not $result.Success ){
                     $msg = @(
                         "Failed to create VM '$VMName'.",
                         "VBoxManage output:",
@@ -518,7 +518,7 @@ New-Module -Name SDK.Vbox -ScriptBlock {
                     "--add", "sata",
                     "--controller", "IntelAhci"
                 )
-                if( $result.ExitCode -ne 0 ){
+                if( -not $result.Success ){
                     $msg = @(
                         "Failed to create storage controller '$ControllerName' for VM '$VMName'.",
                         "VBoxManage output:",

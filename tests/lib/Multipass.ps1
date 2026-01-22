@@ -219,6 +219,7 @@ New-Module -Name SDK.Multipass -ScriptBlock {
             return @{
                 Output = $output
                 ExitCode = $LASTEXITCODE
+                Success = $LASTEXITCODE -eq 0
             }
         }
         Worker = {
@@ -250,7 +251,7 @@ New-Module -Name SDK.Multipass -ScriptBlock {
                 [string]$Format = "json"
             )
             $result = $this.Invoke("info", $VMName, "--format", $Format)
-            if ($Format -eq "json" -and $result.ExitCode -eq 0) {
+            if ($Format -eq "json" -and $result.Success) {
                 return $result.Output | ConvertFrom-Json
             }
             return $result
@@ -276,7 +277,7 @@ New-Module -Name SDK.Multipass -ScriptBlock {
         List = {
             $result = $this.Invoke("list", "--format", "csv")
 
-            if ($result.ExitCode -ne 0) {
+            if (-not $result.Success) {
                 return @()
             }
             return $result.Output | ConvertFrom-Csv
@@ -339,7 +340,7 @@ New-Module -Name SDK.Multipass -ScriptBlock {
                 [Parameter(Mandatory = $true)]
                 [string]$VMName
             )
-            return $this.Invoke("start", $VMName).ExitCode -eq 0
+            return $this.Invoke("start", $VMName).Success
         }
         UntilInstalled = {
             param(
@@ -347,7 +348,7 @@ New-Module -Name SDK.Multipass -ScriptBlock {
                 [string]$VMName
             )
             $result = $this.Exec($VMName, "cloud-init status --wait")
-            return $result.ExitCode -eq 0
+            return $result.Success
         }
         Shutdown = {
             param(
@@ -356,9 +357,9 @@ New-Module -Name SDK.Multipass -ScriptBlock {
                 [bool]$Force = $false
             )
             if ($Force) {
-                return $this.Invoke("stop", "--force", $VMName).ExitCode -eq 0
+                return $this.Invoke("stop", "--force", $VMName).Success
             } else {
-                return $this.Invoke("stop", $VMName).ExitCode -eq 0
+                return $this.Invoke("stop", $VMName).Success
             }
         }
         UntilShutdown = {
@@ -410,7 +411,7 @@ New-Module -Name SDK.Multipass -ScriptBlock {
             }
 
             $result = $this.Invoke($launchArgs)
-            return $result.ExitCode -eq 0
+            return $result.Success
         }
         Destroy = {
             param(
@@ -422,7 +423,7 @@ New-Module -Name SDK.Multipass -ScriptBlock {
             }
         }
         Purge = {
-            return $this.Invoke("purge").ExitCode -eq 0
+            return $this.Invoke("purge").Success
         }
     }
 
@@ -437,7 +438,7 @@ New-Module -Name SDK.Multipass -ScriptBlock {
                 [Parameter(Mandatory = $true)]
                 [string]$GuestPath
             )
-            return $this.Invoke("mount", $HostPath, "${VMName}:${GuestPath}").ExitCode -eq 0
+            return $this.Invoke("mount", $HostPath, "${VMName}:${GuestPath}").Success
         }
         Unmount = {
             param(
@@ -446,9 +447,9 @@ New-Module -Name SDK.Multipass -ScriptBlock {
                 [string]$GuestPath
             )
             if ([string]::IsNullOrWhiteSpace($GuestPath)) {
-                return $this.Invoke("unmount", $VMName).ExitCode -eq 0
+                return $this.Invoke("unmount", $VMName).Success
             } else {
-                return $this.Invoke("unmount", "${VMName}:${GuestPath}").ExitCode -eq 0
+                return $this.Invoke("unmount", "${VMName}:${GuestPath}").Success
             }
         }
         Transfer = {
@@ -458,7 +459,7 @@ New-Module -Name SDK.Multipass -ScriptBlock {
                 [Parameter(Mandatory = $true)]
                 [string]$Destination
             )
-            return $this.Invoke("transfer", $Source, $Destination).ExitCode -eq 0
+            return $this.Invoke("transfer", $Source, $Destination).Success
         }
     }
 

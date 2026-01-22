@@ -75,10 +75,7 @@ New-Module -Name SDK.Builder -ScriptBlock {
             $apt_result = $this.Exec($apt)
             $pip_result = $this.Exec($pip)
 
-            $apt_success = $apt_result.ExitCode -eq 0
-            $pip_success = $pip_result.ExitCode -eq 0
-
-            return $apt_success -and $pip_success
+            return $apt_result.Success -and $pip_result.Success
         }
         Build = {
             $make = @(
@@ -88,7 +85,7 @@ New-Module -Name SDK.Builder -ScriptBlock {
 
             $make_result = $this.Exec($make)
 
-            return $make_result.ExitCode -eq 0
+            return $make_result.Success
         }
         Stage = {
             $setup_success = $this.Setup($true)
