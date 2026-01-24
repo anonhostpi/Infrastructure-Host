@@ -41,8 +41,8 @@ These topics are about **physical deployment** and don't belong in an image-buil
 | 1       | Overview & Architecture    | PARTIAL | **REWRITE** | Root README              | Keep arch concepts, remove deployment details     |
 | 2       | Hardware & BIOS Setup      | OUT     | **REMOVE**  | -                        | Physical deployment                               |
 | 3       | Build System               | IN      | **KEEP**    | Book 0 docs              | Core to image building                            |
-| 4       | Network Planning           | IN      | **KEEP**    | Book 2 - 10-network/docs | Config for network fragment                       |
-| 5       | Autoinstall Media Creation | IN      | **KEEP**    | Book 1 - 00-base/docs    | Core to image building                            |
+| 4       | Network Planning           | IN      | **KEEP**    | Book 2 - network/docs    | Config for network fragment                       |
+| 5       | Autoinstall Media Creation | IN      | **KEEP**    | Book 1 - base/docs       | Core to image building                            |
 | 6       | Cloud-init Fragments       | IN      | **KEEP**    | Book 2 - per-fragment    | Split into per-fragment docs                      |
 | 7       | Testing and Validation     | IN      | **REWORK**  | Per-fragment tests       | Restructure into per-fragment test modules        |
 | 8       | Deployment Process         | OUT     | **REMOVE**  | -                        | Physical deployment                               |
@@ -112,7 +112,7 @@ The base autoinstall configuration. Structured identically to Book 2 fragments.
 book-1-foundation/
 ├── README.md
 │
-├── 00-base/                     # Base autoinstall fragment (REQUIRED)
+├── base/                        # Base autoinstall fragment (REQUIRED)
 │   ├── build.yaml               # Fragment metadata
 │   ├── config/
 │   │   ├── production.yaml      # Production config
@@ -136,7 +136,7 @@ Cloud-init fragments. Each fragment is self-contained.
 book-2-cloud/
 ├── README.md
 │
-├── 10-network/                  # REQUIRED (for ISO/autoinstall)
+├── network/                     # REQUIRED (build_order: 10)
 │   ├── build.yaml               # Fragment metadata
 │   ├── config/
 │   │   ├── production.yaml      # Production config
@@ -149,7 +149,7 @@ book-2-cloud/
 │   └── docs/
 │       └── NETWORK.md
 │
-├── 20-users/                    # REQUIRED (for ISO/autoinstall)
+├── users/                       # REQUIRED (build_order: 20)
 │   ├── build.yaml
 │   ├── config/
 │   │   ├── production.yaml
@@ -162,7 +162,7 @@ book-2-cloud/
 │   └── docs/
 │       └── USERS.md
 │
-├── 25-ssh/                      # REQUIRED (for ISO/autoinstall)
+├── ssh/                         # REQUIRED (build_order: 25)
 │   ├── build.yaml
 │   ├── config/
 │   │   └── production.yaml
@@ -172,20 +172,20 @@ book-2-cloud/
 │   └── docs/
 │       └── SSH.md
 │
-├── 15-kernel/                   # Optional
-├── 30-ufw/                      # Optional
-├── 40-system/                   # Optional
-├── 45-msmtp/                    # Optional
-├── 50-packages/                 # Optional
-├── 50-pkg-security/             # Optional
-├── 55-security-mon/             # Optional
-├── 60-virtualization/           # Optional
-├── 70-cockpit/                  # Optional
-├── 75-claude-code/              # Optional
-├── 76-copilot-cli/              # Optional
-├── 77-opencode/                 # Optional
-├── 90-ui/                       # Optional
-└── 999-pkg-upgrade/             # Optional
+├── kernel/                      # Optional (build_order: 15)
+├── ufw/                         # Optional (build_order: 30)
+├── system/                      # Optional (build_order: 40)
+├── msmtp/                       # Optional (build_order: 45)
+├── packages/                    # Optional (build_order: 50)
+├── pkg-security/                # Optional (build_order: 50)
+├── security-mon/                # Optional (build_order: 55)
+├── virtualization/              # Optional (build_order: 60)
+├── cockpit/                     # Optional (build_order: 70)
+├── claude-code/                 # Optional (build_order: 75)
+├── copilot-cli/                 # Optional (build_order: 76)
+├── opencode/                    # Optional (build_order: 77)
+├── ui/                          # Optional (build_order: 90)
+└── pkg-upgrade/                 # Optional (build_order: 999)
 ```
 
 ---
@@ -209,13 +209,13 @@ The `required` flag affects **ISO and autoinstall builds only**:
 - Required fragments are always included in production builds
 - Multipass runner tests don't need this flag (multipass has its own exec)
 
-| Fragment         | required | Reason                                      |
-| ---------------- | -------- | ------------------------------------------- |
-| 00-base (Book 1) | true     | Core autoinstall - defines OS installation  |
-| 10-network       | true     | System needs networking for remote access   |
-| 20-users         | true     | System needs a login user                   |
-| 25-ssh           | true     | Remote access required for headless servers |
-| All others       | false    | Optional features                           |
+| Fragment       | required | Reason                                      |
+| -------------- | -------- | ------------------------------------------- |
+| base (Book 1)  | true     | Core autoinstall - defines OS installation  |
+| network        | true     | System needs networking for remote access   |
+| users          | true     | System needs a login user                   |
+| ssh            | true     | Remote access required for headless servers |
+| All others     | false    | Optional features                           |
 
 ### Dual Ordering System
 
@@ -225,9 +225,9 @@ The `required` flag affects **ISO and autoinstall builds only**:
 | `build_layer` | Incremental build layer | 1, 2, 3, 8 |
 
 **`build_order`** - Controls the order fragments are merged into the final cloud-init output:
-- Encoded in directory prefix (10-network, 15-kernel, 20-users)
+- Defined in `build.yaml`, not directory name (directories can use simple names like `network/`, `kernel/`)
 - Lower numbers merge first, higher numbers merge last
-- Example: `999-pkg-upgrade` merges last to ensure package upgrades run after all other packages are installed
+- Example: `pkg-upgrade` with `build_order: 999` merges last to ensure package upgrades run after all other packages are installed
 
 **`build_layer`** - Defines incremental build layers (similar to Docker layers):
 - Fragments are organized into layers (1, 2, 3, etc.) for incremental builds
@@ -249,8 +249,8 @@ Use cases:
 **Why they differ:**
 | Fragment | build_order | build_layer | Reason |
 | -------- | ----------- | ----------- | ------ |
-| 10-network | 10 | 1 | Foundation layer |
-| 999-pkg-upgrade | 999 | 8 | Merges last in output, but belongs to packages layer |
+| network | 10 | 1 | Foundation layer |
+| pkg-upgrade | 999 | 8 | Merges last in output, but belongs to packages layer |
 
 ---
 
