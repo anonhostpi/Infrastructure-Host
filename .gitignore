@@ -5,8 +5,8 @@
 book-0-builder/config/vm.config.yaml
 
 # Book 1 - Foundation configs
-book-1-foundation/00-base/config/*.config.yaml
-!book-1-foundation/00-base/config/*.config.yaml.example
+book-1-foundation/base/config/*.config.yaml
+!book-1-foundation/base/config/*.config.yaml.example
 
 # Book 2 - Fragment configs
 book-2-cloud/*/config/*.config.yaml
