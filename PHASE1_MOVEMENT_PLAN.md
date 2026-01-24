@@ -14,41 +14,41 @@ This document specifies exact file movements for the refactor. **No content modi
 
 ---
 
-## 1. Root Level Files
+## 1. Root Level Files [DONE]
 
 | File                   | Action | Destination                                  | Notes                      |
 | ---------------------- | ------ | -------------------------------------------- | -------------------------- |
 | .gitignore             | STAY   |                                              | Update in Phase 2          |
 | Makefile               | STAY   |                                              | Update in Phase 2          |
 | pyproject.toml         | STAY   |                                              | Update in Phase 2          |
-| OVERVIEW.md            | MOVE   | book-0-builder/docs/OVERVIEW.md              |                            |
-| TABLE_OF_CONTENTS.md   | REMOVE |                                              | Obsolete after restructure |
+| OVERVIEW.md            | DONE   | book-0-builder/docs/OVERVIEW.md              |                            |
+| TABLE_OF_CONTENTS.md   | DONE   |                                              | Obsolete after restructure |
 | TODO.md                | STAY   |                                              | Planning doc               |
 | REFACTOR.md            | STAY   |                                              | Planning doc               |
 | REFACTOR_PLANNING.md   | STAY   |                                              | Planning doc               |
-| vm.config.yaml         | MOVE   | book-0-builder/config/vm.config.yaml         |                            |
-| vm.config.yaml.example | MOVE   | book-0-builder/config/vm.config.yaml.example |                            |
-| vm.config.ps1          | REMOVE |                                              | YAML only                  |
-| vm.config.ps1.example  | REMOVE |                                              | YAML only                  |
-| nul                    | REMOVE |                                              | Junk file                  |
+| vm.config.yaml         | DONE   | book-0-builder/config/vm.config.yaml         |                            |
+| vm.config.yaml.example | DONE   | book-0-builder/config/vm.config.yaml.example |                            |
+| vm.config.ps1          | DONE   |                                              | YAML only                  |
+| vm.config.ps1.example  | DONE   |                                              | YAML only                  |
+| nul                    | DONE   |                                              | Junk file                  |
 
 ---
 
-## 2. Builder SDK (Python)
+## 2. Builder SDK (Python) [DONE]
 
 **Source:** `builder/`
 **Destination:** `book-0-builder/builder-sdk/`
 
 | File                 | Action | Destination                             |
 | -------------------- | ------ | --------------------------------------- | --------------- |
-| builder/**init**.py  | MOVE   | book-0-builder/builder-sdk/**init**.py  |
-| builder/**main**.py  | MOVE   | book-0-builder/builder-sdk/**main**.py  |
-| builder/artifacts.py | MOVE   | book-0-builder/builder-sdk/artifacts.py |
-| builder/composer.py  | MOVE   | book-0-builder/builder-sdk/composer.py  |
-| builder/context.py   | MOVE   | book-0-builder/builder-sdk/context.py   |
-| builder/filters.py   | MOVE   | book-0-builder/builder-sdk/filters.py   |
-| builder/renderer.py  | MOVE   | book-0-builder/builder-sdk/renderer.py  |
-| builder/**pycache**/ | REMOVE |                                         | Generated files |
+| builder/**init**.py  | DONE   | book-0-builder/builder-sdk/**init**.py  |
+| builder/**main**.py  | DONE   | book-0-builder/builder-sdk/**main**.py  |
+| builder/artifacts.py | DONE   | book-0-builder/builder-sdk/artifacts.py |
+| builder/composer.py  | DONE   | book-0-builder/builder-sdk/composer.py  |
+| builder/context.py   | DONE   | book-0-builder/builder-sdk/context.py   |
+| builder/filters.py   | DONE   | book-0-builder/builder-sdk/filters.py   |
+| builder/renderer.py  | DONE   | book-0-builder/builder-sdk/renderer.py  |
+| builder/**pycache**/ | DONE   |                                         | Generated files |
 
 ---
 
