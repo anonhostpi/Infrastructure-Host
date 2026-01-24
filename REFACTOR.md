@@ -16,29 +16,39 @@ This document outlines the refactoring of Infrastructure-Host into a focused Ubu
 
 ## Scope Changes
 
-### OUT OF SCOPE (Remove)
+### What's In Scope
 
-These topics are about physical deployment, not image building:
+This project focuses on **building Ubuntu images** - specifically:
 
-| Current Location | Topic                      | Reason              |
-| ---------------- | -------------------------- | ------------------- |
-| Chapter 2        | Hardware & BIOS Setup      | Physical deployment |
-| Chapter 8        | Deployment Process         | Physical deployment |
-| Chapter 9        | Post-Deployment Validation | Post-deployment     |
-| Chapter 11.4     | Hardware Compatibility     | Physical hardware   |
+- Autoinstall ISO creation
+- Cloud-init configuration generation
+- Template rendering and fragment composition
+- Build and test tooling (Host SDK + Builder SDK)
 
-### IN SCOPE (Keep/Restructure)
+### What's Out of Scope
 
-| Current Location | Topic                      | New Location                    |
-| ---------------- | -------------------------- | ------------------------------- |
-| Chapter 1        | Overview & Architecture    | Root README (rewrite)           |
-| Chapter 3        | Build System               | Book 0 - Builder Layer          |
-| Chapter 4        | Network Planning           | Book 2 - 10-network/docs        |
-| Chapter 5        | Autoinstall Media Creation | Book 1 - Foundation Layer       |
-| Chapter 6        | Cloud-init Fragments       | Book 2 - Per-fragment docs      |
-| Chapter 7        | Testing and Validation     | Per-fragment test scripts       |
-| Chapter 10       | Troubleshooting            | Book 0 (build/test issues only) |
-| Chapter 11.1-3   | Appendix (non-hardware)    | Book 0 reference docs           |
+These topics are about **physical deployment** and don't belong in an image-building project:
+
+- Hardware setup and BIOS configuration
+- Physical deployment processes
+- Post-deployment validation
+- Hardware compatibility lists
+
+### Documentation Audit
+
+| Chapter | Topic                      | Scope   | Action      | Destination              | Notes                                             |
+| ------- | -------------------------- | ------- | ----------- | ------------------------ | ------------------------------------------------- |
+| 1       | Overview & Architecture    | PARTIAL | **REWRITE** | Root README              | Keep arch concepts, remove deployment details     |
+| 2       | Hardware & BIOS Setup      | OUT     | **REMOVE**  | -                        | Physical deployment                               |
+| 3       | Build System               | IN      | **KEEP**    | Book 0 docs              | Core to image building                            |
+| 4       | Network Planning           | IN      | **KEEP**    | Book 2 - 10-network/docs | Config for network fragment                       |
+| 5       | Autoinstall Media Creation | IN      | **KEEP**    | Book 1 - 00-base/docs    | Core to image building                            |
+| 6       | Cloud-init Fragments       | IN      | **KEEP**    | Book 2 - per-fragment    | Split into per-fragment docs                      |
+| 7       | Testing and Validation     | IN      | **REWORK**  | Per-fragment tests       | Restructure into per-fragment test modules        |
+| 8       | Deployment Process         | OUT     | **REMOVE**  | -                        | Physical deployment                               |
+| 9       | Post-Deployment Validation | OUT     | **REMOVE**  | -                        | Post-deployment                                   |
+| 10      | Troubleshooting            | PARTIAL | **PARTIAL** | Book 0 docs              | Keep build/test issues, remove deployment issues  |
+| 11      | Appendix                   | PARTIAL | **PARTIAL** | Book 0 docs              | Keep reference files, remove 11.4 Hardware Compat |
 
 ---
 
