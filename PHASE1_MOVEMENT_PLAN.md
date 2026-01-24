@@ -87,31 +87,31 @@ This document specifies exact file movements for the refactor. **No content modi
 
 ---
 
-## 5. Book 1 - Foundation Layer
+## 5. Book 1 - Foundation Layer [DONE]
 
 ### 5.1 Base Autoinstall Template
 
 | File                          | Action | Destination                                 |
 | ----------------------------- | ------ | ------------------------------------------- |
-| src/autoinstall/base.yaml.tpl | MOVE   | book-1-foundation/00-base/fragment.yaml.tpl |
+| src/autoinstall/base.yaml.tpl | DONE   | book-1-foundation/00-base/fragment.yaml.tpl |
 
 ### 5.2 Foundation Scripts
 
 | File                         | Action | Destination                                        |
 | ---------------------------- | ------ | -------------------------------------------------- |
-| src/scripts/build-iso.sh.tpl | MOVE   | book-1-foundation/00-base/scripts/build-iso.sh.tpl |
-| src/scripts/early-net.sh.tpl | MOVE   | book-1-foundation/00-base/scripts/early-net.sh.tpl |
+| src/scripts/build-iso.sh.tpl | DONE   | book-1-foundation/00-base/scripts/build-iso.sh.tpl |
+| src/scripts/early-net.sh.tpl | DONE   | book-1-foundation/00-base/scripts/early-net.sh.tpl |
 
 ### 5.3 Foundation Configs
 
 | File                                   | Action | Destination                                                  | Notes             |
 | -------------------------------------- | ------ | ------------------------------------------------------------ | ----------------- |
-| src/config/storage.config.yaml         | MOVE   | book-1-foundation/00-base/config/storage.config.yaml         | Rename in Phase 2 |
-| src/config/storage.config.yaml.example | MOVE   | book-1-foundation/00-base/config/storage.config.yaml.example |                   |
-| src/config/image.config.yaml           | MOVE   | book-1-foundation/00-base/config/image.config.yaml           | Rename in Phase 2 |
-| src/config/image.config.yaml.example   | MOVE   | book-1-foundation/00-base/config/image.config.yaml.example   |                   |
-| src/config/testing.config.yaml         | MOVE   | book-1-foundation/00-base/config/testing.config.yaml         | Rename in Phase 2 |
-| src/config/testing.config.yaml.example | MOVE   | book-1-foundation/00-base/config/testing.config.yaml.example |                   |
+| src/config/storage.config.yaml         | DONE   | book-1-foundation/00-base/config/storage.config.yaml         | Rename in Phase 2 |
+| src/config/storage.config.yaml.example | DONE   | book-1-foundation/00-base/config/storage.config.yaml.example |                   |
+| src/config/image.config.yaml           | DONE   | book-1-foundation/00-base/config/image.config.yaml           | Rename in Phase 2 |
+| src/config/image.config.yaml.example   | DONE   | book-1-foundation/00-base/config/image.config.yaml.example   |                   |
+| src/config/testing.config.yaml         | DONE   | book-1-foundation/00-base/config/testing.config.yaml         | Rename in Phase 2 |
+| src/config/testing.config.yaml.example | DONE   | book-1-foundation/00-base/config/testing.config.yaml.example |                   |
 
 ---
 
