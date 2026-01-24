@@ -199,7 +199,7 @@ name: network
 description: Static IP configuration via arping detection
 required: true # Required for ISO/autoinstall builds (not multipass runner)
 build_order: 10 # Alphanumeric order for build output
-test_order: 1 # Logical order for incremental testing
+build_layer: 1 # Incremental build layer (1 = foundation)
 ```
 
 ### Required vs Optional
@@ -219,15 +219,38 @@ The `required` flag affects **ISO and autoinstall builds only**:
 
 ### Dual Ordering System
 
-| Order Type    | Purpose                                | Example           |
-| ------------- | -------------------------------------- | ----------------- |
-| `build_order` | Alphanumeric prefix for file merging   | 10, 15, 20, 25... |
-| `test_order`  | Logical sequence for incremental tests | 1, 2, 3, 4...     |
+| Field | Purpose | Example |
+| ----- | ------- | ------- |
+| `build_order` | Fragment merge order within a layer | 10, 15, 20, 999 |
+| `build_layer` | Incremental build layer | 1, 2, 3, 8 |
 
-Test order allows testing fragments in a different sequence than build order:
+**`build_order`** - Controls the order fragments are merged into the final cloud-init output:
+- Encoded in directory prefix (10-network, 15-kernel, 20-users)
+- Lower numbers merge first, higher numbers merge last
+- Example: `999-pkg-upgrade` merges last to ensure package upgrades run after all other packages are installed
 
-- Required fragments always run first in tests
-- Tests can run through both multipass runner AND VirtualBox
+**`build_layer`** - Defines incremental build layers (similar to Docker layers):
+- Fragments are organized into layers (1, 2, 3, etc.) for incremental builds
+- Building/testing at layer N includes ALL fragments from layers 1 through N
+- Multiple fragments can share the same layer when they belong together
+- Enables partial builds for faster iteration and debugging
+
+Example layer progression:
+- Layer 1: Network only
+- Layer 2: Network + Kernel
+- Layer 3: Network + Kernel + Users
+- Layer 8: All above + Packages + Package Security + Package Upgrade
+
+Use cases:
+- Build minimal image (required layers only)
+- Test up to a specific layer without building everything
+- Debug a specific layer by building only up to that point
+
+**Why they differ:**
+| Fragment | build_order | build_layer | Reason |
+| -------- | ----------- | ----------- | ------ |
+| 10-network | 10 | 1 | Foundation layer |
+| 999-pkg-upgrade | 999 | 8 | Merges last in output, but belongs to packages layer |
 
 ---
 
@@ -311,7 +334,7 @@ After Phase 1, update file contents:
 4. **Template naming**: `fragment.yaml.tpl` at fragment root (not in templates/)
 5. **Scripts location**: `scripts/` at fragment root (not templates/scripts/)
 6. **Metadata file**: `build.yaml` (not fragment.yaml)
-7. **Metadata content**: name, description, required, build_order, test_order only
+7. **Metadata content**: name, description, required, build_order, build_layer only
 8. **VM config**: YAML only, example tracked, actual gitignored, in Book 0
 
 ---
@@ -322,4 +345,4 @@ After Phase 1, update file contents:
 
 2. **Fragment discovery**: Builder SDK auto-discovers fragments by scanning for `build.yaml` files.
 
-3. **Test runner**: Host SDK discovers and runs per-fragment tests in `test_order` sequence.
+3. **Incremental builds**: SDK builds/tests fragments layer by layer using `build_layer` sequence.
