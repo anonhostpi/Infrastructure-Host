@@ -20,25 +20,25 @@ This document outlines the refactoring of Infrastructure-Host into a focused Ubu
 
 These topics are about physical deployment, not image building:
 
-| Current Location | Topic | Reason |
-|-----------------|-------|--------|
-| Chapter 2 | Hardware & BIOS Setup | Physical deployment |
-| Chapter 8 | Deployment Process | Physical deployment |
-| Chapter 9 | Post-Deployment Validation | Post-deployment |
-| Chapter 11.4 | Hardware Compatibility | Physical hardware |
+| Current Location | Topic                      | Reason              |
+| ---------------- | -------------------------- | ------------------- |
+| Chapter 2        | Hardware & BIOS Setup      | Physical deployment |
+| Chapter 8        | Deployment Process         | Physical deployment |
+| Chapter 9        | Post-Deployment Validation | Post-deployment     |
+| Chapter 11.4     | Hardware Compatibility     | Physical hardware   |
 
 ### IN SCOPE (Keep/Restructure)
 
-| Current Location | Topic | New Location |
-|-----------------|-------|--------------|
-| Chapter 1 | Overview & Architecture | Root README (rewrite) |
-| Chapter 3 | Build System | Book 0 - Builder Layer |
-| Chapter 4 | Network Planning | Book 2 - 10-network/docs |
-| Chapter 5 | Autoinstall Media Creation | Book 1 - Foundation Layer |
-| Chapter 6 | Cloud-init Fragments | Book 2 - Per-fragment docs |
-| Chapter 7 | Testing and Validation | Per-fragment test scripts |
-| Chapter 10 | Troubleshooting | Book 0 (build/test issues only) |
-| Chapter 11.1-3 | Appendix (non-hardware) | Book 0 reference docs |
+| Current Location | Topic                      | New Location                    |
+| ---------------- | -------------------------- | ------------------------------- |
+| Chapter 1        | Overview & Architecture    | Root README (rewrite)           |
+| Chapter 3        | Build System               | Book 0 - Builder Layer          |
+| Chapter 4        | Network Planning           | Book 2 - 10-network/docs        |
+| Chapter 5        | Autoinstall Media Creation | Book 1 - Foundation Layer       |
+| Chapter 6        | Cloud-init Fragments       | Book 2 - Per-fragment docs      |
+| Chapter 7        | Testing and Validation     | Per-fragment test scripts       |
+| Chapter 10       | Troubleshooting            | Book 0 (build/test issues only) |
+| Chapter 11.1-3   | Appendix (non-hardware)    | Book 0 reference docs           |
 
 ---
 
@@ -187,33 +187,35 @@ Each fragment has a `build.yaml` describing its properties:
 ```yaml
 name: network
 description: Static IP configuration via arping detection
-required: true      # Required for ISO/autoinstall builds (not multipass runner)
-build_order: 10     # Alphanumeric order for build output
-test_order: 1       # Logical order for incremental testing
+required: true # Required for ISO/autoinstall builds (not multipass runner)
+build_order: 10 # Alphanumeric order for build output
+test_order: 1 # Logical order for incremental testing
 ```
 
 ### Required vs Optional
 
 The `required` flag affects **ISO and autoinstall builds only**:
+
 - Required fragments are always included in production builds
 - Multipass runner tests don't need this flag (multipass has its own exec)
 
-| Fragment | required | Reason |
-|----------|----------|--------|
-| 00-base (Book 1) | true | Core autoinstall - defines OS installation |
-| 10-network | true | System needs networking for remote access |
-| 20-users | true | System needs a login user |
-| 25-ssh | true | Remote access required for headless servers |
-| All others | false | Optional features |
+| Fragment         | required | Reason                                      |
+| ---------------- | -------- | ------------------------------------------- |
+| 00-base (Book 1) | true     | Core autoinstall - defines OS installation  |
+| 10-network       | true     | System needs networking for remote access   |
+| 20-users         | true     | System needs a login user                   |
+| 25-ssh           | true     | Remote access required for headless servers |
+| All others       | false    | Optional features                           |
 
 ### Dual Ordering System
 
-| Order Type | Purpose | Example |
-|------------|---------|---------|
-| `build_order` | Alphanumeric prefix for file merging | 10, 15, 20, 25... |
-| `test_order` | Logical sequence for incremental tests | 1, 2, 3, 4... |
+| Order Type    | Purpose                                | Example           |
+| ------------- | -------------------------------------- | ----------------- |
+| `build_order` | Alphanumeric prefix for file merging   | 10, 15, 20, 25... |
+| `test_order`  | Logical sequence for incremental tests | 1, 2, 3, 4...     |
 
 Test order allows testing fragments in a different sequence than build order:
+
 - Required fragments always run first in tests
 - Tests can run through both multipass runner AND VirtualBox
 
@@ -232,6 +234,7 @@ fragment/config/
 ```
 
 The Host SDK sets the build mode:
+
 - **Production build**: Uses `production.yaml` only
 - **Test build**: Layers `testing.yaml` on top of `production.yaml`
 
@@ -241,12 +244,13 @@ This replaces the old `testing.config.yaml` with a `testing: true` flag.
 
 ## SDK Naming
 
-| Old Name | New Name | Purpose |
-|----------|----------|---------|
-| tests/lib (PowerShell) | **Host SDK** | Runs on Windows host - orchestrates builds and tests |
-| builder/ (Python) | **Builder SDK** | Runs in build VM - renders templates, creates artifacts |
+| Old Name               | New Name        | Purpose                                                 |
+| ---------------------- | --------------- | ------------------------------------------------------- |
+| tests/lib (PowerShell) | **Host SDK**    | Runs on Windows host - orchestrates builds and tests    |
+| builder/ (Python)      | **Builder SDK** | Runs in build VM - renders templates, creates artifacts |
 
 The Host SDK handles:
+
 - Build orchestration
 - Test orchestration (multipass runner + VirtualBox)
 - Config merging (production + testing overlay)
@@ -260,11 +264,13 @@ The Host SDK handles:
 Move existing files to new locations. No reading or modifying content.
 
 **Files that stay in place:**
+
 - Makefile
 - .gitignore
 - pyproject.toml
 
 **VM Config Migration:**
+
 - Move `vm.config.yaml.example` to `book-0-builder/config/`
 - Move `vm.config.yaml` to `book-0-builder/config/` (will be gitignored)
 - Remove `vm.config.ps1` and `vm.config.ps1.example` (YAML only)
@@ -272,6 +278,7 @@ Move existing files to new locations. No reading or modifying content.
 ### Phase 2: Content Updates
 
 After Phase 1, update file contents:
+
 - Update import paths in both SDKs
 - Create `build.yaml` metadata files
 - Split configs into `production.yaml` / `testing.yaml`
