@@ -52,38 +52,38 @@ This document specifies exact file movements for the refactor. **No content modi
 
 ---
 
-## 3. Host SDK (PowerShell)
+## 3. Host SDK (PowerShell) [DONE]
 
 **Source:** `tests/lib/`
 **Destination:** `book-0-builder/host-sdk/`
 
 | File                             | Action | Destination                                       |
 | -------------------------------- | ------ | ------------------------------------------------- |
-| tests/lib/SDK.ps1                | MOVE   | book-0-builder/host-sdk/SDK.ps1                   |
-| tests/lib/Builder.ps1            | MOVE   | book-0-builder/host-sdk/modules/Builder.ps1       |
-| tests/lib/Config.ps1             | MOVE   | book-0-builder/host-sdk/modules/Config.ps1        |
-| tests/lib/General.ps1            | MOVE   | book-0-builder/host-sdk/modules/General.ps1       |
-| tests/lib/Multipass.ps1          | MOVE   | book-0-builder/host-sdk/modules/Multipass.ps1     |
-| tests/lib/Network.ps1            | MOVE   | book-0-builder/host-sdk/modules/Network.ps1       |
-| tests/lib/Settings.ps1           | MOVE   | book-0-builder/host-sdk/modules/Settings.ps1      |
-| tests/lib/Vbox.ps1               | MOVE   | book-0-builder/host-sdk/modules/Vbox.ps1          |
-| tests/lib/Verifications.ps1      | MOVE   | book-0-builder/host-sdk/modules/Verifications.ps1 |
-| tests/lib/helpers/Config.ps1     | MOVE   | book-0-builder/host-sdk/helpers/Config.ps1        |
-| tests/lib/helpers/PowerShell.ps1 | MOVE   | book-0-builder/host-sdk/helpers/PowerShell.ps1    |
+| tests/lib/SDK.ps1                | DONE   | book-0-builder/host-sdk/SDK.ps1                   |
+| tests/lib/Builder.ps1            | DONE   | book-0-builder/host-sdk/modules/Builder.ps1       |
+| tests/lib/Config.ps1             | DONE   | book-0-builder/host-sdk/modules/Config.ps1        |
+| tests/lib/General.ps1            | DONE   | book-0-builder/host-sdk/modules/General.ps1       |
+| tests/lib/Multipass.ps1          | DONE   | book-0-builder/host-sdk/modules/Multipass.ps1     |
+| tests/lib/Network.ps1            | DONE   | book-0-builder/host-sdk/modules/Network.ps1       |
+| tests/lib/Settings.ps1           | DONE   | book-0-builder/host-sdk/modules/Settings.ps1      |
+| tests/lib/Vbox.ps1               | DONE   | book-0-builder/host-sdk/modules/Vbox.ps1          |
+| tests/lib/Verifications.ps1      | DONE   | book-0-builder/host-sdk/modules/Verifications.ps1 |
+| tests/lib/helpers/Config.ps1     | DONE   | book-0-builder/host-sdk/helpers/Config.ps1        |
+| tests/lib/helpers/PowerShell.ps1 | DONE   | book-0-builder/host-sdk/helpers/PowerShell.ps1    |
 
 ---
 
-## 4. Test Scripts
+## 4. Test Scripts [DONE]
 
 **Source:** `tests/`
 **Destination:** `book-0-builder/host-sdk/`
 
 | File                             | Action | Destination                                        | Notes     |
 | -------------------------------- | ------ | -------------------------------------------------- | --------- |
-| tests/Invoke-AutoinstallTest.ps1 | MOVE   | book-0-builder/host-sdk/Invoke-AutoinstallTest.ps1 |           |
-| tests/Invoke-IncrementalTest.ps1 | MOVE   | book-0-builder/host-sdk/Invoke-IncrementalTest.ps1 |           |
-| tests/TEMP_Invoke-LefeckTest.ps1 | REMOVE |                                                    | Temp file |
-| tests/TEMP_Invoke-VentoyTest.ps1 | REMOVE |                                                    | Temp file |
+| tests/Invoke-AutoinstallTest.ps1 | DONE   | book-0-builder/host-sdk/Invoke-AutoinstallTest.ps1 |           |
+| tests/Invoke-IncrementalTest.ps1 | DONE   | book-0-builder/host-sdk/Invoke-IncrementalTest.ps1 |           |
+| tests/TEMP_Invoke-LefeckTest.ps1 | DONE   |                                                    | Removed - methods adopted elsewhere |
+| tests/TEMP_Invoke-VentoyTest.ps1 | DONE   | archive/Invoke-VentoyTest.ps1                      | Archived - alternate build approach |
 
 ---
 

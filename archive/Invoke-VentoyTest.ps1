@@ -1,6 +1,16 @@
 <#
+.ARCHIVE
+    This file is archived for reference. It documents an alternate build approach
+    using Ventoy USB auto_install plugin for bare-metal deployment.
+
+    Archived: 2026-01-24
+    Reason: Refactor to fragment-based architecture. Ventoy approach may be
+            revisited for physical deployment tooling in the future.
+#>
+
+<#
 .SYNOPSIS
-    Ventoy USB autoinstall testing (TEMP)
+    Ventoy USB autoinstall testing
 
 .DESCRIPTION
     Tests the Ventoy auto_install plugin method for Ubuntu autoinstall.
