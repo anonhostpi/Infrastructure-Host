@@ -115,7 +115,7 @@ This document specifies exact file movements for the refactor. **No content modi
 
 ---
 
-## 6. Book 2 - Cloud Layer Fragments
+## 6. Book 2 - Cloud Layer Fragments [DONE]
 
 ### 6.1 Cloud-init Templates
 
@@ -169,7 +169,7 @@ This document specifies exact file movements for the refactor. **No content modi
 
 ---
 
-## 7. Documentation
+## 7. Documentation [DONE]
 
 ### 7.1 OUT OF SCOPE - REMOVE
 
@@ -263,7 +263,7 @@ This document specifies exact file movements for the refactor. **No content modi
 
 ---
 
-## 8. Generated/Cached Files - REMOVE
+## 8. Generated/Cached Files - REMOVE [DONE]
 
 | Path                                  | Action |
 | ------------------------------------- | ------ |
@@ -272,7 +272,7 @@ This document specifies exact file movements for the refactor. **No content modi
 
 ---
 
-## 9. Directory Creation Summary
+## 9. Directory Creation Summary [DONE]
 
 Create these directories before moving files:
 
@@ -354,7 +354,7 @@ book-2-cloud/999-pkg-upgrade/
 
 ---
 
-## 10. Empty Directories After Cleanup
+## 10. Empty Directories After Cleanup [DONE]
 
 These will be empty after all moves and should be removed:
 
