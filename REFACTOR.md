@@ -36,19 +36,19 @@ These topics are about **physical deployment** and don't belong in an image-buil
 
 ### Documentation Audit
 
-| Chapter | Topic                      | Scope   | Action      | Destination              | Notes                                             |
-| ------- | -------------------------- | ------- | ----------- | ------------------------ | ------------------------------------------------- |
-| 1       | Overview & Architecture    | PARTIAL | **REWRITE** | Root README              | Keep arch concepts, remove deployment details     |
-| 2       | Hardware & BIOS Setup      | OUT     | **REMOVE**  | -                        | Physical deployment                               |
-| 3       | Build System               | IN      | **KEEP**    | Book 0 docs              | Core to image building                            |
-| 4       | Network Planning           | IN      | **KEEP**    | Book 2 - network/docs    | Config for network fragment                       |
-| 5       | Autoinstall Media Creation | IN      | **KEEP**    | Book 1 - base/docs       | Core to image building                            |
-| 6       | Cloud-init Fragments       | IN      | **KEEP**    | Book 2 - per-fragment    | Split into per-fragment docs                      |
-| 7       | Testing and Validation     | IN      | **REWORK**  | Per-fragment tests       | Restructure into per-fragment test modules        |
-| 8       | Deployment Process         | OUT     | **REMOVE**  | -                        | Physical deployment                               |
-| 9       | Post-Deployment Validation | OUT     | **REMOVE**  | -                        | Post-deployment                                   |
-| 10      | Troubleshooting            | PARTIAL | **PARTIAL** | Book 0 docs              | Keep build/test issues, remove deployment issues  |
-| 11      | Appendix                   | PARTIAL | **PARTIAL** | Book 0 docs              | Keep reference files, remove 11.4 Hardware Compat |
+| Chapter | Topic                      | Scope   | Action      | Destination           | Notes                                             |
+| ------- | -------------------------- | ------- | ----------- | --------------------- | ------------------------------------------------- |
+| 1       | Overview & Architecture    | PARTIAL | **REWRITE** | Root README           | Keep arch concepts, remove deployment details     |
+| 2       | Hardware & BIOS Setup      | OUT     | **REMOVE**  | -                     | Physical deployment                               |
+| 3       | Build System               | IN      | **KEEP**    | Book 0 docs           | Core to image building                            |
+| 4       | Network Planning           | IN      | **KEEP**    | Book 2 - network/docs | Config for network fragment                       |
+| 5       | Autoinstall Media Creation | IN      | **KEEP**    | Book 1 - base/docs    | Core to image building                            |
+| 6       | Cloud-init Fragments       | IN      | **KEEP**    | Book 2 - per-fragment | Split into per-fragment docs                      |
+| 7       | Testing and Validation     | IN      | **REWORK**  | Per-fragment tests    | Restructure into per-fragment test modules        |
+| 8       | Deployment Process         | OUT     | **REMOVE**  | -                     | Physical deployment                               |
+| 9       | Post-Deployment Validation | OUT     | **REMOVE**  | -                     | Post-deployment                                   |
+| 10      | Troubleshooting            | PARTIAL | **PARTIAL** | Book 0 docs           | Keep build/test issues, remove deployment issues  |
+| 11      | Appendix                   | PARTIAL | **PARTIAL** | Book 0 docs           | Keep reference files, remove 11.4 Hardware Compat |
 
 ---
 
@@ -209,39 +209,43 @@ The `required` flag affects **ISO and autoinstall builds only**:
 - Required fragments are always included in production builds
 - Multipass runner tests don't need this flag (multipass has its own exec)
 
-| Fragment       | required | Reason                                      |
-| -------------- | -------- | ------------------------------------------- |
-| base (Book 1)  | true     | Core autoinstall - defines OS installation  |
-| network        | true     | System needs networking for remote access   |
-| users          | true     | System needs a login user                   |
-| ssh            | true     | Remote access required for headless servers |
-| All others     | false    | Optional features                           |
+| Fragment      | required | Reason                                      |
+| ------------- | -------- | ------------------------------------------- |
+| base (Book 1) | true     | Core autoinstall - defines OS installation  |
+| network       | true     | System needs networking for remote access   |
+| users         | true     | System needs a login user                   |
+| ssh           | true     | Remote access required for headless servers |
+| All others    | false    | Optional features                           |
 
 ### Dual Ordering System
 
-| Field | Purpose | Example |
-| ----- | ------- | ------- |
+| Field         | Purpose                             | Example         |
+| ------------- | ----------------------------------- | --------------- |
 | `build_order` | Fragment merge order within a layer | 10, 15, 20, 999 |
-| `build_layer` | Incremental build layer | 1, 2, 3, 8 |
+| `build_layer` | Incremental build layer             | 1, 2, 3, 8      |
 
 **`build_order`** - Controls the order fragments are merged into the final cloud-init output:
+
 - Defined in `build.yaml`, not directory name (directories can use simple names like `network/`, `kernel/`)
 - Lower numbers merge first, higher numbers merge last
 - Example: `pkg-upgrade` with `build_order: 999` merges last to ensure package upgrades run after all other packages are installed
 
 **`build_layer`** - Defines incremental build layers (similar to Docker layers):
+
 - Fragments are organized into layers (1, 2, 3, etc.) for incremental builds
 - Building/testing at layer N includes ALL fragments from layers 1 through N
 - Multiple fragments can share the same layer when they belong together
 - Enables partial builds for faster iteration and debugging
 
 Example layer progression:
+
 - Layer 1: Network only
 - Layer 2: Network + Kernel
 - Layer 3: Network + Kernel + Users
 - Layer 8: All above + Packages + Package Security + Package Upgrade
 
 Use cases:
+
 - Build minimal image (required layers only)
 - Test up to a specific layer without building everything
 - Debug a specific layer by building only up to that point
