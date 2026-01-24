@@ -9,7 +9,7 @@ This document outlines the refactoring of Infrastructure-Host into a focused Ubu
 1. **Scope Reduction**: Focus exclusively on building Ubuntu images (autoinstall ISO, cloud-init configs)
 2. **Fragment Architecture**: Each component (network, users, ssh, etc.) is self-contained with its config, scripts, tests, and docs
 3. **SDK Unification**: Document and organize both Host SDK (PowerShell) and Builder SDK (Python) together
-4. **Required Fragment Marking**: Clearly indicate which fragments are required for ISO/autoinstall builds
+4. **ISO-Required Fragment Marking**: Clearly indicate which fragments are required for ISO/autoinstall builds
 5. **Dual Ordering**: Separate build order (alphanumeric) from test order (incremental)
 
 ---
@@ -136,7 +136,7 @@ Cloud-init fragments. Each fragment is self-contained.
 book-2-cloud/
 ├── README.md
 │
-├── network/                     # REQUIRED (build_order: 10)
+├── network/                     # ISO_REQUIRED (build_order: 10)
 │   ├── build.yaml               # Fragment metadata
 │   ├── config/
 │   │   ├── production.yaml      # Production config
@@ -149,7 +149,7 @@ book-2-cloud/
 │   └── docs/
 │       └── NETWORK.md
 │
-├── users/                       # REQUIRED (build_order: 20)
+├── users/                       # ISO_REQUIRED (build_order: 20)
 │   ├── build.yaml
 │   ├── config/
 │   │   ├── production.yaml
@@ -162,7 +162,7 @@ book-2-cloud/
 │   └── docs/
 │       └── USERS.md
 │
-├── ssh/                         # REQUIRED (build_order: 25)
+├── ssh/                         # ISO_REQUIRED (build_order: 25)
 │   ├── build.yaml
 │   ├── config/
 │   │   └── production.yaml
@@ -197,25 +197,32 @@ Each fragment has a `build.yaml` describing its properties:
 ```yaml
 name: network
 description: Static IP configuration via arping detection
-required: true # Required for ISO/autoinstall builds (not multipass runner)
-build_order: 10 # Alphanumeric order for build output
+iso_required: true # Required for ISO builds (not cloud-init)
+build_order: 10 # Merge order in build output
 build_layer: 1 # Incremental build layer (1 = foundation)
 ```
 
-### Required vs Optional
+### Build Targets and iso_required
 
-The `required` flag affects **ISO and autoinstall builds only**:
+This project produces two build outputs with different requirements:
 
-- Required fragments are always included in production builds
-- Multipass runner tests don't need this flag (multipass has its own exec)
+| Target        | Output                   | Use Case                        |
+| ------------- | ------------------------ | ------------------------------- |
+| `autoinstall` | `output/user-data`       | ISO for bare-metal installation |
+| `cloud-init`  | `output/cloud-init.yaml` | Cloud VMs / multipass instances |
 
-| Fragment      | required | Reason                                      |
-| ------------- | -------- | ------------------------------------------- |
-| base (Book 1) | true     | Core autoinstall - defines OS installation  |
-| network       | true     | System needs networking for remote access   |
-| users         | true     | System needs a login user                   |
-| ssh           | true     | Remote access required for headless servers |
-| All others    | false    | Optional features                           |
+The `iso_required` flag exists because these targets have different fragment requirements:
+
+- **ISO/autoinstall builds**: Install to bare metal with no external management. Must include networking, users, and SSH or the system is inaccessible after install.
+- **Cloud-init builds**: Run in managed environments (multipass, cloud providers) that provide their own mechanisms for networking and shell access.
+
+| Fragment      | iso_required | Reason                                          |
+| ------------- | ------------ | ----------------------------------------------- |
+| base (Book 1) | true         | Core autoinstall - defines OS installation      |
+| network       | true         | Bare metal needs static IP for remote access    |
+| users         | true         | Bare metal needs a login user                   |
+| ssh           | true         | Bare metal needs SSH for headless server access |
+| All others    | false        | Optional - cloud-init works without them        |
 
 ### Dual Ordering System
 
@@ -323,7 +330,7 @@ After Phase 1, update file contents:
 
 ### Phase 3: Testing
 
-- Verify minimal build (required fragments only)
+- Verify minimal build (iso_required fragments only)
 - Verify full build (all fragments)
 - Run per-fragment tests through multipass
 - Run per-fragment tests through VirtualBox
@@ -333,12 +340,12 @@ After Phase 1, update file contents:
 ## Decisions Made
 
 1. **Ordering**: Option A - dual order fields in build.yaml
-2. **Required scope**: Only affects ISO/autoinstall, not multipass runner
+2. **iso_required scope**: Only affects ISO/autoinstall builds, not cloud-init
 3. **Config naming**: `production.yaml` and `testing.yaml` (not `<fragment>.config.yaml`)
 4. **Template naming**: `fragment.yaml.tpl` at fragment root (not in templates/)
 5. **Scripts location**: `scripts/` at fragment root (not templates/scripts/)
 6. **Metadata file**: `build.yaml` (not fragment.yaml)
-7. **Metadata content**: name, description, required, build_order, build_layer only
+7. **Metadata content**: name, description, iso_required, build_order, build_layer only
 8. **VM config**: YAML only, example tracked, actual gitignored, in Book 0
 
 ---

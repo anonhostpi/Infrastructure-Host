@@ -30,7 +30,7 @@
   ```yaml
   name: [fragment_name]
   description: [brief description]
-  required: [true/false]      # Required for ISO/autoinstall builds
+  iso_required: [true/false]  # Required for ISO builds (not cloud-init)
   build_order: [numeric]      # Merge order in output (e.g., 10, 20, 999)
   build_layer: [numeric]      # Incremental build layer (1=foundation, higher=later)
   ```
