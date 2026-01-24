@@ -386,7 +386,7 @@ docs/
 
 ---
 
-## 11. Fragments Without Configs
+## 11. Fragments Without Configs [DONE - Informational Only]
 
 These fragments don't have dedicated config files - they use shared configs or have no config:
 
