@@ -1,0 +1,76 @@
+# OpenCode Configuration (Optional)
+# Copy to opencode.config.yaml and fill in your values
+# THIS FILE IS TRACKED IN GIT - opencode.config.yaml IS NOT
+#
+# OpenCode is an AI coding agent for terminal use.
+# See: https://opencode.ai/docs
+# Provider docs: https://opencode.ai/docs/providers
+#
+# ==========================================================================
+# Authentication
+# ==========================================================================
+# OpenCode auth is automatically DERIVED from Claude Code and Copilot CLI:
+# - anthropic credentials: from claude_code.auth.oauth (Claude Code)
+# - github-copilot credentials: from copilot_cli.auth.oauth (Copilot CLI)
+#
+# The builder creates ~/.local/share/opencode/auth.json from these sources.
+# You do NOT need to configure OpenCode auth separately.
+#
+# See also:
+# - claude_code.config.yaml for Claude Code OAuth
+# - copilot_cli.config.yaml for Copilot CLI OAuth
+# ==========================================================================
+
+opencode:
+  # Whether to install opencode during cloud-init
+  enabled: true
+
+  # Installation method: npm or script
+  install_method: npm
+
+  # Default model to use
+  # Format: provider/model-id
+  # Examples: anthropic/claude-sonnet-4-5, openai/gpt-4o
+  model: anthropic/claude-sonnet-4-5
+
+  # Theme: dark, light, or specific theme name
+  theme: dark
+
+  # Auto-update: false to disable (updates managed via unattended-upgrades)
+  autoupdate: false
+
+  # ==========================================================================
+  # Provider configuration (OPTIONAL - for additional providers)
+  # ==========================================================================
+  # Anthropic and GitHub Copilot are auto-configured via auth derivation.
+  # Only configure providers here for additional LLM providers.
+  #
+  # API keys use environment variable references: {env:VAR_NAME}
+  # Or configure post-deployment via: opencode, then /connect
+  #
+  # providers:
+  #   # Uncomment to add OpenAI
+  #   openai:
+  #     api_key: "{env:OPENAI_API_KEY}"
+  #
+  #   # Uncomment for local Ollama
+  #   ollama:
+  #     base_url: http://localhost:11434/v1
+  #     models:
+  #       llama3:
+  #         name: Llama 3
+  #         context: 8192
+  #       codellama:
+  #         name: Code Llama
+  #         context: 16384
+  #
+  #   # Uncomment for custom OpenAI-compatible provider
+  #   custom:
+  #     name: My Provider
+  #     base_url: https://api.example.com/v1
+  #     api_key: "{env:CUSTOM_API_KEY}"
+  #     models:
+  #       my-model:
+  #         name: My Model
+  #         context: 128000
+  #         output: 8192

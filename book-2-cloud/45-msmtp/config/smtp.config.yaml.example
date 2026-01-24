@@ -1,0 +1,535 @@
+# SMTP Configuration (Optional)
+# Copy to smtp.config.yaml and fill in your values
+# THIS FILE IS TRACKED IN GIT - smtp.config.yaml IS NOT
+#
+# After deployment, run: sudo msmtp-config
+# This prompts for your password and sends a test email.
+#
+# =============================================================================
+# CONFIGURATION OPTIONS
+# =============================================================================
+#
+# Required fields:
+#   host        - SMTP server hostname
+#   port        - SMTP port (587 for STARTTLS, 465 for SMTPS)
+#   from_email  - Sender email address (From header)
+#   user        - SMTP authentication username
+#   recipient   - Where to send system emails (root alias)
+#
+# Authentication (choose one):
+#   password    - SMTP password or App Password (stored in config)
+#                 If omitted, run `sudo msmtp-config` after deployment
+#   passwordeval - Shell command to retrieve password/token (for OAuth2)
+#                  Example: "oama access user@gmail.com"
+#
+# TLS options:
+#   tls_starttls   - true/false, use STARTTLS (default: true for port 587)
+#   tls_certcheck  - true/false, verify server certificate (default: true)
+#                    Set to false for Proton Bridge (self-signed cert)
+#   tls_on_connect - true/false, immediate TLS without STARTTLS (port 465)
+#   tls_trust_file - Path to CA certificate bundle (default: system CA certs)
+#
+# Client certificate options (self-hosted servers only):
+#   tls_cert_file  - Path to client certificate (for mutual TLS)
+#   tls_key_file   - Path to client certificate key
+#   NOTE: Cloud providers (Gmail, M365, SendGrid, etc.) do NOT support client
+#         certificate authentication. These options are for self-hosted mail only.
+#
+# Advanced options:
+#   auth_method    - Override auth method: plain, login, cram-md5, oauthbearer, xoauth2
+#                    Most providers work with default (on = auto-detect)
+#                    Use oauthbearer or xoauth2 for OAuth2 authentication
+#
+# =============================================================================
+# PROVIDER SETUP GUIDES
+# =============================================================================
+#
+# Most providers require App Passwords when MFA is enabled.
+# For noreply@yourdomain.com capability, you need either:
+#   1. A transactional email service (SendGrid, AWS SES, Mailgun) - RECOMMENDED
+#   2. A business email account with Send-As/alias permissions
+#   3. Your own mail server with proper SPF/DKIM
+#
+# Consumer accounts (free Gmail, Outlook.com) typically CANNOT spoof From addresses.
+#
+# -----------------------------------------------------------------------------
+# TRANSACTIONAL EMAIL SERVICES (Best for noreply)
+# -----------------------------------------------------------------------------
+#
+# These services are designed for automated/system emails and fully support
+# custom From addresses like noreply@yourdomain.com
+#
+# ## SendGrid (Recommended for simplicity)
+#
+# 1. Sign up: https://sendgrid.com
+# 2. Verify your sending domain (DNS records)
+# 3. Create API Key: Settings > API Keys > Create API Key
+#    - Select "Restricted Access" > enable "Mail Send" only
+# 4. The username is literally "apikey" (not your email)
+#
+# smtp:
+#   host: smtp.sendgrid.net
+#   port: 587
+#   from_email: noreply@yourdomain.com    # Any address on verified domain
+#   user: apikey                          # Literal string "apikey"
+#   recipient: admin@example.com
+#
+# Password: Your SendGrid API key (starts with SG.)
+#
+# -----------------------------------------------------------------------------
+# ## AWS SES (Amazon Simple Email Service)
+#
+# 1. AWS Console > SES > Verify domain or email
+# 2. Create SMTP credentials: SES > SMTP Settings > Create SMTP Credentials
+#    - This creates an IAM user; note the SMTP username/password
+#    - SMTP credentials are NOT your AWS access keys!
+# 3. Request production access to send to unverified addresses
+#
+# smtp:
+#   host: email-smtp.us-east-1.amazonaws.com  # Use your region
+#   port: 587
+#   from_email: noreply@yourdomain.com        # Must be verified
+#   user: YOUR_SES_SMTP_USERNAME              # From SMTP credentials
+#   recipient: admin@example.com
+#
+# Password: Your SES SMTP password (from credential creation)
+#
+# Regions: us-east-1, us-west-2, eu-west-1, eu-central-1, ap-south-1, etc.
+# Hostnames: email-smtp.<region>.amazonaws.com
+#
+# -----------------------------------------------------------------------------
+# ## Mailgun
+#
+# 1. Sign up: https://mailgun.com
+# 2. Add and verify your domain
+# 3. Get SMTP credentials: Sending > Domain Settings > SMTP Credentials
+#
+# smtp:
+#   host: smtp.mailgun.org
+#   port: 587
+#   from_email: noreply@yourdomain.com
+#   user: postmaster@yourdomain.com    # Or custom SMTP user
+#   recipient: admin@example.com
+#
+# Password: Your Mailgun SMTP password
+#
+# -----------------------------------------------------------------------------
+# ## Postmark
+#
+# 1. Sign up: https://postmarkapp.com
+# 2. Create a Server, verify your domain
+# 3. Get credentials: Server > Credentials
+#
+# smtp:
+#   host: smtp.postmarkapp.com
+#   port: 587
+#   from_email: noreply@yourdomain.com
+#   user: YOUR_SERVER_API_TOKEN        # Use API token as username
+#   recipient: admin@example.com
+#
+# Password: Same as username (API token)
+#
+# -----------------------------------------------------------------------------
+# BUSINESS EMAIL ACCOUNTS (Send-As/Alias support)
+# -----------------------------------------------------------------------------
+#
+# ## Microsoft 365 / Exchange Online (Business accounts)
+#
+# Business accounts can send as aliases or shared mailboxes.
+#
+# Option A: Send as your primary address
+# 1. Security Info: https://mysignins.microsoft.com/security-info
+# 2. Add sign-in method > App password
+# 3. Name it "Server Alerts" and copy the password
+#
+# smtp:
+#   host: smtp.office365.com
+#   port: 587
+#   from_email: alerts@yourdomain.com   # Your M365 email
+#   user: alerts@yourdomain.com
+#   recipient: admin@yourdomain.com
+#
+# Option B: Send as noreply (requires admin setup)
+# 1. Admin must create noreply@yourdomain.com as shared mailbox or alias
+# 2. Grant your account "Send As" permission
+# 3. Use your credentials but noreply as from_email
+#
+# smtp:
+#   host: smtp.office365.com
+#   port: 587
+#   from_email: noreply@yourdomain.com  # Alias you have Send-As rights for
+#   user: alerts@yourdomain.com         # Your actual account
+#   recipient: admin@yourdomain.com
+#
+# Password: Your App Password
+#
+# Note: Personal Outlook.com accounts have limited Send-As capability.
+#
+# -----------------------------------------------------------------------------
+# ## Google Workspace (Business Gmail)
+#
+# IMPORTANT: Google is deprecating App Passwords. OAuth2 is now preferred.
+# As of 2025, OAuth2 is required for most Google Workspace accounts.
+#
+# Option A: App Password (Legacy - being phased out)
+# 1. Enable 2FA: https://myaccount.google.com/security
+# 2. Create App Password: https://myaccount.google.com/apppasswords
+#    - Select "Mail" and "Other (Custom name)"
+#    - Copy the 16-character password (spaces don't matter)
+#
+# smtp:
+#   host: smtp.gmail.com
+#   port: 587
+#   from_email: alerts@yourdomain.com
+#   user: alerts@yourdomain.com
+#   password: "xxxx xxxx xxxx xxxx"
+#   recipient: admin@example.com
+#
+# Option B: OAuth2 (Recommended - requires token helper)
+# Requires external OAuth2 token management (oama, oauth2-helper, etc.)
+# 1. Set up OAuth2 credentials in Google Cloud Console
+# 2. Install a token helper (e.g., oama, getmail-gmail-xoauth-tokens)
+# 3. Configure msmtp to use oauthbearer auth
+#
+# smtp:
+#   host: smtp.gmail.com
+#   port: 587
+#   from_email: alerts@yourdomain.com
+#   user: alerts@yourdomain.com
+#   auth_method: oauthbearer
+#   passwordeval: "oama access alerts@yourdomain.com"
+#   recipient: admin@example.com
+#
+# Note: OAuth2 setup is complex. See: https://wiki.archlinux.org/title/Msmtp#OAuth2
+#
+# Option C: Send as noreply (Workspace admin setup required)
+# 1. Admin: Admin Console > Users > [user] > Account > Add alternate email
+#    Or create noreply@ as alias/group
+# 2. User: Gmail > Settings > Accounts > Add another email address
+# 3. Use either App Password or OAuth2 as above
+#
+# smtp:
+#   host: smtp.gmail.com
+#   port: 587
+#   from_email: noreply@yourdomain.com  # Your verified alias
+#   user: alerts@yourdomain.com         # Your actual account
+#   password: "xxxx xxxx xxxx xxxx"     # Or use auth_method + passwordeval
+#   recipient: admin@example.com
+#
+# Alternative port 465 (SMTPS/implicit TLS):
+# smtp:
+#   host: smtp.gmail.com
+#   port: 465
+#   tls_on_connect: true
+#   from_email: alerts@yourdomain.com
+#   user: alerts@yourdomain.com
+#   recipient: admin@example.com
+#
+# -----------------------------------------------------------------------------
+# ## Proton Mail
+#
+# Proton requires the Bridge app for SMTP access. Direct SMTP is only
+# available for Business/Visionary plans.
+#
+# Option A: Proton Bridge (All plans, requires GUI setup initially)
+# 1. Install Proton Mail Bridge: https://proton.me/mail/bridge
+# 2. Sign in and note the Bridge-generated password
+# 3. Bridge runs on localhost:1025 by default
+#
+# IMPORTANT: Bridge uses a self-signed certificate, so tls_certcheck must be false
+#
+# smtp:
+#   host: 127.0.0.1              # Bridge runs locally
+#   port: 1025                   # Default Bridge SMTP port
+#   from_email: yourname@proton.me
+#   user: yourname@proton.me
+#   tls_certcheck: false         # REQUIRED - Bridge uses self-signed cert
+#   recipient: admin@example.com
+#
+# Password: Bridge-generated password (NOT your Proton password)
+# Find it in Bridge: Settings > SMTP > Password
+#
+# Option B: Direct SMTP (Business/Visionary only)
+# smtp:
+#   host: smtp.protonmail.ch
+#   port: 587
+#   from_email: yourname@proton.me
+#   user: yourname@proton.me
+#   recipient: admin@example.com
+#
+# Proton aliases: You can add aliases in Settings > Identity and send
+# from them, but the authenticated user must own the alias.
+#
+# -----------------------------------------------------------------------------
+# ## Fastmail
+#
+# Fastmail fully supports App Passwords and sending from aliases.
+#
+# 1. Settings > Password & Security > App Passwords > New App Password
+# 2. Select "SMTP" access
+# 3. Add aliases: Settings > Identities
+#
+# Port 587 (STARTTLS):
+# smtp:
+#   host: smtp.fastmail.com
+#   port: 587
+#   from_email: noreply@yourdomain.com   # Any identity you've configured
+#   user: yourname@fastmail.com
+#   recipient: admin@example.com
+#
+# Port 465 (SMTPS):
+# smtp:
+#   host: smtp.fastmail.com
+#   port: 465
+#   tls_on_connect: true
+#   from_email: noreply@yourdomain.com
+#   user: yourname@fastmail.com
+#   recipient: admin@example.com
+#
+# Password: Your App Password
+#
+# -----------------------------------------------------------------------------
+# ## Zoho Mail
+#
+# Zoho supports aliases for Workplace accounts.
+#
+# 1. Two-Factor Auth: Settings > Security > Two Factor Authentication
+# 2. App Password: Settings > Security > App Passwords
+#
+# smtp:
+#   host: smtp.zoho.com           # Or smtppro.zoho.com for paid
+#   port: 587
+#   from_email: alerts@yourdomain.com
+#   user: alerts@yourdomain.com
+#   recipient: admin@example.com
+#
+# Password: Your App Password
+#
+# Regional servers:
+#   EU: smtp.zoho.eu
+#   India: smtp.zoho.in
+#   Australia: smtp.zoho.com.au
+#   Japan: smtp.zoho.jp
+#
+# Port 465 alternative:
+# smtp:
+#   host: smtps.zoho.com
+#   port: 465
+#   tls_on_connect: true
+#   from_email: alerts@yourdomain.com
+#   user: alerts@yourdomain.com
+#   recipient: admin@example.com
+#
+# -----------------------------------------------------------------------------
+# ## Yahoo Mail
+#
+# 1. Enable 2FA: Account Info > Account Security
+# 2. Generate App Password: Account Info > Account Security > App Passwords
+#
+# smtp:
+#   host: smtp.mail.yahoo.com
+#   port: 587
+#   from_email: yourname@yahoo.com
+#   user: yourname@yahoo.com
+#   recipient: admin@example.com
+#
+# Password: Your App Password (not your Yahoo password)
+#
+# -----------------------------------------------------------------------------
+# ## iCloud Mail
+#
+# 1. Enable 2FA on your Apple ID
+# 2. Generate App Password: https://appleid.apple.com > Security > App Passwords
+#
+# smtp:
+#   host: smtp.mail.me.com
+#   port: 587
+#   from_email: yourname@icloud.com
+#   user: yourname@icloud.com
+#   recipient: admin@example.com
+#
+# Password: Your App-Specific Password
+#
+# Note: iCloud has strict anti-spoofing; From must match your iCloud address
+#
+# -----------------------------------------------------------------------------
+# SELF-HOSTED OPTIONS
+# -----------------------------------------------------------------------------
+#
+# ## Your Own Mail Server (Postfix/Mailcow/Mail-in-a-Box)
+#
+# If you run your own mail server, you have full control over From addresses.
+# Ensure proper SPF, DKIM, and DMARC records for deliverability.
+#
+# smtp:
+#   host: mail.yourdomain.com
+#   port: 587
+#   from_email: noreply@yourdomain.com
+#   user: noreply@yourdomain.com    # Or any authenticated user
+#   recipient: admin@example.com
+#
+# For self-signed certificates (not recommended for production):
+# smtp:
+#   host: mail.yourdomain.com
+#   port: 587
+#   from_email: noreply@yourdomain.com
+#   user: noreply@yourdomain.com
+#   tls_certcheck: false            # Skip certificate verification
+#   recipient: admin@example.com
+#
+# -----------------------------------------------------------------------------
+# IMPORTANT: SPF/DKIM FOR DELIVERABILITY
+# -----------------------------------------------------------------------------
+#
+# If using noreply@yourdomain.com, ensure your domain has:
+#
+# 1. SPF Record (TXT): Authorize your SMTP server to send for your domain
+#    SendGrid:  v=spf1 include:sendgrid.net ~all
+#    AWS SES:   v=spf1 include:amazonses.com ~all
+#    Gmail:     v=spf1 include:_spf.google.com ~all
+#    M365:      v=spf1 include:spf.protection.outlook.com ~all
+#
+# 2. DKIM Record (TXT): Most services provide this during domain verification
+#
+# 3. DMARC Record (TXT): Policy for handling auth failures
+#    Example: v=DMARC1; p=quarantine; rua=mailto:dmarc@yourdomain.com
+#
+# Without these, emails from noreply@yourdomain.com may land in spam.
+#
+# =============================================================================
+# AUTHENTICATION METHODS REFERENCE
+# =============================================================================
+#
+# The auth_method field is optional. msmtp auto-detects the best method.
+# Only set this if you have issues with a specific provider.
+#
+# Values:
+#   plain     - PLAIN authentication (most common)
+#   login     - LOGIN authentication (older servers)
+#   cram-md5  - Challenge-response (more secure, less common)
+#   gssapi    - Kerberos authentication
+#   external  - External authentication (client certs)
+#   xoauth2   - OAuth2 (requires separate token setup)
+#
+# Example for a server requiring LOGIN:
+# smtp:
+#   host: oldserver.example.com
+#   port: 587
+#   auth_method: login
+#   from_email: alerts@example.com
+#   user: alerts@example.com
+#   recipient: admin@example.com
+#
+# =============================================================================
+# PORT REFERENCE
+# =============================================================================
+#
+# Port 587 (Submission) - RECOMMENDED
+#   - Uses STARTTLS (upgrade plain connection to encrypted)
+#   - Default for most providers
+#   - No special config needed
+#
+# Port 465 (SMTPS)
+#   - Immediate TLS on connect (no STARTTLS)
+#   - Requires: tls_on_connect: true
+#   - Some providers prefer this
+#
+# Port 25 (SMTP)
+#   - Usually blocked by ISPs
+#   - Not recommended for client use
+#
+# =============================================================================
+# CONFIGURATION
+# =============================================================================
+
+smtp:
+  host: smtp.example.com
+  port: 587
+  from_email: alerts@example.com
+  user: alerts@example.com
+  recipient: admin@example.com
+
+  # Authentication - choose one:
+  # password: "your-app-password"   # Store password in config (automated deployment)
+  # Or omit password and run `sudo msmtp-config` after deployment
+
+  # TLS options - uncomment as needed:
+  # tls_certcheck: false           # For self-signed certs (Proton Bridge)
+  # tls_on_connect: true           # For port 465 (SMTPS)
+  # tls_trust_file: /path/to/ca.crt    # Custom CA certificate
+  # tls_cert_file: /path/to/client.crt # Client certificate (mutual TLS)
+  # tls_key_file: /path/to/client.key  # Client certificate key
+
+  # Advanced options:
+  # auth_method: plain             # Override auth method if needed
+
+  # Package notification batching interval (default: 2m)
+  # Format: number + unit (s=seconds, m=minutes, h=hours)
+  # Examples: 1m, 2m, 5m
+  # All changes are queued; when timer expires, aggregated email is sent.
+  # Rolling timer: restarts after each send if more changes queued.
+  # Goes dormant when timer expires with empty queue.
+  # notification_interval: 2m
+
+# =============================================================================
+# EXAMPLE CONFIGURATIONS
+# =============================================================================
+#
+# ## SendGrid (fully automated - RECOMMENDED for noreply)
+# smtp:
+#   host: smtp.sendgrid.net
+#   port: 587
+#   from_email: noreply@yourdomain.com
+#   user: apikey
+#   password: "SG.xxxxxxxxxxxxxxxxxxxx"
+#   recipient: admin@example.com
+#
+# ## AWS SES (fully automated)
+# smtp:
+#   host: email-smtp.us-east-1.amazonaws.com
+#   port: 587
+#   from_email: noreply@yourdomain.com
+#   user: AKIAXXXXXXXXXXXXXXXX
+#   password: "your-ses-smtp-password"
+#   recipient: admin@example.com
+#
+# ## Proton Bridge (with self-signed cert)
+# smtp:
+#   host: 127.0.0.1
+#   port: 1025
+#   from_email: yourname@proton.me
+#   user: yourname@proton.me
+#   password: "bridge-generated-password"
+#   tls_certcheck: false
+#   recipient: admin@example.com
+#
+# ## Gmail with App Password
+# smtp:
+#   host: smtp.gmail.com
+#   port: 587
+#   from_email: alerts@yourdomain.com
+#   user: alerts@yourdomain.com
+#   password: "xxxx xxxx xxxx xxxx"
+#   recipient: admin@example.com
+#
+# ## Gmail with OAuth2 (requires token helper installed)
+# smtp:
+#   host: smtp.gmail.com
+#   port: 587
+#   from_email: alerts@yourdomain.com
+#   user: alerts@yourdomain.com
+#   auth_method: oauthbearer
+#   passwordeval: "oama access alerts@yourdomain.com"
+#   recipient: admin@example.com
+#
+# ## Self-hosted mail server with client certificate auth
+# NOTE: Client certificate auth is ONLY supported by self-hosted servers
+# smtp:
+#   host: mail.yourdomain.com
+#   port: 587
+#   from_email: noreply@yourdomain.com
+#   user: noreply@yourdomain.com
+#   tls_cert_file: /etc/ssl/client.crt
+#   tls_key_file: /etc/ssl/client.key
+#   auth_method: external
+#   recipient: admin@example.com
