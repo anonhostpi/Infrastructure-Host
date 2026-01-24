@@ -11,6 +11,7 @@ builder:
   cpus: 2
   memory: "4G"
   disk: "40G"
+  network: "Ethernet 1"
 
 # Cloud-init Runner VM (tests generated cloud-init.yaml)
 runner:
@@ -18,7 +19,7 @@ runner:
   cpus: 2
   memory: "4G"
   disk: "20G"
-  network: "Ethernet 1"  # Must match vm.network for network tests
+  network: "Ethernet 1"
 
 # VirtualBox VM settings (for autoinstall ISO testing)
 vbox:
