@@ -57,10 +57,13 @@ New-Module -Name SDK.Settings -ScriptBlock {
         }
     }
 
+    # Build dynamic properties for each config key
+    # Properties use PascalCase (e.g., $SDK.Settings.Identity for 'identity' config)
     $keys = $mod.BuildConfig.Keys | ForEach-Object { $_ }
     $methods = @{}
 
     foreach( $key in $keys ) {
+        $propertyName = ConvertTo-PascalCase $key
         $src = @(
             "",
             "`$key = '$key'",
@@ -70,7 +73,7 @@ New-Module -Name SDK.Settings -ScriptBlock {
             ""
         ) -join "`n"
         $sb = iex "{ $src }"
-        $methods[$key] = $sb
+        $methods[$propertyName] = $sb
     }
     Add-ScriptProperties $Settings $methods
 
