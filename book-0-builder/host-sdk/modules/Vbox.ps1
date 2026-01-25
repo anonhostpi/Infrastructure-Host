@@ -13,6 +13,17 @@ New-Module -Name SDK.Vbox -ScriptBlock {
 
     . "$PSScriptRoot\helpers\PowerShell.ps1"
 
+    $mod.Configurator = @{
+        Defaults = @{
+            CPUs = 2
+            Memory = 4096
+            Disk = 40960
+            SSHUser = "ubuntu"
+            SSHHost = "localhost"
+            SSHPort = 2222
+        }
+    }
+
     $Vbox = New-Object PSObject
 
     #region: Main utilities
