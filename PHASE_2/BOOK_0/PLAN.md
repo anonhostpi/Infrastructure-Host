@@ -4,7 +4,13 @@
 
 **References:**
 - Rules: `PHASE_2/RULES.md`
-- Initial: `PHASE_2/BOOK_0/INITIAL.md`
+- Discovery Docs:
+  - `PHASE_2/BOOK_0/SDK.md` - Host SDK restructure
+  - `PHASE_2/BOOK_0/CONFIG.md` - Config.ps1 refactoring (superseded by DEDUPE_LAYER_WORK.md)
+  - `PHASE_2/BOOK_0/REVIEW.md` - Review items (WaitForSSH, VBox SSH)
+  - `PHASE_2/BOOK_0/SETTINGS.md` - Settings.ps1 refactoring
+  - `PHASE_2/BOOK_0/DEDUPE_LAYER_WORK.md` - build_layers architecture
+  - `PHASE_2/BOOK_0/DOCS.md` - Documentation updates
 
 ---
 
