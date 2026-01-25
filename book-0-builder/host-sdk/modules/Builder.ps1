@@ -87,14 +87,11 @@ New-Module -Name SDK.Builder -ScriptBlock {
             return $apt_result.Success -and $pip_result.Success
         }
         Build = {
-            $make = @(
-                "cd /home/ubuntu/infra-host"
-                "make all"
-            ) -join " && "
-
-            $make_result = $this.Exec($make)
-
-            return $make_result.Success
+            param([int]$Layer)
+            $this.Clean()  # Always clean before build
+            $target = if ($Layer) { "make cloud-init LAYER=$Layer" } else { "make all" }
+            $make = @("cd /home/ubuntu/infra-host", $target) -join " && "
+            return $this.Exec($make).Success
         }
         Stage = {
             $setup_success = $this.Setup($true)
