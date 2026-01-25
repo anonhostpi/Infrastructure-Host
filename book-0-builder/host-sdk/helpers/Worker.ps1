@@ -40,4 +40,9 @@ New-Module -Name SDK.Worker -ScriptBlock {
             }
         }
     }
-}
+
+    $Worker = New-Object PSObject
+    $SDK.Extend("Worker", $Worker)
+
+    Export-ModuleMember -Function Add-CommonWorkerMethods
+} -ArgumentList $SDK | Import-Module -Force
