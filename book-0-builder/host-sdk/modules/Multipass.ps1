@@ -11,7 +11,7 @@ New-Module -Name SDK.Multipass -ScriptBlock {
 
     $mod = @{ SDK = $SDK }
 
-    . "$PSScriptRoot\helpers\PowerShell.ps1"
+    . "$PSScriptRoot\..\helpers\PowerShell.ps1"
 
     $mod.Configurator = @{
         Defaulter = {
