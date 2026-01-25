@@ -44,10 +44,6 @@ New-Module -Name SDK.Testing -ScriptBlock {
             param([int]$Layer)
             return $mod.SDK.Fragments.UpTo($Layer) | ForEach-Object { $_.Name }
         }
-        Verifications = {
-            param([int]$Layer)
-            return $mod.SDK.Fragments.At($Layer) | ForEach-Object { "Test-$($_.Name)Fragment" }
-        }
     }
 
     Add-ScriptMethods $Testing @{
