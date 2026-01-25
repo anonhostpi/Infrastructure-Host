@@ -129,6 +129,15 @@ New-Module -Name SDK.Builder -ScriptBlock {
             }
             return "Layer $Layer"
         }
+        LayerFragments = {
+            param([int]$Layer)
+            # Agent-dependent levels use override fragments
+            if ($mod.AgentDependent -and $mod.AgentDependent.ContainsKey($Layer)) {
+                return $mod.AgentDependent[$Layer].fragments
+            }
+            # Normal levels derive from build_layer via Fragments module
+            return $mod.SDK.Fragments.UpTo($Layer) | ForEach-Object { $_.Name }
+        }
     }
 
     $SDK.Extend("Builder", $Builder)
