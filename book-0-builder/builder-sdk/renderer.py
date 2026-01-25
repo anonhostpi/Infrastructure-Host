@@ -170,8 +170,12 @@ def render_cloud_init(ctx, include=None, exclude=None, layer=None, for_iso=False
             pass  # Don't filter this fragment
         elif layer is not None:
             # Filter by layer (if specified)
-            fragment_layer = fragment.get('build_layer', 0)
-            if fragment_layer > layer:
+            frag_layer = fragment.get('build_layer', 999)
+            # build_layer can be int or list of ints
+            if isinstance(frag_layer, list):
+                if not any(l <= layer for l in frag_layer):
+                    continue
+            elif frag_layer > layer:
                 continue
 
         template_path = tpl_path.as_posix()
