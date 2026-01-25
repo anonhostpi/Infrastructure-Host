@@ -92,6 +92,14 @@ New-Module -Name SDK.Builder -ScriptBlock {
         }
     }
 
+    Add-ScriptMethods $Builder @{
+        RegisterRunner = {
+            param([string]$Name, $Worker)
+            $mod.Runners[$Name] = $Worker
+            return $Worker
+        }
+    }
+
     $SDK.Extend("Builder", $Builder)
 
     # Export nothing. This module only modifies the SDK object.
