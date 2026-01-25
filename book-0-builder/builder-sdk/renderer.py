@@ -93,13 +93,11 @@ def render_scripts(ctx):
         scripts_dir = fragment['_path'] / 'scripts'
         if not scripts_dir.exists():
             continue
-        for tpl_path in scripts_dir.glob('*.tpl'):
-        # Keep original filename (e.g., "early-net.sh")
-        filename = tpl_path.name.removesuffix('.tpl')
-        # Use forward slashes for Jinja2 (cross-platform)
-        template_path = tpl_path.relative_to('src').as_posix()
-        rendered = render_text(ctx, template_path)
-        scripts[filename] = rendered
+        for tpl_path in scripts_dir.glob('*.sh.tpl'):
+            filename = tpl_path.name.removesuffix('.tpl')
+            template_path = tpl_path.as_posix()
+            rendered = render_text(ctx, template_path)
+            scripts[filename] = rendered
 
     return scripts
 
