@@ -16,7 +16,7 @@ Update the builder-sdk to discover fragments in the new `book-*/` structure inst
 
 ## Files to Modify
 
-### Commit 1: `book-0-builder/builder-sdk/renderer.py` - Add fragment discovery function
+### Commit 1: `book-0-builder/builder-sdk/renderer.py` - Add fragment discovery function [COMPLETE]
 
 ```diff
 +def discover_fragments(base_dirs=None):
@@ -38,7 +38,7 @@ Reason: Fragment discovery is the foundation - all other changes depend on this 
 
 ---
 
-### Commit 2: `book-0-builder/builder-sdk/renderer.py` - Update create_environment signature
+### Commit 2: `book-0-builder/builder-sdk/renderer.py` - Update create_environment signature [COMPLETE]
 
 ```diff
 -def create_environment(template_dir='src'):
@@ -57,7 +57,7 @@ Reason: Support multiple template directories instead of single `src/` path.
 
 ---
 
-### Commit 3: `book-0-builder/builder-sdk/renderer.py` - Update get_environment
+### Commit 3: `book-0-builder/builder-sdk/renderer.py` - Update get_environment [COMPLETE]
 
 ```diff
  def get_environment():
@@ -73,7 +73,7 @@ Reason: Use new multi-directory default instead of hardcoded `src/`.
 
 ---
 
-### Commit 4: `book-0-builder/builder-sdk/renderer.py` - Update render_scripts
+### Commit 4: `book-0-builder/builder-sdk/renderer.py` - Update render_scripts [COMPLETE]
 
 ```diff
  def render_scripts(ctx):
@@ -109,7 +109,7 @@ Reason: Find scripts within each fragment's `scripts/` directory instead of sing
 
 ---
 
-### Commit 5: `book-0-builder/builder-sdk/renderer.py` - Update render_script path handling
+### Commit 5: `book-0-builder/builder-sdk/renderer.py` - Update render_script path handling [COMPLETE]
 
 ```diff
  def render_script(ctx, input_path, output_path):
@@ -129,7 +129,7 @@ Reason: Remove legacy `src/` prefix handling - paths are now direct.
 
 ---
 
-### Commit 6: `book-0-builder/builder-sdk/renderer.py` - Update get_available_fragments
+### Commit 6: `book-0-builder/builder-sdk/renderer.py` - Update get_available_fragments [COMPLETE]
 
 ```diff
  def get_available_fragments():
@@ -149,7 +149,7 @@ Reason: Use `build.yaml` discovery instead of scanning `src/autoinstall/cloud-in
 
 ---
 
-### Commit 7: `book-0-builder/builder-sdk/renderer.py` - Update render_cloud_init (part 1)
+### Commit 7: `book-0-builder/builder-sdk/renderer.py` - Update render_cloud_init (part 1) [COMPLETE]
 
 ```diff
  def render_cloud_init(ctx, include=None, exclude=None):
@@ -177,7 +177,7 @@ Reason: Update docstring and remove hardcoded `fragments_dir`.
 
 ---
 
-### Commit 8: `book-0-builder/builder-sdk/renderer.py` - Update render_cloud_init (part 2)
+### Commit 8: `book-0-builder/builder-sdk/renderer.py` - Update render_cloud_init (part 2) [COMPLETE]
 
 ```diff
 -    if not fragments_dir.exists():
@@ -205,7 +205,7 @@ Reason: Use discovered fragments and find `fragment.yaml.tpl` relative to each.
 
 ---
 
-### Commit 9: `book-0-builder/builder-sdk/renderer.py` - Update render_cloud_init (part 3)
+### Commit 9: `book-0-builder/builder-sdk/renderer.py` - Update render_cloud_init (part 3) [COMPLETE]
 
 ```diff
 -        # Use forward slashes for Jinja2 (cross-platform)
@@ -218,7 +218,7 @@ Reason: Remove `relative_to('src')` - use direct path.
 
 ---
 
-### Commit 10: `book-0-builder/builder-sdk/renderer.py` - Update render_autoinstall
+### Commit 10: `book-0-builder/builder-sdk/renderer.py` - Update render_autoinstall [COMPLETE]
 
 ```diff
  def render_autoinstall(ctx):
@@ -239,7 +239,7 @@ Reason: Update path to base autoinstall template in new location.
 
 ---
 
-### Commit 11: `book-0-builder/host-sdk/modules/Config.ps1` - Update fragment mappings (part 1)
+### Commit 11: `book-0-builder/host-sdk/modules/Config.ps1` - Update fragment mappings (part 1) [COMPLETE]
 
 ```diff
          $cache = @{
@@ -258,7 +258,7 @@ Reason: Fragment names no longer have numeric prefixes - use `build.yaml` names.
 
 ---
 
-### Commit 12: `book-0-builder/host-sdk/modules/Config.ps1` - Update fragment mappings (part 2)
+### Commit 12: `book-0-builder/host-sdk/modules/Config.ps1` - Update fragment mappings (part 2) [COMPLETE]
 
 ```diff
 -                "6.5"  = @{ Fragments = @("30-ufw"); Name = "UFW Firewall" }
@@ -275,7 +275,7 @@ Reason: Continue updating fragment names to match `build.yaml` names.
 
 ---
 
-### Commit 13: `book-0-builder/host-sdk/modules/Config.ps1` - Update fragment mappings (part 3)
+### Commit 13: `book-0-builder/host-sdk/modules/Config.ps1` - Update fragment mappings (part 3) [COMPLETE]
 
 ```diff
 -                "6.9"  = @{ Fragments = @("55-security-mon"); Name = "Security Monitoring" }
@@ -292,7 +292,7 @@ Reason: Continue updating fragment names.
 
 ---
 
-### Commit 14: `book-0-builder/host-sdk/modules/Config.ps1` - Update fragment mappings (part 4)
+### Commit 14: `book-0-builder/host-sdk/modules/Config.ps1` - Update fragment mappings (part 4) [COMPLETE]
 
 ```diff
 -                "6.13" = @{ Fragments = @("76-copilot-cli"); Name = "Copilot CLI" }
@@ -309,7 +309,7 @@ Reason: Continue updating fragment names.
 
 ---
 
-### Commit 15: `book-0-builder/host-sdk/modules/Config.ps1` - Update fragment mappings (part 5)
+### Commit 15: `book-0-builder/host-sdk/modules/Config.ps1` - Update fragment mappings (part 5) [COMPLETE]
 
 ```diff
 -                "6.8-summary" = @{ Fragments = @("50-packages", "50-pkg-security", "999-pkg-upgrade"); Name = "Update Summary" }
@@ -330,7 +330,7 @@ Reference: `PHASE_2/BOOK_0/SDK.md`
 
 ---
 
-### Commit 16: `book-0-builder/host-sdk/SDK.ps1` - Fix module path references
+### Commit 16: `book-0-builder/host-sdk/SDK.ps1` - Fix module path references [COMPLETE]
 
 ```diff
 -    & "$PSScriptRoot/Settings.ps1" -SDK $SDK
@@ -351,7 +351,7 @@ Reason: Modules are in `modules/` subdirectory but SDK.ps1 references them at ro
 
 ---
 
-### Commit 17: `book-0-builder/host-sdk/SDK.ps1` - Add Logger module loading
+### Commit 17: `book-0-builder/host-sdk/SDK.ps1` - Add Logger module loading [COMPLETE]
 
 ```diff
 +    & "$PSScriptRoot/modules/Logger.ps1" -SDK $SDK
@@ -362,7 +362,7 @@ Reason: Logger must load first so other modules can use `$SDK.Log.*`.
 
 ---
 
-### Commit 18: Create `book-0-builder/host-sdk/modules/Logger.ps1` - module shape
+### Commit 18: Create `book-0-builder/host-sdk/modules/Logger.ps1` - module shape [COMPLETE]
 
 ```diff
 +param([Parameter(Mandatory = $true)] $SDK)
@@ -384,7 +384,7 @@ Reason: Logger module skeleton - properties and extension point.
 
 ---
 
-### Commit 19: `book-0-builder/host-sdk/modules/Logger.ps1` - Add Write and level methods
+### Commit 19: `book-0-builder/host-sdk/modules/Logger.ps1` - Add Write and level methods [COMPLETE]
 
 ```diff
 +    Add-ScriptMethods $Logger @{
@@ -408,7 +408,7 @@ Reason: Core Write method and log level methods (insert before Extend call).
 
 ---
 
-### Commit 20: `book-0-builder/host-sdk/modules/Logger.ps1` - Add transcript methods
+### Commit 20: `book-0-builder/host-sdk/modules/Logger.ps1` - Add transcript methods [COMPLETE]
 
 ```diff
 +    Add-ScriptMethods $Logger @{
@@ -434,7 +434,7 @@ Reason: Transcript control methods (insert before Extend call).
 
 ---
 
-### Commit 21: Create `book-0-builder/host-sdk/helpers/Worker.ps1`
+### Commit 21: Create `book-0-builder/host-sdk/helpers/Worker.ps1` [COMPLETE]
 
 ```diff
 +function Add-CommonWorkerMethods {
@@ -455,7 +455,7 @@ Reason: Common worker helper with Ensure method. Test method added in later comm
 
 ---
 
-### Commit 22: `book-0-builder/host-sdk/helpers/Worker.ps1` - Add Test method signature
+### Commit 22: `book-0-builder/host-sdk/helpers/Worker.ps1` - Add Test method signature [COMPLETE]
 
 ```diff
 +        Test = {
@@ -473,7 +473,7 @@ Reason: Test method skeleton - executes command, checks pattern, records result.
 
 ---
 
-### Commit 23: `book-0-builder/host-sdk/helpers/Worker.ps1` - Add Test method body
+### Commit 23: `book-0-builder/host-sdk/helpers/Worker.ps1` - Add Test method body [COMPLETE]
 
 ```diff
          Test = {
@@ -508,7 +508,7 @@ Reason: Test method implementation - execute, record, log result.
 
 ---
 
-### Commit 24: `book-0-builder/host-sdk/modules/Multipass.ps1` - Add Network/CloudInit properties
+### Commit 24: `book-0-builder/host-sdk/modules/Multipass.ps1` - Add Network/CloudInit properties [COMPLETE]
 
 ```diff
          Disk = {
@@ -527,7 +527,7 @@ Reason: Add Network and CloudInit properties to worker config.
 
 ---
 
-### Commit 25: `book-0-builder/host-sdk/modules/Multipass.ps1` - Remove Ensure from Worker.Methods
+### Commit 25: `book-0-builder/host-sdk/modules/Multipass.ps1` - Remove Ensure from Worker.Methods [COMPLETE]
 
 ```diff
 -            Ensure = {
@@ -542,7 +542,7 @@ Reason: Ensure moves to helpers/Worker.ps1 as common method.
 
 ---
 
-### Commit 26: `book-0-builder/host-sdk/modules/Multipass.ps1` - Call Worker helper
+### Commit 26: `book-0-builder/host-sdk/modules/Multipass.ps1` - Call Worker helper [COMPLETE]
 
 ```diff
              Add-ScriptProperties $worker $mod.Worker.Properties
@@ -559,7 +559,7 @@ Reason: Apply common worker methods (Ensure, Test) after hypervisor-specific met
 
 ---
 
-### Commit 27: `book-0-builder/host-sdk/modules/Multipass.ps1` - Update Create to use CloudInit
+### Commit 27: `book-0-builder/host-sdk/modules/Multipass.ps1` - Update Create to use CloudInit [COMPLETE]
 
 ```diff
              Create = {
@@ -581,7 +581,7 @@ Reason: Worker Create should use CloudInit and Network from config.
 
 ---
 
-### Commit 28: Create `book-0-builder/host-sdk/modules/Fragments.ps1` - module shape
+### Commit 28: Create `book-0-builder/host-sdk/modules/Fragments.ps1` - module shape [COMPLETE]
 
 ```diff
 +param([Parameter(Mandatory = $true)] $SDK)
@@ -604,7 +604,7 @@ Reason: Fragments module skeleton.
 
 ---
 
-### Commit 29: `book-0-builder/host-sdk/modules/Fragments.ps1` - Add Layers property
+### Commit 29: `book-0-builder/host-sdk/modules/Fragments.ps1` - Add Layers property [COMPLETE]
 
 ```diff
 +    $Fragments | Add-Member -MemberType ScriptProperty -Name Layers -Value {
@@ -630,7 +630,7 @@ Reason: Layers ScriptProperty - live getter that discovers fragments (insert bef
 
 ---
 
-### Commit 30: `book-0-builder/host-sdk/modules/Fragments.ps1` - Add query methods
+### Commit 30: `book-0-builder/host-sdk/modules/Fragments.ps1` - Add query methods [COMPLETE]
 
 ```diff
 +    Add-ScriptMethods $Fragments @{
@@ -654,7 +654,7 @@ Reason: Fragment query methods (insert before Extend).
 
 ---
 
-### Commit 31: `book-0-builder/host-sdk/SDK.ps1` - Add Fragments module loading
+### Commit 31: `book-0-builder/host-sdk/SDK.ps1` - Add Fragments module loading [COMPLETE]
 
 ```diff
      & "$PSScriptRoot/modules/Settings.ps1" -SDK $SDK
@@ -666,7 +666,7 @@ Reason: Load Fragments module after Settings (needs ConvertFrom-Yaml).
 
 ---
 
-### Commit 32: `book-0-builder/host-sdk/modules/Network.ps1` - Add WaitForSSH method
+### Commit 32: `book-0-builder/host-sdk/modules/Network.ps1` - Add WaitForSSH method [COMPLETE]
 
 ```diff
 +        WaitForSSH = {
@@ -688,7 +688,7 @@ Reason: WaitForSSH wraps UntilSSH with timeout exception handling.
 
 ---
 
-### Commit 33: Create `book-0-builder/host-sdk/modules/Testing.ps1` - module shape
+### Commit 33: Create `book-0-builder/host-sdk/modules/Testing.ps1` - module shape [COMPLETE]
 
 ```diff
 +param([Parameter(Mandatory = $true)] $SDK)
@@ -711,7 +711,7 @@ Reason: Testing module skeleton with result tracking properties.
 
 ---
 
-### Commit 34: `book-0-builder/host-sdk/modules/Testing.ps1` - Add All property and tracking methods
+### Commit 34: `book-0-builder/host-sdk/modules/Testing.ps1` - Add All property and tracking methods [COMPLETE]
 
 ```diff
 +    Add-ScriptProperties $Testing @{
@@ -740,7 +740,7 @@ Reason: All property (live getter) and result tracking methods (insert before Ex
 
 ---
 
-### Commit 35: `book-0-builder/host-sdk/modules/Testing.ps1` - Add Summary method
+### Commit 35: `book-0-builder/host-sdk/modules/Testing.ps1` - Add Summary method [COMPLETE]
 
 ```diff
 +    Add-ScriptMethods $Testing @{
@@ -763,7 +763,7 @@ Reason: Summary method for test results display (insert before Extend).
 
 ---
 
-### Commit 36: `book-0-builder/host-sdk/modules/Testing.ps1` - Add layer query methods
+### Commit 36: `book-0-builder/host-sdk/modules/Testing.ps1` - Add layer query methods [COMPLETE]
 
 ```diff
 +    Add-ScriptMethods $Testing @{
@@ -784,7 +784,7 @@ Reason: Layer-based fragment/verification methods (insert before Extend).
 
 ---
 
-### Commit 37: `book-0-builder/host-sdk/SDK.ps1` - Add Testing module loading
+### Commit 37: `book-0-builder/host-sdk/SDK.ps1` - Add Testing module loading [COMPLETE]
 
 ```diff
      & "$PSScriptRoot/modules/Builder.ps1" -SDK $SDK
@@ -795,7 +795,7 @@ Reason: Load Testing module after Builder.
 
 ---
 
-### Commit 38: `book-0-builder/host-sdk/modules/Builder.ps1` - Add Clean method (line 64)
+### Commit 38: `book-0-builder/host-sdk/modules/Builder.ps1` - Add Clean method (line 64) [COMPLETE]
 
 Location: Inside existing `Add-ScriptMethods $Builder @{` block at line 64.
 
@@ -812,7 +812,7 @@ Reason: Add Clean method to existing Add-ScriptMethods block.
 
 ---
 
-### Commit 39: `book-0-builder/host-sdk/modules/Builder.ps1` - Update Build method (line 85)
+### Commit 39: `book-0-builder/host-sdk/modules/Builder.ps1` - Update Build method (line 85) [COMPLETE]
 
 Location: Replace existing `Build` method in `Add-ScriptMethods $Builder @{` block.
 
@@ -838,7 +838,7 @@ Reason: Build accepts Layer parameter, calls Clean first.
 
 ---
 
-### Commit 40: `book-0-builder/host-sdk/modules/Vbox.ps1` - Add Configurator defaults (line 14)
+### Commit 40: `book-0-builder/host-sdk/modules/Vbox.ps1` - Add Configurator defaults (line 14) [COMPLETE]
 
 Location: After `$mod = @{ SDK = $SDK }` and PowerShell.ps1 dot-source (around line 14).
 
@@ -863,7 +863,7 @@ Reason: Default configuration values for Vbox workers.
 
 ---
 
-### Commit 41: `book-0-builder/host-sdk/modules/Vbox.ps1` - Add Worker structure (line 16)
+### Commit 41: `book-0-builder/host-sdk/modules/Vbox.ps1` - Add Worker structure (line 16) [COMPLETE]
 
 Location: After Configurator, before `$Vbox = New-Object PSObject`.
 
@@ -893,7 +893,7 @@ Reason: Worker structure with Rendered property and empty Methods placeholder.
 
 ---
 
-### Commit 42: `book-0-builder/host-sdk/modules/Vbox.ps1` - Add Worker property accessors
+### Commit 42: `book-0-builder/host-sdk/modules/Vbox.ps1` - Add Worker property accessors [COMPLETE]
 
 Location: Inside `$mod.Worker.Properties` block.
 
@@ -917,7 +917,7 @@ Reason: Worker property accessors.
 
 ---
 
-### Commit 43: `book-0-builder/host-sdk/modules/Vbox.ps1` - Add Worker lifecycle methods
+### Commit 43: `book-0-builder/host-sdk/modules/Vbox.ps1` - Add Worker lifecycle methods [COMPLETE]
 
 Location: Inside `$mod.Worker.Methods` block.
 
@@ -946,7 +946,7 @@ Reason: Worker lifecycle methods forwarding to SDK.Vbox.
 
 ---
 
-### Commit 44: `book-0-builder/host-sdk/modules/Vbox.ps1` - Add Worker Create/Exec methods
+### Commit 44: `book-0-builder/host-sdk/modules/Vbox.ps1` - Add Worker Create/Exec methods [COMPLETE]
 
 Location: Inside `$mod.Worker.Methods` block, after lifecycle methods.
 
@@ -976,7 +976,7 @@ Reason: Worker Create and Exec methods.
 
 ---
 
-### Commit 45: `book-0-builder/host-sdk/modules/Vbox.ps1` - Add Worker factory (line 26)
+### Commit 45: `book-0-builder/host-sdk/modules/Vbox.ps1` - Add Worker factory (line 26) [COMPLETE]
 
 Location: Add to existing `Add-ScriptMethods $Vbox @{` block at line 26, before Invoke method.
 
@@ -1007,7 +1007,7 @@ Reason: Worker factory method with validation (IsoPath required).
 
 ---
 
-### Commit 46: Create `book-0-builder/host-sdk/modules/CloudInitBuild.ps1` - module shape
+### Commit 46: Create `book-0-builder/host-sdk/modules/CloudInitBuild.ps1` - module shape [COMPLETE]
 
 ```diff
 +param(
@@ -1034,7 +1034,7 @@ Reason: CloudInitBuild module skeleton - handles build/worker creation for cloud
 
 ---
 
-### Commit 47: `book-0-builder/host-sdk/modules/CloudInitBuild.ps1` - Add Build and CreateWorker
+### Commit 47: `book-0-builder/host-sdk/modules/CloudInitBuild.ps1` - Add Build and CreateWorker [COMPLETE]
 
 ```diff
 +    Add-ScriptMethods $CloudInitBuild @{
@@ -1064,7 +1064,7 @@ Reason: Build and CreateWorker methods (insert before Extend).
 
 ---
 
-### Commit 48: `book-0-builder/host-sdk/modules/CloudInitBuild.ps1` - Add Cleanup
+### Commit 48: `book-0-builder/host-sdk/modules/CloudInitBuild.ps1` - Add Cleanup [COMPLETE]
 
 ```diff
 +    Add-ScriptMethods $CloudInitBuild @{
@@ -1082,7 +1082,7 @@ Reason: Cleanup method (insert before Extend).
 
 ---
 
-### Commit 49: Create `book-0-builder/host-sdk/modules/CloudInitTest.ps1` - module shape
+### Commit 49: Create `book-0-builder/host-sdk/modules/CloudInitTest.ps1` - module shape [COMPLETE]
 
 ```diff
 +param([Parameter(Mandatory = $true)] $SDK)
@@ -1105,7 +1105,7 @@ Reason: CloudInitTest module skeleton - uses CloudInitBuild for worker creation.
 
 ---
 
-### Commit 50: `book-0-builder/host-sdk/modules/CloudInitTest.ps1` - Add Run method
+### Commit 50: `book-0-builder/host-sdk/modules/CloudInitTest.ps1` - Add Run method [COMPLETE]
 
 ```diff
 +    Add-ScriptMethods $CloudInitTest @{
@@ -1132,7 +1132,7 @@ Reason: Run method - create worker via CloudInitBuild, execute tests (insert bef
 
 ---
 
-### Commit 51: Create `book-0-builder/host-sdk/modules/AutoinstallBuild.ps1` - module shape
+### Commit 51: Create `book-0-builder/host-sdk/modules/AutoinstallBuild.ps1` - module shape [COMPLETE]
 
 ```diff
 +param([Parameter(Mandatory = $true)] $SDK)
@@ -1155,7 +1155,7 @@ Reason: AutoinstallBuild module skeleton - handles build/worker creation for aut
 
 ---
 
-### Commit 52: `book-0-builder/host-sdk/modules/AutoinstallBuild.ps1` - Add GetArtifacts and CreateWorker
+### Commit 52: `book-0-builder/host-sdk/modules/AutoinstallBuild.ps1` - Add GetArtifacts and CreateWorker [COMPLETE]
 
 ```diff
 +    Add-ScriptMethods $AutoinstallBuild @{
@@ -1183,7 +1183,7 @@ Reason: GetArtifacts and CreateWorker methods (insert before Extend).
 
 ---
 
-### Commit 53: `book-0-builder/host-sdk/modules/AutoinstallBuild.ps1` - Add Cleanup
+### Commit 53: `book-0-builder/host-sdk/modules/AutoinstallBuild.ps1` - Add Cleanup [COMPLETE]
 
 ```diff
 +    Add-ScriptMethods $AutoinstallBuild @{
@@ -1201,7 +1201,7 @@ Reason: Cleanup method (insert before Extend).
 
 ---
 
-### Commit 54: Create `book-0-builder/host-sdk/modules/AutoinstallTest.ps1` - module shape
+### Commit 54: Create `book-0-builder/host-sdk/modules/AutoinstallTest.ps1` - module shape [COMPLETE]
 
 ```diff
 +param([Parameter(Mandatory = $true)] $SDK)
@@ -1224,7 +1224,7 @@ Reason: AutoinstallTest module skeleton - uses AutoinstallBuild for worker creat
 
 ---
 
-### Commit 55: `book-0-builder/host-sdk/modules/AutoinstallTest.ps1` - Add Run method
+### Commit 55: `book-0-builder/host-sdk/modules/AutoinstallTest.ps1` - Add Run method [COMPLETE]
 
 ```diff
 +    Add-ScriptMethods $AutoinstallTest @{
@@ -1251,7 +1251,7 @@ Reason: Run method - create worker via AutoinstallBuild, execute tests (insert b
 
 ---
 
-### Commit 56: `book-0-builder/host-sdk/SDK.ps1` - Add build/test module loading
+### Commit 56: `book-0-builder/host-sdk/SDK.ps1` - Add build/test module loading [COMPLETE]
 
 ```diff
      & "$PSScriptRoot/modules/Testing.ps1" -SDK $SDK
