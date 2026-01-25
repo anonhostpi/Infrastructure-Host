@@ -7,7 +7,22 @@ New-Module -Name SDK.CloudInitTest -ScriptBlock {
 
     $CloudInitTest = New-Object PSObject
 
-    # Methods added in following commit
+    Add-ScriptMethods $CloudInitTest @{
+        Run = {
+            param([int]$Layer, [hashtable]$Overrides = @{})
+            $worker = $mod.SDK.CloudInitBuild.CreateWorker($Layer, $Overrides)
+            $mod.SDK.Log.Info("Setting up cloud-init test worker: $($worker.Name)")
+            $worker.Setup($true)
+            $mod.SDK.Testing.Reset()
+            foreach ($l in 1..$Layer) {
+                foreach ($f in $mod.SDK.Fragments.At($l)) {
+                    $worker.Test($f.Name, "Test $($f.Name)", $f.TestCommand, $f.ExpectedPattern)
+                }
+            }
+            $mod.SDK.Testing.Summary()
+            return @{ Success = ($mod.SDK.Testing.FailCount -eq 0); Results = $mod.SDK.Testing.Results; WorkerName = $worker.Name }
+        }
+    }
 
     $SDK.Extend("CloudInitTest", $CloudInitTest)
     Export-ModuleMember -Function @()
