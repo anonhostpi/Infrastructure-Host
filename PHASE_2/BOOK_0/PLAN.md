@@ -2012,3 +2012,882 @@ After Review #1 commits:
 - [ ] `grep -r "src/" docs/` returns no matches
 - [ ] `grep -r "\d\d-[a-z]" docs/` returns no old fragment name matches
 - [ ] `Invoke-AutoinstallTest.ps1` runs autoinstall tests via SDK
+
+---
+
+## Code Review Changes (Review #2)
+
+Reference: `PHASE_2/BOOK_0/REVIEW.md`
+
+---
+
+### Simple Fixes (R2-2, R2-9, R2-10)
+
+---
+
+### Commit 93: `book-0-builder/host-sdk/helpers/Config.ps1` - Fix OrderedHashtable.Keys bug
+
+```diff
+-        if ($yaml -is [hashtable] -and ($yaml.Keys | Measure-Object).Count -eq 1)
++        if ($yaml -is [hashtable] -and ($yaml.Keys | ForEach-Object { $_ } | Measure-Object).Count -eq 1)
+```
+
+Reason: R2-2 - OrderedHashtable.Keys doesn't pipeline correctly without ForEach-Object.
+
+---
+
+### Commit 94: `book-0-builder/host-sdk/modules/Settings.ps1` - Fix $key in scriptblock body
+
+```diff
+     foreach( $key in $keys ) {
+-        $propertyName = ConvertTo-PascalCase $key
++        $configGetter = ConvertTo-PascalCase $key
+         $src = @(
+             "",
+-            "`$key = '$key'",
++            "`$configOriginal = '$key'",
+-            { return $mod.BuildConfig[$key] }.ToString(),
++            { return $mod.BuildConfig[$configOriginal] }.ToString(),
+             ""
+         ) -join "`n"
+         $sb = iex "{ $src }"
+-        $methods[$propertyName] = $sb
++        $methods[$configGetter] = $sb
+     }
+```
+
+Reason: R2-9 - Rename variables for clarity: $configGetter for the PascalCase property name, $configOriginal for the original key inside the scriptblock.
+
+---
+
+### Commit 95: [DROPPED - See PHASE_2/BOOK_0/VERIFICATIONS.md]
+
+R2-10 investigation moved to separate brainstorming document.
+
+---
+
+### Worker.ps1 Module Conversion (R2-3)
+
+---
+
+### Commit 96: `book-0-builder/host-sdk/helpers/Worker.ps1` - Convert to module shape
+
+```diff
+-function Add-CommonWorkerMethods {
+-    param($Worker, $SDK)
+-
+-    Add-ScriptMethods $Worker @{
++param([Parameter(Mandatory = $true)] $SDK)
++
++New-Module -Name SDK.Worker -ScriptBlock {
++    param([Parameter(Mandatory = $true)] $SDK)
++    $mod = @{ SDK = $SDK }
++
++    function Add-CommonWorkerMethods {
++        param($Worker)
++
++        Add-ScriptMethods $Worker @{
+```
+
+Reason: R2-3 - Module pattern keeps $SDK alive via $mod.SDK. Note the additional indentation for the nested Add-ScriptMethods block.
+
+---
+
+### Commit 97: `book-0-builder/host-sdk/helpers/Worker.ps1` - Update SDK references in Test method
+
+```diff
+-            $SDK.Log.Debug("Running test: $Name")
++                $mod.SDK.Log.Debug("Running test: $Name")
+-            try {
++                try {
+                     $result = $this.Exec($Command)
+                     $pass = $result.Success -and ($result.Output -join "`n") -match $ExpectedPattern
+                     $testResult = @{ Test = $TestId; Name = $Name; Pass = $pass; Output = $result.Output; Error = $result.Error }
+-                $SDK.Testing.Record($testResult)
+-                if ($pass) { $SDK.Log.Write("[PASS] $Name", "Green") }
+-                else { $SDK.Log.Write("[FAIL] $Name", "Red"); if ($result.Error) { $SDK.Log.Error("  Error: $($result.Error)") } }
++                    $mod.SDK.Testing.Record($testResult)
++                    if ($pass) { $mod.SDK.Log.Write("[PASS] $Name", "Green") }
++                    else { $mod.SDK.Log.Write("[FAIL] $Name", "Red"); if ($result.Error) { $mod.SDK.Log.Error("  Error: $($result.Error)") } }
+```
+
+Reason: R2-3 - Update $SDK to $mod.SDK and add one level of indentation for module nesting.
+
+---
+
+### Commit 98: `book-0-builder/host-sdk/helpers/Worker.ps1` - Update exception handler with indentation
+
+```diff
+-            catch {
+-                $SDK.Log.Write("[FAIL] $Name - Exception: $_", "Red")
++                catch {
++                    $mod.SDK.Log.Write("[FAIL] $Name - Exception: $_", "Red")
+                     $testResult = @{ Test = $TestId; Name = $Name; Pass = $false; Error = $_.ToString() }
+-                $SDK.Testing.Record($testResult)
++                    $mod.SDK.Testing.Record($testResult)
+                     return $testResult
+-            }
++                }
+```
+
+Reason: R2-3 - Update exception handler $SDK to $mod.SDK and fix indentation.
+
+---
+
+### Commit 98a: `book-0-builder/host-sdk/helpers/Worker.ps1` - Close function and module, add Extend
+
+```diff
+-        }
+-    }
+-}
++            }
++        }
++    }
++
++    $Worker = New-Object PSObject
++    $SDK.Extend("Worker", $Worker)
++
++    Export-ModuleMember -Function Add-CommonWorkerMethods
++} -ArgumentList $SDK | Import-Module -Force
+```
+
+Reason: R2-3 - Close nested braces with proper indentation, add SDK.Extend for the Worker object, export the helper function.
+
+---
+
+### Commit 98b: Move `Worker.ps1` from helpers to modules
+
+File move: `book-0-builder/host-sdk/helpers/Worker.ps1` → `book-0-builder/host-sdk/modules/Worker.ps1`
+
+Reason: Worker is now a proper module with SDK.Extend, belongs in modules/ directory.
+
+---
+
+### Commit 99: `book-0-builder/host-sdk/SDK.ps1` - Load Worker module
+
+```diff
+     & "$PSScriptRoot/modules/Logger.ps1" -SDK $SDK
++    & "$PSScriptRoot/modules/Worker.ps1" -SDK $SDK
+     & "$PSScriptRoot/modules/Settings.ps1" -SDK $SDK
+```
+
+Reason: Worker module must load early so other modules can use Add-CommonWorkerMethods.
+
+---
+
+### Commit 100: `book-0-builder/host-sdk/modules/Multipass.ps1` - Remove Worker.ps1 dot-source
+
+```diff
+             Add-ScriptProperties $worker $mod.Worker.Properties
+             Add-ScriptMethods $worker $mod.Worker.Methods
+
+-            . "$PSScriptRoot\..\helpers\Worker.ps1"
+-            Add-CommonWorkerMethods $worker $mod.SDK
++            Add-CommonWorkerMethods $worker
+
+             return $worker
+```
+
+Reason: Worker.ps1 now loaded as module by SDK.ps1, remove dot-source and $SDK param.
+
+---
+
+### Commit 101: `book-0-builder/host-sdk/modules/Vbox.ps1` - Remove Worker.ps1 dot-source
+
+```diff
+             Add-ScriptProperties $worker $mod.Worker.Properties
+             Add-ScriptMethods $worker $mod.Worker.Methods
+
+-            . "$PSScriptRoot\..\helpers\Worker.ps1"
+-            Add-CommonWorkerMethods $worker $mod.SDK
++            Add-CommonWorkerMethods $worker
+
+             return $worker
+```
+
+Reason: Same change as Multipass.ps1.
+
+---
+
+### Module Renaming (R2-4, R2-5)
+
+---
+
+### Commit 102: Rename `CloudInitBuild.ps1` to `CloudInit.ps1`
+
+File rename: `book-0-builder/host-sdk/modules/CloudInitBuild.ps1` → `book-0-builder/host-sdk/modules/CloudInit.ps1`
+
+---
+
+### Commit 103: `book-0-builder/host-sdk/modules/CloudInit.ps1` - Update module name
+
+```diff
+-New-Module -Name SDK.CloudInitBuild -ScriptBlock {
++New-Module -Name SDK.CloudInit -ScriptBlock {
+     param([Parameter(Mandatory = $true)] $SDK)
+     $mod = @{ SDK = $SDK }
+
+     . "$PSScriptRoot\..\helpers\PowerShell.ps1"
+
+-    $CloudInitBuild = New-Object PSObject
++    $CloudInit = New-Object PSObject
+```
+
+Reason: R2-5 - Rename module to SDK.CloudInit.
+
+---
+
+### Commit 104: `book-0-builder/host-sdk/modules/CloudInit.ps1` - Update method references
+
+```diff
+-    Add-ScriptMethods $CloudInitBuild @{
++    Add-ScriptMethods $CloudInit @{
+         Build = {
+             # ... existing code ...
+         }
+         CreateWorker = {
+             # ... existing code ...
+         }
+     }
+
+-    Add-ScriptMethods $CloudInitBuild @{
++    Add-ScriptMethods $CloudInit @{
+         Cleanup = {
+             # ... existing code ...
+         }
+     }
+
+-    $SDK.Extend("CloudInitBuild", $CloudInitBuild)
++    $SDK.Extend("CloudInit", $CloudInit)
+```
+
+Reason: R2-5 - Update variable references and Extend call.
+
+---
+
+### Commit 105: `book-0-builder/host-sdk/modules/CloudInitTest.ps1` - Convert to submodule
+
+```diff
+-New-Module -Name SDK.CloudInitTest -ScriptBlock {
++New-Module -Name SDK.CloudInit.Test -ScriptBlock {
+     param([Parameter(Mandatory = $true)] $SDK)
+     $mod = @{ SDK = $SDK }
+     . "$PSScriptRoot\..\helpers\PowerShell.ps1"
+
+     $CloudInitTest = New-Object PSObject
+
+     Add-ScriptMethods $CloudInitTest @{
+         Run = {
+             param([int]$Layer, [hashtable]$Overrides = @{})
+-            $worker = $mod.SDK.CloudInitBuild.CreateWorker($Layer, $Overrides)
++            $worker = $mod.SDK.CloudInit.CreateWorker($Layer, $Overrides)
+```
+
+Reason: R2-5 - Update module name and reference to parent module.
+
+---
+
+### Commit 106: `book-0-builder/host-sdk/modules/CloudInitTest.ps1` - Use Add-Member for submodule
+
+```diff
+-    $SDK.Extend("CloudInitTest", $CloudInitTest)
++    $SDK.CloudInit | Add-Member -MemberType NoteProperty -Name Test -Value $CloudInitTest
+     Export-ModuleMember -Function @()
+ } -ArgumentList $SDK | Import-Module -Force
+```
+
+Reason: R2-5 - Attach as submodule via Add-Member instead of Extend.
+
+---
+
+### Commit 107: Rename `AutoinstallBuild.ps1` to `Autoinstall.ps1`
+
+File rename: `book-0-builder/host-sdk/modules/AutoinstallBuild.ps1` → `book-0-builder/host-sdk/modules/Autoinstall.ps1`
+
+---
+
+### Commit 108: `book-0-builder/host-sdk/modules/Autoinstall.ps1` - Update module name
+
+```diff
+-New-Module -Name SDK.AutoinstallBuild -ScriptBlock {
++New-Module -Name SDK.Autoinstall -ScriptBlock {
+     param([Parameter(Mandatory = $true)] $SDK)
+     $mod = @{ SDK = $SDK }
+     . "$PSScriptRoot\..\helpers\PowerShell.ps1"
+
+-    $AutoinstallBuild = New-Object PSObject
++    $Autoinstall = New-Object PSObject
+```
+
+Reason: R2-4 - Rename module to SDK.Autoinstall.
+
+---
+
+### Commit 109: `book-0-builder/host-sdk/modules/Autoinstall.ps1` - Update method references
+
+```diff
+-    Add-ScriptMethods $AutoinstallBuild @{
++    Add-ScriptMethods $Autoinstall @{
+         GetArtifacts = { ... }
+         CreateWorker = { ... }
+     }
+
+-    Add-ScriptMethods $AutoinstallBuild @{
++    Add-ScriptMethods $Autoinstall @{
+         Cleanup = { ... }
+     }
+
+-    $SDK.Extend("AutoinstallBuild", $AutoinstallBuild)
++    $SDK.Extend("Autoinstall", $Autoinstall)
+```
+
+Reason: R2-4 - Update variable references and Extend call.
+
+---
+
+### Commit 110: `book-0-builder/host-sdk/modules/AutoinstallTest.ps1` - Convert to submodule
+
+```diff
+-New-Module -Name SDK.AutoinstallTest -ScriptBlock {
++New-Module -Name SDK.Autoinstall.Test -ScriptBlock {
+     param([Parameter(Mandatory = $true)] $SDK)
+     $mod = @{ SDK = $SDK }
+     . "$PSScriptRoot\..\helpers\PowerShell.ps1"
+
+     $AutoinstallTest = New-Object PSObject
+
+     Add-ScriptMethods $AutoinstallTest @{
+         Run = {
+             param([hashtable]$Overrides = @{})
+-            $worker = $mod.SDK.AutoinstallBuild.CreateWorker($Overrides)
++            $worker = $mod.SDK.Autoinstall.CreateWorker($Overrides)
+```
+
+Reason: R2-4 - Update module name and reference to parent module.
+
+---
+
+### Commit 111: `book-0-builder/host-sdk/modules/AutoinstallTest.ps1` - Use Add-Member for submodule
+
+```diff
+-    $SDK.Extend("AutoinstallTest", $AutoinstallTest)
++    $SDK.Autoinstall | Add-Member -MemberType NoteProperty -Name Test -Value $AutoinstallTest
+     Export-ModuleMember -Function @()
+ } -ArgumentList $SDK | Import-Module -Force
+```
+
+Reason: R2-4 - Attach as submodule via Add-Member instead of Extend.
+
+---
+
+### Commit 112: `book-0-builder/host-sdk/SDK.ps1` - Update module loading paths
+
+```diff
+     & "$PSScriptRoot/modules/Testing.ps1" -SDK $SDK
+-    & "$PSScriptRoot/modules/CloudInitBuild.ps1" -SDK $SDK
++    & "$PSScriptRoot/modules/CloudInit.ps1" -SDK $SDK
+     & "$PSScriptRoot/modules/CloudInitTest.ps1" -SDK $SDK
+-    & "$PSScriptRoot/modules/AutoinstallBuild.ps1" -SDK $SDK
++    & "$PSScriptRoot/modules/Autoinstall.ps1" -SDK $SDK
+     & "$PSScriptRoot/modules/AutoinstallTest.ps1" -SDK $SDK
+```
+
+Reason: Update loading for renamed modules.
+
+---
+
+### Layer Logic Move (R2-6)
+
+---
+
+### Commit 113: `book-0-builder/host-sdk/modules/Fragments.ps1` - Add LayerName method
+
+```diff
++    Add-ScriptMethods $Fragments @{
++        LayerName = {
++            param([int]$Layer)
++            if ($mod.LayerNames -and $mod.LayerNames.ContainsKey($Layer)) {
++                return $mod.LayerNames[$Layer]
++            }
++            return "Layer $Layer"
++        }
++    }
+
+     $SDK.Extend("Fragments", $Fragments)
+```
+
+Reason: R2-6 - Move LayerName from Builder to Fragments.
+
+---
+
+### Commit 114: `book-0-builder/host-sdk/modules/Fragments.ps1` - Load build_layers.yaml
+
+```diff
+     $mod = @{ SDK = $SDK }
+     . "$PSScriptRoot\..\helpers\PowerShell.ps1"
+
++    # Load build layers config
++    $layersPath = "$PSScriptRoot\..\..\config\build_layers.yaml"
++    $mod.LayersConfig = Get-Content $layersPath -Raw | ConvertFrom-Yaml
++    $mod.LayerNames = $mod.LayersConfig.layers
+
+     $Fragments = New-Object PSObject
+```
+
+Reason: R2-6 - Fragments module needs layer config for LayerName.
+
+---
+
+### Commit 115: `book-0-builder/host-sdk/modules/Builder.ps1` - Remove layer config loading
+
+```diff
+     $mod = @{ SDK = $SDK }
+     . "$PSScriptRoot\..\helpers\PowerShell.ps1"
+-    . "$PSScriptRoot\..\helpers\Config.ps1"
+-
+-    # Load build layers config
+-    $layersPath = "$PSScriptRoot\..\..\config\build_layers.yaml"
+-    $mod.LayersConfig = Get-Content $layersPath -Raw | ConvertFrom-Yaml
+-    $mod.LayerNames = $mod.LayersConfig.layers
+-    $mod.AgentDependent = $mod.LayersConfig.agent_dependent
+```
+
+Reason: R2-6 - Layer config now in Fragments module.
+
+---
+
+### Commit 116: `book-0-builder/host-sdk/modules/Builder.ps1` - Remove LayerName method
+
+```diff
+-        LayerName = {
+-            param([int]$Layer)
+-            if ($mod.AgentDependent -and $mod.AgentDependent.ContainsKey($Layer)) {
+-                return $mod.AgentDependent[$Layer].name
+-            }
+-            if ($mod.LayerNames -and $mod.LayerNames.ContainsKey($Layer)) {
+-                return $mod.LayerNames[$Layer]
+-            }
+-            return "Layer $Layer"
+-        }
+```
+
+Reason: R2-6 - LayerName moved to Fragments.
+
+---
+
+### Commit 117: `book-0-builder/host-sdk/modules/Builder.ps1` - Remove LayerFragments method
+
+```diff
+-        LayerFragments = {
+-            param([int]$Layer)
+-            # Agent-dependent levels use override fragments
+-            if ($mod.AgentDependent -and $mod.AgentDependent.ContainsKey($Layer)) {
+-                return $mod.AgentDependent[$Layer].fragments
+-            }
+-            # Normal levels derive from build_layer via Fragments module
+-            return $mod.SDK.Fragments.UpTo($Layer) | ForEach-Object { $_.Name }
+-        }
+```
+
+Reason: R2-6 - Use Fragments.UpTo() directly instead.
+
+---
+
+### Commit 118: `book-0-builder/host-sdk/modules/Builder.ps1` - Add runner tracking
+
+```diff
+     $mod = @{ SDK = $SDK }
++    $mod.Runners = @{}
+     . "$PSScriptRoot\..\helpers\PowerShell.ps1"
+```
+
+Reason: R2-6 - Track spawned runners for cleanup.
+
+---
+
+### Commit 119: `book-0-builder/host-sdk/modules/Builder.ps1` - Add RegisterRunner method
+
+```diff
++    Add-ScriptMethods $Builder @{
++        RegisterRunner = {
++            param([string]$Name, $Worker)
++            $mod.Runners[$Name] = $Worker
++            return $Worker
++        }
++    }
+
+     $SDK.Extend("Builder", $Builder)
+```
+
+Reason: R2-6 - Method to register runners for tracking.
+
+---
+
+### Commit 120: `book-0-builder/host-sdk/modules/Builder.ps1` - Update Flush to destroy runners
+
+```diff
+         Flush = {
+-            return $this.Destroy()
++            foreach ($name in $mod.Runners.Keys) {
++                $runner = $mod.Runners[$name]
++                if ($runner -and $runner.Exists()) {
++                    $runner.Destroy()
++                }
++            }
++            $mod.Runners = @{}
++            return $this.Destroy()
+         }
+```
+
+Reason: R2-6 - Flush destroys all tracked runners before builder.
+
+---
+
+### Commit 121: `book-0-builder/host-sdk/modules/Testing.ps1` - Update LevelName delegate
+
+```diff
+         LevelName = {
+             param([int]$Layer)
+-            return $mod.SDK.Builder.LayerName($Layer)
++            return $mod.SDK.Fragments.LayerName($Layer)
+         }
+```
+
+Reason: R2-6 - Delegate to Fragments instead of Builder.
+
+---
+
+### Commit 122: `book-0-builder/host-sdk/modules/Testing.ps1` - Update LevelFragments
+
+```diff
+         LevelFragments = {
+             param([int]$Layer)
+-            return $mod.SDK.Builder.LayerFragments($Layer)
++            return $mod.SDK.Fragments.UpTo($Layer) | ForEach-Object { $_.Name }
+         }
+```
+
+Reason: R2-6 - Use Fragments.UpTo() directly.
+
+---
+
+### Build Improvements (R2-7)
+
+---
+
+### Commit 123: `book-0-builder/host-sdk/modules/CloudInit.ps1` - Make Build idempotent
+
+```diff
+         Build = {
+             param([int]$Layer)
++            $artifacts = $mod.SDK.Builder.Artifacts
++            if ($artifacts -and $artifacts.cloud_init -and (Test-Path $artifacts.cloud_init)) {
++                $mod.SDK.Log.Info("Cloud-init artifact exists, skipping build")
++                return $artifacts
++            }
+             $mod.SDK.Log.Info("Building cloud-init for layer $Layer...")
+```
+
+Reason: R2-7 - Skip build if artifact already exists.
+
+---
+
+### Commit 124: `book-0-builder/host-sdk/modules/CloudInit.ps1` - Add Clean method
+
+```diff
++    Add-ScriptMethods $CloudInit @{
++        Clean = {
++            return $mod.SDK.Builder.Clean()
++        }
++    }
+
+     $SDK.Extend("CloudInit", $CloudInit)
+```
+
+Reason: R2-7 - Proxy to builder's clean.
+
+---
+
+### Commit 125: `book-0-builder/host-sdk/modules/Autoinstall.ps1` - Add Build method
+
+```diff
++    Add-ScriptMethods $Autoinstall @{
++        Build = {
++            param([int]$Layer)
++            $artifacts = $mod.SDK.Builder.Artifacts
++            if ($artifacts -and $artifacts.iso -and (Test-Path $artifacts.iso)) {
++                $mod.SDK.Log.Info("ISO artifact exists, skipping build")
++                return $artifacts
++            }
++            $mod.SDK.Log.Info("Building ISO for layer $Layer...")
++            if (-not $mod.SDK.Builder.Build($Layer)) { throw "Failed to build for layer $Layer" }
++            # ISO build is triggered separately via make iso
++            return $mod.SDK.Builder.Artifacts
++        }
++    }
+```
+
+Reason: R2-7 - Add Build method matching CloudInit pattern.
+
+---
+
+### Commit 126: `book-0-builder/host-sdk/modules/Autoinstall.ps1` - Add Clean method
+
+```diff
++    Add-ScriptMethods $Autoinstall @{
++        Clean = {
++            return $mod.SDK.Builder.Clean()
++        }
++    }
+
+     $SDK.Extend("Autoinstall", $Autoinstall)
+```
+
+Reason: R2-7 - Proxy to builder's clean.
+
+---
+
+### Commit 127: `book-0-builder/builder-sdk/renderer.py` - Add iso_required enforcement
+
+```diff
+ def render_cloud_init(ctx, include=None, exclude=None, layer=None, for_iso=False):
+     """Render and merge cloud-init fragments, return as dict.
+
+     Args:
+         ctx: Build context
+         include: List of fragment names to include (default: all)
+         exclude: List of fragment names to exclude (default: none)
+         layer: If set, only include fragments with build_layer <= layer
++        for_iso: If True, always include iso_required fragments
+     """
+     scripts = render_scripts(ctx)
+     merged = {}
+
+     for fragment in discover_fragments():
+         fragment_name = fragment['name']
+
++        # Always include iso_required fragments for ISO builds
++        if for_iso and fragment.get('iso_required', False):
++            pass  # Don't filter this fragment
++        else:
+         # Filter by layer if specified
+-        if layer is not None and fragment.get('build_layer', 999) > layer:
+-            continue
++            if layer is not None and fragment.get('build_layer', 999) > layer:
++                continue
+```
+
+Reason: R2-7 - iso_required fragments always included in ISO builds.
+
+---
+
+### Commit 128: `book-0-builder/builder-sdk/__main__.py` - Add --for-iso flag
+
+```diff
+     render_parser.add_argument(
+         '-l', '--layer',
+         type=int,
+         metavar='LAYER',
+         help='Include fragments up to build_layer N'
+     )
++    render_parser.add_argument(
++        '--for-iso',
++        action='store_true',
++        help='Building for ISO (always include iso_required fragments)'
++    )
+```
+
+Reason: R2-7 - CLI flag for ISO builds.
+
+---
+
+### Commit 129: `book-0-builder/builder-sdk/__main__.py` - Pass for_iso to render
+
+```diff
+     elif args.target == 'cloud-init':
+         render_cloud_init_to_file(
+             ctx,
+             args.output,
+             include=args.include,
+             exclude=args.exclude,
+-            layer=args.layer
++            layer=args.layer,
++            for_iso=getattr(args, 'for_iso', False)
+         )
+```
+
+Reason: R2-7 - Pass --for-iso to render function.
+
+---
+
+### Commit 130: `Makefile` - Pass --for-iso to autoinstall target
+
+```diff
+ output/user-data: $(FRAGMENTS) $(SCRIPTS) $(CONFIGS) $(BUILD_YAMLS)
+-	python3 -m builder render autoinstall -o $@
++	python3 -m builder render autoinstall -o $@ --for-iso
+```
+
+Reason: R2-7 - Autoinstall builds always include iso_required.
+
+---
+
+### Return Entire Worker (R2-8)
+
+---
+
+### Commit 131: `book-0-builder/host-sdk/modules/CloudInitTest.ps1` - Return worker object
+
+```diff
+             $mod.SDK.Testing.Summary()
+-            return @{ Success = ($mod.SDK.Testing.FailCount -eq 0); Results = $mod.SDK.Testing.Results; WorkerName = $worker.Name }
++            return @{ Success = ($mod.SDK.Testing.FailCount -eq 0); Results = $mod.SDK.Testing.Results; Worker = $worker }
+         }
+```
+
+Reason: R2-8 - Return entire worker for external cleanup.
+
+---
+
+### Commit 132: `book-0-builder/host-sdk/modules/AutoinstallTest.ps1` - Return worker object
+
+```diff
+             $mod.SDK.Testing.Summary()
+-            return @{ Success = ($mod.SDK.Testing.FailCount -eq 0); Results = $mod.SDK.Testing.Results; WorkerName = $worker.Name }
++            return @{ Success = ($mod.SDK.Testing.FailCount -eq 0); Results = $mod.SDK.Testing.Results; Worker = $worker }
+         }
+```
+
+Reason: R2-8 - Return entire worker for external cleanup.
+
+---
+
+### build_layer as Array (R2-1)
+
+---
+
+### Commit 133: `book-0-builder/config/build_layers.yaml` - Remove agent_dependent section
+
+```diff
+   15: UI Touches
+
+-# Agent-dependent test levels (higher layers, reuse layer 8 fragments)
+-agent_dependent:
+-  16:
+-    name: Package Manager Updates
+-    fragments: [packages, pkg-security, pkg-upgrade]
+-  17:
+-    name: Update Summary
+-    fragments: [packages, pkg-security, pkg-upgrade]
+-  18:
+-    name: Notification Flush
+-    fragments: [packages, pkg-security, pkg-upgrade]
+```
+
+Reason: R2-1 - Agent-dependent handled via build_layer arrays in build.yaml.
+
+---
+
+### Commit 134: `book-0-builder/builder-sdk/renderer.py` - Handle build_layer as list
+
+```diff
+         # Filter by layer if specified
+-        if layer is not None and fragment.get('build_layer', 999) > layer:
+-            continue
++        if layer is not None:
++            frag_layer = fragment.get('build_layer', 999)
++            # build_layer can be int or list of ints
++            if isinstance(frag_layer, list):
++                if not any(l <= layer for l in frag_layer):
++                    continue
++            elif frag_layer > layer:
++                continue
+```
+
+Reason: R2-1 - Support build_layer as int or list.
+
+---
+
+### Commit 135: `book-0-builder/host-sdk/modules/Fragments.ps1` - Handle build_layer as list
+
+```diff
+         UpTo = {
+             param([int]$Layer)
+-            return $this.Layers | Where-Object { $_.Layer -le $Layer }
++            return $this.Layers | Where-Object {
++                $l = $_.Layer
++                if ($l -is [array]) {
++                    $l | Where-Object { $_ -le $Layer } | Select-Object -First 1
++                } else {
++                    $l -le $Layer
++                }
++            }
+         }
+```
+
+Reason: R2-1 - Support build_layer as int or list in UpTo method.
+
+---
+
+### Commit 136: `book-0-builder/host-sdk/modules/Fragments.ps1` - Update At for arrays
+
+```diff
+         At = {
+             param([int]$Layer)
+-            return $this.Layers | Where-Object { $_.Layer -eq $Layer }
++            return $this.Layers | Where-Object {
++                $l = $_.Layer
++                if ($l -is [array]) {
++                    $l -contains $Layer
++                } else {
++                    $l -eq $Layer
++                }
++            }
+         }
+```
+
+Reason: R2-1 - Support build_layer as int or list in At method.
+
+---
+
+## Validation (Review #2)
+
+After Review #2 commits:
+
+**Config.ps1 Fix:**
+- [ ] `($yaml.Keys | ForEach-Object { $_ } | Measure-Object).Count` works correctly
+
+**Worker.ps1 Module:**
+- [ ] `Add-CommonWorkerMethods` available after SDK.ps1 loads
+- [ ] Worker.Test method logs via `$mod.SDK.Log`
+
+**Module Renaming:**
+- [ ] `$SDK.CloudInit` exists (was CloudInitBuild)
+- [ ] `$SDK.CloudInit.Test` exists (was CloudInitTest)
+- [ ] `$SDK.Autoinstall` exists (was AutoinstallBuild)
+- [ ] `$SDK.Autoinstall.Test` exists (was AutoinstallTest)
+
+**Layer Logic:**
+- [ ] `$SDK.Fragments.LayerName(3)` returns "Users"
+- [ ] `$SDK.Builder.LayerName` does not exist
+
+**Runner Tracking:**
+- [ ] `$SDK.Builder.RegisterRunner("test", $worker)` tracks runner
+- [ ] `$SDK.Builder.Flush()` destroys tracked runners
+
+**Build Improvements:**
+- [ ] `$SDK.CloudInit.Build(3)` skips if artifact exists
+- [ ] `$SDK.CloudInit.Clean()` calls builder clean
+- [ ] `$SDK.Autoinstall.Build(3)` exists
+- [ ] `$SDK.Autoinstall.Clean()` exists
+
+**iso_required:**
+- [ ] `make autoinstall` includes iso_required fragments regardless of LAYER
+
+**Return Worker:**
+- [ ] `$SDK.CloudInit.Test.Run(3).Worker` returns worker object
+- [ ] `$SDK.Autoinstall.Test.Run().Worker` returns worker object
+
+**build_layer Array:**
+- [ ] Fragment with `build_layer: [8, 16, 17, 18]` included at layer 8 and layers 16-18
+- [ ] `$SDK.Fragments.UpTo(16)` includes fragments with array layers
