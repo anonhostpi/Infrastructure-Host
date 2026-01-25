@@ -7,7 +7,24 @@ New-Module -Name SDK.Testing -ScriptBlock {
 
     $Testing = New-Object PSObject -Property @{ Results = @(); PassCount = 0; FailCount = 0 }
 
-    # Properties and methods added in following commits
+    Add-ScriptProperties $Testing @{
+        All = {
+            return $mod.SDK.Fragments.Layers | ForEach-Object { $_.Layer } | Sort-Object -Unique
+        }
+    }
+
+    Add-ScriptMethods $Testing @{
+        Reset = {
+            $this.Results = @()
+            $this.PassCount = 0
+            $this.FailCount = 0
+        }
+        Record = {
+            param([hashtable]$Result)
+            $this.Results += $Result
+            if ($Result.Pass) { $this.PassCount++ } else { $this.FailCount++ }
+        }
+    }
 
     $SDK.Extend("Testing", $Testing)
     Export-ModuleMember -Function @()
