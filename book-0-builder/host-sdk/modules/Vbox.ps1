@@ -65,6 +65,24 @@ New-Module -Name SDK.Vbox -ScriptBlock {
                 return $mod.SDK.Vbox.UntilShutdown($this.Name, $TimeoutSeconds)
             }
             Destroy = { return $mod.SDK.Vbox.Destroy($this.Name) }
+            Create = {
+                return $mod.SDK.Vbox.Create(
+                    $this.Name,
+                    $this.MediumPath,
+                    $this.IsoPath,
+                    $this.Network,
+                    "Ubuntu_64",
+                    "efi",
+                    "SATA",
+                    $this.Disk,
+                    $this.Memory,
+                    $this.CPUs
+                )
+            }
+            Exec = {
+                param([string]$Command)
+                return $mod.SDK.Network.SSH($this.SSHUser, $this.SSHHost, $this.SSHPort, $Command)
+            }
         }
     }
 
