@@ -202,7 +202,7 @@ def render_autoinstall(ctx):
 
     return render_text(
         ctx,
-        'autoinstall/base.yaml.tpl',
+        'book-1-foundation/base/autoinstall.yaml.tpl',
         scripts=scripts,
         cloud_init=cloud_init,
     )
