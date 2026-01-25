@@ -17,6 +17,8 @@ New-Module -Name SDK.Builder -ScriptBlock {
     # Load build layers config
     $layersPath = "$PSScriptRoot\..\..\config\build_layers.yaml"
     $mod.LayersConfig = Get-Content $layersPath -Raw | ConvertFrom-Yaml
+    $mod.LayerNames = $mod.LayersConfig.layers
+    $mod.AgentDependent = $mod.LayersConfig.agent_dependent
 
     $Builder = New-Object PSObject -Property @{
         Packages = @(
@@ -116,6 +118,16 @@ New-Module -Name SDK.Builder -ScriptBlock {
                 throw "Failed to install dependencies in builder VM"
             }
             return $true
+        }
+        LayerName = {
+            param([int]$Layer)
+            if ($mod.AgentDependent -and $mod.AgentDependent.ContainsKey($Layer)) {
+                return $mod.AgentDependent[$Layer].name
+            }
+            if ($mod.LayerNames -and $mod.LayerNames.ContainsKey($Layer)) {
+                return $mod.LayerNames[$Layer]
+            }
+            return "Layer $Layer"
         }
     }
 
