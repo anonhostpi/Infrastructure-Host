@@ -9,7 +9,7 @@ New-Module -Name SDK.Builder -ScriptBlock {
         $SDK
     )
 
-    . "$PSScriptRoot\helpers\PowerShell.ps1"
+    . "$PSScriptRoot\..\helpers\PowerShell.ps1"
 
     $mod = @{ SDK = $SDK }
     $mod.Runners = @{}
