@@ -570,11 +570,62 @@ Add-ScriptMethods $Vbox @{
 # })
 ```
 
+### modules/CloudInitBuild.ps1 (NEW)
+
+Build module for cloud-init artifacts and Multipass worker creation. Separated from testing for reusability.
+
+```powershell
+$CloudInitBuild = New-Object PSObject
+
+Add-ScriptMethods $CloudInitBuild @{
+    Build = {
+        param([int]$Layer)
+
+        $mod.SDK.Log.Info("Building cloud-init for layer $Layer...")
+        $built = $mod.SDK.Builder.Build($Layer)
+        if (-not $built) {
+            throw "Failed to build cloud-init for layer $Layer"
+        }
+
+        $artifacts = $mod.SDK.Builder.Artifacts
+        if (-not $artifacts -or -not $artifacts.cloud_init) {
+            throw "No cloud-init artifact found after build."
+        }
+        return $artifacts
+    }
+
+    CreateWorker = {
+        param(
+            [int]$Layer,
+            [hashtable]$Overrides = @{}
+        )
+
+        $artifacts = $this.Build($Layer)
+
+        $baseConfig = $mod.SDK.Settings.Virtualization.Runner
+        $config = @{}
+        foreach ($key in $baseConfig.Keys) { $config[$key] = $baseConfig[$key] }
+        $config.CloudInit = "$($mod.SDK.Root())/$($artifacts.cloud_init)"
+        foreach ($key in $Overrides.Keys) { $config[$key] = $Overrides[$key] }
+
+        return $mod.SDK.Multipass.Worker(@{ Config = $config })
+    }
+
+    Cleanup = {
+        param([string]$Name)
+        if (-not $Name) { $Name = $mod.SDK.Settings.Virtualization.Runner.Name }
+        if ($mod.SDK.Multipass.Exists($Name)) {
+            $mod.SDK.Multipass.Destroy($Name)
+        }
+    }
+}
+
+$SDK.Extend("CloudInitBuild", $CloudInitBuild)
+```
+
 ### modules/CloudInitTest.ps1 (NEW)
 
-Test module for cloud-init/incremental testing using Multipass workers.
-
-Uses `$SDK.Settings.Virtualization.Runner` from `vm.config.yaml` as base config:
+Test module for cloud-init/incremental testing. Uses CloudInitBuild for worker creation.
 
 ```powershell
 $CloudInitTest = New-Object PSObject
@@ -586,65 +637,23 @@ Add-ScriptMethods $CloudInitTest @{
             [hashtable]$Overrides = @{}
         )
 
-        # Build cloud-init for the specified layer
-        $mod.SDK.Log.Info("Building cloud-init for layer $Layer...")
-        $built = $mod.SDK.Builder.Build($Layer)
-        if (-not $built) {
-            throw "Failed to build cloud-init for layer $Layer"
-        }
+        $worker = $mod.SDK.CloudInitBuild.CreateWorker($Layer, $Overrides)
 
-        # Get cloud-init path from Builder artifacts
-        $artifacts = $mod.SDK.Builder.Artifacts
-        if (-not $artifacts -or -not $artifacts.cloud_init) {
-            throw "No cloud-init artifact found after build."
-        }
+        $mod.SDK.Log.Info("Setting up cloud-init test worker: $($worker.Name)")
+        $worker.Setup($true)
 
-        # Start with vm.config.yaml runner settings
-        $baseConfig = $mod.SDK.Settings.Virtualization.Runner
-
-        # Build final config: base -> cloud-init path -> overrides
-        $config = @{}
-        foreach ($key in $baseConfig.Keys) { $config[$key] = $baseConfig[$key] }
-        $config.CloudInit = "$($mod.SDK.Root())/$($artifacts.cloud_init)"
-        foreach ($key in $Overrides.Keys) { $config[$key] = $Overrides[$key] }
-
-        # Create worker dynamically
-        $worker = $mod.SDK.Multipass.Worker(@{ Config = $config })
-
-        try {
-            $mod.SDK.Log.Info("Setting up cloud-init test worker: $($config.Name)")
-            $worker.Setup($true)
-
-            $mod.SDK.Testing.Reset()
-            foreach ($layer in 1..$Layer) {
-                foreach ($fragment in $mod.SDK.Fragments.At($layer)) {
-                    $worker.Test(
-                        $fragment.Name,
-                        "Test $($fragment.Name)",
-                        $fragment.TestCommand,
-                        $fragment.ExpectedPattern
-                    )
-                }
-            }
-            $mod.SDK.Testing.Summary()
-
-            return @{
-                Success = ($mod.SDK.Testing.FailCount -eq 0)
-                Results = $mod.SDK.Testing.Results
-                WorkerName = $config.Name
+        $mod.SDK.Testing.Reset()
+        foreach ($l in 1..$Layer) {
+            foreach ($fragment in $mod.SDK.Fragments.At($l)) {
+                $worker.Test($fragment.Name, "Test $($fragment.Name)", $fragment.TestCommand, $fragment.ExpectedPattern)
             }
         }
-        finally {
-            # Cleanup handled by caller or explicit call
-        }
-    }
+        $mod.SDK.Testing.Summary()
 
-    Cleanup = {
-        param([string]$Name)
-        # Default to vm.config.yaml runner name
-        if (-not $Name) { $Name = $mod.SDK.Settings.Virtualization.Runner.Name }
-        if ($mod.SDK.Multipass.Exists($Name)) {
-            $mod.SDK.Multipass.Destroy($Name)
+        return @{
+            Success = ($mod.SDK.Testing.FailCount -eq 0)
+            Results = $mod.SDK.Testing.Results
+            WorkerName = $worker.Name
         }
     }
 }
@@ -652,78 +661,79 @@ Add-ScriptMethods $CloudInitTest @{
 $SDK.Extend("CloudInitTest", $CloudInitTest)
 ```
 
+### modules/AutoinstallBuild.ps1 (NEW)
+
+Build module for autoinstall/ISO artifacts and VBox worker creation. Separated from testing for reusability.
+
+```powershell
+$AutoinstallBuild = New-Object PSObject
+
+Add-ScriptMethods $AutoinstallBuild @{
+    GetArtifacts = {
+        $artifacts = $mod.SDK.Builder.Artifacts
+        if (-not $artifacts -or -not $artifacts.iso) {
+            throw "No ISO artifact found. Build the ISO first."
+        }
+        return $artifacts
+    }
+
+    CreateWorker = {
+        param([hashtable]$Overrides = @{})
+
+        $artifacts = $this.GetArtifacts()
+
+        $baseConfig = $mod.SDK.Settings.Virtualization.Vbox
+        $config = @{}
+        foreach ($key in $baseConfig.Keys) { $config[$key] = $baseConfig[$key] }
+        $config.IsoPath = $artifacts.iso
+        if ($config.disk_size) { $config.Disk = $config.disk_size; $config.Remove("disk_size") }
+        foreach ($key in $Overrides.Keys) { $config[$key] = $Overrides[$key] }
+
+        return $mod.SDK.Vbox.Worker(@{ Config = $config })
+    }
+
+    Cleanup = {
+        param([string]$Name)
+        if (-not $Name) { $Name = $mod.SDK.Settings.Virtualization.Vbox.Name }
+        if ($mod.SDK.Vbox.Exists($Name)) {
+            $mod.SDK.Vbox.Destroy($Name)
+        }
+    }
+}
+
+$SDK.Extend("AutoinstallBuild", $AutoinstallBuild)
+```
+
 ### modules/AutoinstallTest.ps1 (NEW)
 
-Test module for autoinstall/ISO testing using VBox workers.
-
-Uses `$SDK.Settings.Virtualization.Vbox` from `vm.config.yaml` as base config:
+Test module for autoinstall/ISO testing. Uses AutoinstallBuild for worker creation.
 
 ```powershell
 $AutoinstallTest = New-Object PSObject
 
 Add-ScriptMethods $AutoinstallTest @{
     Run = {
-        param(
-            [hashtable]$Overrides = @{}
-        )
+        param([hashtable]$Overrides = @{})
 
-        # Get ISO path from Builder artifacts
-        $artifacts = $mod.SDK.Builder.Artifacts
-        if (-not $artifacts -or -not $artifacts.iso) {
-            throw "No ISO artifact found. Build the ISO first."
+        $worker = $mod.SDK.AutoinstallBuild.CreateWorker($Overrides)
+
+        $mod.SDK.Log.Info("Setting up autoinstall test worker: $($worker.Name)")
+        $worker.Ensure()
+        $worker.Start()
+
+        $mod.SDK.Log.Info("Waiting for SSH availability...")
+        $mod.SDK.Network.WaitForSSH($worker.SSHHost, $worker.SSHPort, 600)
+
+        $mod.SDK.Testing.Reset()
+        foreach ($fragment in $mod.SDK.Fragments.IsoRequired()) {
+            $worker.Test($fragment.Name, "Test $($fragment.Name)", $fragment.TestCommand, $fragment.ExpectedPattern)
         }
+        $mod.SDK.Testing.Summary()
 
-        # Start with vm.config.yaml vbox settings
-        $baseConfig = $mod.SDK.Settings.Virtualization.Vbox
-
-        # Build final config: base -> ISO path -> overrides
-        $config = @{}
-        foreach ($key in $baseConfig.Keys) { $config[$key] = $baseConfig[$key] }
-        $config.IsoPath = $artifacts.iso
-        # Map vm.config.yaml keys to worker config keys
-        if ($config.disk_size) { $config.Disk = $config.disk_size; $config.Remove("disk_size") }
-        foreach ($key in $Overrides.Keys) { $config[$key] = $Overrides[$key] }
-
-        # Create worker dynamically
-        $worker = $mod.SDK.Vbox.Worker(@{ Config = $config })
-
-        try {
-            $mod.SDK.Log.Info("Setting up autoinstall test worker: $($config.Name)")
-            $worker.Ensure()
-            $worker.Start()
-
-            # Wait for SSH (no UntilInstalled on VBox yet)
-            $mod.SDK.Log.Info("Waiting for SSH availability...")
-            $mod.SDK.Network.WaitForSSH($worker.SSHHost, $worker.SSHPort, 600)
-
-            $mod.SDK.Testing.Reset()
-            foreach ($fragment in $mod.SDK.Fragments.IsoRequired()) {
-                $worker.Test(
-                    $fragment.Name,
-                    "Test $($fragment.Name)",
-                    $fragment.TestCommand,
-                    $fragment.ExpectedPattern
-                )
-            }
-            $mod.SDK.Testing.Summary()
-
-            return @{
-                Success = ($mod.SDK.Testing.FailCount -eq 0)
-                Results = $mod.SDK.Testing.Results
-                WorkerName = $config.Name
-            }
-        }
-        finally {
-            # Cleanup handled by caller or explicit call
-        }
-    }
-
-    Cleanup = {
-        param([string]$Name)
-        # Default to vm.config.yaml vbox name
-        if (-not $Name) { $Name = $mod.SDK.Settings.Virtualization.Vbox.Name }
-        if ($mod.SDK.Vbox.Exists($Name)) {
-            $mod.SDK.Vbox.Destroy($Name)
+        return @{
+            Success = ($mod.SDK.Testing.FailCount -eq 0)
+            Results = $mod.SDK.Testing.Results
+            WorkerName = $worker.Name
         }
     }
 }
@@ -916,13 +926,15 @@ Add-ScriptMethods $Builder @{
 4. **Modify Multipass.ps1** - call Worker.ps1 helper in `$SDK.Multipass.Worker()`
 5. **Modify Vbox.ps1** - add `$SDK.Vbox.Worker()` following Multipass pattern
 6. **Create Fragments.ps1** - discovery-based fragment lookup
-7. **Modify Network.ps1** - absorb Test-ViaSSH, add `WaitForSSH()`
+7. **Modify Network.ps1** - add `WaitForSSH()`
 8. **Create Testing.ps1** - test framework with `All`, `Fragments()`, `Verifications()`
-9. **Create CloudInitTest.ps1** - multipass-based cloud-init testing module
-10. **Create AutoinstallTest.ps1** - vbox-based autoinstall/ISO testing module
-11. **Migrate Verifications.ps1** - use Worker.Test() method
-12. **Refactor test scripts** - should shrink to ~15 lines
-13. **Remove vm.config.ps1** references - use SDK.Settings
+9. **Create CloudInitBuild.ps1** - build/worker creation for cloud-init testing
+10. **Create CloudInitTest.ps1** - test execution using CloudInitBuild
+11. **Create AutoinstallBuild.ps1** - build/worker creation for autoinstall testing
+12. **Create AutoinstallTest.ps1** - test execution using AutoinstallBuild
+13. **Migrate Verifications.ps1** - use Worker.Test() method
+14. **Refactor test scripts** - should shrink to ~15 lines
+15. **Remove vm.config.ps1** references - use SDK.Settings
 
 ---
 
@@ -940,7 +952,9 @@ Add-ScriptMethods $Builder @{
 - **Vbox workers** mandatorily require IsoPath in Config
 - **No singleton $SDK.Runner** - workers are created dynamically
 - **Testing.All** is a ScriptProperty (live getter), `Fragments()` and `Verifications()` are methods
-- **Network.ps1** absorbs Test-ViaSSH, adds `WaitForSSH()` for Vbox
-- **CloudInitTest.ps1** uses `vm.config.yaml` runner section + `$SDK.Builder.Artifacts.cloud_init`
-- **AutoinstallTest.ps1** uses `vm.config.yaml` vbox section + `$SDK.Builder.Artifacts.iso`
+- **Network.ps1** adds `WaitForSSH()` for Vbox
+- **CloudInitBuild.ps1** handles Build($Layer), CreateWorker($Layer), Cleanup() - reusable
+- **CloudInitTest.ps1** uses CloudInitBuild for worker, runs tests
+- **AutoinstallBuild.ps1** handles GetArtifacts(), CreateWorker(), Cleanup() - reusable
+- **AutoinstallTest.ps1** uses AutoinstallBuild for worker, runs tests
 - **Test scripts** reduced to ~15 lines - just call test modules and handle cleanup
