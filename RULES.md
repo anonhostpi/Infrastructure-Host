@@ -28,6 +28,8 @@ Before planning implementation, you will explore and design the solution.
 
 ## Rule 1: Plan Before You Commit
 
+**[Requires user approval]** Before transitioning from Rule 0 (discovery/design) to Rule 1 (commit planning), you must get explicit user approval. Do not begin writing commits to `PLAN.md` until the user confirms they are ready to move from brainstorming to implementation planning.
+
 You will create or update a `PLAN.md` for every change you plan to make.
 
 - `PLAN.md` will be an annotated diff containing every change you want to make **before** making them
