@@ -110,14 +110,8 @@ def render_script(ctx, input_path, output_path):
 
 
 def get_available_fragments():
-    """Return list of available fragment names (without path or extension)."""
-    fragments_dir = Path('src/autoinstall/cloud-init')
-    if not fragments_dir.exists():
-        return []
-    return sorted([
-        p.name.removesuffix('.yaml.tpl')
-        for p in fragments_dir.glob('*.yaml.tpl')
-    ])
+    """Return list of available fragment names from discovered build.yaml files."""
+    return [f['name'] for f in discover_fragments()]
 
 
 class FragmentValidationError(Exception):
