@@ -88,6 +88,19 @@ New-Module -Name SDK.Vbox -ScriptBlock {
 
     $Vbox = New-Object PSObject
 
+    Add-ScriptMethods $Vbox @{
+        Worker = {
+            param(
+                [Parameter(Mandatory = $true)]
+                [ValidateScript({ $null -ne $_.Config -and $null -ne $_.Config.IsoPath })]
+                $Base
+            )
+            $worker = If ($Base -is [System.Collections.IDictionary]) {
+                New-Object PSObject -Property $Base
+            } Else { $Base }
+        }
+    }
+
     #region: Main utilities
     Add-ScriptProperty $Vbox @{
         Path = {
