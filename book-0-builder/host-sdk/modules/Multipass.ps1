@@ -105,8 +105,8 @@ New-Module -Name SDK.Multipass -ScriptBlock {
                 $config = $this.Rendered
                 return $mod.SDK.Multipass.Create(
                     $this.Name,
-                    $null,
-                    $null,
+                    $config.CloudInit,
+                    $config.Network,
                     $config.CPUs,
                     $config.Memory,
                     $config.Disk
