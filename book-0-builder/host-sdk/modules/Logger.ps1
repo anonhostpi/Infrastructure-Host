@@ -20,6 +20,22 @@ New-Module -Name SDK.Logger -ScriptBlock {
         Step  = { param([string]$Message, [int]$Current, [int]$Total) $this.Write("[$Current/$Total] $Message", "Cyan") }
     }
 
+    Add-ScriptMethods $Logger @{
+        Start = {
+            param([string]$Path)
+            $this.Path = $Path
+            Start-Transcript -Path $Path -Append
+            $this.Info("Transcript started: $Path")
+        }
+        Stop = {
+            if ($this.Path) {
+                Stop-Transcript
+                $this.Info("Transcript stopped: $($this.Path)")
+                $this.Path = $null
+            }
+        }
+    }
+
     $SDK.Extend("Log", $Logger)
     Export-ModuleMember -Function @()
 } -ArgumentList $SDK | Import-Module -Force
