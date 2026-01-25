@@ -12,6 +12,7 @@ New-Module -Name SDK.Builder -ScriptBlock {
     . "$PSScriptRoot\helpers\PowerShell.ps1"
 
     $mod = @{ SDK = $SDK }
+    $mod.Runners = @{}
 
     $Builder = New-Object PSObject -Property @{
         Packages = @(
