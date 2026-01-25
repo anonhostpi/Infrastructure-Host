@@ -3289,6 +3289,74 @@ Reason: Users tests 6.3.2-6.3.4 - groups, sudo, root.
 
 ---
 
+## Code Review Changes (Review #3)
+
+### Commit 153: `Builder.ps1` - Fix helper path [DONE]
+
+```diff
+-    . "$PSScriptRoot\helpers\PowerShell.ps1"
++    . "$PSScriptRoot\..\helpers\PowerShell.ps1"
+```
+
+Reason: Modules are in `modules/`, helpers in `helpers/`. Need `..` to navigate up.
+
+---
+
+### Commit 154: `General.ps1` - Fix helper path [DONE]
+
+```diff
+-    . "$PSScriptRoot\helpers\PowerShell.ps1"
++    . "$PSScriptRoot\..\helpers\PowerShell.ps1"
+```
+
+Reason: Same path fix as Builder.ps1.
+
+---
+
+### Commit 155: `Settings.ps1` - Fix helper path [DONE]
+
+```diff
+-    . "$PSScriptRoot\helpers\PowerShell.ps1"
++    . "$PSScriptRoot\..\helpers\PowerShell.ps1"
+```
+
+Reason: Same path fix as Builder.ps1.
+
+---
+
+### Commit 156: `Multipass.ps1` - Fix helper path [DONE]
+
+```diff
+-    . "$PSScriptRoot\helpers\PowerShell.ps1"
++    . "$PSScriptRoot\..\helpers\PowerShell.ps1"
+```
+
+Reason: Same path fix as Builder.ps1.
+
+---
+
+### Commit 157: `Network.ps1` - Fix helper path [DONE]
+
+```diff
+-    . "$PSScriptRoot\helpers\PowerShell.ps1"
++    . "$PSScriptRoot\..\helpers\PowerShell.ps1"
+```
+
+Reason: Same path fix as Builder.ps1.
+
+---
+
+### Commit 158: `Vbox.ps1` - Fix helper path [DONE]
+
+```diff
+-    . "$PSScriptRoot\helpers\PowerShell.ps1"
++    . "$PSScriptRoot\..\helpers\PowerShell.ps1"
+```
+
+Reason: Same path fix as Builder.ps1.
+
+---
+
 ### Remaining Test Migrations
 
 Due to the size of this migration, remaining test functions will follow the same pattern. Each test function becomes a method with tests migrated from `multipass exec $VMName` to `$Worker.Exec()`.
