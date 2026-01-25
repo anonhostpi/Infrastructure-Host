@@ -22,14 +22,14 @@ New-Module -Name SDK.Worker -ScriptBlock {
                 [string]$ExpectedPattern
             )
 
-            $SDK.Log.Debug("Running test: $Name")
+            $mod.SDK.Log.Debug("Running test: $Name")
             try {
                 $result = $this.Exec($Command)
                 $pass = $result.Success -and ($result.Output -join "`n") -match $ExpectedPattern
                 $testResult = @{ Test = $TestId; Name = $Name; Pass = $pass; Output = $result.Output; Error = $result.Error }
-                $SDK.Testing.Record($testResult)
-                if ($pass) { $SDK.Log.Write("[PASS] $Name", "Green") }
-                else { $SDK.Log.Write("[FAIL] $Name", "Red"); if ($result.Error) { $SDK.Log.Error("  Error: $($result.Error)") } }
+                $mod.SDK.Testing.Record($testResult)
+                if ($pass) { $mod.SDK.Log.Write("[PASS] $Name", "Green") }
+                else { $mod.SDK.Log.Write("[FAIL] $Name", "Red"); if ($result.Error) { $mod.SDK.Log.Error("  Error: $($result.Error)") } }
                 return $testResult
             }
             catch {
