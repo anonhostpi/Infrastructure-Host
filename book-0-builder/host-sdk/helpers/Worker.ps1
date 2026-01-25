@@ -15,7 +15,23 @@ function Add-CommonWorkerMethods {
                 [string]$Command,
                 [string]$ExpectedPattern
             )
-            # Implementation in next commit
+
+            $SDK.Log.Debug("Running test: $Name")
+            try {
+                $result = $this.Exec($Command)
+                $pass = $result.Success -and ($result.Output -join "`n") -match $ExpectedPattern
+                $testResult = @{ Test = $TestId; Name = $Name; Pass = $pass; Output = $result.Output; Error = $result.Error }
+                $SDK.Testing.Record($testResult)
+                if ($pass) { $SDK.Log.Write("[PASS] $Name", "Green") }
+                else { $SDK.Log.Write("[FAIL] $Name", "Red"); if ($result.Error) { $SDK.Log.Error("  Error: $($result.Error)") } }
+                return $testResult
+            }
+            catch {
+                $SDK.Log.Write("[FAIL] $Name - Exception: $_", "Red")
+                $testResult = @{ Test = $TestId; Name = $Name; Pass = $false; Error = $_.ToString() }
+                $SDK.Testing.Record($testResult)
+                return $testResult
+            }
         }
     }
 }
