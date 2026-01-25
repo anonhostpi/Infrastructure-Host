@@ -62,6 +62,10 @@ New-Module -Name SDK.Builder -ScriptBlock {
     $Runner = $SDK.Multipass.Worker($Runner)
 
     Add-ScriptMethods $Builder @{
+        Clean = {
+            $make = @("cd /home/ubuntu/infra-host", "make clean") -join " && "
+            return $this.Exec($make).Success
+        }
         Flush = {
             $builder_destroyed = $mod.SDK.Builder.Destroy()
             $runner_destroyed = $mod.SDK.Runner.Destroy()
