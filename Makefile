@@ -1,10 +1,10 @@
 .PHONY: all clean scripts cloud-init autoinstall iso help list-fragments cloud-init-test
 
 # Source dependencies
-CONFIGS := $(wildcard src/config/*.config.yaml)
-SCRIPTS := $(wildcard src/scripts/*.tpl)
-CLOUD_INIT_FRAGMENTS := $(wildcard src/autoinstall/cloud-init/*.yaml.tpl)
-AUTOINSTALL_TEMPLATES := $(wildcard src/autoinstall/*.yaml.tpl)
+CONFIGS := $(wildcard book-0-builder/config/*.yaml) $(wildcard book-*/*/config/production.yaml)
+SCRIPTS := $(wildcard book-*/*/scripts/*.sh.tpl)
+FRAGMENTS := $(wildcard book-*/*/fragment.yaml.tpl)
+BUILD_YAMLS := $(wildcard book-*/*/build.yaml)
 
 # Fragment selection (override via command line)
 # Examples:
