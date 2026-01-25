@@ -98,6 +98,14 @@ New-Module -Name SDK.Vbox -ScriptBlock {
             $worker = If ($Base -is [System.Collections.IDictionary]) {
                 New-Object PSObject -Property $Base
             } Else { $Base }
+
+            Add-ScriptProperties $worker $mod.Worker.Properties
+            Add-ScriptMethods $worker $mod.Worker.Methods
+
+            . "$PSScriptRoot\..\helpers\Worker.ps1"
+            Add-CommonWorkerMethods $worker $mod.SDK
+
+            return $worker
         }
     }
 
