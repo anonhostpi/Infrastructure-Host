@@ -41,11 +41,9 @@ help:
 list-fragments:
 	@python3 -m builder list-fragments
 
-# Generate shell scripts (standalone, for reference/debugging)
-scripts: output/scripts/early-net.sh output/scripts/net-setup.sh output/scripts/build-iso.sh
-
-output/scripts/%.sh: src/scripts/%.sh.tpl $(CONFIGS)
-	python3 -m builder render script $< -o $@
+# Generate shell scripts
+scripts: $(SCRIPTS) $(CONFIGS)
+	python3 -m builder render scripts -o output/scripts/
 
 # Generate cloud-init config (renders scripts internally)
 cloud-init: output/cloud-init.yaml
