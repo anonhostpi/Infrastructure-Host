@@ -18,9 +18,9 @@ New-Module -Name SDK.Vbox -ScriptBlock {
             CPUs = 2
             Memory = 4096
             Disk = 40960
-            SSHUser = "ubuntu"
-            SSHHost = "localhost"
-            SSHPort = 2222
+            SSHUser = $null
+            SSHHost = $null
+            SSHPort = $null
         }
     }
 
