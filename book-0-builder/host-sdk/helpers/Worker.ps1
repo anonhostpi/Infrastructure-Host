@@ -8,5 +8,14 @@ function Add-CommonWorkerMethods {
             }
             return $true
         }
+        Test = {
+            param(
+                [string]$TestId,
+                [string]$Name,
+                [string]$Command,
+                [string]$ExpectedPattern
+            )
+            # Implementation in next commit
+        }
     }
 }
