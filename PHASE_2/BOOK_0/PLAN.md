@@ -1296,227 +1296,340 @@ After all commits:
 
 ## Code Review Changes (Review #1)
 
-Reference: `PHASE_2/BOOK_0/CONFIG.md`, `PHASE_2/BOOK_0/REVIEW.md`
+Reference: `PHASE_2/BOOK_0/CONFIG.md`, `PHASE_2/BOOK_0/REVIEW.md`, `PHASE_2/BOOK_0/DEDUPE_LAYER_WORK.md`
 
 ---
 
-### Commit 57: Create `book-0-builder/host-sdk/config/test-levels.yaml` - shape with level names
+### Makefile Updates
+
+---
+
+### Commit 57: `Makefile` - Update source dependencies to book-* paths
+
+```diff
+ # Source dependencies
+-CONFIGS := $(wildcard src/config/*.config.yaml)
+-SCRIPTS := $(wildcard src/scripts/*.tpl)
+-CLOUD_INIT_FRAGMENTS := $(wildcard src/autoinstall/cloud-init/*.yaml.tpl)
+-AUTOINSTALL_TEMPLATES := $(wildcard src/autoinstall/*.yaml.tpl)
++CONFIGS := $(wildcard book-0-builder/config/*.yaml) $(wildcard book-*/*/config/production.yaml)
++SCRIPTS := $(wildcard book-*/*/scripts/*.sh.tpl)
++FRAGMENTS := $(wildcard book-*/*/fragment.yaml.tpl)
++BUILD_YAMLS := $(wildcard book-*/*/build.yaml)
+```
+
+Reason: Update paths to new book-* structure.
+
+---
+
+### Commit 58: `Makefile` - Add LAYER parameter
+
+```diff
+ # Fragment selection (override via command line)
+ INCLUDE ?=
+ EXCLUDE ?=
++LAYER ?=
+```
+
+Reason: Add LAYER parameter for build_layer filtering.
+
+---
+
+### Commit 59: `Makefile` - Update cloud-init target with LAYER support
+
+```diff
+ # Generate cloud-init config (renders scripts internally)
+ cloud-init: output/cloud-init.yaml
+
+-output/cloud-init.yaml: $(CLOUD_INIT_FRAGMENTS) $(SCRIPTS) $(CONFIGS)
++output/cloud-init.yaml: $(FRAGMENTS) $(SCRIPTS) $(CONFIGS) $(BUILD_YAMLS)
++ifdef LAYER
++	python3 -m builder render cloud-init -o $@ --layer $(LAYER)
++else
+ 	python3 -m builder render cloud-init -o $@ $(INCLUDE) $(EXCLUDE)
++endif
+```
+
+Reason: Support LAYER parameter to filter by build_layer.
+
+---
+
+### Commit 60: `Makefile` - Update autoinstall target dependencies
+
+```diff
+-output/user-data: $(AUTOINSTALL_TEMPLATES) $(CLOUD_INIT_FRAGMENTS) $(SCRIPTS) $(CONFIGS)
++output/user-data: $(FRAGMENTS) $(SCRIPTS) $(CONFIGS) $(BUILD_YAMLS)
+ 	python3 -m builder render autoinstall -o $@
+```
+
+Reason: Use new dependency variables.
+
+---
+
+### Commit 61: `Makefile` - Update scripts target
+
+```diff
+-# Generate shell scripts (standalone, for reference/debugging)
+-scripts: output/scripts/early-net.sh output/scripts/net-setup.sh output/scripts/build-iso.sh
+-
+-output/scripts/%.sh: src/scripts/%.sh.tpl $(CONFIGS)
+-	python3 -m builder render script $< -o $@
++# Generate shell scripts
++scripts: $(SCRIPTS) $(CONFIGS)
++	python3 -m builder render scripts -o output/scripts/
+```
+
+Reason: Use builder CLI to render all scripts from discovered fragments.
+
+---
+
+### Commit 62: `Makefile` - Update help text
+
+```diff
+ help:
+ 	@echo "Targets:"
+ 	@echo "  all            - Build all artifacts (default)"
+ 	@echo "  scripts        - Generate shell scripts"
+-	@echo "  cloud-init     - Generate cloud-init config (all fragments)"
++	@echo "  cloud-init     - Generate cloud-init config"
+ 	@echo "  autoinstall    - Generate user-data"
+ 	@echo "  iso            - Build modified Ubuntu ISO with embedded user-data"
+ 	@echo "  list-fragments - List available cloud-init fragments"
+ 	@echo "  clean          - Remove generated files"
+ 	@echo ""
+ 	@echo "Fragment Selection (cloud-init target only):"
++	@echo "  LAYER     - Include fragments up to build_layer N"
+ 	@echo "  INCLUDE   - Include only specified fragments"
+ 	@echo "  EXCLUDE   - Exclude specified fragments"
+ 	@echo ""
+ 	@echo "Examples:"
+-	@echo "  make cloud-init EXCLUDE=\"-x 10-network\""
+-	@echo "  make cloud-init INCLUDE=\"-i 20-users -i 25-ssh\""
+-	@echo "  python -m builder render cloud-init -o test.yaml -x 10-network"
++	@echo "  make cloud-init LAYER=3           # Up to Users layer"
++	@echo "  make cloud-init EXCLUDE=\"-x network\""
++	@echo "  make cloud-init INCLUDE=\"-i users -i ssh\""
+```
+
+Reason: Update help with LAYER parameter and new fragment names.
+
+---
+
+### Python --layer Support
+
+---
+
+### Commit 63: `book-0-builder/builder-sdk/__main__.py` - Add --layer argument
+
+```diff
+     cloud_init_parser.add_argument('-i', '--include', action='append', default=[])
+     cloud_init_parser.add_argument('-x', '--exclude', action='append', default=[])
++    cloud_init_parser.add_argument('--layer', type=int, help='Include fragments up to this build_layer')
+```
+
+Reason: Add --layer CLI argument to cloud-init subcommand.
+
+---
+
+### Commit 64: `book-0-builder/builder-sdk/renderer.py` - Add layer filtering to render_cloud_init
+
+```diff
+-def render_cloud_init(ctx, include=None, exclude=None):
++def render_cloud_init(ctx, include=None, exclude=None, layer=None):
+     """Render and merge cloud-init fragments, return as dict.
+
+     Args:
+         ctx: Build context
+         include: List of fragment names to include (default: all)
+         exclude: List of fragment names to exclude (default: none)
++        layer: If set, only include fragments with build_layer <= layer
+     """
+     scripts = render_scripts(ctx)
+     merged = {}
+
+     for fragment in discover_fragments():
+         fragment_name = fragment['name']
++
++        # Filter by layer if specified
++        if layer is not None and fragment.get('build_layer', 999) > layer:
++            continue
++
+         tpl_path = fragment['_path'] / 'fragment.yaml.tpl'
+```
+
+Reason: Filter fragments by build_layer when --layer is specified.
+
+---
+
+### Commit 65: `book-0-builder/builder-sdk/__main__.py` - Pass layer to render_cloud_init
+
+```diff
+     if args.command == 'cloud-init':
+-        result = render_cloud_init(ctx, include=args.include, exclude=args.exclude)
++        result = render_cloud_init(ctx, include=args.include, exclude=args.exclude, layer=args.layer)
+```
+
+Reason: Pass --layer argument to render function.
+
+---
+
+### Builder Module - build_layers.yaml
+
+---
+
+### Commit 66: Create `book-0-builder/config/build_layers.yaml`
 
 ```yaml
-# Test level definitions for incremental testing
-# Each level includes all fragments from previous levels
-# Array order determines test progression
+# Build layer definitions
+# Shared by build logic (Makefile LAYER=) and testing (layer names)
+# build_layer in build.yaml is single source of truth for fragment ordering
 
-levels:
-  - name: Network
-    fragments: []
-  - name: Kernel Hardening
-    fragments: []
-  - name: Users
-    fragments: []
-  - name: SSH Hardening
-    fragments: []
-  - name: UFW Firewall
-    fragments: []
-  - name: System Settings
-    fragments: []
-  - name: MSMTP Mail
-    fragments: []
-  - name: Package Security
-    fragments: []
-  - name: Security Monitoring
-    fragments: []
-  - name: Virtualization
-    fragments: []
-  - name: Cockpit
-    fragments: []
-  - name: Claude Code
-    fragments: []
-  - name: Copilot CLI
-    fragments: []
-  - name: OpenCode
-    fragments: []
-  - name: UI Touches
-    fragments: []
-  # Agent-dependent levels (tested last)
-  - name: Package Manager Updates
-    fragments: []
-  - name: Update Summary
-    fragments: []
-  - name: Notification Flush
-    fragments: []
+layers:
+  0: Base
+  1: Network
+  2: Kernel Hardening
+  3: Users
+  4: SSH Hardening
+  5: UFW Firewall
+  6: System Settings
+  7: MSMTP Mail
+  8: Package Security
+  9: Security Monitoring
+  10: Virtualization
+  11: Cockpit
+  12: Claude Code
+  13: Copilot CLI
+  14: OpenCode
+  15: UI Touches
+
+# Agent-dependent test levels (higher layers, reuse layer 8 fragments)
+agent_dependent:
+  16:
+    name: Package Manager Updates
+    fragments: [packages, pkg-security, pkg-upgrade]
+  17:
+    name: Update Summary
+    fragments: [packages, pkg-security, pkg-upgrade]
+  18:
+    name: Notification Flush
+    fragments: [packages, pkg-security, pkg-upgrade]
 ```
 
-Reason: Define test level structure first (depth-wise split). Array ordering controls progression.
+Reason: Layer-to-name mapping for build and test systems. Agent-dependent levels specify fragment overrides.
 
 ---
 
-### Commit 58: `book-0-builder/host-sdk/config/test-levels.yaml` - Add fragments: security foundation
-
-```diff
-   - name: Network
--    fragments: []
-+    fragments: [network]
-   - name: Kernel Hardening
--    fragments: []
-+    fragments: [kernel]
-   - name: Users
--    fragments: []
-+    fragments: [users]
-   - name: SSH Hardening
--    fragments: []
-+    fragments: [ssh]
-```
-
-Reason: Add fragments to security foundation levels (Network, Kernel, Users, SSH).
-
----
-
-### Commit 59: `book-0-builder/host-sdk/config/test-levels.yaml` - Add fragments: system & packages
-
-```diff
-   - name: UFW Firewall
--    fragments: []
-+    fragments: [ufw]
-   - name: System Settings
--    fragments: []
-+    fragments: [system]
-   - name: MSMTP Mail
--    fragments: []
-+    fragments: [msmtp]
-   - name: Package Security
--    fragments: []
-+    fragments: [packages, pkg-security, pkg-upgrade]
-```
-
-Reason: Add fragments to system configuration and package security levels.
-
----
-
-### Commit 60: `book-0-builder/host-sdk/config/test-levels.yaml` - Add fragments: monitoring & infra
-
-```diff
-   - name: Security Monitoring
--    fragments: []
-+    fragments: [security-mon]
-   - name: Virtualization
--    fragments: []
-+    fragments: [virtualization]
-   - name: Cockpit
--    fragments: []
-+    fragments: [cockpit]
-```
-
-Reason: Add fragments to monitoring and infrastructure levels.
-
----
-
-### Commit 61: `book-0-builder/host-sdk/config/test-levels.yaml` - Add fragments: dev tools & UI
-
-```diff
-   - name: Claude Code
--    fragments: []
-+    fragments: [claude-code]
-   - name: Copilot CLI
--    fragments: []
-+    fragments: [copilot-cli]
-   - name: OpenCode
--    fragments: []
-+    fragments: [opencode]
-   - name: UI Touches
--    fragments: []
-+    fragments: [ui]
-```
-
-Reason: Add fragments to developer tools and UI levels.
-
----
-
-### Commit 62: `book-0-builder/host-sdk/config/test-levels.yaml` - Add fragments: agent-dependent
-
-```diff
-+  # Agent-dependent levels (tested last)
-   - name: Package Manager Updates
--    fragments: []
-+    fragments: [packages, pkg-security, pkg-upgrade]
-   - name: Update Summary
--    fragments: []
-+    fragments: [packages, pkg-security, pkg-upgrade]
-   - name: Notification Flush
--    fragments: []
-+    fragments: [packages, pkg-security, pkg-upgrade]
-```
-
-Reason: Add fragments to agent-dependent levels (require agents, tested last).
-
----
-
-### Commit 63: `book-0-builder/host-sdk/modules/Testing.ps1` - Add test levels YAML loading
+### Commit 67: `book-0-builder/host-sdk/modules/Builder.ps1` - Load build_layers.yaml
 
 ```diff
      $mod = @{ SDK = $SDK }
      . "$PSScriptRoot\..\helpers\PowerShell.ps1"
 +
-+    # Load test levels from YAML (array order = test progression)
-+    $levelsPath = "$PSScriptRoot\..\config\test-levels.yaml"
-+    $levelsYaml = Get-Content $levelsPath -Raw | ConvertFrom-Yaml
-+    $mod.Levels = @()
-+    foreach ($level in $levelsYaml.levels) {
-+        $mod.Levels += @{ Name = $level.name; Fragments = $level.fragments }
-+    }
-
-     $Testing = New-Object PSObject -Property @{ Results = @(); PassCount = 0; FailCount = 0 }
++    # Load build layers config
++    $layersPath = "$PSScriptRoot\..\..\config\build_layers.yaml"
++    $layersYaml = Get-Content $layersPath -Raw | ConvertFrom-Yaml
++    $mod.LayerNames = $layersYaml.layers  # {layer: name} mapping
++    $mod.AgentDependent = $layersYaml.agent_dependent  # {layer: {name, fragments}}
 ```
 
-Reason: Load test level config into Testing module (extends existing module).
+Reason: Load build_layers.yaml into Builder module.
 
 ---
 
-### Commit 64: `book-0-builder/host-sdk/modules/Testing.ps1` - Add LevelNames and LevelFragments
+### Commit 68: `book-0-builder/host-sdk/modules/Builder.ps1` - Add LayerName method
 
 ```diff
-     Add-ScriptProperties $Testing @{
-         All = {
-             return $mod.SDK.Fragments.Layers | ForEach-Object { $_.Layer } | Sort-Object -Unique
-         }
-+        LevelNames = {
-+            return $mod.Levels | ForEach-Object { $_.Name }
++    Add-ScriptMethods $Builder @{
++        LayerName = {
++            param([int]$Layer)
++            if ($mod.AgentDependent.ContainsKey($Layer)) {
++                return $mod.AgentDependent[$Layer].name
++            }
++            if ($mod.LayerNames.ContainsKey($Layer)) {
++                return $mod.LayerNames[$Layer]
++            }
++            return "Layer $Layer"
 +        }
 +    }
-+
+```
+
+Reason: Get display name for layer number.
+
+---
+
+### Commit 69: `book-0-builder/host-sdk/modules/Builder.ps1` - Add LayerFragments method
+
+```diff
++    Add-ScriptMethods $Builder @{
++        LayerFragments = {
++            param([int]$Layer)
++            # Agent-dependent levels use override fragments
++            if ($mod.AgentDependent.ContainsKey($Layer)) {
++                return $mod.AgentDependent[$Layer].fragments
++            }
++            # Normal levels derive from build_layer via Fragments module
++            return $mod.SDK.Fragments.UpTo($Layer) | ForEach-Object { $_.Name }
++        }
++    }
+```
+
+Reason: Get fragments for layer - uses Fragments.UpTo() for normal levels, override for agent-dependent.
+
+---
+
+### Commit 70: `book-0-builder/host-sdk/modules/Builder.ps1` - Remove SDK.Runner singleton
+
+```diff
+-    $Runner = New-Object PSObject -Property @{}
+-    Add-ScriptProperties $Runner @{
+-        Rendered = {
+-            return $mod.SDK.Settings.Virtualization.Runner
+-        }
+-    # ... Runner properties and methods ...
+-    }
+-    $Runner = $SDK.Multipass.Worker($Runner)
+-
+-    # ... more Runner code ...
+-
+-    $SDK.Extend("Runner", $Runner)
+```
+
+Reason: Remove singleton pattern. Use CloudInitBuild.CreateWorker() with Settings.Virtualization.Runner config instead.
+
+---
+
+### Testing Module - Delegate to Builder
+
+---
+
+### Commit 71: `book-0-builder/host-sdk/modules/Testing.ps1` - Delegate LevelName to Builder
+
+```diff
++    Add-ScriptMethods $Testing @{
++        LevelName = {
++            param([int]$Layer)
++            return $mod.SDK.Builder.LayerName($Layer)
++        }
++    }
+
+     $SDK.Extend("Testing", $Testing)
+```
+
+Reason: Testing delegates layer name lookup to Builder module.
+
+---
+
+### Commit 72: `book-0-builder/host-sdk/modules/Testing.ps1` - Delegate LevelFragments to Builder
+
+```diff
 +    Add-ScriptMethods $Testing @{
 +        LevelFragments = {
-+            param([string]$LevelName)
-+            $fragments = @()
-+            foreach ($level in $mod.Levels) {
-+                $fragments += $level.Fragments
-+                if ($level.Name -eq $LevelName) { break }
-+            }
-+            return $fragments | Select-Object -Unique
-+        }
-     }
-```
-
-Reason: Add LevelNames property and LevelFragments method to Testing module.
-
----
-
-### Commit 65: `book-0-builder/host-sdk/modules/Testing.ps1` - Add LevelsUpTo and IncludeArgs
-
-```diff
-+    Add-ScriptMethods $Testing @{
-+        LevelsUpTo = {
-+            param([string]$LevelName)
-+            $result = @()
-+            foreach ($level in $mod.Levels) {
-+                $result += $level.Name
-+                if ($level.Name -eq $LevelName) { break }
-+            }
-+            return $result
++            param([int]$Layer)
++            return $mod.SDK.Builder.LayerFragments($Layer)
 +        }
 +        IncludeArgs = {
-+            param([string]$LevelName)
-+            $fragments = $this.LevelFragments($LevelName)
++            param([int]$Layer)
++            $fragments = $this.LevelFragments($Layer)
 +            return ($fragments | ForEach-Object { "-i $_" }) -join " "
 +        }
 +    }
@@ -1524,19 +1637,23 @@ Reason: Add LevelNames property and LevelFragments method to Testing module.
      $SDK.Extend("Testing", $Testing)
 ```
 
-Reason: Add LevelsUpTo and IncludeArgs methods for test level operations.
+Reason: Testing delegates layer operations to Builder, adds IncludeArgs convenience method.
 
 ---
 
-### Commit 66: Delete `book-0-builder/host-sdk/modules/Config.ps1`
+### Commit 73: Delete `book-0-builder/host-sdk/modules/Config.ps1`
 
-File deletion - replaced by Testing.ps1 level methods + config/test-levels.yaml.
+File deletion - replaced by Builder.ps1 layer methods + config/build_layers.yaml.
 
-Reason: Old hardcoded PowerShell mapping replaced with data-driven YAML approach.
+Reason: Old hardcoded PowerShell mapping replaced with build_layer-driven approach.
 
 ---
 
-### Commit 67: `book-0-builder/host-sdk/modules/Network.ps1` - Update WaitForSSH signature
+### Network/Vbox Updates
+
+---
+
+### Commit 74: `book-0-builder/host-sdk/modules/Network.ps1` - Update WaitForSSH signature
 
 ```diff
          WaitForSSH = {
@@ -1559,7 +1676,7 @@ Reason: Add -Throw parameter (default true for backward compat), remove UntilSSH
 
 ---
 
-### Commit 68: `book-0-builder/host-sdk/modules/Network.ps1` - WaitForSSH body with job logic
+### Commit 75: `book-0-builder/host-sdk/modules/Network.ps1` - WaitForSSH body with job logic
 
 ```diff
          WaitForSSH = {
@@ -1586,7 +1703,7 @@ Reason: Inline job logic from UntilSSH, return bool (true=success), throw if -Th
 
 ---
 
-### Commit 69: `book-0-builder/host-sdk/modules/Network.ps1` - Remove UntilSSH method
+### Commit 76: `book-0-builder/host-sdk/modules/Network.ps1` - Remove UntilSSH method
 
 ```diff
 -        UntilSSH = {
@@ -1611,7 +1728,7 @@ Reason: UntilSSH logic merged into WaitForSSH - remove duplicate method.
 
 ---
 
-### Commit 70: `book-0-builder/host-sdk/modules/Vbox.ps1` - SSH defaults to null
+### Commit 77: `book-0-builder/host-sdk/modules/Vbox.ps1` - SSH defaults to null
 
 ```diff
      $mod.Configurator = @{
@@ -1633,7 +1750,7 @@ Reason: SSH connection details should derive from config, not hardcoded.
 
 ---
 
-### Commit 71: `book-0-builder/host-sdk/modules/Vbox.ps1` - SSH derivation in Rendered
+### Commit 78: `book-0-builder/host-sdk/modules/Vbox.ps1` - SSH derivation in Rendered
 
 ```diff
              Rendered = {
@@ -1660,12 +1777,30 @@ Reason: Use Settings.Load() to derive SSH settings from identity config.
 
 After Review #1 commits:
 
-- [ ] `$SDK.Testing.LevelNames` returns level names (Network, Kernel Hardening, ...)
-- [ ] `$SDK.Testing.LevelFragments("Users")` returns cumulative fragments (network, kernel, users)
-- [ ] `$SDK.Testing.LevelsUpTo("SSH Hardening")` returns (Network, Kernel Hardening, Users, SSH Hardening)
-- [ ] `$SDK.Testing.IncludeArgs("Users")` returns "-i network -i kernel -i users"
+**Makefile:**
+- [ ] `make cloud-init LAYER=3` builds with fragments up to layer 3
+- [ ] `make cloud-init INCLUDE="-i users -i ssh"` works with new fragment names
+- [ ] `make help` shows LAYER parameter
+
+**Python:**
+- [ ] `python -m builder render cloud-init --layer 3` filters by build_layer
+
+**Builder Module:**
+- [ ] `$SDK.Builder.LayerName(3)` returns "Users"
+- [ ] `$SDK.Builder.LayerName(16)` returns "Package Manager Updates"
+- [ ] `$SDK.Builder.LayerFragments(3)` returns fragments from layers 0-3
+- [ ] `$SDK.Builder.LayerFragments(16)` returns [packages, pkg-security, pkg-upgrade]
+
+**Testing Module (delegates):**
+- [ ] `$SDK.Testing.LevelName(3)` returns "Users" (delegates to Builder)
+- [ ] `$SDK.Testing.LevelFragments(3)` returns same as Builder.LayerFragments(3)
+- [ ] `$SDK.Testing.IncludeArgs(3)` returns "-i base -i network -i kernel -i users"
+
+**SDK.Runner Removed:**
+- [ ] `$SDK.Runner` does not exist
+- [ ] `$SDK.CloudInitBuild.CreateWorker()` uses Settings.Virtualization.Runner config
+
+**Network/Vbox:**
 - [ ] `$SDK.Network.WaitForSSH(...)` throws on timeout (default -Throw $true)
 - [ ] `$SDK.Network.WaitForSSH(..., -Throw $false)` returns bool without throwing
 - [ ] `$SDK.Vbox.Worker(@{...}).SSHUser` derives from identity.config.yaml
-- [ ] `$SDK.Vbox.Worker(@{...}).SSHHost` defaults to "localhost"
-- [ ] `$SDK.Vbox.Worker(@{...}).SSHPort` defaults to 2222
