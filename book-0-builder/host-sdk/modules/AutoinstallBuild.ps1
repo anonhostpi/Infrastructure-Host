@@ -7,7 +7,22 @@ New-Module -Name SDK.AutoinstallBuild -ScriptBlock {
 
     $AutoinstallBuild = New-Object PSObject
 
-    # Methods added in following commits
+    Add-ScriptMethods $AutoinstallBuild @{
+        GetArtifacts = {
+            $artifacts = $mod.SDK.Builder.Artifacts
+            if (-not $artifacts -or -not $artifacts.iso) { throw "No ISO artifact found. Build the ISO first." }
+            return $artifacts
+        }
+        CreateWorker = {
+            param([hashtable]$Overrides = @{})
+            $artifacts = $this.GetArtifacts()
+            $baseConfig = $mod.SDK.Settings.Virtualization.Vbox
+            $config = @{}; foreach ($k in $baseConfig.Keys) { $config[$k] = $baseConfig[$k] }
+            $config.IsoPath = $artifacts.iso
+            foreach ($k in $Overrides.Keys) { $config[$k] = $Overrides[$k] }
+            return $mod.SDK.Vbox.Worker(@{ Config = $config })
+        }
+    }
 
     $SDK.Extend("AutoinstallBuild", $AutoinstallBuild)
     Export-ModuleMember -Function @()
