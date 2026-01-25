@@ -75,7 +75,7 @@ def get_environment():
     """Get or create the global Jinja2 environment."""
     global _env
     if _env is None:
-        _env = create_environment('src')
+        _env = create_environment()
     return _env
 
 
