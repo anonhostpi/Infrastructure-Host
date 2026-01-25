@@ -148,11 +148,12 @@ def render_cloud_init(ctx, include=None, exclude=None):
     scripts = render_scripts(ctx)
     merged = {}
 
-    if not fragments_dir.exists():
-        return merged
+    for fragment in discover_fragments():
+        fragment_name = fragment['name']
+        tpl_path = fragment['_path'] / 'fragment.yaml.tpl'
 
-    for tpl_path in sorted(fragments_dir.glob('*.yaml.tpl')):
-        fragment_name = tpl_path.name.removesuffix('.yaml.tpl')
+        if not tpl_path.exists():
+            continue
 
         # Filter by include list (if specified)
         if include is not None and fragment_name not in include:
