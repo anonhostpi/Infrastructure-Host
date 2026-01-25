@@ -70,12 +70,12 @@ New-Module -Name SDK -ScriptBlock {
         }
     }
 
-    & "$PSScriptRoot/Settings.ps1" -SDK $SDK
-    & "$PSScriptRoot/Network.ps1" -SDK $SDK
-    & "$PSScriptRoot/General.ps1" -SDK $SDK
-    & "$PSScriptRoot/Vbox.ps1" -SDK $SDK
-    & "$PSScriptRoot/Multipass.ps1" -SDK $SDK
-    & "$PSScriptRoot/Builder.ps1" -SDK $SDK
+    & "$PSScriptRoot/modules/Settings.ps1" -SDK $SDK
+    & "$PSScriptRoot/modules/Network.ps1" -SDK $SDK
+    & "$PSScriptRoot/modules/General.ps1" -SDK $SDK
+    & "$PSScriptRoot/modules/Vbox.ps1" -SDK $SDK
+    & "$PSScriptRoot/modules/Multipass.ps1" -SDK $SDK
+    & "$PSScriptRoot/modules/Builder.ps1" -SDK $SDK
 
     Export-ModuleMember -Variable SDK
 } -ArgumentList ([bool] $Globalize) | Import-Module -Force
