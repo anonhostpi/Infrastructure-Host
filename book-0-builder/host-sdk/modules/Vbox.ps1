@@ -24,6 +24,24 @@ New-Module -Name SDK.Vbox -ScriptBlock {
         }
     }
 
+    $mod.Worker = @{
+        Properties = @{
+            Rendered = {
+                $config = $this.Config
+                $defaults = if ($this.Defaults) { $this.Defaults } else { $mod.Configurator.Defaults }
+                $rendered = @{}
+                foreach ($key in $defaults.Keys) { $rendered[$key] = $defaults[$key] }
+                foreach ($key in $config.Keys) { $rendered[$key] = $config[$key] }
+                if (-not $rendered.MediumPath) {
+                    $rendered.MediumPath = "$env:TEMP\$($rendered.Name).vdi"
+                }
+                $this | Add-Member -MemberType NoteProperty -Name Rendered -Value $rendered -Force
+                return $rendered
+            }
+        }
+        Methods = @{}
+    }
+
     $Vbox = New-Object PSObject
 
     #region: Main utilities
