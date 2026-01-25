@@ -26,6 +26,19 @@ New-Module -Name SDK.Testing -ScriptBlock {
         }
     }
 
+    Add-ScriptMethods $Testing @{
+        Summary = {
+            $mod.SDK.Log.Write("")
+            $mod.SDK.Log.Write("========================================", "Cyan")
+            $mod.SDK.Log.Write(" Test Summary", "Cyan")
+            $mod.SDK.Log.Write("========================================", "Cyan")
+            $mod.SDK.Log.Write("  Total:  $($this.PassCount + $this.FailCount)")
+            $mod.SDK.Log.Write("  Passed: $($this.PassCount)", "Green")
+            $failColor = if ($this.FailCount -gt 0) { "Red" } else { "Green" }
+            $mod.SDK.Log.Write("  Failed: $($this.FailCount)", $failColor)
+        }
+    }
+
     $SDK.Extend("Testing", $Testing)
     Export-ModuleMember -Function @()
 } -ArgumentList $SDK | Import-Module -Force
