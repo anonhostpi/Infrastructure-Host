@@ -37,6 +37,16 @@ New-Module -Name SDK.Fragments -ScriptBlock {
         }
     }
 
+    Add-ScriptMethods $Fragments @{
+        LayerName = {
+            param([int]$Layer)
+            if ($mod.LayerNames -and $mod.LayerNames.ContainsKey($Layer)) {
+                return $mod.LayerNames[$Layer]
+            }
+            return "Layer $Layer"
+        }
+    }
+
     $SDK.Extend("Fragments", $Fragments)
     Export-ModuleMember -Function @()
 } -ArgumentList $SDK | Import-Module -Force
