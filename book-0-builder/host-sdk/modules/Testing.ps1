@@ -39,6 +39,17 @@ New-Module -Name SDK.Testing -ScriptBlock {
         }
     }
 
+    Add-ScriptMethods $Testing @{
+        Fragments = {
+            param([int]$Layer)
+            return $mod.SDK.Fragments.UpTo($Layer) | ForEach-Object { $_.Name }
+        }
+        Verifications = {
+            param([int]$Layer)
+            return $mod.SDK.Fragments.At($Layer) | ForEach-Object { "Test-$($_.Name)Fragment" }
+        }
+    }
+
     $SDK.Extend("Testing", $Testing)
     Export-ModuleMember -Function @()
 } -ArgumentList $SDK | Import-Module -Force
