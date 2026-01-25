@@ -7,7 +7,21 @@ New-Module -Name SDK.Fragments -ScriptBlock {
 
     $Fragments = New-Object PSObject
 
-    # Layers property and methods added in following commits
+    $Fragments | Add-Member -MemberType ScriptProperty -Name Layers -Value {
+        $results = @()
+        Get-ChildItem -Path @("book-1-foundation", "book-2-cloud") -Recurse -Filter "build.yaml" |
+        ForEach-Object {
+            $meta = Get-Content $_.FullName -Raw | ConvertFrom-Yaml
+            $results += [PSCustomObject]@{
+                Name = $meta.name
+                Path = $_.DirectoryName
+                Order = $meta.build_order
+                Layer = $meta.build_layer
+                IsoRequired = $meta.iso_required
+            }
+        }
+        return $results | Sort-Object Order
+    }
 
     $SDK.Extend("Fragments", $Fragments)
     Export-ModuleMember -Function @()
