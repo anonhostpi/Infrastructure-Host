@@ -31,7 +31,14 @@ New-Module -Name SDK.Fragments -ScriptBlock {
     Add-ScriptMethods $Fragments @{
         UpTo = {
             param([int]$Layer)
-            return $this.Layers | Where-Object { $_.Layer -le $Layer }
+            return $this.Layers | Where-Object {
+                $l = $_.Layer
+                if ($l -is [array]) {
+                    $l | Where-Object { $_ -le $Layer } | Select-Object -First 1
+                } else {
+                    $l -le $Layer
+                }
+            }
         }
         At = {
             param([int]$Layer)
