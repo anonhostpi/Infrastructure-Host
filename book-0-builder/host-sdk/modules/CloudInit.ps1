@@ -11,7 +11,7 @@ New-Module -Name SDK.CloudInit -ScriptBlock {
 
     $CloudInit = New-Object PSObject
 
-    Add-ScriptMethods $CloudInitBuild @{
+    Add-ScriptMethods $CloudInit @{
         Build = {
             param([int]$Layer)
             $mod.SDK.Log.Info("Building cloud-init for layer $Layer...")
@@ -31,7 +31,7 @@ New-Module -Name SDK.CloudInit -ScriptBlock {
         }
     }
 
-    Add-ScriptMethods $CloudInitBuild @{
+    Add-ScriptMethods $CloudInit @{
         Cleanup = {
             param([string]$Name)
             if (-not $Name) { $Name = $mod.SDK.Settings.Virtualization.Runner.Name }
@@ -39,6 +39,6 @@ New-Module -Name SDK.CloudInit -ScriptBlock {
         }
     }
 
-    $SDK.Extend("CloudInitBuild", $CloudInitBuild)
+    $SDK.Extend("CloudInit", $CloudInit)
     Export-ModuleMember -Function @()
 } -ArgumentList $SDK | Import-Module -Force
