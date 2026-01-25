@@ -4,12 +4,6 @@
 
 **References:**
 - Rules: `PHASE_2/RULES.md`
-- Discovery Docs:
-  - `PHASE_2/BOOK_0/CONFIG.md` - Config.ps1 refactoring (superseded by DEDUPE_LAYER_WORK.md)
-  - `PHASE_2/BOOK_0/REVIEW.md` - Review items (WaitForSSH, VBox SSH)
-  - `PHASE_2/BOOK_0/SETTINGS.md` - Settings.ps1 refactoring
-  - `PHASE_2/BOOK_0/DEDUPE_LAYER_WORK.md` - build_layers architecture
-  - `PHASE_2/BOOK_0/DOCS.md` - Documentation updates
 
 ---
 
@@ -1841,6 +1835,137 @@ Reason: All logic now lives in SDK modules. Test script becomes minimal orchestr
 
 ---
 
+### Settings/Config Refactoring
+
+Reference: `PHASE_2/BOOK_0/SETTINGS.md`
+
+---
+
+### Commit 81: `book-0-builder/host-sdk/helpers/Config.ps1` - Update Build-TestConfig paths
+
+```diff
+ function Build-TestConfig {
+     param(
+-        [string]$ConfigDir = "src/config"
++        [string[]]$ConfigDirs = @("book-1-foundation", "book-2-cloud")
+     )
+-    $configFiles = Get-ChildItem -Path $ConfigDir -Filter "*.config.yaml"
++    $git_root = git rev-parse --show-toplevel 2>$null
++    $configFiles = @()
++    foreach ($baseDir in $ConfigDirs) {
++        $searchPath = Join-Path $git_root $baseDir
++        $configFiles += Get-ChildItem -Path $searchPath -Recurse -Filter "*.config.yaml" -ErrorAction SilentlyContinue
++    }
+```
+
+Reason: Config files are now in fragment directories, not src/config.
+
+---
+
+### Commit 82: `book-0-builder/host-sdk/helpers/Config.ps1` - Fix count check bug
+
+```diff
+-        if ($yaml -is [hashtable] -and $yaml.Count -eq 1)
++        if ($yaml -is [hashtable] -and ($yaml.Keys | Measure-Object).Count -eq 1)
+```
+
+Reason: PowerShell hashtable .Count can be unreliable; use Measure-Object.
+
+---
+
+### Commit 83: `book-0-builder/host-sdk/modules/Settings.ps1` - Add ConvertTo-PascalCase helper
+
+```diff
++    function ConvertTo-PascalCase {
++        param([string]$Name)
++        return ($Name -split '[-_]' | ForEach-Object {
++            if ($_.Length -gt 0) { $_.Substring(0,1).ToUpper() + $_.Substring(1) } else { '' }
++        }) -join ''
++    }
+```
+
+Reason: Transform config keys to PascalCase for consistent property access.
+
+---
+
+### Commit 84: `book-0-builder/host-sdk/modules/Settings.ps1` - Use PascalCase in factory
+
+```diff
+     foreach( $key in $keys ) {
++        $propertyName = ConvertTo-PascalCase $key
+         $src = @(
+             "",
+             "`$key = '$key'",
+             { return $mod.BuildConfig[$key] }.ToString(),
+             ""
+         ) -join "`n"
+         $sb = iex "{ $src }"
+-        $methods[$key] = $sb
++        $methods[$propertyName] = $sb
+     }
+```
+
+Reason: Properties accessible as `$SDK.Settings.Identity` instead of `$SDK.Settings.identity`.
+
+---
+
+### Documentation Updates
+
+Update documentation to reflect new `book-*/` structure and fragment names.
+
+---
+
+### Commit 85: `docs/BUILD_SYSTEM/MAKEFILE_INTERFACE.md` - Update paths
+
+Update all `src/config/`, `src/scripts/`, `src/autoinstall/` references to `book-*/` paths.
+
+---
+
+### Commit 86: `docs/BUILD_SYSTEM/RENDER_CLI.md` - Update paths and fragment names
+
+- Update `src/config` → fragment config paths
+- Update `src/scripts/` → `book-*/*/scripts/`
+- Update fragment name examples (`10-network` → `network`)
+
+---
+
+### Commit 87: `docs/BUILD_SYSTEM/BUILD_CONTEXT.md` - Update paths
+
+Update `src/config/` references and code examples.
+
+---
+
+### Commit 88: `docs/TESTING_AND_VALIDATION/TESTING_OVERVIEW.md` - Update paths
+
+Update config copy examples to new paths and fragment references.
+
+---
+
+### Commit 89: `docs/TESTING_AND_VALIDATION/CLOUD_INIT_TESTING.md` - Update paths and fragment names
+
+- Update test level table with new fragment names
+- Update `src/config/` path references
+
+---
+
+### Commit 90: `docs/TESTING_AND_VALIDATION/CLOUD_INIT_TESTS_README.md` - Update fragment names
+
+Update fragment table (`10-network.yaml.tpl` → `network/fragment.yaml.tpl`).
+
+---
+
+### Commit 91: `docs/TESTING_AND_VALIDATION/AUTOINSTALL_TESTING.md` - Update paths
+
+Update `src/config/identity.config.yaml` reference.
+
+---
+
+### Commit 92: `docs/ARCHITECTURE/ARCHITECTURE_BENEFITS.md` - Update fragment naming
+
+Update or remove mention of numeric prefixes as feature.
+
+---
+
 ## Validation (Review #1)
 
 After Review #1 commits:
@@ -1877,4 +2002,13 @@ After Review #1 commits:
 - [ ] `Invoke-IncrementalTest.ps1` is ~15-20 lines
 - [ ] `Invoke-IncrementalTest.ps1 -Layer 3` runs cloud-init tests via SDK
 - [ ] `Invoke-AutoinstallTest.ps1` is ~15-20 lines
+
+**Settings/Config Refactoring:**
+- [ ] `Build-TestConfig` scans book-1-foundation and book-2-cloud directories
+- [ ] `$SDK.Settings.Identity` returns identity config (PascalCase)
+- [ ] `$SDK.Settings.Network` returns network config (PascalCase)
+
+**Documentation Updates:**
+- [ ] `grep -r "src/" docs/` returns no matches
+- [ ] `grep -r "\d\d-[a-z]" docs/` returns no old fragment name matches
 - [ ] `Invoke-AutoinstallTest.ps1` runs autoinstall tests via SDK
