@@ -10,10 +10,10 @@
 New-Module -Name Test-Fragments -ScriptBlock {
     $cache = @{
         Map = [ordered]@{
-            "6.1"  = @{ Fragments = @("10-network"); Name = "Network" }
-            "6.2"  = @{ Fragments = @("15-kernel"); Name = "Kernel Hardening" }
-            "6.3"  = @{ Fragments = @("20-users"); Name = "Users" }
-            "6.4"  = @{ Fragments = @("25-ssh"); Name = "SSH Hardening" }
+            "6.1"  = @{ Fragments = @("network"); Name = "Network" }
+            "6.2"  = @{ Fragments = @("kernel"); Name = "Kernel Hardening" }
+            "6.3"  = @{ Fragments = @("users"); Name = "Users" }
+            "6.4"  = @{ Fragments = @("ssh"); Name = "SSH Hardening" }
             "6.5"  = @{ Fragments = @("30-ufw"); Name = "UFW Firewall" }
             "6.6"  = @{ Fragments = @("40-system"); Name = "System Settings" }
             "6.7"  = @{ Fragments = @("45-msmtp"); Name = "MSMTP Mail" }
