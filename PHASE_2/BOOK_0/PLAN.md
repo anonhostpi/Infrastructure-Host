@@ -2891,3 +2891,440 @@ After Review #2 commits:
 **build_layer Array:**
 - [ ] Fragment with `build_layer: [8, 16, 17, 18]` included at layer 8 and layers 16-18
 - [ ] `$SDK.Fragments.UpTo(16)` includes fragments with array layers
+
+---
+
+## Verifications Migration
+
+Reference: `PHASE_2/BOOK_0/VERIFICATIONS.MIGRATION.md`
+
+Migrate `Verifications.ps1` standalone functions to `SDK.Testing.Verifications` submodule.
+
+---
+
+### Infrastructure
+
+---
+
+### Commit 137: `book-0-builder/host-sdk/modules/Testing.ps1` - Remove Verifications method
+
+```diff
+-    Add-ScriptMethods $Testing @{
+-        Fragments = {
+-            param([int]$Layer)
+-            return $mod.SDK.Fragments.UpTo($Layer) | ForEach-Object { $_.Name }
+-        }
+-        Verifications = {
+-            param([int]$Layer)
+-            return $mod.SDK.Fragments.At($Layer) | ForEach-Object { "Test-$($_.Name)Fragment" }
+-        }
+-    }
++    Add-ScriptMethods $Testing @{
++        Fragments = {
++            param([int]$Layer)
++            return $mod.SDK.Fragments.UpTo($Layer) | ForEach-Object { $_.Name }
++        }
++    }
+```
+
+Reason: Remove Verifications method to make room for Verifications submodule.
+
+---
+
+### Commit 138: Create `book-0-builder/host-sdk/modules/Verifications.ps1` - module shape
+
+```powershell
+param([Parameter(Mandatory = $true)] $SDK)
+
+New-Module -Name SDK.Testing.Verifications -ScriptBlock {
+    param([Parameter(Mandatory = $true)] $SDK)
+    $mod = @{ SDK = $SDK }
+    . "$PSScriptRoot\..\helpers\PowerShell.ps1"
+
+    $Verifications = New-Object PSObject
+
+    # Methods added in following commits
+
+    $SDK.Testing | Add-Member -MemberType NoteProperty -Name Verifications -Value $Verifications
+    Export-ModuleMember -Function @()
+} -ArgumentList $SDK | Import-Module -Force
+```
+
+Reason: Verifications submodule skeleton attached to SDK.Testing.
+
+---
+
+### Commit 139: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add Fork helper
+
+```diff
+     $Verifications = New-Object PSObject
+
++    Add-ScriptMethods $Verifications @{
++        Fork = {
++            param([string]$Test, [string]$Decision, [string]$Reason = "")
++            $msg = "[FORK] $Test : $Decision"
++            if ($Reason) { $msg += " ($Reason)" }
++            $mod.SDK.Log.Debug($msg)
++        }
++    }
+
+     # Methods added in following commits
+```
+
+Reason: Fork helper for conditional test logging (replaces Write-TestFork).
+
+---
+
+### Commit 140: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add Run method
+
+```diff
++    Add-ScriptMethods $Verifications @{
++        Run = {
++            param($Worker, [int]$Layer)
++            $methods = @{
++                1 = "Network"; 2 = "Kernel"; 3 = "Users"; 4 = "SSH"; 5 = "UFW"
++                6 = "System"; 7 = "MSMTP"; 8 = "PackageSecurity"; 9 = "SecurityMonitoring"
++                10 = "Virtualization"; 11 = "Cockpit"; 12 = "ClaudeCode"
++                13 = "CopilotCLI"; 14 = "OpenCode"; 15 = "UI"
++                16 = "PackageManagerUpdates"; 17 = "UpdateSummary"; 18 = "NotificationFlush"
++            }
++            foreach ($l in 1..$Layer) {
++                if ($methods.ContainsKey($l)) {
++                    $methodName = $methods[$l]
++                    if ($this.PSObject.Methods[$methodName]) {
++                        $this.$methodName($Worker)
++                    }
++                }
++            }
++        }
++    }
+
+     $SDK.Testing | Add-Member
+```
+
+Reason: Run method executes all verification methods up to specified layer.
+
+---
+
+### Commit 141: `book-0-builder/host-sdk/SDK.ps1` - Load Verifications module
+
+```diff
+     & "$PSScriptRoot/modules/Testing.ps1" -SDK $SDK
++    & "$PSScriptRoot/modules/Verifications.ps1" -SDK $SDK
+     & "$PSScriptRoot/modules/CloudInit.ps1" -SDK $SDK
+```
+
+Reason: Load Verifications after Testing (attaches as submodule).
+
+---
+
+### Commit 142: Delete old `book-0-builder/host-sdk/modules/Verifications.ps1`
+
+File deletion - remove old standalone functions file before recreating as module.
+
+**Note:** This commit happens before 138-141 in execution order. Reorder during implementation.
+
+Reason: Clear old file to replace with module structure.
+
+---
+
+### Test-NetworkFragment Migration (Layer 1)
+
+---
+
+### Commit 143: `Verifications.ps1` - Network method shape
+
+```diff
++    Add-ScriptMethods $Verifications @{
++        Network = {
++            param($Worker)
++            # Tests added in following commits
++        }
++    }
+```
+
+Reason: Network verification method skeleton.
+
+---
+
+### Commit 144: `Verifications.ps1` - Network hostname tests
+
+```diff
+         Network = {
+             param($Worker)
+-            # Tests added in following commits
++            # 6.1.1: Hostname Configuration
++            $result = $Worker.Exec("hostname -s")
++            $mod.SDK.Testing.Record(@{
++                Test = "6.1.1"; Name = "Short hostname set"
++                Pass = ($result.Success -and $result.Output -and $result.Output -ne "localhost")
++                Output = $result.Output
++            })
++
++            $result = $Worker.Exec("hostname -f")
++            $mod.SDK.Testing.Record(@{
++                Test = "6.1.1"; Name = "FQDN has domain"
++                Pass = ($result.Output -match "\.")
++                Output = $result.Output
++            })
+         }
+```
+
+Reason: Network tests 6.1.1 - hostname configuration.
+
+---
+
+### Commit 145: `Verifications.ps1` - Network hosts and netplan tests
+
+```diff
++            # 6.1.2: /etc/hosts Management
++            $result = $Worker.Exec("grep '127.0.1.1' /etc/hosts")
++            $mod.SDK.Testing.Record(@{
++                Test = "6.1.2"; Name = "Hostname in /etc/hosts"
++                Pass = ($result.Success -and $result.Output)
++                Output = $result.Output
++            })
++
++            # 6.1.3: Netplan Configuration
++            $result = $Worker.Exec("ls /etc/netplan/*.yaml 2>/dev/null")
++            $mod.SDK.Testing.Record(@{
++                Test = "6.1.3"; Name = "Netplan config exists"
++                Pass = ($result.Success -and $result.Output)
++                Output = $result.Output
++            })
+         }
+```
+
+Reason: Network tests 6.1.2-6.1.3 - hosts and netplan.
+
+---
+
+### Commit 146: `Verifications.ps1` - Network connectivity tests
+
+```diff
++            # 6.1.4: Network Connectivity
++            $result = $Worker.Exec("ip -4 addr show scope global | grep 'inet '")
++            $mod.SDK.Testing.Record(@{
++                Test = "6.1.4"; Name = "IP address assigned"
++                Pass = ($result.Output -match "inet ")
++                Output = $result.Output
++            })
++
++            $result = $Worker.Exec("ip route | grep '^default'")
++            $mod.SDK.Testing.Record(@{
++                Test = "6.1.4"; Name = "Default gateway configured"
++                Pass = ($result.Output -match "default via")
++                Output = $result.Output
++            })
++
++            $result = $Worker.Exec("host -W 2 ubuntu.com")
++            $mod.SDK.Testing.Record(@{
++                Test = "6.1.4"; Name = "DNS resolution works"
++                Pass = ($result.Output -match "has address" -or $result.Output -match "has IPv")
++                Output = $result.Output
++            })
+         }
+```
+
+Reason: Network tests 6.1.4 - connectivity checks.
+
+---
+
+### Commit 147: `Verifications.ps1` - Network net-setup tests
+
+```diff
++            # 6.1.5: net-setup.sh execution log
++            $result = $Worker.Exec("test -f /var/lib/cloud/scripts/net-setup/net-setup.log")
++            $mod.SDK.Testing.Record(@{
++                Test = "6.1.5"; Name = "net-setup.log exists"
++                Pass = $result.Success
++                Output = "/var/lib/cloud/scripts/net-setup/net-setup.log"
++            })
++
++            $result = $Worker.Exec("cat /var/lib/cloud/scripts/net-setup/net-setup.log")
++            $mod.SDK.Testing.Record(@{
++                Test = "6.1.5"; Name = "net-setup.sh executed"
++                Pass = ($result.Output -match "net-setup:")
++                Output = if ($result.Output) { ($result.Output | Select-Object -First 3) -join "; " } else { "(empty)" }
++            })
+         }
+```
+
+Reason: Network tests 6.1.5 - net-setup verification.
+
+---
+
+### Test-KernelFragment Migration (Layer 2)
+
+---
+
+### Commit 148: `Verifications.ps1` - Kernel method with all tests
+
+```diff
++    Add-ScriptMethods $Verifications @{
++        Kernel = {
++            param($Worker)
++            # 6.2.1: Sysctl Security Config
++            $result = $Worker.Exec("test -f /etc/sysctl.d/99-security.conf")
++            $mod.SDK.Testing.Record(@{
++                Test = "6.2.1"; Name = "Security sysctl config exists"
++                Pass = $result.Success
++                Output = "/etc/sysctl.d/99-security.conf"
++            })
++        }
++    }
+```
+
+Reason: Kernel verification method with 6.2.1 test.
+
+---
+
+### Commit 149: `Verifications.ps1` - Kernel sysctl tests
+
+```diff
++            # 6.2.2: Key security settings applied
++            $result = $Worker.Exec("sysctl net.ipv4.conf.all.rp_filter")
++            $mod.SDK.Testing.Record(@{
++                Test = "6.2.2"; Name = "Reverse path filtering enabled"
++                Pass = ($result.Output -match "= 1")
++                Output = $result.Output
++            })
++
++            $result = $Worker.Exec("sysctl net.ipv4.tcp_syncookies")
++            $mod.SDK.Testing.Record(@{
++                Test = "6.2.2"; Name = "SYN cookies enabled"
++                Pass = ($result.Output -match "= 1")
++                Output = $result.Output
++            })
++
++            $result = $Worker.Exec("sysctl net.ipv4.conf.all.accept_redirects")
++            $mod.SDK.Testing.Record(@{
++                Test = "6.2.2"; Name = "ICMP redirects disabled"
++                Pass = ($result.Output -match "= 0")
++                Output = $result.Output
++            })
+         }
+```
+
+Reason: Kernel tests 6.2.2 - sysctl security settings.
+
+---
+
+### Test-UsersFragment Migration (Layer 3)
+
+---
+
+### Commit 150: `Verifications.ps1` - Users method shape
+
+```diff
++    Add-ScriptMethods $Verifications @{
++        Users = {
++            param($Worker)
++            $identity = $mod.SDK.Settings.Identity
++            $username = $identity.username
++            # Tests added in following commits
++        }
++    }
+```
+
+Reason: Users verification method skeleton with config access.
+
+---
+
+### Commit 151: `Verifications.ps1` - Users existence tests
+
+```diff
+-            # Tests added in following commits
++            # 6.3.1: User Exists
++            $result = $Worker.Exec("id $username")
++            $mod.SDK.Testing.Record(@{
++                Test = "6.3.1"; Name = "$username user exists"
++                Pass = ($result.Success -and $result.Output -match "uid=")
++                Output = $result.Output
++            })
++
++            $result = $Worker.Exec("getent passwd $username | cut -d: -f7")
++            $mod.SDK.Testing.Record(@{
++                Test = "6.3.1"; Name = "$username shell is bash"
++                Pass = ($result.Output -match "/bin/bash")
++                Output = $result.Output
++            })
+         }
+```
+
+Reason: Users tests 6.3.1 - user existence and shell.
+
+---
+
+### Commit 152: `Verifications.ps1` - Users group and sudo tests
+
+```diff
++            # 6.3.2: Group Membership
++            $result = $Worker.Exec("groups $username")
++            $mod.SDK.Testing.Record(@{
++                Test = "6.3.2"; Name = "$username in sudo group"
++                Pass = ($result.Output -match "\bsudo\b")
++                Output = $result.Output
++            })
++
++            # 6.3.3: Sudo Configuration
++            $result = $Worker.Exec("sudo test -f /etc/sudoers.d/$username")
++            $mod.SDK.Testing.Record(@{
++                Test = "6.3.3"; Name = "Sudoers file exists"
++                Pass = $result.Success
++                Output = "/etc/sudoers.d/$username"
++            })
++
++            # 6.3.4: Root Disabled
++            $result = $Worker.Exec("sudo passwd -S root")
++            $mod.SDK.Testing.Record(@{
++                Test = "6.3.4"; Name = "Root account locked"
++                Pass = ($result.Output -match "root L" -or $result.Output -match "root LK")
++                Output = $result.Output
++            })
+         }
+```
+
+Reason: Users tests 6.3.2-6.3.4 - groups, sudo, root.
+
+---
+
+### Remaining Test Migrations
+
+Due to the size of this migration, remaining test functions will follow the same pattern. Each test function becomes a method with tests migrated from `multipass exec $VMName` to `$Worker.Exec()`.
+
+**Remaining methods to migrate:**
+- SSH (Layer 4) - ~120 lines → ~6 commits
+- UFW (Layer 5) - ~35 lines → ~2 commits
+- System (Layer 6) - ~35 lines → ~2 commits
+- MSMTP (Layer 7) - ~100 lines → ~5 commits
+- PackageSecurity (Layer 8) - ~175 lines → ~9 commits
+- SecurityMonitoring (Layer 9) - ~35 lines → ~2 commits
+- Virtualization (Layer 10) - ~135 lines → ~7 commits
+- Cockpit (Layer 11) - ~145 lines → ~8 commits
+- OpenCode (Layer 14) - ~190 lines → ~10 commits
+- ClaudeCode (Layer 12) - ~115 lines → ~6 commits
+- CopilotCLI (Layer 13) - ~105 lines → ~6 commits
+- UI (Layer 15) - ~25 lines → ~2 commits
+- PackageManagerUpdates (Layer 16) - ~170 lines → ~9 commits
+- UpdateSummary (Layer 17) - ~180 lines → ~9 commits
+- NotificationFlush (Layer 18) - ~180 lines → ~9 commits
+
+**Estimated total commits for remaining migrations:** ~92 commits (153-244)
+
+Each commit will follow the pattern established in commits 143-152.
+
+---
+
+## Validation (Verifications Migration)
+
+After Verifications Migration commits:
+
+- [ ] `$SDK.Testing.Verifications` exists as submodule
+- [ ] `$SDK.Testing.Verifications.Fork("test", "decision")` logs debug message
+- [ ] `$SDK.Testing.Verifications.Run($worker, 3)` executes Network, Kernel, Users
+- [ ] `$SDK.Testing.Verifications.Network($worker)` runs all 6.1.x tests
+- [ ] `$SDK.Testing.Verifications.Kernel($worker)` runs all 6.2.x tests
+- [ ] `$SDK.Testing.Verifications.Users($worker)` runs all 6.3.x tests
+- [ ] All 18 verification methods exist and run tests
+- [ ] Old `Verifications.ps1` standalone functions file deleted
