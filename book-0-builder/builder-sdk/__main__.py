@@ -56,6 +56,12 @@ def main():
         help='Exclude specified fragments (can be repeated). '
              'Use "python -m builder list-fragments" to see available fragments.'
     )
+    render_parser.add_argument(
+        '-l', '--layer',
+        type=int,
+        metavar='LAYER',
+        help='Include fragments up to build_layer N'
+    )
 
     # list-fragments subcommand
     list_parser = subparsers.add_parser(
