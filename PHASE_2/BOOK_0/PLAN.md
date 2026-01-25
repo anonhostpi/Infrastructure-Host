@@ -2400,7 +2400,7 @@ Reason: Update loading for renamed modules.
 
 ---
 
-### Commit 113: `book-0-builder/host-sdk/modules/Fragments.ps1` - Add LayerName method
+### Commit 113: `book-0-builder/host-sdk/modules/Fragments.ps1` - Add LayerName method [DONE]
 
 ```diff
 +    Add-ScriptMethods $Fragments @{
@@ -2420,7 +2420,7 @@ Reason: R2-6 - Move LayerName from Builder to Fragments.
 
 ---
 
-### Commit 114: `book-0-builder/host-sdk/modules/Fragments.ps1` - Load build_layers.yaml
+### Commit 114: `book-0-builder/host-sdk/modules/Fragments.ps1` - Load build_layers.yaml [DONE]
 
 ```diff
      $mod = @{ SDK = $SDK }
@@ -2438,7 +2438,7 @@ Reason: R2-6 - Fragments module needs layer config for LayerName.
 
 ---
 
-### Commit 115: `book-0-builder/host-sdk/modules/Builder.ps1` - Remove layer config loading
+### Commit 115: `book-0-builder/host-sdk/modules/Builder.ps1` - Remove layer config loading [DONE]
 
 ```diff
      $mod = @{ SDK = $SDK }
@@ -2456,7 +2456,7 @@ Reason: R2-6 - Layer config now in Fragments module.
 
 ---
 
-### Commit 116: `book-0-builder/host-sdk/modules/Builder.ps1` - Remove LayerName method
+### Commit 116: `book-0-builder/host-sdk/modules/Builder.ps1` - Remove LayerName method [DONE]
 
 ```diff
 -        LayerName = {
@@ -2475,7 +2475,7 @@ Reason: R2-6 - LayerName moved to Fragments.
 
 ---
 
-### Commit 117: `book-0-builder/host-sdk/modules/Builder.ps1` - Remove LayerFragments method
+### Commit 117: `book-0-builder/host-sdk/modules/Builder.ps1` - Remove LayerFragments method [DONE]
 
 ```diff
 -        LayerFragments = {
@@ -2493,7 +2493,7 @@ Reason: R2-6 - Use Fragments.UpTo() directly instead.
 
 ---
 
-### Commit 118: `book-0-builder/host-sdk/modules/Builder.ps1` - Add runner tracking
+### Commit 118: `book-0-builder/host-sdk/modules/Builder.ps1` - Add runner tracking [DONE]
 
 ```diff
      $mod = @{ SDK = $SDK }
@@ -2505,7 +2505,7 @@ Reason: R2-6 - Track spawned runners for cleanup.
 
 ---
 
-### Commit 119: `book-0-builder/host-sdk/modules/Builder.ps1` - Add RegisterRunner method
+### Commit 119: `book-0-builder/host-sdk/modules/Builder.ps1` - Add RegisterRunner method [DONE]
 
 ```diff
 +    Add-ScriptMethods $Builder @{
@@ -2523,7 +2523,7 @@ Reason: R2-6 - Method to register runners for tracking.
 
 ---
 
-### Commit 120: `book-0-builder/host-sdk/modules/Builder.ps1` - Update Flush to destroy runners
+### Commit 120: `book-0-builder/host-sdk/modules/Builder.ps1` - Update Flush to destroy runners [DONE]
 
 ```diff
          Flush = {
@@ -2543,7 +2543,7 @@ Reason: R2-6 - Flush destroys all tracked runners before builder.
 
 ---
 
-### Commit 121: `book-0-builder/host-sdk/modules/Testing.ps1` - Update LevelName delegate
+### Commit 121: `book-0-builder/host-sdk/modules/Testing.ps1` - Update LevelName delegate [DONE]
 
 ```diff
          LevelName = {
@@ -2557,7 +2557,7 @@ Reason: R2-6 - Delegate to Fragments instead of Builder.
 
 ---
 
-### Commit 122: `book-0-builder/host-sdk/modules/Testing.ps1` - Update LevelFragments
+### Commit 122: `book-0-builder/host-sdk/modules/Testing.ps1` - Update LevelFragments [DONE]
 
 ```diff
          LevelFragments = {
@@ -2575,7 +2575,7 @@ Reason: R2-6 - Use Fragments.UpTo() directly.
 
 ---
 
-### Commit 123: `book-0-builder/host-sdk/modules/CloudInit.ps1` - Make Build idempotent
+### Commit 123: `book-0-builder/host-sdk/modules/CloudInit.ps1` - Make Build idempotent [DONE]
 
 ```diff
          Build = {
@@ -2592,7 +2592,7 @@ Reason: R2-7 - Skip build if artifact already exists.
 
 ---
 
-### Commit 124: `book-0-builder/host-sdk/modules/CloudInit.ps1` - Add Clean method
+### Commit 124: `book-0-builder/host-sdk/modules/CloudInit.ps1` - Add Clean method [DONE]
 
 ```diff
 +    Add-ScriptMethods $CloudInit @{
@@ -2608,7 +2608,7 @@ Reason: R2-7 - Proxy to builder's clean.
 
 ---
 
-### Commit 125: `book-0-builder/host-sdk/modules/Autoinstall.ps1` - Add Build method
+### Commit 125: `book-0-builder/host-sdk/modules/Autoinstall.ps1` - Add Build method [DONE]
 
 ```diff
 +    Add-ScriptMethods $Autoinstall @{
@@ -2631,7 +2631,7 @@ Reason: R2-7 - Add Build method matching CloudInit pattern.
 
 ---
 
-### Commit 126: `book-0-builder/host-sdk/modules/Autoinstall.ps1` - Add Clean method
+### Commit 126: `book-0-builder/host-sdk/modules/Autoinstall.ps1` - Add Clean method [DONE]
 
 ```diff
 +    Add-ScriptMethods $Autoinstall @{
@@ -2647,7 +2647,7 @@ Reason: R2-7 - Proxy to builder's clean.
 
 ---
 
-### Commit 127: `book-0-builder/builder-sdk/renderer.py` - Add iso_required enforcement
+### Commit 127: `book-0-builder/builder-sdk/renderer.py` - Add iso_required enforcement [DONE]
 
 ```diff
  def render_cloud_init(ctx, include=None, exclude=None, layer=None, for_iso=False):
@@ -2681,7 +2681,7 @@ Reason: R2-7 - iso_required fragments always included in ISO builds.
 
 ---
 
-### Commit 128: `book-0-builder/builder-sdk/__main__.py` - Add --for-iso flag
+### Commit 128: `book-0-builder/builder-sdk/__main__.py` - Add --for-iso flag [DONE]
 
 ```diff
      render_parser.add_argument(
@@ -2701,7 +2701,7 @@ Reason: R2-7 - CLI flag for ISO builds.
 
 ---
 
-### Commit 129: `book-0-builder/builder-sdk/__main__.py` - Pass for_iso to render
+### Commit 129: `book-0-builder/builder-sdk/__main__.py` - Pass for_iso to render [DONE]
 
 ```diff
      elif args.target == 'cloud-init':
@@ -2720,7 +2720,7 @@ Reason: R2-7 - Pass --for-iso to render function.
 
 ---
 
-### Commit 130: `Makefile` - Pass --for-iso to autoinstall target
+### Commit 130: `Makefile` - Pass --for-iso to autoinstall target [DONE]
 
 ```diff
  output/user-data: $(FRAGMENTS) $(SCRIPTS) $(CONFIGS) $(BUILD_YAMLS)
@@ -2736,7 +2736,7 @@ Reason: R2-7 - Autoinstall builds always include iso_required.
 
 ---
 
-### Commit 131: `book-0-builder/host-sdk/modules/CloudInitTest.ps1` - Return worker object
+### Commit 131: `book-0-builder/host-sdk/modules/CloudInitTest.ps1` - Return worker object [DONE]
 
 ```diff
              $mod.SDK.Testing.Summary()
@@ -2749,7 +2749,7 @@ Reason: R2-8 - Return entire worker for external cleanup.
 
 ---
 
-### Commit 132: `book-0-builder/host-sdk/modules/AutoinstallTest.ps1` - Return worker object
+### Commit 132: `book-0-builder/host-sdk/modules/AutoinstallTest.ps1` - Return worker object [DONE]
 
 ```diff
              $mod.SDK.Testing.Summary()
@@ -2766,7 +2766,7 @@ Reason: R2-8 - Return entire worker for external cleanup.
 
 ---
 
-### Commit 133: `book-0-builder/config/build_layers.yaml` - Remove agent_dependent section
+### Commit 133: `book-0-builder/config/build_layers.yaml` - Remove agent_dependent section [DONE]
 
 ```diff
    15: UI Touches
@@ -2788,7 +2788,7 @@ Reason: R2-1 - Agent-dependent handled via build_layer arrays in build.yaml.
 
 ---
 
-### Commit 134: `book-0-builder/builder-sdk/renderer.py` - Handle build_layer as list
+### Commit 134: `book-0-builder/builder-sdk/renderer.py` - Handle build_layer as list [DONE]
 
 ```diff
          # Filter by layer if specified
@@ -2808,7 +2808,7 @@ Reason: R2-1 - Support build_layer as int or list.
 
 ---
 
-### Commit 135: `book-0-builder/host-sdk/modules/Fragments.ps1` - Handle build_layer as list
+### Commit 135: `book-0-builder/host-sdk/modules/Fragments.ps1` - Handle build_layer as list [DONE]
 
 ```diff
          UpTo = {
@@ -2829,7 +2829,7 @@ Reason: R2-1 - Support build_layer as int or list in UpTo method.
 
 ---
 
-### Commit 136: `book-0-builder/host-sdk/modules/Fragments.ps1` - Update At for arrays
+### Commit 136: `book-0-builder/host-sdk/modules/Fragments.ps1` - Update At for arrays [DONE]
 
 ```diff
          At = {
@@ -2906,7 +2906,7 @@ Migrate `Verifications.ps1` standalone functions to `SDK.Testing.Verifications` 
 
 ---
 
-### Commit 137: `book-0-builder/host-sdk/modules/Testing.ps1` - Remove Verifications method
+### Commit 137: `book-0-builder/host-sdk/modules/Testing.ps1` - Remove Verifications method [DONE]
 
 ```diff
 -    Add-ScriptMethods $Testing @{
@@ -2931,7 +2931,7 @@ Reason: Remove Verifications method to make room for Verifications submodule.
 
 ---
 
-### Commit 138: Create `book-0-builder/host-sdk/modules/Verifications.ps1` - module shape
+### Commit 138: Create `book-0-builder/host-sdk/modules/Verifications.ps1` - module shape [DONE]
 
 ```powershell
 param([Parameter(Mandatory = $true)] $SDK)
@@ -2954,7 +2954,7 @@ Reason: Verifications submodule skeleton attached to SDK.Testing.
 
 ---
 
-### Commit 139: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add Fork helper
+### Commit 139: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add Fork helper [DONE]
 
 ```diff
      $Verifications = New-Object PSObject
@@ -2975,7 +2975,7 @@ Reason: Fork helper for conditional test logging (replaces Write-TestFork).
 
 ---
 
-### Commit 140: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add Run method
+### Commit 140: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add Run method [DONE]
 
 ```diff
 +    Add-ScriptMethods $Verifications @{
@@ -3006,7 +3006,7 @@ Reason: Run method executes all verification methods up to specified layer.
 
 ---
 
-### Commit 141: `book-0-builder/host-sdk/SDK.ps1` - Load Verifications module
+### Commit 141: `book-0-builder/host-sdk/SDK.ps1` - Load Verifications module [DONE]
 
 ```diff
      & "$PSScriptRoot/modules/Testing.ps1" -SDK $SDK
@@ -3018,7 +3018,7 @@ Reason: Load Verifications after Testing (attaches as submodule).
 
 ---
 
-### Commit 142: Delete old `book-0-builder/host-sdk/modules/Verifications.ps1`
+### Commit 142: Delete old `book-0-builder/host-sdk/modules/Verifications.ps1` [DONE]
 
 File deletion - remove old standalone functions file before recreating as module.
 
@@ -3032,7 +3032,7 @@ Reason: Clear old file to replace with module structure.
 
 ---
 
-### Commit 143: `Verifications.ps1` - Network method shape
+### Commit 143: `Verifications.ps1` - Network method shape [DONE]
 
 ```diff
 +    Add-ScriptMethods $Verifications @{
@@ -3047,7 +3047,7 @@ Reason: Network verification method skeleton.
 
 ---
 
-### Commit 144: `Verifications.ps1` - Network hostname tests
+### Commit 144: `Verifications.ps1` - Network hostname tests [DONE]
 
 ```diff
          Network = {
@@ -3074,7 +3074,7 @@ Reason: Network tests 6.1.1 - hostname configuration.
 
 ---
 
-### Commit 145: `Verifications.ps1` - Network hosts and netplan tests
+### Commit 145: `Verifications.ps1` - Network hosts and netplan tests [DONE]
 
 ```diff
 +            # 6.1.2: /etc/hosts Management
@@ -3099,7 +3099,7 @@ Reason: Network tests 6.1.2-6.1.3 - hosts and netplan.
 
 ---
 
-### Commit 146: `Verifications.ps1` - Network connectivity tests
+### Commit 146: `Verifications.ps1` - Network connectivity tests [DONE]
 
 ```diff
 +            # 6.1.4: Network Connectivity
@@ -3130,7 +3130,7 @@ Reason: Network tests 6.1.4 - connectivity checks.
 
 ---
 
-### Commit 147: `Verifications.ps1` - Network net-setup tests
+### Commit 147: `Verifications.ps1` - Network net-setup tests [DONE]
 
 ```diff
 +            # 6.1.5: net-setup.sh execution log
@@ -3158,7 +3158,7 @@ Reason: Network tests 6.1.5 - net-setup verification.
 
 ---
 
-### Commit 148: `Verifications.ps1` - Kernel method with all tests
+### Commit 148: `Verifications.ps1` - Kernel method with all tests [DONE]
 
 ```diff
 +    Add-ScriptMethods $Verifications @{
@@ -3179,7 +3179,7 @@ Reason: Kernel verification method with 6.2.1 test.
 
 ---
 
-### Commit 149: `Verifications.ps1` - Kernel sysctl tests
+### Commit 149: `Verifications.ps1` - Kernel sysctl tests [DONE]
 
 ```diff
 +            # 6.2.2: Key security settings applied
@@ -3214,7 +3214,7 @@ Reason: Kernel tests 6.2.2 - sysctl security settings.
 
 ---
 
-### Commit 150: `Verifications.ps1` - Users method shape
+### Commit 150: `Verifications.ps1` - Users method shape [DONE]
 
 ```diff
 +    Add-ScriptMethods $Verifications @{
@@ -3231,7 +3231,7 @@ Reason: Users verification method skeleton with config access.
 
 ---
 
-### Commit 151: `Verifications.ps1` - Users existence tests
+### Commit 151: `Verifications.ps1` - Users existence tests [DONE]
 
 ```diff
 -            # Tests added in following commits
@@ -3256,7 +3256,7 @@ Reason: Users tests 6.3.1 - user existence and shell.
 
 ---
 
-### Commit 152: `Verifications.ps1` - Users group and sudo tests
+### Commit 152: `Verifications.ps1` - Users group and sudo tests [DONE]
 
 ```diff
 +            # 6.3.2: Group Membership
