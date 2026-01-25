@@ -42,7 +42,14 @@ New-Module -Name SDK.Fragments -ScriptBlock {
         }
         At = {
             param([int]$Layer)
-            return $this.Layers | Where-Object { $_.Layer -eq $Layer }
+            return $this.Layers | Where-Object {
+                $l = $_.Layer
+                if ($l -is [array]) {
+                    $l -contains $Layer
+                } else {
+                    $l -eq $Layer
+                }
+            }
         }
         IsoRequired = {
             return $this.Layers | Where-Object { $_.IsoRequired }
