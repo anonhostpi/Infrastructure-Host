@@ -60,7 +60,7 @@ endif
 # Generate autoinstall user-data (renders scripts + cloud-init internally)
 autoinstall: output/user-data
 
-output/user-data: $(AUTOINSTALL_TEMPLATES) $(CLOUD_INIT_FRAGMENTS) $(SCRIPTS) $(CONFIGS)
+output/user-data: $(FRAGMENTS) $(SCRIPTS) $(CONFIGS) $(BUILD_YAMLS)
 	python3 -m builder render autoinstall -o $@
 
 # Build ISO (Modified ISO method - embeds user-data in Ubuntu ISO)
