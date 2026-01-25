@@ -70,22 +70,6 @@ New-Module -Name SDK.Network -ScriptBlock {
 
             return $false
         }
-        UntilSSH = {
-            param(
-                [Parameter(Mandatory = $true)]
-                [string]$Address,
-                [int]$Port = 22,
-                [int]$TimeoutSeconds
-            )
-            return $mod.SDK.Job({
-                while(-not $SDK.Network.TestSSH($Address, $Port)) {
-                    Start-Sleep -Seconds 5
-                }
-            }, $TimeoutSeconds, @{
-                Address = $Address
-                Port = $Port
-            })
-        }
         WaitForSSH = {
             param(
                 [Parameter(Mandatory = $true)]
