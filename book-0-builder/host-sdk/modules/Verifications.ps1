@@ -40,7 +40,20 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
     Add-ScriptMethods $Verifications @{
         Network = {
             param($Worker)
-            # Tests added in following commits
+            # 6.1.1: Hostname Configuration
+            $result = $Worker.Exec("hostname -s")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.1.1"; Name = "Short hostname set"
+                Pass = ($result.Success -and $result.Output -and $result.Output -ne "localhost")
+                Output = $result.Output
+            })
+
+            $result = $Worker.Exec("hostname -f")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.1.1"; Name = "FQDN has domain"
+                Pass = ($result.Output -match "\.")
+                Output = $result.Output
+            })
         }
     }
 
