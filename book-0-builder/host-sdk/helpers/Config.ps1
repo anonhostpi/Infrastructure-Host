@@ -28,7 +28,7 @@ New-Module -Name Helpers.Config -ScriptBlock {
     # Mirrors Python BuildContext: loads all *.config.yaml, auto-unwraps, applies testing overrides
     function Build-TestConfig {
         param(
-            [string]$ConfigDir = "src/config"
+            [string[]]$ConfigDirs = @("book-1-foundation", "book-2-cloud")
         )
 
         Import-Module powershell-yaml -ErrorAction SilentlyContinue
@@ -36,10 +36,11 @@ New-Module -Name Helpers.Config -ScriptBlock {
         $config = @{}
 
         $git_root = git rev-parse --show-toplevel 2>$null
-        $ConfigDir = Join-Path $git_root $ConfigDir
-
-        # Load all *.config.yaml files (mirrors BuildContext.__init__)
-        $configFiles = Get-ChildItem -Path $ConfigDir -Filter "*.config.yaml" -ErrorAction SilentlyContinue
+        $configFiles = @()
+        foreach ($baseDir in $ConfigDirs) {
+            $searchPath = Join-Path $git_root $baseDir
+            $configFiles += Get-ChildItem -Path $searchPath -Recurse -Filter "*.config.yaml" -ErrorAction SilentlyContinue
+        }
         foreach ($file in $configFiles) {
             $key = $file.Name -replace '\.config\.yaml$', ''
             $content = Get-Content $file.FullName -Raw
