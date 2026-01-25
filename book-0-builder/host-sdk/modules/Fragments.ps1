@@ -23,6 +23,20 @@ New-Module -Name SDK.Fragments -ScriptBlock {
         return $results | Sort-Object Order
     }
 
+    Add-ScriptMethods $Fragments @{
+        UpTo = {
+            param([int]$Layer)
+            return $this.Layers | Where-Object { $_.Layer -le $Layer }
+        }
+        At = {
+            param([int]$Layer)
+            return $this.Layers | Where-Object { $_.Layer -eq $Layer }
+        }
+        IsoRequired = {
+            return $this.Layers | Where-Object { $_.IsoRequired }
+        }
+    }
+
     $SDK.Extend("Fragments", $Fragments)
     Export-ModuleMember -Function @()
 } -ArgumentList $SDK | Import-Module -Force
