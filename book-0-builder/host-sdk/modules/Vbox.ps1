@@ -38,6 +38,16 @@ New-Module -Name SDK.Vbox -ScriptBlock {
                 $this | Add-Member -MemberType NoteProperty -Name Rendered -Value $rendered -Force
                 return $rendered
             }
+            Name = { return $this.Rendered.Name }
+            CPUs = { return $this.Rendered.CPUs }
+            Memory = { return $this.Rendered.Memory }
+            Disk = { return $this.Rendered.Disk }
+            Network = { return $this.Rendered.Network }
+            IsoPath = { return $this.Rendered.IsoPath }
+            MediumPath = { return $this.Rendered.MediumPath }
+            SSHUser = { return $this.Rendered.SSHUser }
+            SSHHost = { return $this.Rendered.SSHHost }
+            SSHPort = { return $this.Rendered.SSHPort }
         }
         Methods = @{}
     }
