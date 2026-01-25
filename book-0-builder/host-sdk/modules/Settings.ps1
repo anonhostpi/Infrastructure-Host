@@ -63,17 +63,17 @@ New-Module -Name SDK.Settings -ScriptBlock {
     $methods = @{}
 
     foreach( $key in $keys ) {
-        $propertyName = ConvertTo-PascalCase $key
+        $configGetter = ConvertTo-PascalCase $key
         $src = @(
             "",
-            "`$key = '$key'",
+            "`$configOriginal = '$key'",
             {
-                return $mod.BuildConfig[$key]
+                return $mod.BuildConfig[$configOriginal]
             }.ToString(),
             ""
         ) -join "`n"
         $sb = iex "{ $src }"
-        $methods[$propertyName] = $sb
+        $methods[$configGetter] = $sb
     }
     Add-ScriptProperties $Settings $methods
 
