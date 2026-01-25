@@ -157,7 +157,8 @@ def main():
             args.output,
             include=args.include,
             exclude=args.exclude,
-            layer=args.layer
+            layer=args.layer,
+            for_iso=getattr(args, 'for_iso', False)
         )
     elif args.target == 'autoinstall':
         if args.include or args.exclude:
