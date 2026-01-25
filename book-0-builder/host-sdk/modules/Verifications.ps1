@@ -92,6 +92,21 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 Pass = ($result.Output -match "has address" -or $result.Output -match "has IPv")
                 Output = $result.Output
             })
+
+            # 6.1.5: net-setup.sh execution log
+            $result = $Worker.Exec("test -f /var/lib/cloud/scripts/net-setup/net-setup.log")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.1.5"; Name = "net-setup.log exists"
+                Pass = $result.Success
+                Output = "/var/lib/cloud/scripts/net-setup/net-setup.log"
+            })
+
+            $result = $Worker.Exec("cat /var/lib/cloud/scripts/net-setup/net-setup.log")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.1.5"; Name = "net-setup.sh executed"
+                Pass = ($result.Output -match "net-setup:")
+                Output = if ($result.Output) { ($result.Output | Select-Object -First 3) -join "; " } else { "(empty)" }
+            })
         }
     }
 
