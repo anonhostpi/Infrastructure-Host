@@ -211,7 +211,8 @@ def render_cloud_init_to_file(ctx, output_path, include=None, exclude=None, laye
 def render_autoinstall(ctx):
     """Render autoinstall user-data, return as string."""
     scripts = render_scripts(ctx)
-    cloud_init = render_cloud_init(ctx)
+    # Autoinstall is always for ISO, so include iso_required fragments
+    cloud_init = render_cloud_init(ctx, for_iso=True)
 
     return render_text(
         ctx,
