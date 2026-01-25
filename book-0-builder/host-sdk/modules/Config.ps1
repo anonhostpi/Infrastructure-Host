@@ -22,10 +22,10 @@ New-Module -Name Test-Fragments -ScriptBlock {
             "6.10" = @{ Fragments = @("virtualization"); Name = "Virtualization" }
             "6.11" = @{ Fragments = @("cockpit"); Name = "Cockpit" }
             "6.12" = @{ Fragments = @("claude-code"); Name = "Claude Code" }
-            "6.13" = @{ Fragments = @("76-copilot-cli"); Name = "Copilot CLI" }
-            "6.14" = @{ Fragments = @("77-opencode"); Name = "OpenCode" }
-            "6.15" = @{ Fragments = @("90-ui"); Name = "UI Touches" }
-            "6.8-updates" = @{ Fragments = @("50-packages", "50-pkg-security", "999-pkg-upgrade"); Name = "Package Manager Updates" }
+            "6.13" = @{ Fragments = @("copilot-cli"); Name = "Copilot CLI" }
+            "6.14" = @{ Fragments = @("opencode"); Name = "OpenCode" }
+            "6.15" = @{ Fragments = @("ui"); Name = "UI Touches" }
+            "6.8-updates" = @{ Fragments = @("packages", "pkg-security", "pkg-upgrade"); Name = "Package Manager Updates" }
             "6.8-summary" = @{ Fragments = @("50-packages", "50-pkg-security", "999-pkg-upgrade"); Name = "Update Summary" }
             "6.8-flush" = @{ Fragments = @("50-packages", "50-pkg-security", "999-pkg-upgrade"); Name = "Notification Flush" }
         }
