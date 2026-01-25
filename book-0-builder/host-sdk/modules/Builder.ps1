@@ -10,15 +10,8 @@ New-Module -Name SDK.Builder -ScriptBlock {
     )
 
     . "$PSScriptRoot\helpers\PowerShell.ps1"
-    . "$PSScriptRoot\helpers\Config.ps1"
 
     $mod = @{ SDK = $SDK }
-
-    # Load build layers config
-    $layersPath = "$PSScriptRoot\..\..\config\build_layers.yaml"
-    $mod.LayersConfig = Get-Content $layersPath -Raw | ConvertFrom-Yaml
-    $mod.LayerNames = $mod.LayersConfig.layers
-    $mod.AgentDependent = $mod.LayersConfig.agent_dependent
 
     $Builder = New-Object PSObject -Property @{
         Packages = @(
