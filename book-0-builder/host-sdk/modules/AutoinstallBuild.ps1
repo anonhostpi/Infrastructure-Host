@@ -24,6 +24,14 @@ New-Module -Name SDK.AutoinstallBuild -ScriptBlock {
         }
     }
 
+    Add-ScriptMethods $AutoinstallBuild @{
+        Cleanup = {
+            param([string]$Name)
+            if (-not $Name) { $Name = $mod.SDK.Settings.Virtualization.Vbox.Name }
+            if ($mod.SDK.Vbox.Exists($Name)) { $mod.SDK.Vbox.Destroy($Name) }
+        }
+    }
+
     $SDK.Extend("AutoinstallBuild", $AutoinstallBuild)
     Export-ModuleMember -Function @()
 } -ArgumentList $SDK | Import-Module -Force
