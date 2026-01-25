@@ -110,6 +110,19 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
         }
     }
 
+    Add-ScriptMethods $Verifications @{
+        Kernel = {
+            param($Worker)
+            # 6.2.1: Sysctl Security Config
+            $result = $Worker.Exec("test -f /etc/sysctl.d/99-security.conf")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.2.1"; Name = "Security sysctl config exists"
+                Pass = $result.Success
+                Output = "/etc/sysctl.d/99-security.conf"
+            })
+        }
+    }
+
     $SDK.Testing | Add-Member -MemberType NoteProperty -Name Verifications -Value $Verifications
     Export-ModuleMember -Function @()
 } -ArgumentList $SDK | Import-Module -Force
