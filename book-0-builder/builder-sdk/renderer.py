@@ -140,15 +140,12 @@ def render_cloud_init(ctx, include=None, exclude=None):
         include: List of fragment names to include (default: all)
         exclude: List of fragment names to exclude (default: none)
 
-    Fragment names are matched without path or extension, e.g.:
-        "20-users" matches "src/autoinstall/cloud-init/20-users.yaml.tpl"
+    Fragment names are matched against the 'name' field in build.yaml.
 
     Raises:
         FragmentValidationError: If a fragment produces invalid YAML
     """
-    fragments_dir = Path('src/autoinstall/cloud-init')
     scripts = render_scripts(ctx)
-
     merged = {}
 
     if not fragments_dir.exists():
