@@ -87,14 +87,13 @@ def render_text(ctx, template_path, **extra_context):
 
 
 def render_scripts(ctx):
-    """Render all script templates, return as dict."""
-    scripts_dir = Path('src/scripts')
+    """Render all script templates from discovered fragments."""
     scripts = {}
-
-    if not scripts_dir.exists():
-        return scripts
-
-    for tpl_path in scripts_dir.glob('*.tpl'):
+    for fragment in discover_fragments():
+        scripts_dir = fragment['_path'] / 'scripts'
+        if not scripts_dir.exists():
+            continue
+        for tpl_path in scripts_dir.glob('*.tpl'):
         # Keep original filename (e.g., "early-net.sh")
         filename = tpl_path.name.removesuffix('.tpl')
         # Use forward slashes for Jinja2 (cross-platform)
