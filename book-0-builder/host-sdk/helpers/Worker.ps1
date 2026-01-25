@@ -1,7 +1,13 @@
-function Add-CommonWorkerMethods {
-    param($Worker, $SDK)
+param([Parameter(Mandatory = $true)] $SDK)
 
-    Add-ScriptMethods $Worker @{
+New-Module -Name SDK.Worker -ScriptBlock {
+    param([Parameter(Mandatory = $true)] $SDK)
+    $mod = @{ SDK = $SDK }
+
+    function Add-CommonWorkerMethods {
+        param($Worker)
+
+        Add-ScriptMethods $Worker @{
         Ensure = {
             if (-not $this.Exists()) {
                 return $this.Create()
