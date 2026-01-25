@@ -12,6 +12,7 @@ BUILD_YAMLS := $(wildcard book-*/*/build.yaml)
 #   make cloud-init EXCLUDE="-x 10-network"
 INCLUDE ?=
 EXCLUDE ?=
+LAYER ?=
 
 # Default: build everything
 all: scripts cloud-init autoinstall iso
