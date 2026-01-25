@@ -32,8 +32,8 @@ You will create or update a `PLAN.md` for every change you plan to make.
 
 - `PLAN.md` will be an annotated diff containing every change you want to make **before** making them
 - `PLAN.md` contains the **authoritative diffs** - discovery documents may have illustrative diffs, but `PLAN.md` is canonical
-- The purpose of Rule 1 is to pre-emptively prevent Rule 2 violations
-- When **coming from Rule 5** (code review cycle), **append** new commits to the existing `PLAN.md`
+- The purpose of Rule 1 is to pre-emptively prevent Rule 3 violations
+- When **coming from Rule 6** (code review cycle), **append** new commits to the existing `PLAN.md`
 
 **Format:**
 
@@ -54,11 +54,31 @@ Reason: <why this change>
 
 **When to update PLAN.md for existing commits:**
 
-If a planned commit becomes invalid during implementation (stale, nonsensical, or exceeds line limit), see **Rule 3** for how to split or redesign it. This applies only to commits already in the plan that need correction—not to new commits added via Rule 5.
+If a planned commit becomes invalid during implementation (stale, nonsensical, or exceeds line limit), see **Rule 4** for how to split or redesign it. This applies only to commits already in the plan that need correction—not to new commits added via Rule 6.
 
 ---
 
-## Rule 2: Microcommits Only
+## Rule 2: Task List Creation
+
+After creating `PLAN.md`, create a task list to track implementation progress.
+
+**Process:**
+
+1. Create one task per commit in the plan
+2. Add RULES.md review checkpoints every 10 commits
+3. The first task must be "Review RULES.md - initial review before starting"
+
+**Task format:**
+
+```
+Commit <N>: <file> - <description>, in compliance with RULES.md
+```
+
+**See "Task List Setup" section below for complete structure and examples.**
+
+---
+
+## Rule 3: Microcommits Only
 
 Your commits must be microcommits.
 
@@ -66,7 +86,7 @@ Your commits must be microcommits.
 
 - Changes are restricted to **5-20 lines per commit** for code files
 - You may have more than one file with 5-20 lines each, but you should **minimize this**
-- If a planned commit no longer makes sense or is stale, see **Rule 3** for redesign procedures
+- If a planned commit no longer makes sense or is stale, see **Rule 4** for redesign procedures
 
 **Exemptions (no line limit):**
 
@@ -76,13 +96,13 @@ Your commits must be microcommits.
 
 ---
 
-## Rule 3: Pre-Commit Verification & Splitting
+## Rule 4: Pre-Commit Verification & Splitting
 
 This rule governs validation, splitting, and `PLAN.md` maintenance for **existing planned commits**.
 
 ### Verification
 
-Run this command before every commit to verify Rule 2 compliance:
+Run this command before every commit to verify Rule 3 compliance:
 
 ```bash
 git diff --cached --numstat -M | awk '
@@ -100,12 +120,12 @@ git diff --cached --numstat -M | awk '
       msg = "---\nValidation failed. Commit exceeds line limit (" sum " lines).\n"
       msg = msg "Are you sure this is the smallest commit size?\n"
       msg = msg "Can you break this into smaller commits?\n"
-      msg = msg "- reference Rule 3 from RULES.md"
+      msg = msg "- reference Rule 4 from RULES.md"
       if (length(newfiles) > 0) {
         msg = msg "\n\nNew file(s) detected:\n" newfiles
         msg = msg "\nWas this (these) supposed to be a move/rename?\n"
         msg = msg "- If yes: investigate why git did not detect it (use git diff -M)\n"
-        msg = msg "- If move + contribution: split into 2 commits per Rule 3 (move first, then contribute)"
+        msg = msg "- If move + contribution: split into 2 commits per Rule 4 (move first, then contribute)"
       }
       print msg > "/dev/stderr"
       exit 1
@@ -320,7 +340,7 @@ Commit 5d: Config.ps1 - Update cache initialization, in compliance with RULES.md
 
 ---
 
-## Rule 4: Branch and PR Workflow
+## Rule 5: Branch and PR Workflow
 
 Each significant work unit should have an associated implementation branch.
 
@@ -347,11 +367,11 @@ Each significant work unit should have an associated implementation branch.
 gh pr merge <PR_NUMBER> --merge --delete-branch
 ```
 
-**Note:** If the user performs a code review at any point, proceed to **Rule 5**.
+**Note:** If the user performs a code review at any point, proceed to **Rule 6**.
 
 ---
 
-## Rule 5: Code Review Cycle
+## Rule 6: Code Review Cycle
 
 When the user performs a code review and requests changes:
 
@@ -359,9 +379,9 @@ When the user performs a code review and requests changes:
 2. **Return to Rule 0** - treat the review feedback as a new discovery/design task
 3. Iterate through Rule 0 until the approach is clear
 4. **Proceed to Rule 1** - **append** new commits to the existing `PLAN.md`
-5. Continue through Rules 2-4 with the new commits
+5. Continue through Rules 3-5 with the new commits
 
-**Important:** Rule 5 adds **new commits** to address review feedback. It does not modify, split, or redesign existing commits—that's Rule 3's domain. The review cycle flows through Rule 0 → Rule 1 (append) → Rule 2 → Rule 3 → Rule 4.
+**Important:** Rule 6 adds **new commits** to address review feedback. It does not modify, split, or redesign existing commits—that's Rule 4's domain. The review cycle flows through Rule 0 → Rule 1 (append) → Rule 2 → Rule 3 → Rule 4 → Rule 5.
 
 **Review document characteristics:**
 
@@ -446,10 +466,10 @@ For each commit task:
 1. **Mark as in_progress** before starting
 2. **Make the code change** (5-20 lines max)
 3. **Stage the change** with `git add`
-4. **Verify compliance** with the pre-commit check (Rule 3)
+4. **Verify compliance** with the pre-commit check (Rule 4)
 5. **Commit** with descriptive message
 6. **Mark as completed** in task list immediately after commit
-7. **Mark as completed** in `PLAN.md` (Rule 3)
+7. **Mark as completed** in `PLAN.md` (Rule 4)
 
 For review tasks:
 
@@ -463,46 +483,46 @@ For review tasks:
 ## Workflow Summary
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                                                             │
-│  ┌──────────┐    ┌──────────┐    ┌──────────┐              │
-│  │  Rule 0  │───▶│  Rule 1  │───▶│  Rule 2  │              │
-│  │ Discovery│    │   Plan   │    │ Micro-   │              │
-│  │ & Design │    │          │    │ commits  │              │
-│  └──────────┘    └──────────┘    └────┬─────┘              │
-│       ▲                               │                     │
-│       │                               ▼                     │
-│       │                         ┌──────────┐               │
-│       │                         │  Rule 3  │               │
-│       │                         │ Verify & │               │
-│       │                         │  Split   │               │
-│       │                         └────┬─────┘               │
-│       │                               │                     │
-│       │                               ▼                     │
-│       │                         ┌──────────┐               │
-│       │                         │  Rule 4  │               │
-│       │                         │ Branch & │               │
-│       │                         │    PR    │               │
-│       │                         └────┬─────┘               │
-│       │                               │                     │
-│       │         ┌──────────┐         │                     │
-│       └─────────│  Rule 5  │◀────────┘                     │
-│        (append) │  Review  │   (if review requested)       │
-│                 │  Cycle   │                               │
-│                 └──────────┘                               │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────────┐
+│                                                                       │
+│  ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐        │
+│  │  Rule 0  │───▶│  Rule 1  │───▶│  Rule 2  │───▶│  Rule 3  │        │
+│  │ Discovery│    │   Plan   │    │  Tasks   │    │ Micro-   │        │
+│  │ & Design │    │          │    │          │    │ commits  │        │
+│  └──────────┘    └──────────┘    └──────────┘    └────┬─────┘        │
+│       ▲                                               │               │
+│       │                                               ▼               │
+│       │                                         ┌──────────┐         │
+│       │                                         │  Rule 4  │         │
+│       │                                         │ Verify & │         │
+│       │                                         │  Split   │         │
+│       │                                         └────┬─────┘         │
+│       │                                               │               │
+│       │                                               ▼               │
+│       │                                         ┌──────────┐         │
+│       │                                         │  Rule 5  │         │
+│       │                                         │ Branch & │         │
+│       │                                         │    PR    │         │
+│       │                                         └────┬─────┘         │
+│       │                                               │               │
+│       │                   ┌──────────┐               │               │
+│       └───────────────────│  Rule 6  │◀──────────────┘               │
+│              (append)     │  Review  │   (if review requested)       │
+│                           │  Cycle   │                               │
+│                           └──────────┘                               │
+│                                                                       │
+└───────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
 ## Rationale
 
-Rules 0-3 exist to minimize review load and ensure thoughtful implementation.
+Rules 0-4 exist to minimize review load and ensure thoughtful implementation.
 
 **Rule 0** ensures we understand the problem before committing to a solution.
 
-**Rules 1-3** ensure commits are small and reviewable:
+**Rules 1-4** ensure commits are planned, tracked, and reviewable:
 
 | Change Type | Naturally Digestible? | Microcommit Required? |
 | ----------- | --------------------- | --------------------- |
@@ -517,7 +537,7 @@ Commits are not PRs. A commit should take **less than 5 seconds** to review. If 
 - **Documentation** is human-readable by design
 - **Source code** is not human-readable - changes must be small and obvious
 
-**Rule 5** ensures code review feedback is handled with the same rigor as initial implementation, cycling back through the full workflow to append new commits.
+**Rule 6** ensures code review feedback is handled with the same rigor as initial implementation, cycling back through the full workflow to append new commits.
 
 ---
 
