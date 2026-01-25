@@ -1,0 +1,33 @@
+# Build layer definitions
+# Shared by build logic (Makefile LAYER=) and testing (layer names)
+# build_layer in build.yaml is single source of truth for fragment ordering
+
+layers:
+  0: Base
+  1: Network
+  2: Kernel Hardening
+  3: Users
+  4: SSH Hardening
+  5: UFW Firewall
+  6: System Settings
+  7: MSMTP Mail
+  8: Package Security
+  9: Security Monitoring
+  10: Virtualization
+  11: Cockpit
+  12: Claude Code
+  13: Copilot CLI
+  14: OpenCode
+  15: UI Touches
+
+# Agent-dependent test levels (higher layers, reuse layer 8 fragments)
+agent_dependent:
+  16:
+    name: Package Manager Updates
+    fragments: [packages, pkg-security, pkg-upgrade]
+  17:
+    name: Update Summary
+    fragments: [packages, pkg-security, pkg-upgrade]
+  18:
+    name: Notification Flush
+    fragments: [packages, pkg-security, pkg-upgrade]
