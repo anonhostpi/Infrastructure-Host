@@ -91,13 +91,10 @@ New-Module -Name SDK.Network -ScriptBlock {
                 [Parameter(Mandatory = $true)]
                 [string]$Address,
                 [int]$Port = 22,
-                [int]$TimeoutSeconds = 300
+                [int]$TimeoutSeconds = 300,
+                [bool]$Throw = $true
             )
-            $timedOut = $this.UntilSSH($Address, $Port, $TimeoutSeconds)
-            if ($timedOut) {
-                throw "Timed out waiting for SSH on ${Address}:${Port}"
-            }
-            return $true
+            # WIP - body to be added
         }
         SSH = {
             param(
