@@ -80,9 +80,9 @@ New-Module -Name SDK -ScriptBlock {
     & "$PSScriptRoot/modules/Builder.ps1" -SDK $SDK
     & "$PSScriptRoot/modules/Fragments.ps1" -SDK $SDK
     & "$PSScriptRoot/modules/Testing.ps1" -SDK $SDK
-    & "$PSScriptRoot/modules/CloudInitBuild.ps1" -SDK $SDK
+    & "$PSScriptRoot/modules/CloudInit.ps1" -SDK $SDK
     & "$PSScriptRoot/modules/CloudInitTest.ps1" -SDK $SDK
-    & "$PSScriptRoot/modules/AutoinstallBuild.ps1" -SDK $SDK
+    & "$PSScriptRoot/modules/Autoinstall.ps1" -SDK $SDK
     & "$PSScriptRoot/modules/AutoinstallTest.ps1" -SDK $SDK
 
     Export-ModuleMember -Variable SDK
