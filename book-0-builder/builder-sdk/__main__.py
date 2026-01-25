@@ -62,6 +62,11 @@ def main():
         metavar='LAYER',
         help='Include fragments up to build_layer N'
     )
+    render_parser.add_argument(
+        '--for-iso',
+        action='store_true',
+        help='Building for ISO (always include iso_required fragments)'
+    )
 
     # list-fragments subcommand
     list_parser = subparsers.add_parser(
