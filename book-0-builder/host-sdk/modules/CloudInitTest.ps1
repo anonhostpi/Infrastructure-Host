@@ -24,6 +24,6 @@ New-Module -Name SDK.CloudInit.Test -ScriptBlock {
         }
     }
 
-    $SDK.Extend("CloudInitTest", $CloudInitTest)
+    $SDK.CloudInit | Add-Member -MemberType NoteProperty -Name Test -Value $CloudInitTest
     Export-ModuleMember -Function @()
 } -ArgumentList $SDK | Import-Module -Force
