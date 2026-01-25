@@ -7,7 +7,22 @@ New-Module -Name SDK.AutoinstallTest -ScriptBlock {
 
     $AutoinstallTest = New-Object PSObject
 
-    # Methods added in following commits
+    Add-ScriptMethods $AutoinstallTest @{
+        Run = {
+            param([hashtable]$Overrides = @{})
+            $worker = $mod.SDK.AutoinstallBuild.CreateWorker($Overrides)
+            $mod.SDK.Log.Info("Setting up autoinstall test worker: $($worker.Name)")
+            $worker.Ensure(); $worker.Start()
+            $mod.SDK.Log.Info("Waiting for SSH availability...")
+            $mod.SDK.Network.WaitForSSH($worker.SSHHost, $worker.SSHPort, 600)
+            $mod.SDK.Testing.Reset()
+            foreach ($f in $mod.SDK.Fragments.IsoRequired()) {
+                $worker.Test($f.Name, "Test $($f.Name)", $f.TestCommand, $f.ExpectedPattern)
+            }
+            $mod.SDK.Testing.Summary()
+            return @{ Success = ($mod.SDK.Testing.FailCount -eq 0); Results = $mod.SDK.Testing.Results; WorkerName = $worker.Name }
+        }
+    }
 
     $SDK.Extend("AutoinstallTest", $AutoinstallTest)
     Export-ModuleMember -Function @()
