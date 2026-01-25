@@ -46,6 +46,13 @@ New-Module -Name SDK.Builder -ScriptBlock {
             return $this.Exec($make).Success
         }
         Flush = {
+            foreach ($name in $mod.Runners.Keys) {
+                $runner = $mod.Runners[$name]
+                if ($runner -and $runner.Exists()) {
+                    $runner.Destroy()
+                }
+            }
+            $mod.Runners = @{}
             return $this.Destroy()
         }
         InstallDependencies = {
