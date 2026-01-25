@@ -1291,3 +1291,381 @@ After all commits:
 - [ ] `python -m builder --list` shows discovered fragments
 - [ ] `make cloud-init` succeeds
 - [ ] `make all` succeeds
+
+---
+
+## Code Review Changes (Review #1)
+
+Reference: `PHASE_2/BOOK_0/CONFIG.md`, `PHASE_2/BOOK_0/REVIEW.md`
+
+---
+
+### Commit 57: Create `book-0-builder/host-sdk/config/test-levels.yaml` - shape with level names
+
+```yaml
+# Test level definitions for incremental testing
+# Each level includes all fragments from previous levels
+# Array order determines test progression
+
+levels:
+  - name: Network
+    fragments: []
+  - name: Kernel Hardening
+    fragments: []
+  - name: Users
+    fragments: []
+  - name: SSH Hardening
+    fragments: []
+  - name: UFW Firewall
+    fragments: []
+  - name: System Settings
+    fragments: []
+  - name: MSMTP Mail
+    fragments: []
+  - name: Package Security
+    fragments: []
+  - name: Security Monitoring
+    fragments: []
+  - name: Virtualization
+    fragments: []
+  - name: Cockpit
+    fragments: []
+  - name: Claude Code
+    fragments: []
+  - name: Copilot CLI
+    fragments: []
+  - name: OpenCode
+    fragments: []
+  - name: UI Touches
+    fragments: []
+  # Agent-dependent levels (tested last)
+  - name: Package Manager Updates
+    fragments: []
+  - name: Update Summary
+    fragments: []
+  - name: Notification Flush
+    fragments: []
+```
+
+Reason: Define test level structure first (depth-wise split). Array ordering controls progression.
+
+---
+
+### Commit 58: `book-0-builder/host-sdk/config/test-levels.yaml` - Add fragments: security foundation
+
+```diff
+   - name: Network
+-    fragments: []
++    fragments: [network]
+   - name: Kernel Hardening
+-    fragments: []
++    fragments: [kernel]
+   - name: Users
+-    fragments: []
++    fragments: [users]
+   - name: SSH Hardening
+-    fragments: []
++    fragments: [ssh]
+```
+
+Reason: Add fragments to security foundation levels (Network, Kernel, Users, SSH).
+
+---
+
+### Commit 59: `book-0-builder/host-sdk/config/test-levels.yaml` - Add fragments: system & packages
+
+```diff
+   - name: UFW Firewall
+-    fragments: []
++    fragments: [ufw]
+   - name: System Settings
+-    fragments: []
++    fragments: [system]
+   - name: MSMTP Mail
+-    fragments: []
++    fragments: [msmtp]
+   - name: Package Security
+-    fragments: []
++    fragments: [packages, pkg-security, pkg-upgrade]
+```
+
+Reason: Add fragments to system configuration and package security levels.
+
+---
+
+### Commit 60: `book-0-builder/host-sdk/config/test-levels.yaml` - Add fragments: monitoring & infra
+
+```diff
+   - name: Security Monitoring
+-    fragments: []
++    fragments: [security-mon]
+   - name: Virtualization
+-    fragments: []
++    fragments: [virtualization]
+   - name: Cockpit
+-    fragments: []
++    fragments: [cockpit]
+```
+
+Reason: Add fragments to monitoring and infrastructure levels.
+
+---
+
+### Commit 61: `book-0-builder/host-sdk/config/test-levels.yaml` - Add fragments: dev tools & UI
+
+```diff
+   - name: Claude Code
+-    fragments: []
++    fragments: [claude-code]
+   - name: Copilot CLI
+-    fragments: []
++    fragments: [copilot-cli]
+   - name: OpenCode
+-    fragments: []
++    fragments: [opencode]
+   - name: UI Touches
+-    fragments: []
++    fragments: [ui]
+```
+
+Reason: Add fragments to developer tools and UI levels.
+
+---
+
+### Commit 62: `book-0-builder/host-sdk/config/test-levels.yaml` - Add fragments: agent-dependent
+
+```diff
++  # Agent-dependent levels (tested last)
+   - name: Package Manager Updates
+-    fragments: []
++    fragments: [packages, pkg-security, pkg-upgrade]
+   - name: Update Summary
+-    fragments: []
++    fragments: [packages, pkg-security, pkg-upgrade]
+   - name: Notification Flush
+-    fragments: []
++    fragments: [packages, pkg-security, pkg-upgrade]
+```
+
+Reason: Add fragments to agent-dependent levels (require agents, tested last).
+
+---
+
+### Commit 63: `book-0-builder/host-sdk/modules/Testing.ps1` - Add test levels YAML loading
+
+```diff
+     $mod = @{ SDK = $SDK }
+     . "$PSScriptRoot\..\helpers\PowerShell.ps1"
++
++    # Load test levels from YAML (array order = test progression)
++    $levelsPath = "$PSScriptRoot\..\config\test-levels.yaml"
++    $levelsYaml = Get-Content $levelsPath -Raw | ConvertFrom-Yaml
++    $mod.Levels = @()
++    foreach ($level in $levelsYaml.levels) {
++        $mod.Levels += @{ Name = $level.name; Fragments = $level.fragments }
++    }
+
+     $Testing = New-Object PSObject -Property @{ Results = @(); PassCount = 0; FailCount = 0 }
+```
+
+Reason: Load test level config into Testing module (extends existing module).
+
+---
+
+### Commit 64: `book-0-builder/host-sdk/modules/Testing.ps1` - Add LevelNames and LevelFragments
+
+```diff
+     Add-ScriptProperties $Testing @{
+         All = {
+             return $mod.SDK.Fragments.Layers | ForEach-Object { $_.Layer } | Sort-Object -Unique
+         }
++        LevelNames = {
++            return $mod.Levels | ForEach-Object { $_.Name }
++        }
++    }
++
++    Add-ScriptMethods $Testing @{
++        LevelFragments = {
++            param([string]$LevelName)
++            $fragments = @()
++            foreach ($level in $mod.Levels) {
++                $fragments += $level.Fragments
++                if ($level.Name -eq $LevelName) { break }
++            }
++            return $fragments | Select-Object -Unique
++        }
+     }
+```
+
+Reason: Add LevelNames property and LevelFragments method to Testing module.
+
+---
+
+### Commit 65: `book-0-builder/host-sdk/modules/Testing.ps1` - Add LevelsUpTo and IncludeArgs
+
+```diff
++    Add-ScriptMethods $Testing @{
++        LevelsUpTo = {
++            param([string]$LevelName)
++            $result = @()
++            foreach ($level in $mod.Levels) {
++                $result += $level.Name
++                if ($level.Name -eq $LevelName) { break }
++            }
++            return $result
++        }
++        IncludeArgs = {
++            param([string]$LevelName)
++            $fragments = $this.LevelFragments($LevelName)
++            return ($fragments | ForEach-Object { "-i $_" }) -join " "
++        }
++    }
+
+     $SDK.Extend("Testing", $Testing)
+```
+
+Reason: Add LevelsUpTo and IncludeArgs methods for test level operations.
+
+---
+
+### Commit 66: Delete `book-0-builder/host-sdk/modules/Config.ps1`
+
+File deletion - replaced by Testing.ps1 level methods + config/test-levels.yaml.
+
+Reason: Old hardcoded PowerShell mapping replaced with data-driven YAML approach.
+
+---
+
+### Commit 67: `book-0-builder/host-sdk/modules/Network.ps1` - Update WaitForSSH signature
+
+```diff
+         WaitForSSH = {
+             param(
+                 [Parameter(Mandatory = $true)]
+                 [string]$Address,
+                 [int]$Port = 22,
+-                [int]$TimeoutSeconds = 300
++                [int]$TimeoutSeconds = 300,
++                [bool]$Throw = $true
+             )
+-            $timedOut = $this.UntilSSH($Address, $Port, $TimeoutSeconds)
+-            if ($timedOut) {
+-                throw "Timed out waiting for SSH on ${Address}:${Port}"
+-            }
+-            return $true
+```
+
+Reason: Add -Throw parameter (default true for backward compat), remove UntilSSH call.
+
+---
+
+### Commit 68: `book-0-builder/host-sdk/modules/Network.ps1` - WaitForSSH body with job logic
+
+```diff
+         WaitForSSH = {
+             param(
+                 [Parameter(Mandatory = $true)]
+                 [string]$Address,
+                 [int]$Port = 22,
+                 [int]$TimeoutSeconds = 300,
+                 [bool]$Throw = $true
+             )
++            $timedOut = $mod.SDK.Job({
++                while (-not $SDK.Network.TestSSH($Address, $Port)) {
++                    Start-Sleep -Seconds 5
++                }
++            }, $TimeoutSeconds, @{ Address = $Address; Port = $Port })
++            if ($timedOut -and $Throw) {
++                throw "Timed out waiting for SSH on ${Address}:${Port}"
++            }
++            return -not $timedOut
+         }
+```
+
+Reason: Inline job logic from UntilSSH, return bool (true=success), throw if -Throw (default).
+
+---
+
+### Commit 69: `book-0-builder/host-sdk/modules/Network.ps1` - Remove UntilSSH method
+
+```diff
+-        UntilSSH = {
+-            param(
+-                [Parameter(Mandatory = $true)]
+-                [string]$Address,
+-                [int]$Port = 22,
+-                [int]$TimeoutSeconds
+-            )
+-            return $mod.SDK.Job({
+-                while(-not $SDK.Network.TestSSH($Address, $Port)) {
+-                    Start-Sleep -Seconds 5
+-                }
+-            }, $TimeoutSeconds, @{
+-                Address = $Address
+-                Port = $Port
+-            })
+-        }
+```
+
+Reason: UntilSSH logic merged into WaitForSSH - remove duplicate method.
+
+---
+
+### Commit 70: `book-0-builder/host-sdk/modules/Vbox.ps1` - SSH defaults to null
+
+```diff
+     $mod.Configurator = @{
+         Defaults = @{
+             CPUs = 2
+             Memory = 4096
+             Disk = 40960
+-            SSHUser = "ubuntu"
+-            SSHHost = "localhost"
+-            SSHPort = 2222
++            SSHUser = $null
++            SSHHost = $null
++            SSHPort = $null
+         }
+     }
+```
+
+Reason: SSH connection details should derive from config, not hardcoded.
+
+---
+
+### Commit 71: `book-0-builder/host-sdk/modules/Vbox.ps1` - SSH derivation in Rendered
+
+```diff
+             Rendered = {
+                 $config = $this.Config
+                 $defaults = if ($this.Defaults) { $this.Defaults } else { $mod.Configurator.Defaults }
+                 $rendered = @{}
+                 foreach ($key in $defaults.Keys) { $rendered[$key] = $defaults[$key] }
+                 foreach ($key in $config.Keys) { $rendered[$key] = $config[$key] }
++                # Derive SSH settings from identity.config.yaml if not set
++                if (-not $rendered.SSHUser -or -not $rendered.SSHHost -or -not $rendered.SSHPort) {
++                    $identity = $mod.SDK.Settings.Load("book-2-cloud/users/config/identity.config.yaml")
++                    if (-not $rendered.SSHUser) { $rendered.SSHUser = $identity.identity.username }
++                    if (-not $rendered.SSHHost) { $rendered.SSHHost = "localhost" }
++                    if (-not $rendered.SSHPort) { $rendered.SSHPort = 2222 }
++                }
+                 if (-not $rendered.MediumPath) {
+```
+
+Reason: Use Settings.Load() to derive SSH settings from identity config.
+
+---
+
+## Validation (Review #1)
+
+After Review #1 commits:
+
+- [ ] `$SDK.Testing.LevelNames` returns level names (Network, Kernel Hardening, ...)
+- [ ] `$SDK.Testing.LevelFragments("Users")` returns cumulative fragments (network, kernel, users)
+- [ ] `$SDK.Testing.LevelsUpTo("SSH Hardening")` returns (Network, Kernel Hardening, Users, SSH Hardening)
+- [ ] `$SDK.Testing.IncludeArgs("Users")` returns "-i network -i kernel -i users"
+- [ ] `$SDK.Network.WaitForSSH(...)` throws on timeout (default -Throw $true)
+- [ ] `$SDK.Network.WaitForSSH(..., -Throw $false)` returns bool without throwing
+- [ ] `$SDK.Vbox.Worker(@{...}).SSHUser` derives from identity.config.yaml
+- [ ] `$SDK.Vbox.Worker(@{...}).SSHHost` defaults to "localhost"
+- [ ] `$SDK.Vbox.Worker(@{...}).SSHPort` defaults to 2222
