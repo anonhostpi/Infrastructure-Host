@@ -53,7 +53,7 @@ New-Module -Name SDK.Testing -ScriptBlock {
     Add-ScriptMethods $Testing @{
         LevelName = {
             param([int]$Layer)
-            return $mod.SDK.Builder.LayerName($Layer)
+            return $mod.SDK.Fragments.LayerName($Layer)
         }
     }
 
