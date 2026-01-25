@@ -18,10 +18,10 @@ New-Module -Name Test-Fragments -ScriptBlock {
             "6.6"  = @{ Fragments = @("system"); Name = "System Settings" }
             "6.7"  = @{ Fragments = @("msmtp"); Name = "MSMTP Mail" }
             "6.8"  = @{ Fragments = @("packages", "pkg-security", "pkg-upgrade"); Name = "Package Security" }
-            "6.9"  = @{ Fragments = @("55-security-mon"); Name = "Security Monitoring" }
-            "6.10" = @{ Fragments = @("60-virtualization"); Name = "Virtualization" }
-            "6.11" = @{ Fragments = @("70-cockpit"); Name = "Cockpit" }
-            "6.12" = @{ Fragments = @("75-claude-code"); Name = "Claude Code" }
+            "6.9"  = @{ Fragments = @("security-mon"); Name = "Security Monitoring" }
+            "6.10" = @{ Fragments = @("virtualization"); Name = "Virtualization" }
+            "6.11" = @{ Fragments = @("cockpit"); Name = "Cockpit" }
+            "6.12" = @{ Fragments = @("claude-code"); Name = "Claude Code" }
             "6.13" = @{ Fragments = @("76-copilot-cli"); Name = "Copilot CLI" }
             "6.14" = @{ Fragments = @("77-opencode"); Name = "OpenCode" }
             "6.15" = @{ Fragments = @("90-ui"); Name = "UI Touches" }
