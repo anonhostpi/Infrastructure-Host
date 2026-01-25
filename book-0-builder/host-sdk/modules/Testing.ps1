@@ -57,6 +57,18 @@ New-Module -Name SDK.Testing -ScriptBlock {
         }
     }
 
+    Add-ScriptMethods $Testing @{
+        LevelFragments = {
+            param([int]$Layer)
+            return $mod.SDK.Builder.LayerFragments($Layer)
+        }
+        IncludeArgs = {
+            param([int]$Layer)
+            $fragments = $this.LevelFragments($Layer)
+            return ($fragments | ForEach-Object { "-i $_" }) -join " "
+        }
+    }
+
     $SDK.Extend("Testing", $Testing)
     Export-ModuleMember -Function @()
 } -ArgumentList $SDK | Import-Module -Force
