@@ -32,6 +32,13 @@ New-Module -Name SDK.Vbox -ScriptBlock {
                 $rendered = @{}
                 foreach ($key in $defaults.Keys) { $rendered[$key] = $defaults[$key] }
                 foreach ($key in $config.Keys) { $rendered[$key] = $config[$key] }
+                # Derive SSH settings from identity.config.yaml if not set
+                if (-not $rendered.SSHUser -or -not $rendered.SSHHost -or -not $rendered.SSHPort) {
+                    $identity = $mod.SDK.Settings.Load("book-2-cloud/users/config/identity.config.yaml")
+                    if (-not $rendered.SSHUser) { $rendered.SSHUser = $identity.identity.username }
+                    if (-not $rendered.SSHHost) { $rendered.SSHHost = "localhost" }
+                    if (-not $rendered.SSHPort) { $rendered.SSHPort = 2222 }
+                }
                 if (-not $rendered.MediumPath) {
                     $rendered.MediumPath = "$env:TEMP\$($rendered.Name).vdi"
                 }
