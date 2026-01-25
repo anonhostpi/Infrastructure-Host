@@ -20,7 +20,7 @@ New-Module -Name SDK.CloudInit.Test -ScriptBlock {
                 }
             }
             $mod.SDK.Testing.Summary()
-            return @{ Success = ($mod.SDK.Testing.FailCount -eq 0); Results = $mod.SDK.Testing.Results; WorkerName = $worker.Name }
+            return @{ Success = ($mod.SDK.Testing.FailCount -eq 0); Results = $mod.SDK.Testing.Results; Worker = $worker }
         }
     }
 
