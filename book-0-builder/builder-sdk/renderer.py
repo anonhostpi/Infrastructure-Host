@@ -163,8 +163,7 @@ def render_cloud_init(ctx, include=None, exclude=None):
         if exclude is not None and fragment_name in exclude:
             continue
 
-        # Use forward slashes for Jinja2 (cross-platform)
-        template_path = tpl_path.relative_to('src').as_posix()
+        template_path = tpl_path.as_posix()
         rendered = render_text(ctx, template_path, scripts=scripts)
 
         # Validate YAML with helpful error message
