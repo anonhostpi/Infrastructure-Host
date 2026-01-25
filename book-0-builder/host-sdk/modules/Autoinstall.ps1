@@ -25,6 +25,21 @@ New-Module -Name SDK.Autoinstall -ScriptBlock {
     }
 
     Add-ScriptMethods $Autoinstall @{
+        Build = {
+            param([int]$Layer)
+            $artifacts = $mod.SDK.Builder.Artifacts
+            if ($artifacts -and $artifacts.iso -and (Test-Path $artifacts.iso)) {
+                $mod.SDK.Log.Info("ISO artifact exists, skipping build")
+                return $artifacts
+            }
+            $mod.SDK.Log.Info("Building ISO for layer $Layer...")
+            if (-not $mod.SDK.Builder.Build($Layer)) { throw "Failed to build for layer $Layer" }
+            # ISO build is triggered separately via make iso
+            return $mod.SDK.Builder.Artifacts
+        }
+    }
+
+    Add-ScriptMethods $Autoinstall @{
         Cleanup = {
             param([string]$Name)
             if (-not $Name) { $Name = $mod.SDK.Settings.Virtualization.Vbox.Name }
