@@ -54,6 +54,22 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 Pass = ($result.Output -match "\.")
                 Output = $result.Output
             })
+
+            # 6.1.2: /etc/hosts Management
+            $result = $Worker.Exec("grep '127.0.1.1' /etc/hosts")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.1.2"; Name = "Hostname in /etc/hosts"
+                Pass = ($result.Success -and $result.Output)
+                Output = $result.Output
+            })
+
+            # 6.1.3: Netplan Configuration
+            $result = $Worker.Exec("ls /etc/netplan/*.yaml 2>/dev/null")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.1.3"; Name = "Netplan config exists"
+                Pass = ($result.Success -and $result.Output)
+                Output = $result.Output
+            })
         }
     }
 
