@@ -7,7 +7,7 @@ New-Module -Name SDK.Autoinstall -ScriptBlock {
 
     $Autoinstall = New-Object PSObject
 
-    Add-ScriptMethods $AutoinstallBuild @{
+    Add-ScriptMethods $Autoinstall @{
         GetArtifacts = {
             $artifacts = $mod.SDK.Builder.Artifacts
             if (-not $artifacts -or -not $artifacts.iso) { throw "No ISO artifact found. Build the ISO first." }
@@ -24,7 +24,7 @@ New-Module -Name SDK.Autoinstall -ScriptBlock {
         }
     }
 
-    Add-ScriptMethods $AutoinstallBuild @{
+    Add-ScriptMethods $Autoinstall @{
         Cleanup = {
             param([string]$Name)
             if (-not $Name) { $Name = $mod.SDK.Settings.Virtualization.Vbox.Name }
@@ -32,6 +32,6 @@ New-Module -Name SDK.Autoinstall -ScriptBlock {
         }
     }
 
-    $SDK.Extend("AutoinstallBuild", $AutoinstallBuild)
+    $SDK.Extend("Autoinstall", $Autoinstall)
     Export-ModuleMember -Function @()
 } -ArgumentList $SDK | Import-Module -Force
