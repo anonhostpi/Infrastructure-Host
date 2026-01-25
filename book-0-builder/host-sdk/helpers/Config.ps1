@@ -47,10 +47,14 @@ New-Module -Name Helpers.Config -ScriptBlock {
             $yaml = ConvertFrom-Yaml $content
 
             # Auto-unwrap: if single key matches filename, unwrap it
-            if ($yaml -is [hashtable] -and $yaml.Count -eq 1) {
-                $onlyKey = @($yaml.Keys)[0]
-                if ($onlyKey -eq $key) {
-                    $yaml = $yaml[$onlyKey]
+            # NOTE: Use Measure-Object for reliable key count (hashtable.Count can be unreliable)
+            if ($yaml -is [hashtable]) {
+                $keyCount = ($yaml.Keys | Measure-Object).Count
+                if ($keyCount -eq 1) {
+                    $onlyKey = @($yaml.Keys)[0]
+                    if ($onlyKey -eq $key) {
+                        $yaml = $yaml[$onlyKey]
+                    }
                 }
             }
 
