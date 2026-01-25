@@ -50,8 +50,12 @@ output/scripts/%.sh: src/scripts/%.sh.tpl $(CONFIGS)
 # Generate cloud-init config (renders scripts internally)
 cloud-init: output/cloud-init.yaml
 
-output/cloud-init.yaml: $(CLOUD_INIT_FRAGMENTS) $(SCRIPTS) $(CONFIGS)
+output/cloud-init.yaml: $(FRAGMENTS) $(SCRIPTS) $(CONFIGS) $(BUILD_YAMLS)
+ifdef LAYER
+	python3 -m builder render cloud-init -o $@ --layer $(LAYER)
+else
 	python3 -m builder render cloud-init -o $@ $(INCLUDE) $(EXCLUDE)
+endif
 
 # Generate autoinstall user-data (renders scripts + cloud-init internally)
 autoinstall: output/user-data
