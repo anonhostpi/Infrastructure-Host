@@ -165,6 +165,30 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 Pass = ($result.Output -match "/bin/bash")
                 Output = $result.Output
             })
+
+            # 6.3.2: Group Membership
+            $result = $Worker.Exec("groups $username")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.3.2"; Name = "$username in sudo group"
+                Pass = ($result.Output -match "\bsudo\b")
+                Output = $result.Output
+            })
+
+            # 6.3.3: Sudo Configuration
+            $result = $Worker.Exec("sudo test -f /etc/sudoers.d/$username")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.3.3"; Name = "Sudoers file exists"
+                Pass = $result.Success
+                Output = "/etc/sudoers.d/$username"
+            })
+
+            # 6.3.4: Root Disabled
+            $result = $Worker.Exec("sudo passwd -S root")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.3.4"; Name = "Root account locked"
+                Pass = ($result.Output -match "root L" -or $result.Output -match "root LK")
+                Output = $result.Output
+            })
         }
     }
 
