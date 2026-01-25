@@ -46,16 +46,6 @@ New-Module -Name SDK.Builder -ScriptBlock {
     }
     $Builder = $SDK.Multipass.Worker($Builder)
 
-    $Runner = New-Object PSObject -Property @{}
-    Add-ScriptProperties $Runner @{
-        Artifacts = {
-            If( Test-Path "$($mod.SDK.Root())/output/artifacts.yaml" ){
-                return Get-Content "$($mod.SDK.Root())/output/artifacts.yaml" -Raw | ConvertFrom-Yaml
-            }
-        }
-    }
-    $Runner = $SDK.Multipass.Worker($Runner)
-
     Add-ScriptMethods $Builder @{
         Clean = {
             $make = @("cd /home/ubuntu/infra-host", "make clean") -join " && "
