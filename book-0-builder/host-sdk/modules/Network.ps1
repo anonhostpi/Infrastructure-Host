@@ -94,7 +94,15 @@ New-Module -Name SDK.Network -ScriptBlock {
                 [int]$TimeoutSeconds = 300,
                 [bool]$Throw = $true
             )
-            # WIP - body to be added
+            $timedOut = $mod.SDK.Job({
+                while (-not $SDK.Network.TestSSH($Address, $Port)) {
+                    Start-Sleep -Seconds 5
+                }
+            }, $TimeoutSeconds, @{ Address = $Address; Port = $Port })
+            if ($timedOut -and $Throw) {
+                throw "Timed out waiting for SSH on ${Address}:${Port}"
+            }
+            return -not $timedOut
         }
         SSH = {
             param(
