@@ -9,8 +9,8 @@ New-Module -Name SDK.Settings -ScriptBlock {
         $SDK
     )
 
-    . "$PSScriptRoot\helpers\PowerShell.ps1"
-    . "$PSScriptRoot\helpers\Config.ps1"
+    . "$PSScriptRoot\..\helpers\PowerShell.ps1"
+    . "$PSScriptRoot\..\helpers\Config.ps1"
 
     $mod = @{
         SDK = $SDK
