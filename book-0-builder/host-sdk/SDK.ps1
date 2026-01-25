@@ -70,6 +70,7 @@ New-Module -Name SDK -ScriptBlock {
         }
     }
 
+    & "$PSScriptRoot/modules/Logger.ps1" -SDK $SDK
     & "$PSScriptRoot/modules/Settings.ps1" -SDK $SDK
     & "$PSScriptRoot/modules/Network.ps1" -SDK $SDK
     & "$PSScriptRoot/modules/General.ps1" -SDK $SDK
