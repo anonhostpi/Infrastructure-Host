@@ -145,6 +145,15 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
         }
     }
 
+    Add-ScriptMethods $Verifications @{
+        Users = {
+            param($Worker)
+            $identity = $mod.SDK.Settings.Identity
+            $username = $identity.username
+            # Tests added in following commits
+        }
+    }
+
     $SDK.Testing | Add-Member -MemberType NoteProperty -Name Verifications -Value $Verifications
     Export-ModuleMember -Function @()
 } -ArgumentList $SDK | Import-Module -Force
