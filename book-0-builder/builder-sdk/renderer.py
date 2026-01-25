@@ -132,7 +132,7 @@ class FragmentValidationError(Exception):
         return '\n'.join(f"  {i+1:3d}: {line}" for i, line in enumerate(lines))
 
 
-def render_cloud_init(ctx, include=None, exclude=None, layer=None):
+def render_cloud_init(ctx, include=None, exclude=None, layer=None, for_iso=False):
     """Render and merge cloud-init fragments, return as dict.
 
     Args:
@@ -140,6 +140,7 @@ def render_cloud_init(ctx, include=None, exclude=None, layer=None):
         include: List of fragment names to include (default: all)
         exclude: List of fragment names to exclude (default: none)
         layer: Maximum build_layer to include (default: all)
+        for_iso: If True, always include iso_required fragments
 
     Fragment names are matched against the 'name' field in build.yaml.
 
@@ -164,8 +165,11 @@ def render_cloud_init(ctx, include=None, exclude=None, layer=None):
         if exclude is not None and fragment_name in exclude:
             continue
 
-        # Filter by layer (if specified)
-        if layer is not None:
+        # Always include iso_required fragments for ISO builds
+        if for_iso and fragment.get('iso_required', False):
+            pass  # Don't filter this fragment
+        elif layer is not None:
+            # Filter by layer (if specified)
             fragment_layer = fragment.get('build_layer', 0)
             if fragment_layer > layer:
                 continue
