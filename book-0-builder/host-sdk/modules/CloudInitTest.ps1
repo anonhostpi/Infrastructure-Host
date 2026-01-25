@@ -1,6 +1,6 @@
 param([Parameter(Mandatory = $true)] $SDK)
 
-New-Module -Name SDK.CloudInitTest -ScriptBlock {
+New-Module -Name SDK.CloudInit.Test -ScriptBlock {
     param([Parameter(Mandatory = $true)] $SDK)
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\helpers\PowerShell.ps1"
@@ -10,7 +10,7 @@ New-Module -Name SDK.CloudInitTest -ScriptBlock {
     Add-ScriptMethods $CloudInitTest @{
         Run = {
             param([int]$Layer, [hashtable]$Overrides = @{})
-            $worker = $mod.SDK.CloudInitBuild.CreateWorker($Layer, $Overrides)
+            $worker = $mod.SDK.CloudInit.CreateWorker($Layer, $Overrides)
             $mod.SDK.Log.Info("Setting up cloud-init test worker: $($worker.Name)")
             $worker.Setup($true)
             $mod.SDK.Testing.Reset()
