@@ -49,7 +49,23 @@ New-Module -Name SDK.Vbox -ScriptBlock {
             SSHHost = { return $this.Rendered.SSHHost }
             SSHPort = { return $this.Rendered.SSHPort }
         }
-        Methods = @{}
+        Methods = @{
+            Exists = { return $mod.SDK.Vbox.Exists($this.Name) }
+            Running = { return $mod.SDK.Vbox.Running($this.Name) }
+            Start = {
+                param([string]$Type = "headless")
+                return $mod.SDK.Vbox.Start($this.Name, $Type)
+            }
+            Shutdown = {
+                param([bool]$Force)
+                return $mod.SDK.Vbox.Shutdown($this.Name, $Force)
+            }
+            UntilShutdown = {
+                param([int]$TimeoutSeconds)
+                return $mod.SDK.Vbox.UntilShutdown($this.Name, $TimeoutSeconds)
+            }
+            Destroy = { return $mod.SDK.Vbox.Destroy($this.Name) }
+        }
     }
 
     $Vbox = New-Object PSObject
