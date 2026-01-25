@@ -52,9 +52,7 @@ New-Module -Name SDK.Builder -ScriptBlock {
             return $this.Exec($make).Success
         }
         Flush = {
-            $builder_destroyed = $mod.SDK.Builder.Destroy()
-            $runner_destroyed = $mod.SDK.Runner.Destroy()
-            return $builder_destroyed -and $runner_destroyed
+            return $this.Destroy()
         }
         InstallDependencies = {
             $apt = @(
@@ -120,7 +118,6 @@ New-Module -Name SDK.Builder -ScriptBlock {
     }
 
     $SDK.Extend("Builder", $Builder)
-    $SDK.Extend("Runner", $Runner)
 
     # Export nothing. This module only modifies the SDK object.
     Export-ModuleMember -Function @()
