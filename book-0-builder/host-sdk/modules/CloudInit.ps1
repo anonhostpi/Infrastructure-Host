@@ -14,6 +14,11 @@ New-Module -Name SDK.CloudInit -ScriptBlock {
     Add-ScriptMethods $CloudInit @{
         Build = {
             param([int]$Layer)
+            $artifacts = $mod.SDK.Builder.Artifacts
+            if ($artifacts -and $artifacts.cloud_init -and (Test-Path $artifacts.cloud_init)) {
+                $mod.SDK.Log.Info("Cloud-init artifact exists, skipping build")
+                return $artifacts
+            }
             $mod.SDK.Log.Info("Building cloud-init for layer $Layer...")
             if (-not $mod.SDK.Builder.Build($Layer)) { throw "Failed to build cloud-init for layer $Layer" }
             $artifacts = $mod.SDK.Builder.Artifacts
