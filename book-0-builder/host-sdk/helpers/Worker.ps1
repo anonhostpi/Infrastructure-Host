@@ -33,9 +33,9 @@ New-Module -Name SDK.Worker -ScriptBlock {
                 return $testResult
             }
             catch {
-                $SDK.Log.Write("[FAIL] $Name - Exception: $_", "Red")
+                $mod.SDK.Log.Write("[FAIL] $Name - Exception: $_", "Red")
                 $testResult = @{ Test = $TestId; Name = $Name; Pass = $false; Error = $_.ToString() }
-                $SDK.Testing.Record($testResult)
+                $mod.SDK.Testing.Record($testResult)
                 return $testResult
             }
         }
