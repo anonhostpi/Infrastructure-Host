@@ -70,6 +70,28 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 Pass = ($result.Success -and $result.Output)
                 Output = $result.Output
             })
+
+            # 6.1.4: Network Connectivity
+            $result = $Worker.Exec("ip -4 addr show scope global | grep 'inet '")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.1.4"; Name = "IP address assigned"
+                Pass = ($result.Output -match "inet ")
+                Output = $result.Output
+            })
+
+            $result = $Worker.Exec("ip route | grep '^default'")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.1.4"; Name = "Default gateway configured"
+                Pass = ($result.Output -match "default via")
+                Output = $result.Output
+            })
+
+            $result = $Worker.Exec("host -W 2 ubuntu.com")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.1.4"; Name = "DNS resolution works"
+                Pass = ($result.Output -match "has address" -or $result.Output -match "has IPv")
+                Output = $result.Output
+            })
         }
     }
 
