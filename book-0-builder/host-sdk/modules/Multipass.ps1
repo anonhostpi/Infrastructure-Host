@@ -112,12 +112,6 @@ New-Module -Name SDK.Multipass -ScriptBlock {
                     $config.Disk
                 )
             }
-            Ensure = {
-                if( -not $this.Exists() ) {
-                    return $this.Create()
-                }
-                return $true
-            }
             Destroy = {
                 if( -not $this.Exists() ) { return $true }
 
