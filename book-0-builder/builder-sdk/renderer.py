@@ -46,10 +46,12 @@ def discover_fragments(base_dirs=None):
     return sorted(fragments, key=lambda f: f.get('build_order', 999))
 
 
-def create_environment(template_dir='src'):
+def create_environment(template_dirs=None):
     """Create Jinja2 environment with custom filters."""
+    if template_dirs is None:
+        template_dirs = ['book-1-foundation', 'book-2-cloud']
     env = Environment(
-        loader=FileSystemLoader(template_dir),
+        loader=FileSystemLoader(template_dirs),
         keep_trailing_newline=True,
     )
 
