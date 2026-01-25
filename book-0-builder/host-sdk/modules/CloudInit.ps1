@@ -3,13 +3,13 @@ param(
     $SDK
 )
 
-New-Module -Name SDK.CloudInitBuild -ScriptBlock {
+New-Module -Name SDK.CloudInit -ScriptBlock {
     param([Parameter(Mandatory = $true)] $SDK)
     $mod = @{ SDK = $SDK }
 
     . "$PSScriptRoot\..\helpers\PowerShell.ps1"
 
-    $CloudInitBuild = New-Object PSObject
+    $CloudInit = New-Object PSObject
 
     Add-ScriptMethods $CloudInitBuild @{
         Build = {
