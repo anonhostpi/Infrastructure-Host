@@ -39,7 +39,7 @@ book-2-cloud/security-mon/
   description: Security monitoring configuration (auditd, AIDE, etc.)
   iso_required: false
   build_order: 55
-  build_layer: 8
+  build_layer: 9
   ```
 
 ### 2.2 Config Restructure (Fragments only - skip for Book 0)

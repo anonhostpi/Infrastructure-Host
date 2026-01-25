@@ -23,7 +23,7 @@ name: copilot-cli
 description: GitHub Copilot CLI installation
 iso_required: false
 build_order: 76
-build_layer: 7
+build_layer: 13
 ```
 
 Reason: Fragment metadata required for SDK discovery.

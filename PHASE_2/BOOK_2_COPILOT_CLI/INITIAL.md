@@ -43,7 +43,7 @@ book-2-cloud/copilot-cli/
   description: GitHub Copilot CLI installation
   iso_required: false
   build_order: 76
-  build_layer: 7
+  build_layer: 13
   ```
 
 ### 2.2 Config Restructure (Fragments only - skip for Book 0)

@@ -23,7 +23,7 @@ name: security-mon
 description: Security monitoring configuration (auditd, AIDE, etc.)
 iso_required: false
 build_order: 55
-build_layer: 8
+build_layer: 9
 ```
 
 Reason: Fragment metadata required for SDK discovery.

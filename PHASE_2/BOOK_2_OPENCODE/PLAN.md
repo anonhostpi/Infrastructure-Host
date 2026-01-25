@@ -23,7 +23,7 @@ name: opencode
 description: OpenCode AI assistant installation
 iso_required: false
 build_order: 77
-build_layer: 7
+build_layer: 14
 ```
 
 Reason: Fragment metadata required for SDK discovery.

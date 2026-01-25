@@ -39,7 +39,7 @@ book-2-cloud/ufw/
   description: Uncomplicated Firewall configuration
   iso_required: false
   build_order: 30
-  build_layer: 4
+  build_layer: 5
   ```
 
 ### 2.2 Config Restructure (Fragments only - skip for Book 0)

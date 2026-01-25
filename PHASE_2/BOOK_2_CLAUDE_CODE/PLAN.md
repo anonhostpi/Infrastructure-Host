@@ -23,7 +23,7 @@ name: claude-code
 description: Claude Code AI assistant CLI installation
 iso_required: false
 build_order: 75
-build_layer: 7
+build_layer: 12
 ```
 
 Reason: Fragment metadata required for SDK discovery.

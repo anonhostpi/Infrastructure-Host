@@ -23,7 +23,7 @@ name: ufw
 description: Uncomplicated Firewall configuration
 iso_required: false
 build_order: 30
-build_layer: 4
+build_layer: 5
 ```
 
 Reason: Fragment metadata required for SDK discovery.

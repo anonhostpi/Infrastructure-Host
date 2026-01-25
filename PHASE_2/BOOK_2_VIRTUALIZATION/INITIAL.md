@@ -39,7 +39,7 @@ book-2-cloud/virtualization/
   description: KVM/QEMU virtualization packages and configuration
   iso_required: false
   build_order: 60
-  build_layer: 6
+  build_layer: 10
   ```
 
 ### 2.2 Config Restructure (Fragments only - skip for Book 0)
