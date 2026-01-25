@@ -48,17 +48,6 @@ New-Module -Name SDK.Builder -ScriptBlock {
 
     $Runner = New-Object PSObject -Property @{}
     Add-ScriptProperties $Runner @{
-        Config = {
-            return $mod.SDK.Settings.Virtualization.Runner
-        }
-        Defaults = {
-            return @{
-                CPUs = 2
-                Memory = "4G"
-                Disk = "15G"
-                Network = "Ethernet"
-            }
-        }
         Artifacts = {
             If( Test-Path "$($mod.SDK.Root())/output/artifacts.yaml" ){
                 return Get-Content "$($mod.SDK.Root())/output/artifacts.yaml" -Raw | ConvertFrom-Yaml
