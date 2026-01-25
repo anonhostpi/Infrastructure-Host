@@ -37,7 +37,12 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
         }
     }
 
-    # Verification methods added in following commits
+    Add-ScriptMethods $Verifications @{
+        Network = {
+            param($Worker)
+            # Tests added in following commits
+        }
+    }
 
     $SDK.Testing | Add-Member -MemberType NoteProperty -Name Verifications -Value $Verifications
     Export-ModuleMember -Function @()
