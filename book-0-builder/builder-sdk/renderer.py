@@ -185,7 +185,7 @@ def render_cloud_init(ctx, include=None, exclude=None, layer=None):
     return merged
 
 
-def render_cloud_init_to_file(ctx, output_path, include=None, exclude=None):
+def render_cloud_init_to_file(ctx, output_path, include=None, exclude=None, layer=None):
     """Render cloud-init to output file.
 
     Args:
@@ -193,8 +193,9 @@ def render_cloud_init_to_file(ctx, output_path, include=None, exclude=None):
         output_path: Path to write output
         include: List of fragment names to include (default: all)
         exclude: List of fragment names to exclude (default: none)
+        layer: Maximum build_layer to include (default: all)
     """
-    merged = render_cloud_init(ctx, include=include, exclude=exclude)
+    merged = render_cloud_init(ctx, include=include, exclude=exclude, layer=layer)
     artifacts.write(
         None, 'cloud_init', output_path,
         content='#cloud-config\n',

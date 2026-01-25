@@ -151,7 +151,8 @@ def main():
             ctx,
             args.output,
             include=args.include,
-            exclude=args.exclude
+            exclude=args.exclude,
+            layer=args.layer
         )
     elif args.target == 'autoinstall':
         if args.include or args.exclude:
