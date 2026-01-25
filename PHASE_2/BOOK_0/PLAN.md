@@ -5,7 +5,6 @@
 **References:**
 - Rules: `PHASE_2/RULES.md`
 - Discovery Docs:
-  - `PHASE_2/BOOK_0/SDK.md` - Host SDK restructure
   - `PHASE_2/BOOK_0/CONFIG.md` - Config.ps1 refactoring (superseded by DEDUPE_LAYER_WORK.md)
   - `PHASE_2/BOOK_0/REVIEW.md` - Review items (WaitForSSH, VBox SSH)
   - `PHASE_2/BOOK_0/SETTINGS.md` - Settings.ps1 refactoring
@@ -332,8 +331,6 @@ Reason: Complete fragment name updates.
 
 ## Part 2: Host SDK (PowerShell) Updates
 
-Reference: `PHASE_2/BOOK_0/SDK.md`
-
 ---
 
 ### Commit 16: `book-0-builder/host-sdk/SDK.ps1` - Fix module path references [COMPLETE]
@@ -624,6 +621,8 @@ Reason: Fragments module skeleton.
 +                Order = $meta.build_order
 +                Layer = $meta.build_layer
 +                IsoRequired = $meta.iso_required
++                TestCommand = $meta.test_command
++                ExpectedPattern = $meta.expected_pattern
 +            }
 +        }
 +        return $results | Sort-Object Order
@@ -1123,7 +1122,9 @@ Reason: CloudInitTest module skeleton - uses CloudInitBuild for worker creation.
 +            $mod.SDK.Testing.Reset()
 +            foreach ($l in 1..$Layer) {
 +                foreach ($f in $mod.SDK.Fragments.At($l)) {
-+                    $worker.Test($f.Name, "Test $($f.Name)", $f.TestCommand, $f.ExpectedPattern)
++                    if ($f.TestCommand) {
++                        $worker.Test($f.Name, "Test $($f.Name)", $f.TestCommand, $f.ExpectedPattern)
++                    }
 +                }
 +            }
 +            $mod.SDK.Testing.Summary()
@@ -1243,7 +1244,9 @@ Reason: AutoinstallTest module skeleton - uses AutoinstallBuild for worker creat
 +            $mod.SDK.Network.WaitForSSH($worker.SSHHost, $worker.SSHPort, 600)
 +            $mod.SDK.Testing.Reset()
 +            foreach ($f in $mod.SDK.Fragments.IsoRequired()) {
-+                $worker.Test($f.Name, "Test $($f.Name)", $f.TestCommand, $f.ExpectedPattern)
++                if ($f.TestCommand) {
++                    $worker.Test($f.Name, "Test $($f.Name)", $f.TestCommand, $f.ExpectedPattern)
++                }
 +            }
 +            $mod.SDK.Testing.Summary()
 +            return @{ Success = ($mod.SDK.Testing.FailCount -eq 0); Results = $mod.SDK.Testing.Results; WorkerName = $worker.Name }
@@ -1779,6 +1782,65 @@ Reason: Use Settings.Load() to derive SSH settings from identity config.
 
 ---
 
+### Test Script Migration
+
+---
+
+### Commit 79: Refactor `book-0-builder/host-sdk/Invoke-IncrementalTest.ps1`
+
+Complete rewrite - reduce from ~575 lines to ~15 lines:
+
+```powershell
+param([int]$Layer, [switch]$SkipCleanup)
+
+. "$PSScriptRoot\SDK.ps1"
+
+# Setup builder (Build is called by CloudInitTest.Run with Layer)
+$SDK.Builder.Stage()
+
+# Run cloud-init tests (builds for layer, then tests)
+$result = $SDK.CloudInitTest.Run($Layer)
+
+# Cleanup
+if (-not $SkipCleanup) {
+    $SDK.CloudInitTest.Cleanup()
+    $SDK.Builder.Destroy()
+}
+
+exit $(if ($result.Success) { 0 } else { 1 })
+```
+
+Reason: All logic now lives in SDK modules. Test script becomes minimal orchestration.
+
+---
+
+### Commit 80: Refactor `book-0-builder/host-sdk/Invoke-AutoinstallTest.ps1`
+
+Complete rewrite - reduce from ~350 lines to ~15 lines:
+
+```powershell
+param([switch]$SkipCleanup)
+
+. "$PSScriptRoot\SDK.ps1"
+
+# Assumes ISO was already built (artifacts.iso populated)
+# Run autoinstall tests (ISO path queried from artifacts automatically)
+$result = $SDK.AutoinstallTest.Run(@{
+    Network = "Ethernet"  # optional overrides
+})
+
+# Cleanup
+if (-not $SkipCleanup) {
+    $SDK.AutoinstallTest.Cleanup()
+}
+
+exit $(if ($result.Success) { 0 } else { 1 })
+```
+
+Reason: All logic now lives in SDK modules. Test script becomes minimal orchestration.
+
+---
+
 ## Validation (Review #1)
 
 After Review #1 commits:
@@ -1810,3 +1872,9 @@ After Review #1 commits:
 - [ ] `$SDK.Network.WaitForSSH(...)` throws on timeout (default -Throw $true)
 - [ ] `$SDK.Network.WaitForSSH(..., -Throw $false)` returns bool without throwing
 - [ ] `$SDK.Vbox.Worker(@{...}).SSHUser` derives from identity.config.yaml
+
+**Test Script Migration:**
+- [ ] `Invoke-IncrementalTest.ps1` is ~15-20 lines
+- [ ] `Invoke-IncrementalTest.ps1 -Layer 3` runs cloud-init tests via SDK
+- [ ] `Invoke-AutoinstallTest.ps1` is ~15-20 lines
+- [ ] `Invoke-AutoinstallTest.ps1` runs autoinstall tests via SDK
