@@ -2025,7 +2025,7 @@ Reference: `PHASE_2/BOOK_0/REVIEW.md`
 
 ---
 
-### Commit 93: `book-0-builder/host-sdk/helpers/Config.ps1` - Fix OrderedHashtable.Keys bug
+### Commit 93: `book-0-builder/host-sdk/helpers/Config.ps1` - Fix OrderedHashtable.Keys bug [DONE]
 
 ```diff
 -        if ($yaml -is [hashtable] -and ($yaml.Keys | Measure-Object).Count -eq 1)
@@ -2036,7 +2036,7 @@ Reason: R2-2 - OrderedHashtable.Keys doesn't pipeline correctly without ForEach-
 
 ---
 
-### Commit 94: `book-0-builder/host-sdk/modules/Settings.ps1` - Fix $key in scriptblock body
+### Commit 94: `book-0-builder/host-sdk/modules/Settings.ps1` - Fix $key in scriptblock body [DONE]
 
 ```diff
      foreach( $key in $keys ) {
@@ -2060,7 +2060,7 @@ Reason: R2-9 - Rename variables for clarity: $configGetter for the PascalCase pr
 
 ---
 
-### Commit 95: [DROPPED - See PHASE_2/BOOK_0/VERIFICATIONS.md]
+### Commit 95: [DROPPED - See PHASE_2/BOOK_0/VERIFICATIONS.md] [DONE]
 
 R2-10 investigation moved to separate brainstorming document.
 
@@ -2070,7 +2070,7 @@ R2-10 investigation moved to separate brainstorming document.
 
 ---
 
-### Commit 96: `book-0-builder/host-sdk/helpers/Worker.ps1` - Convert to module shape
+### Commit 96: `book-0-builder/host-sdk/helpers/Worker.ps1` - Convert to module shape [DONE]
 
 ```diff
 -function Add-CommonWorkerMethods {
@@ -2093,7 +2093,7 @@ Reason: R2-3 - Module pattern keeps $SDK alive via $mod.SDK. Note the additional
 
 ---
 
-### Commit 97: `book-0-builder/host-sdk/helpers/Worker.ps1` - Update SDK references in Test method
+### Commit 97: `book-0-builder/host-sdk/helpers/Worker.ps1` - Update SDK references in Test method [DONE]
 
 ```diff
 -            $SDK.Log.Debug("Running test: $Name")
@@ -2115,7 +2115,7 @@ Reason: R2-3 - Update $SDK to $mod.SDK and add one level of indentation for modu
 
 ---
 
-### Commit 98: `book-0-builder/host-sdk/helpers/Worker.ps1` - Update exception handler with indentation
+### Commit 98: `book-0-builder/host-sdk/helpers/Worker.ps1` - Update exception handler with indentation [DONE]
 
 ```diff
 -            catch {
@@ -2134,7 +2134,7 @@ Reason: R2-3 - Update exception handler $SDK to $mod.SDK and fix indentation.
 
 ---
 
-### Commit 98a: `book-0-builder/host-sdk/helpers/Worker.ps1` - Close function and module, add Extend
+### Commit 98a: `book-0-builder/host-sdk/helpers/Worker.ps1` - Close function and module, add Extend [DONE]
 
 ```diff
 -        }
@@ -2155,7 +2155,7 @@ Reason: R2-3 - Close nested braces with proper indentation, add SDK.Extend for t
 
 ---
 
-### Commit 98b: Move `Worker.ps1` from helpers to modules
+### Commit 98b: Move `Worker.ps1` from helpers to modules [DONE]
 
 File move: `book-0-builder/host-sdk/helpers/Worker.ps1` → `book-0-builder/host-sdk/modules/Worker.ps1`
 
@@ -2163,7 +2163,7 @@ Reason: Worker is now a proper module with SDK.Extend, belongs in modules/ direc
 
 ---
 
-### Commit 99: `book-0-builder/host-sdk/SDK.ps1` - Load Worker module
+### Commit 99: `book-0-builder/host-sdk/SDK.ps1` - Load Worker module [DONE]
 
 ```diff
      & "$PSScriptRoot/modules/Logger.ps1" -SDK $SDK
@@ -2175,7 +2175,7 @@ Reason: Worker module must load early so other modules can use Add-CommonWorkerM
 
 ---
 
-### Commit 100: `book-0-builder/host-sdk/modules/Multipass.ps1` - Remove Worker.ps1 dot-source
+### Commit 100: `book-0-builder/host-sdk/modules/Multipass.ps1` - Remove Worker.ps1 dot-source [DONE]
 
 ```diff
              Add-ScriptProperties $worker $mod.Worker.Properties
@@ -2192,7 +2192,7 @@ Reason: Worker.ps1 now loaded as module by SDK.ps1, remove dot-source and $SDK p
 
 ---
 
-### Commit 101: `book-0-builder/host-sdk/modules/Vbox.ps1` - Remove Worker.ps1 dot-source
+### Commit 101: `book-0-builder/host-sdk/modules/Vbox.ps1` - Remove Worker.ps1 dot-source [DONE]
 
 ```diff
              Add-ScriptProperties $worker $mod.Worker.Properties
@@ -2213,13 +2213,13 @@ Reason: Same change as Multipass.ps1.
 
 ---
 
-### Commit 102: Rename `CloudInitBuild.ps1` to `CloudInit.ps1`
+### Commit 102: Rename `CloudInitBuild.ps1` to `CloudInit.ps1` [DONE]
 
 File rename: `book-0-builder/host-sdk/modules/CloudInitBuild.ps1` → `book-0-builder/host-sdk/modules/CloudInit.ps1`
 
 ---
 
-### Commit 103: `book-0-builder/host-sdk/modules/CloudInit.ps1` - Update module name
+### Commit 103: `book-0-builder/host-sdk/modules/CloudInit.ps1` - Update module name [DONE]
 
 ```diff
 -New-Module -Name SDK.CloudInitBuild -ScriptBlock {
@@ -2237,7 +2237,7 @@ Reason: R2-5 - Rename module to SDK.CloudInit.
 
 ---
 
-### Commit 104: `book-0-builder/host-sdk/modules/CloudInit.ps1` - Update method references
+### Commit 104: `book-0-builder/host-sdk/modules/CloudInit.ps1` - Update method references [DONE]
 
 ```diff
 -    Add-ScriptMethods $CloudInitBuild @{
@@ -2265,7 +2265,7 @@ Reason: R2-5 - Update variable references and Extend call.
 
 ---
 
-### Commit 105: `book-0-builder/host-sdk/modules/CloudInitTest.ps1` - Convert to submodule
+### Commit 105: `book-0-builder/host-sdk/modules/CloudInitTest.ps1` - Convert to submodule [DONE]
 
 ```diff
 -New-Module -Name SDK.CloudInitTest -ScriptBlock {
@@ -2287,7 +2287,7 @@ Reason: R2-5 - Update module name and reference to parent module.
 
 ---
 
-### Commit 106: `book-0-builder/host-sdk/modules/CloudInitTest.ps1` - Use Add-Member for submodule
+### Commit 106: `book-0-builder/host-sdk/modules/CloudInitTest.ps1` - Use Add-Member for submodule [DONE]
 
 ```diff
 -    $SDK.Extend("CloudInitTest", $CloudInitTest)
@@ -2300,13 +2300,13 @@ Reason: R2-5 - Attach as submodule via Add-Member instead of Extend.
 
 ---
 
-### Commit 107: Rename `AutoinstallBuild.ps1` to `Autoinstall.ps1`
+### Commit 107: Rename `AutoinstallBuild.ps1` to `Autoinstall.ps1` [DONE]
 
 File rename: `book-0-builder/host-sdk/modules/AutoinstallBuild.ps1` → `book-0-builder/host-sdk/modules/Autoinstall.ps1`
 
 ---
 
-### Commit 108: `book-0-builder/host-sdk/modules/Autoinstall.ps1` - Update module name
+### Commit 108: `book-0-builder/host-sdk/modules/Autoinstall.ps1` - Update module name [DONE]
 
 ```diff
 -New-Module -Name SDK.AutoinstallBuild -ScriptBlock {
@@ -2323,7 +2323,7 @@ Reason: R2-4 - Rename module to SDK.Autoinstall.
 
 ---
 
-### Commit 109: `book-0-builder/host-sdk/modules/Autoinstall.ps1` - Update method references
+### Commit 109: `book-0-builder/host-sdk/modules/Autoinstall.ps1` - Update method references [DONE]
 
 ```diff
 -    Add-ScriptMethods $AutoinstallBuild @{
@@ -2345,7 +2345,7 @@ Reason: R2-4 - Update variable references and Extend call.
 
 ---
 
-### Commit 110: `book-0-builder/host-sdk/modules/AutoinstallTest.ps1` - Convert to submodule
+### Commit 110: `book-0-builder/host-sdk/modules/AutoinstallTest.ps1` - Convert to submodule [DONE]
 
 ```diff
 -New-Module -Name SDK.AutoinstallTest -ScriptBlock {
@@ -2367,7 +2367,7 @@ Reason: R2-4 - Update module name and reference to parent module.
 
 ---
 
-### Commit 111: `book-0-builder/host-sdk/modules/AutoinstallTest.ps1` - Use Add-Member for submodule
+### Commit 111: `book-0-builder/host-sdk/modules/AutoinstallTest.ps1` - Use Add-Member for submodule [DONE]
 
 ```diff
 -    $SDK.Extend("AutoinstallTest", $AutoinstallTest)
@@ -2380,7 +2380,7 @@ Reason: R2-4 - Attach as submodule via Add-Member instead of Extend.
 
 ---
 
-### Commit 112: `book-0-builder/host-sdk/SDK.ps1` - Update module loading paths
+### Commit 112: `book-0-builder/host-sdk/SDK.ps1` - Update module loading paths [DONE]
 
 ```diff
      & "$PSScriptRoot/modules/Testing.ps1" -SDK $SDK
