@@ -11,7 +11,7 @@ New-Module -Name SDK.Network -ScriptBlock {
 
     $mod = @{ SDK = $SDK }
 
-    . "$PSScriptRoot\helpers\PowerShell.ps1"
+    . "$PSScriptRoot\..\helpers\PowerShell.ps1"
 
     $Network = New-Object PSObject
 
