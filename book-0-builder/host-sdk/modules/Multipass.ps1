@@ -75,6 +75,12 @@ New-Module -Name SDK.Multipass -ScriptBlock {
             Disk = {
                 return $this.Rendered.Disk
             }
+            Network = {
+                return $this.Rendered.Network
+            }
+            CloudInit = {
+                return $this.Rendered.CloudInit
+            }
         }
         Methods = @{
             #region: Worker VM Info
