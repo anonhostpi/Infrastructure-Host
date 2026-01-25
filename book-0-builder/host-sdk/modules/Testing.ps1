@@ -50,6 +50,13 @@ New-Module -Name SDK.Testing -ScriptBlock {
         }
     }
 
+    Add-ScriptMethods $Testing @{
+        LevelName = {
+            param([int]$Layer)
+            return $mod.SDK.Builder.LayerName($Layer)
+        }
+    }
+
     $SDK.Extend("Testing", $Testing)
     Export-ModuleMember -Function @()
 } -ArgumentList $SDK | Import-Module -Force
