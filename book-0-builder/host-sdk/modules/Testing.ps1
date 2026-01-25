@@ -60,7 +60,7 @@ New-Module -Name SDK.Testing -ScriptBlock {
     Add-ScriptMethods $Testing @{
         LevelFragments = {
             param([int]$Layer)
-            return $mod.SDK.Builder.LayerFragments($Layer)
+            return $mod.SDK.Fragments.UpTo($Layer) | ForEach-Object { $_.Name }
         }
         IncludeArgs = {
             param([int]$Layer)
