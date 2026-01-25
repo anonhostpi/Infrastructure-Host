@@ -1307,7 +1307,7 @@ Reference: `PHASE_2/BOOK_0/CONFIG.md`, `PHASE_2/BOOK_0/REVIEW.md`, `PHASE_2/BOOK
 
 ---
 
-### Commit 57: `Makefile` - Update source dependencies to book-* paths
+### Commit 57: `Makefile` - Update source dependencies to book-* paths [COMPLETE]
 
 ```diff
  # Source dependencies
@@ -1325,7 +1325,7 @@ Reason: Update paths to new book-* structure.
 
 ---
 
-### Commit 58: `Makefile` - Add LAYER parameter
+### Commit 58: `Makefile` - Add LAYER parameter [COMPLETE]
 
 ```diff
  # Fragment selection (override via command line)
@@ -1338,7 +1338,7 @@ Reason: Add LAYER parameter for build_layer filtering.
 
 ---
 
-### Commit 59: `Makefile` - Update cloud-init target with LAYER support
+### Commit 59: `Makefile` - Update cloud-init target with LAYER support [COMPLETE]
 
 ```diff
  # Generate cloud-init config (renders scripts internally)
@@ -1357,7 +1357,7 @@ Reason: Support LAYER parameter to filter by build_layer.
 
 ---
 
-### Commit 60: `Makefile` - Update autoinstall target dependencies
+### Commit 60: `Makefile` - Update autoinstall target dependencies [COMPLETE]
 
 ```diff
 -output/user-data: $(AUTOINSTALL_TEMPLATES) $(CLOUD_INIT_FRAGMENTS) $(SCRIPTS) $(CONFIGS)
@@ -1369,7 +1369,7 @@ Reason: Use new dependency variables.
 
 ---
 
-### Commit 61: `Makefile` - Update scripts target
+### Commit 61: `Makefile` - Update scripts target [COMPLETE]
 
 ```diff
 -# Generate shell scripts (standalone, for reference/debugging)
@@ -1386,7 +1386,7 @@ Reason: Use builder CLI to render all scripts from discovered fragments.
 
 ---
 
-### Commit 62: `Makefile` - Update help text
+### Commit 62: `Makefile` - Update help text [COMPLETE]
 
 ```diff
  help:
@@ -1422,7 +1422,7 @@ Reason: Update help with LAYER parameter and new fragment names.
 
 ---
 
-### Commit 63: `book-0-builder/builder-sdk/__main__.py` - Add --layer argument
+### Commit 63: `book-0-builder/builder-sdk/__main__.py` - Add --layer argument [COMPLETE]
 
 ```diff
      cloud_init_parser.add_argument('-i', '--include', action='append', default=[])
@@ -1434,7 +1434,7 @@ Reason: Add --layer CLI argument to cloud-init subcommand.
 
 ---
 
-### Commit 64: `book-0-builder/builder-sdk/renderer.py` - Add layer filtering to render_cloud_init
+### Commit 64: `book-0-builder/builder-sdk/renderer.py` - Add layer filtering to render_cloud_init [COMPLETE]
 
 ```diff
 -def render_cloud_init(ctx, include=None, exclude=None):
@@ -1464,7 +1464,7 @@ Reason: Filter fragments by build_layer when --layer is specified.
 
 ---
 
-### Commit 65: `book-0-builder/builder-sdk/__main__.py` - Pass layer to render_cloud_init
+### Commit 65: `book-0-builder/builder-sdk/__main__.py` - Pass layer to render_cloud_init [COMPLETE]
 
 ```diff
      if args.command == 'cloud-init':
@@ -1480,7 +1480,7 @@ Reason: Pass --layer argument to render function.
 
 ---
 
-### Commit 66: Create `book-0-builder/config/build_layers.yaml`
+### Commit 66: Create `book-0-builder/config/build_layers.yaml` [COMPLETE]
 
 ```yaml
 # Build layer definitions
@@ -1522,7 +1522,7 @@ Reason: Layer-to-name mapping for build and test systems. Agent-dependent levels
 
 ---
 
-### Commit 67: `book-0-builder/host-sdk/modules/Builder.ps1` - Load build_layers.yaml
+### Commit 67: `book-0-builder/host-sdk/modules/Builder.ps1` - Load build_layers.yaml [COMPLETE]
 
 ```diff
      $mod = @{ SDK = $SDK }
@@ -1539,7 +1539,7 @@ Reason: Load build_layers.yaml into Builder module.
 
 ---
 
-### Commit 68: `book-0-builder/host-sdk/modules/Builder.ps1` - Add LayerName method
+### Commit 68: `book-0-builder/host-sdk/modules/Builder.ps1` - Add LayerName method [COMPLETE]
 
 ```diff
 +    Add-ScriptMethods $Builder @{
@@ -1560,7 +1560,7 @@ Reason: Get display name for layer number.
 
 ---
 
-### Commit 69: `book-0-builder/host-sdk/modules/Builder.ps1` - Add LayerFragments method
+### Commit 69: `book-0-builder/host-sdk/modules/Builder.ps1` - Add LayerFragments method [COMPLETE]
 
 ```diff
 +    Add-ScriptMethods $Builder @{
