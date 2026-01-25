@@ -150,7 +150,21 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
             param($Worker)
             $identity = $mod.SDK.Settings.Identity
             $username = $identity.username
-            # Tests added in following commits
+
+            # 6.3.1: User Exists
+            $result = $Worker.Exec("id $username")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.3.1"; Name = "$username user exists"
+                Pass = ($result.Success -and $result.Output -match "uid=")
+                Output = $result.Output
+            })
+
+            $result = $Worker.Exec("getent passwd $username | cut -d: -f7")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.3.1"; Name = "$username shell is bash"
+                Pass = ($result.Output -match "/bin/bash")
+                Output = $result.Output
+            })
         }
     }
 
