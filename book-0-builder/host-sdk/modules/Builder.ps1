@@ -89,16 +89,6 @@ New-Module -Name SDK.Builder -ScriptBlock {
             }
             return $true
         }
-        LayerName = {
-            param([int]$Layer)
-            if ($mod.AgentDependent -and $mod.AgentDependent.ContainsKey($Layer)) {
-                return $mod.AgentDependent[$Layer].name
-            }
-            if ($mod.LayerNames -and $mod.LayerNames.ContainsKey($Layer)) {
-                return $mod.LayerNames[$Layer]
-            }
-            return "Layer $Layer"
-        }
         LayerFragments = {
             param([int]$Layer)
             # Agent-dependent levels use override fragments
