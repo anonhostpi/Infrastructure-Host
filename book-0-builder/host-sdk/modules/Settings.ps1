@@ -18,6 +18,13 @@ New-Module -Name SDK.Settings -ScriptBlock {
         VirtConfig = $null
     }
 
+    function ConvertTo-PascalCase {
+        param([string]$Name)
+        return ($Name -split '[-_]' | ForEach-Object {
+            if ($_.Length -gt 0) { $_.Substring(0,1).ToUpper() + $_.Substring(1) } else { '' }
+        }) -join ''
+    }
+
     $Settings = New-Object PSObject -Property @{
         KeyPath = "~/.ssh/id_ed25519.pub"
     }
