@@ -14,6 +14,10 @@ New-Module -Name SDK.Builder -ScriptBlock {
 
     $mod = @{ SDK = $SDK }
 
+    # Load build layers config
+    $layersPath = "$PSScriptRoot\..\..\config\build_layers.yaml"
+    $mod.LayersConfig = Get-Content $layersPath -Raw | ConvertFrom-Yaml
+
     $Builder = New-Object PSObject -Property @{
         Packages = @(
             "python3-pip"
