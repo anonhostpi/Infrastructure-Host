@@ -11,7 +11,7 @@ New-Module -Name SDK.General -ScriptBlock {
 
     $mod = @{ SDK = $SDK }
 
-    . "$PSScriptRoot\helpers\PowerShell.ps1"
+    . "$PSScriptRoot\..\helpers\PowerShell.ps1"
 
     $General = New-Object PSObject
 
