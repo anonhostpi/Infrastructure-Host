@@ -247,8 +247,7 @@ New-Module -Name SDK.Multipass -ScriptBlock {
             Add-ScriptProperties $worker $mod.Worker.Properties
             Add-ScriptMethods $worker $mod.Worker.Methods
 
-            . "$PSScriptRoot\..\helpers\Worker.ps1"
-            Add-CommonWorkerMethods $worker $mod.SDK
+            Add-CommonWorkerMethods $worker
 
             return $worker
         }
