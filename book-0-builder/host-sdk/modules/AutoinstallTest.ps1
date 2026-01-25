@@ -1,6 +1,6 @@
 param([Parameter(Mandatory = $true)] $SDK)
 
-New-Module -Name SDK.AutoinstallTest -ScriptBlock {
+New-Module -Name SDK.Autoinstall.Test -ScriptBlock {
     param([Parameter(Mandatory = $true)] $SDK)
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\helpers\PowerShell.ps1"
@@ -10,7 +10,7 @@ New-Module -Name SDK.AutoinstallTest -ScriptBlock {
     Add-ScriptMethods $AutoinstallTest @{
         Run = {
             param([hashtable]$Overrides = @{})
-            $worker = $mod.SDK.AutoinstallBuild.CreateWorker($Overrides)
+            $worker = $mod.SDK.Autoinstall.CreateWorker($Overrides)
             $mod.SDK.Log.Info("Setting up autoinstall test worker: $($worker.Name)")
             $worker.Ensure(); $worker.Start()
             $mod.SDK.Log.Info("Waiting for SSH availability...")
