@@ -104,12 +104,7 @@ def render_scripts(ctx):
 
 def render_script(ctx, input_path, output_path):
     """Render a script template to output file."""
-    # Handle path relative to src/
-    if input_path.startswith('src/'):
-        template_path = input_path[4:]  # Remove 'src/' prefix
-    else:
-        template_path = input_path
-
+    template_path = input_path
     result = render_text(ctx, template_path)
     artifacts.write('scripts', Path(output_path).name, output_path, content=result)
 
