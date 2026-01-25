@@ -324,8 +324,6 @@ Reason: Complete fragment name updates.
 
 ---
 
----
-
 ## Part 2: Host SDK (PowerShell) Updates
 
 Reference: `PHASE_2/BOOK_0/SDK.md`
@@ -364,33 +362,29 @@ Reason: Logger must load first so other modules can use `$SDK.Log.*`.
 
 ---
 
-### Commit 18: Create `book-0-builder/host-sdk/modules/Logger.ps1` (part 1)
+### Commit 18: Create `book-0-builder/host-sdk/modules/Logger.ps1` - module shape
 
 ```diff
-+param(
-+    [Parameter(Mandatory = $true)]
-+    $SDK
-+)
++param([Parameter(Mandatory = $true)] $SDK)
 +
 +New-Module -Name SDK.Logger -ScriptBlock {
-+    param(
-+        [Parameter(Mandatory = $true)]
-+        $SDK
-+    )
-+
++    param([Parameter(Mandatory = $true)] $SDK)
 +    . "$PSScriptRoot\..\helpers\PowerShell.ps1"
 +
-+    $Logger = New-Object PSObject -Property @{
-+        Level = "Info"
-+        Path = $null
-+    }
++    $Logger = New-Object PSObject -Property @{ Level = "Info"; Path = $null }
++
++    # Methods added in following commits
++
++    $SDK.Extend("Log", $Logger)
++    Export-ModuleMember -Function @()
++} -ArgumentList $SDK | Import-Module -Force
 ```
 
-Reason: Logger module header and property initialization.
+Reason: Logger module skeleton - properties and extension point.
 
 ---
 
-### Commit 19: `book-0-builder/host-sdk/modules/Logger.ps1` (part 2)
+### Commit 19: `book-0-builder/host-sdk/modules/Logger.ps1` - Add Write and level methods
 
 ```diff
 +    Add-ScriptMethods $Logger @{
@@ -406,13 +400,15 @@ Reason: Logger module header and property initialization.
 +        Error = { param([string]$Message) $this.Write("[ERROR] $Message", "Red") }
 +        Step  = { param([string]$Message, [int]$Current, [int]$Total) $this.Write("[$Current/$Total] $Message", "Cyan") }
 +    }
+
+     $SDK.Extend("Log", $Logger)
 ```
 
-Reason: Core Write method and log level methods.
+Reason: Core Write method and log level methods (insert before Extend call).
 
 ---
 
-### Commit 20: `book-0-builder/host-sdk/modules/Logger.ps1` (part 3)
+### Commit 20: `book-0-builder/host-sdk/modules/Logger.ps1` - Add transcript methods
 
 ```diff
 +    Add-ScriptMethods $Logger @{
@@ -430,13 +426,11 @@ Reason: Core Write method and log level methods.
 +            }
 +        }
 +    }
-+
-+    $SDK.Extend("Log", $Logger)
-+    Export-ModuleMember -Function @()
-+} -ArgumentList $SDK | Import-Module -Force
+
+     $SDK.Extend("Log", $Logger)
 ```
 
-Reason: Transcript control methods and module export.
+Reason: Transcript control methods (insert before Extend call).
 
 ---
 
@@ -587,32 +581,30 @@ Reason: Worker Create should use CloudInit and Network from config.
 
 ---
 
-### Commit 28: Create `book-0-builder/host-sdk/modules/Fragments.ps1` (part 1)
+### Commit 28: Create `book-0-builder/host-sdk/modules/Fragments.ps1` - module shape
 
 ```diff
-+param(
-+    [Parameter(Mandatory = $true)]
-+    $SDK
-+)
++param([Parameter(Mandatory = $true)] $SDK)
 +
 +New-Module -Name SDK.Fragments -ScriptBlock {
-+    param(
-+        [Parameter(Mandatory = $true)]
-+        $SDK
-+    )
-+
++    param([Parameter(Mandatory = $true)] $SDK)
 +    $mod = @{ SDK = $SDK }
-+
 +    . "$PSScriptRoot\..\helpers\PowerShell.ps1"
 +
 +    $Fragments = New-Object PSObject
++
++    # Layers property and methods added in following commits
++
++    $SDK.Extend("Fragments", $Fragments)
++    Export-ModuleMember -Function @()
++} -ArgumentList $SDK | Import-Module -Force
 ```
 
-Reason: Fragments module header.
+Reason: Fragments module skeleton.
 
 ---
 
-### Commit 29: `book-0-builder/host-sdk/modules/Fragments.ps1` (part 2)
+### Commit 29: `book-0-builder/host-sdk/modules/Fragments.ps1` - Add Layers property
 
 ```diff
 +    $Fragments | Add-Member -MemberType ScriptProperty -Name Layers -Value {
@@ -630,13 +622,15 @@ Reason: Fragments module header.
 +        }
 +        return $results | Sort-Object Order
 +    }
+
+     $SDK.Extend("Fragments", $Fragments)
 ```
 
-Reason: Layers ScriptProperty - live getter that discovers fragments.
+Reason: Layers ScriptProperty - live getter that discovers fragments (insert before Extend).
 
 ---
 
-### Commit 30: `book-0-builder/host-sdk/modules/Fragments.ps1` (part 3)
+### Commit 30: `book-0-builder/host-sdk/modules/Fragments.ps1` - Add query methods
 
 ```diff
 +    Add-ScriptMethods $Fragments @{
@@ -652,13 +646,11 @@ Reason: Layers ScriptProperty - live getter that discovers fragments.
 +            return $this.Layers | Where-Object { $_.IsoRequired }
 +        }
 +    }
-+
-+    $SDK.Extend("Fragments", $Fragments)
-+    Export-ModuleMember -Function @()
-+} -ArgumentList $SDK | Import-Module -Force
+
+     $SDK.Extend("Fragments", $Fragments)
 ```
 
-Reason: Fragment query methods and module export.
+Reason: Fragment query methods (insert before Extend).
 
 ---
 
@@ -696,36 +688,30 @@ Reason: WaitForSSH wraps UntilSSH with timeout exception handling.
 
 ---
 
-### Commit 33: Create `book-0-builder/host-sdk/modules/Testing.ps1` (part 1)
+### Commit 33: Create `book-0-builder/host-sdk/modules/Testing.ps1` - module shape
 
 ```diff
-+param(
-+    [Parameter(Mandatory = $true)]
-+    $SDK
-+)
++param([Parameter(Mandatory = $true)] $SDK)
 +
 +New-Module -Name SDK.Testing -ScriptBlock {
-+    param(
-+        [Parameter(Mandatory = $true)]
-+        $SDK
-+    )
-+
++    param([Parameter(Mandatory = $true)] $SDK)
 +    $mod = @{ SDK = $SDK }
-+
 +    . "$PSScriptRoot\..\helpers\PowerShell.ps1"
 +
-+    $Testing = New-Object PSObject -Property @{
-+        Results = @()
-+        PassCount = 0
-+        FailCount = 0
-+    }
++    $Testing = New-Object PSObject -Property @{ Results = @(); PassCount = 0; FailCount = 0 }
++
++    # Properties and methods added in following commits
++
++    $SDK.Extend("Testing", $Testing)
++    Export-ModuleMember -Function @()
++} -ArgumentList $SDK | Import-Module -Force
 ```
 
-Reason: Testing module header and result tracking properties.
+Reason: Testing module skeleton with result tracking properties.
 
 ---
 
-### Commit 34: `book-0-builder/host-sdk/modules/Testing.ps1` (part 2)
+### Commit 34: `book-0-builder/host-sdk/modules/Testing.ps1` - Add All property and tracking methods
 
 ```diff
 +    Add-ScriptProperties $Testing @{
@@ -746,13 +732,15 @@ Reason: Testing module header and result tracking properties.
 +            if ($Result.Pass) { $this.PassCount++ } else { $this.FailCount++ }
 +        }
 +    }
+
+     $SDK.Extend("Testing", $Testing)
 ```
 
-Reason: All property (live getter) and result tracking methods.
+Reason: All property (live getter) and result tracking methods (insert before Extend).
 
 ---
 
-### Commit 35: `book-0-builder/host-sdk/modules/Testing.ps1` (part 3)
+### Commit 35: `book-0-builder/host-sdk/modules/Testing.ps1` - Add Summary method
 
 ```diff
 +    Add-ScriptMethods $Testing @{
@@ -767,13 +755,15 @@ Reason: All property (live getter) and result tracking methods.
 +            $mod.SDK.Log.Write("  Failed: $($this.FailCount)", $failColor)
 +        }
 +    }
+
+     $SDK.Extend("Testing", $Testing)
 ```
 
-Reason: Summary method for test results display.
+Reason: Summary method for test results display (insert before Extend).
 
 ---
 
-### Commit 36: `book-0-builder/host-sdk/modules/Testing.ps1` (part 4)
+### Commit 36: `book-0-builder/host-sdk/modules/Testing.ps1` - Add layer query methods
 
 ```diff
 +    Add-ScriptMethods $Testing @{
@@ -783,17 +773,14 @@ Reason: Summary method for test results display.
 +        }
 +        Verifications = {
 +            param([int]$Layer)
-+            $fragments = $mod.SDK.Fragments.At($Layer)
-+            return $fragments | ForEach-Object { "Test-$($_.Name)Fragment" }
++            return $mod.SDK.Fragments.At($Layer) | ForEach-Object { "Test-$($_.Name)Fragment" }
 +        }
 +    }
-+
-+    $SDK.Extend("Testing", $Testing)
-+    Export-ModuleMember -Function @()
-+} -ArgumentList $SDK | Import-Module -Force
+
+     $SDK.Extend("Testing", $Testing)
 ```
 
-Reason: Layer-based fragment/verification methods and module export.
+Reason: Layer-based fragment/verification methods (insert before Extend).
 
 ---
 
@@ -808,40 +795,39 @@ Reason: Load Testing module after Builder.
 
 ---
 
-### Commit 38: `book-0-builder/host-sdk/modules/Builder.ps1` - Add Clean method
+### Commit 38: `book-0-builder/host-sdk/modules/Builder.ps1` - Add Clean method (line 64)
 
-```diff
-+    Add-ScriptMethods $Builder @{
-+        Clean = {
-+            $make = @("cd /home/ubuntu/infra-host", "make clean") -join " && "
-+            $result = $this.Exec($make)
-+            return $result.Success
-+        }
-+    }
-```
-
-Reason: Clean method runs `make clean` in builder VM.
-
----
-
-### Commit 39: `book-0-builder/host-sdk/modules/Builder.ps1` - Update Build method
+Location: Inside existing `Add-ScriptMethods $Builder @{` block at line 64.
 
 ```diff
      Add-ScriptMethods $Builder @{
++        Clean = {
++            $make = @("cd /home/ubuntu/infra-host", "make clean") -join " && "
++            return $this.Exec($make).Success
++        }
+         Flush = {
+```
+
+Reason: Add Clean method to existing Add-ScriptMethods block.
+
+---
+
+### Commit 39: `book-0-builder/host-sdk/modules/Builder.ps1` - Update Build method (line 85)
+
+Location: Replace existing `Build` method in `Add-ScriptMethods $Builder @{` block.
+
+```diff
          Build = {
 -            $make = @(
 -                "cd /home/ubuntu/infra-host"
 -                "make all"
 -            ) -join " && "
-+            param([int]$Layer)
-
+-
 -            $make_result = $this.Exec($make)
-+            $cleaned = $this.Clean()
-+            if (-not $cleaned) {
-+                $mod.SDK.Log.Warn("Clean failed, continuing with build...")
-+            }
-
+-
 -            return $make_result.Success
++            param([int]$Layer)
++            $this.Clean()  # Always clean before build
 +            $target = if ($Layer) { "make cloud-init LAYER=$Layer" } else { "make all" }
 +            $make = @("cd /home/ubuntu/infra-host", $target) -join " && "
 +            return $this.Exec($make).Success
@@ -852,11 +838,11 @@ Reason: Build accepts Layer parameter, calls Clean first.
 
 ---
 
-### Commit 40: `book-0-builder/host-sdk/modules/Vbox.ps1` - Add Configurator defaults
+### Commit 40: `book-0-builder/host-sdk/modules/Vbox.ps1` - Add Configurator defaults (line 14)
+
+Location: After `$mod = @{ SDK = $SDK }` and PowerShell.ps1 dot-source (around line 14).
 
 ```diff
-     $mod = @{ SDK = $SDK }
-
      . "$PSScriptRoot\..\helpers\PowerShell.ps1"
 
 +    $mod.Configurator = @{
@@ -869,13 +855,17 @@ Reason: Build accepts Layer parameter, calls Clean first.
 +            SSHPort = 2222
 +        }
 +    }
+
+     $Vbox = New-Object PSObject
 ```
 
 Reason: Default configuration values for Vbox workers.
 
 ---
 
-### Commit 41: `book-0-builder/host-sdk/modules/Vbox.ps1` - Add Worker Properties (part 1)
+### Commit 41: `book-0-builder/host-sdk/modules/Vbox.ps1` - Add Worker structure (line 16)
+
+Location: After Configurator, before `$Vbox = New-Object PSObject`.
 
 ```diff
 +    $mod.Worker = @{
@@ -893,16 +883,23 @@ Reason: Default configuration values for Vbox workers.
 +                return $rendered
 +            }
 +        }
++        Methods = @{}
 +    }
+
+     $Vbox = New-Object PSObject
 ```
 
-Reason: Worker Properties with Rendered config merging.
+Reason: Worker structure with Rendered property and empty Methods placeholder.
 
 ---
 
-### Commit 42: `book-0-builder/host-sdk/modules/Vbox.ps1` - Add Worker Properties (part 2)
+### Commit 42: `book-0-builder/host-sdk/modules/Vbox.ps1` - Add Worker property accessors
+
+Location: Inside `$mod.Worker.Properties` block.
 
 ```diff
+         Properties = @{
+             Rendered = { ... }
 +            Name = { return $this.Rendered.Name }
 +            CPUs = { return $this.Rendered.CPUs }
 +            Memory = { return $this.Rendered.Memory }
@@ -913,15 +910,19 @@ Reason: Worker Properties with Rendered config merging.
 +            SSHUser = { return $this.Rendered.SSHUser }
 +            SSHHost = { return $this.Rendered.SSHHost }
 +            SSHPort = { return $this.Rendered.SSHPort }
+         }
 ```
 
 Reason: Worker property accessors.
 
 ---
 
-### Commit 43: `book-0-builder/host-sdk/modules/Vbox.ps1` - Add Worker Methods (part 1)
+### Commit 43: `book-0-builder/host-sdk/modules/Vbox.ps1` - Add Worker lifecycle methods
+
+Location: Inside `$mod.Worker.Methods` block.
 
 ```diff
+-        Methods = @{}
 +        Methods = @{
 +            Exists = { return $mod.SDK.Vbox.Exists($this.Name) }
 +            Running = { return $mod.SDK.Vbox.Running($this.Name) }
@@ -945,9 +946,12 @@ Reason: Worker lifecycle methods forwarding to SDK.Vbox.
 
 ---
 
-### Commit 44: `book-0-builder/host-sdk/modules/Vbox.ps1` - Add Worker Methods (part 2)
+### Commit 44: `book-0-builder/host-sdk/modules/Vbox.ps1` - Add Worker Create/Exec methods
+
+Location: Inside `$mod.Worker.Methods` block, after lifecycle methods.
 
 ```diff
+             Destroy = { return $mod.SDK.Vbox.Destroy($this.Name) }
 +            Create = {
 +                return $mod.SDK.Vbox.Create(
 +                    $this.Name,
@@ -972,7 +976,9 @@ Reason: Worker Create and Exec methods.
 
 ---
 
-### Commit 45: `book-0-builder/host-sdk/modules/Vbox.ps1` - Add Worker method
+### Commit 45: `book-0-builder/host-sdk/modules/Vbox.ps1` - Add Worker factory (line 26)
+
+Location: Add to existing `Add-ScriptMethods $Vbox @{` block at line 26, before Invoke method.
 
 ```diff
      Add-ScriptMethods $Vbox @{
@@ -1001,7 +1007,7 @@ Reason: Worker factory method with validation (IsoPath required).
 
 ---
 
-### Commit 46: Create `book-0-builder/host-sdk/modules/CloudInitTest.ps1` (part 1)
+### Commit 46: Create `book-0-builder/host-sdk/modules/CloudInitBuild.ps1` - module shape
 
 ```diff
 +param(
@@ -1009,234 +1015,253 @@ Reason: Worker factory method with validation (IsoPath required).
 +    $SDK
 +)
 +
-+New-Module -Name SDK.CloudInitTest -ScriptBlock {
-+    param(
-+        [Parameter(Mandatory = $true)]
-+        $SDK
-+    )
-+
++New-Module -Name SDK.CloudInitBuild -ScriptBlock {
++    param([Parameter(Mandatory = $true)] $SDK)
 +    $mod = @{ SDK = $SDK }
 +
 +    . "$PSScriptRoot\..\helpers\PowerShell.ps1"
 +
-+    $CloudInitTest = New-Object PSObject
++    $CloudInitBuild = New-Object PSObject
++
++    # Methods added in following commits
++
++    $SDK.Extend("CloudInitBuild", $CloudInitBuild)
++    Export-ModuleMember -Function @()
++} -ArgumentList $SDK | Import-Module -Force
 ```
 
-Reason: CloudInitTest module header.
+Reason: CloudInitBuild module skeleton - handles build/worker creation for cloud-init testing.
 
 ---
 
-### Commit 47: `book-0-builder/host-sdk/modules/CloudInitTest.ps1` (part 2)
+### Commit 47: `book-0-builder/host-sdk/modules/CloudInitBuild.ps1` - Add Build and CreateWorker
 
 ```diff
-+    Add-ScriptMethods $CloudInitTest @{
-+        Run = {
-+            param(
-+                [int]$Layer,
-+                [hashtable]$Overrides = @{}
-+            )
-+
++    Add-ScriptMethods $CloudInitBuild @{
++        Build = {
++            param([int]$Layer)
 +            $mod.SDK.Log.Info("Building cloud-init for layer $Layer...")
-+            $built = $mod.SDK.Builder.Build($Layer)
-+            if (-not $built) { throw "Failed to build cloud-init for layer $Layer" }
-+
++            if (-not $mod.SDK.Builder.Build($Layer)) { throw "Failed to build cloud-init for layer $Layer" }
 +            $artifacts = $mod.SDK.Builder.Artifacts
-+            if (-not $artifacts -or -not $artifacts.cloud_init) {
-+                throw "No cloud-init artifact found after build."
-+            }
-```
-
-Reason: Run method - build cloud-init and get artifact path.
-
----
-
-### Commit 48: `book-0-builder/host-sdk/modules/CloudInitTest.ps1` (part 3)
-
-```diff
++            if (-not $artifacts -or -not $artifacts.cloud_init) { throw "No cloud-init artifact found." }
++            return $artifacts
++        }
++        CreateWorker = {
++            param([int]$Layer, [hashtable]$Overrides = @{})
++            $artifacts = $this.Build($Layer)
 +            $baseConfig = $mod.SDK.Settings.Virtualization.Runner
-+            $config = @{}
-+            foreach ($key in $baseConfig.Keys) { $config[$key] = $baseConfig[$key] }
++            $config = @{}; foreach ($k in $baseConfig.Keys) { $config[$k] = $baseConfig[$k] }
 +            $config.CloudInit = "$($mod.SDK.Root())/$($artifacts.cloud_init)"
-+            foreach ($key in $Overrides.Keys) { $config[$key] = $Overrides[$key] }
-+
-+            $worker = $mod.SDK.Multipass.Worker(@{ Config = $config })
-+
-+            try {
-+                $mod.SDK.Log.Info("Setting up cloud-init test worker: $($config.Name)")
-+                $worker.Setup($true)
-```
-
-Reason: Run method - configure worker with merged config.
-
----
-
-### Commit 49: `book-0-builder/host-sdk/modules/CloudInitTest.ps1` (part 4)
-
-```diff
-+                $mod.SDK.Testing.Reset()
-+                foreach ($layer in 1..$Layer) {
-+                    foreach ($fragment in $mod.SDK.Fragments.At($layer)) {
-+                        $worker.Test($fragment.Name, "Test $($fragment.Name)", $fragment.TestCommand, $fragment.ExpectedPattern)
-+                    }
-+                }
-+                $mod.SDK.Testing.Summary()
-+
-+                return @{
-+                    Success = ($mod.SDK.Testing.FailCount -eq 0)
-+                    Results = $mod.SDK.Testing.Results
-+                    WorkerName = $config.Name
-+                }
-+            } finally { }
++            foreach ($k in $Overrides.Keys) { $config[$k] = $Overrides[$k] }
++            return $mod.SDK.Multipass.Worker(@{ Config = $config })
 +        }
 +    }
+
+     $SDK.Extend("CloudInitBuild", $CloudInitBuild)
 ```
 
-Reason: Run method - execute tests and return results.
+Reason: Build and CreateWorker methods (insert before Extend).
 
 ---
 
-### Commit 50: `book-0-builder/host-sdk/modules/CloudInitTest.ps1` (part 5)
+### Commit 48: `book-0-builder/host-sdk/modules/CloudInitBuild.ps1` - Add Cleanup
 
 ```diff
-+    Add-ScriptMethods $CloudInitTest @{
++    Add-ScriptMethods $CloudInitBuild @{
 +        Cleanup = {
 +            param([string]$Name)
 +            if (-not $Name) { $Name = $mod.SDK.Settings.Virtualization.Runner.Name }
-+            if ($mod.SDK.Multipass.Exists($Name)) {
-+                $mod.SDK.Multipass.Destroy($Name)
-+            }
++            if ($mod.SDK.Multipass.Exists($Name)) { $mod.SDK.Multipass.Destroy($Name) }
 +        }
 +    }
+
+     $SDK.Extend("CloudInitBuild", $CloudInitBuild)
+```
+
+Reason: Cleanup method (insert before Extend).
+
+---
+
+### Commit 49: Create `book-0-builder/host-sdk/modules/CloudInitTest.ps1` - module shape
+
+```diff
++param([Parameter(Mandatory = $true)] $SDK)
++
++New-Module -Name SDK.CloudInitTest -ScriptBlock {
++    param([Parameter(Mandatory = $true)] $SDK)
++    $mod = @{ SDK = $SDK }
++    . "$PSScriptRoot\..\helpers\PowerShell.ps1"
++
++    $CloudInitTest = New-Object PSObject
++
++    # Methods added in following commit
 +
 +    $SDK.Extend("CloudInitTest", $CloudInitTest)
 +    Export-ModuleMember -Function @()
 +} -ArgumentList $SDK | Import-Module -Force
 ```
 
-Reason: Cleanup method and module export.
+Reason: CloudInitTest module skeleton - uses CloudInitBuild for worker creation.
 
 ---
 
-### Commit 51: Create `book-0-builder/host-sdk/modules/AutoinstallTest.ps1` (part 1)
+### Commit 50: `book-0-builder/host-sdk/modules/CloudInitTest.ps1` - Add Run method
 
 ```diff
-+param(
-+    [Parameter(Mandatory = $true)]
-+    $SDK
-+)
-+
-+New-Module -Name SDK.AutoinstallTest -ScriptBlock {
-+    param(
-+        [Parameter(Mandatory = $true)]
-+        $SDK
-+    )
-+
-+    $mod = @{ SDK = $SDK }
-+
-+    . "$PSScriptRoot\..\helpers\PowerShell.ps1"
-+
-+    $AutoinstallTest = New-Object PSObject
-```
-
-Reason: AutoinstallTest module header.
-
----
-
-### Commit 52: `book-0-builder/host-sdk/modules/AutoinstallTest.ps1` (part 2)
-
-```diff
-+    Add-ScriptMethods $AutoinstallTest @{
++    Add-ScriptMethods $CloudInitTest @{
 +        Run = {
-+            param([hashtable]$Overrides = @{})
-+
-+            $artifacts = $mod.SDK.Builder.Artifacts
-+            if (-not $artifacts -or -not $artifacts.iso) {
-+                throw "No ISO artifact found. Build the ISO first."
++            param([int]$Layer, [hashtable]$Overrides = @{})
++            $worker = $mod.SDK.CloudInitBuild.CreateWorker($Layer, $Overrides)
++            $mod.SDK.Log.Info("Setting up cloud-init test worker: $($worker.Name)")
++            $worker.Setup($true)
++            $mod.SDK.Testing.Reset()
++            foreach ($l in 1..$Layer) {
++                foreach ($f in $mod.SDK.Fragments.At($l)) {
++                    $worker.Test($f.Name, "Test $($f.Name)", $f.TestCommand, $f.ExpectedPattern)
++                }
 +            }
-+
-+            $baseConfig = $mod.SDK.Settings.Virtualization.Vbox
-+            $config = @{}
-+            foreach ($key in $baseConfig.Keys) { $config[$key] = $baseConfig[$key] }
-+            $config.IsoPath = $artifacts.iso
-+            foreach ($key in $Overrides.Keys) { $config[$key] = $Overrides[$key] }
-```
-
-Reason: Run method - get artifact and merge config.
-
----
-
-### Commit 53: `book-0-builder/host-sdk/modules/AutoinstallTest.ps1` (part 3)
-
-```diff
-+            $worker = $mod.SDK.Vbox.Worker(@{ Config = $config })
-+
-+            try {
-+                $mod.SDK.Log.Info("Setting up autoinstall test worker: $($config.Name)")
-+                $worker.Ensure()
-+                $worker.Start()
-+
-+                $mod.SDK.Log.Info("Waiting for SSH availability...")
-+                $mod.SDK.Network.WaitForSSH($worker.SSHHost, $worker.SSHPort, 600)
-```
-
-Reason: Run method - create worker and wait for SSH.
-
----
-
-### Commit 54: `book-0-builder/host-sdk/modules/AutoinstallTest.ps1` (part 4)
-
-```diff
-+                $mod.SDK.Testing.Reset()
-+                foreach ($fragment in $mod.SDK.Fragments.IsoRequired()) {
-+                    $worker.Test($fragment.Name, "Test $($fragment.Name)", $fragment.TestCommand, $fragment.ExpectedPattern)
-+                }
-+                $mod.SDK.Testing.Summary()
-+
-+                return @{
-+                    Success = ($mod.SDK.Testing.FailCount -eq 0)
-+                    Results = $mod.SDK.Testing.Results
-+                    WorkerName = $config.Name
-+                }
-+            } finally { }
++            $mod.SDK.Testing.Summary()
++            return @{ Success = ($mod.SDK.Testing.FailCount -eq 0); Results = $mod.SDK.Testing.Results; WorkerName = $worker.Name }
 +        }
 +    }
+
+     $SDK.Extend("CloudInitTest", $CloudInitTest)
 ```
 
-Reason: Run method - execute tests and return results.
+Reason: Run method - create worker via CloudInitBuild, execute tests (insert before Extend).
 
 ---
 
-### Commit 55: `book-0-builder/host-sdk/modules/AutoinstallTest.ps1` (part 5)
+### Commit 51: Create `book-0-builder/host-sdk/modules/AutoinstallBuild.ps1` - module shape
 
 ```diff
-+    Add-ScriptMethods $AutoinstallTest @{
++param([Parameter(Mandatory = $true)] $SDK)
++
++New-Module -Name SDK.AutoinstallBuild -ScriptBlock {
++    param([Parameter(Mandatory = $true)] $SDK)
++    $mod = @{ SDK = $SDK }
++    . "$PSScriptRoot\..\helpers\PowerShell.ps1"
++
++    $AutoinstallBuild = New-Object PSObject
++
++    # Methods added in following commits
++
++    $SDK.Extend("AutoinstallBuild", $AutoinstallBuild)
++    Export-ModuleMember -Function @()
++} -ArgumentList $SDK | Import-Module -Force
+```
+
+Reason: AutoinstallBuild module skeleton - handles build/worker creation for autoinstall testing.
+
+---
+
+### Commit 52: `book-0-builder/host-sdk/modules/AutoinstallBuild.ps1` - Add GetArtifacts and CreateWorker
+
+```diff
++    Add-ScriptMethods $AutoinstallBuild @{
++        GetArtifacts = {
++            $artifacts = $mod.SDK.Builder.Artifacts
++            if (-not $artifacts -or -not $artifacts.iso) { throw "No ISO artifact found. Build the ISO first." }
++            return $artifacts
++        }
++        CreateWorker = {
++            param([hashtable]$Overrides = @{})
++            $artifacts = $this.GetArtifacts()
++            $baseConfig = $mod.SDK.Settings.Virtualization.Vbox
++            $config = @{}; foreach ($k in $baseConfig.Keys) { $config[$k] = $baseConfig[$k] }
++            $config.IsoPath = $artifacts.iso
++            if ($config.disk_size) { $config.Disk = $config.disk_size; $config.Remove("disk_size") }
++            foreach ($k in $Overrides.Keys) { $config[$k] = $Overrides[$k] }
++            return $mod.SDK.Vbox.Worker(@{ Config = $config })
++        }
++    }
+
+     $SDK.Extend("AutoinstallBuild", $AutoinstallBuild)
+```
+
+Reason: GetArtifacts and CreateWorker methods (insert before Extend).
+
+---
+
+### Commit 53: `book-0-builder/host-sdk/modules/AutoinstallBuild.ps1` - Add Cleanup
+
+```diff
++    Add-ScriptMethods $AutoinstallBuild @{
 +        Cleanup = {
 +            param([string]$Name)
 +            if (-not $Name) { $Name = $mod.SDK.Settings.Virtualization.Vbox.Name }
-+            if ($mod.SDK.Vbox.Exists($Name)) {
-+                $mod.SDK.Vbox.Destroy($Name)
-+            }
++            if ($mod.SDK.Vbox.Exists($Name)) { $mod.SDK.Vbox.Destroy($Name) }
 +        }
 +    }
+
+     $SDK.Extend("AutoinstallBuild", $AutoinstallBuild)
+```
+
+Reason: Cleanup method (insert before Extend).
+
+---
+
+### Commit 54: Create `book-0-builder/host-sdk/modules/AutoinstallTest.ps1` - module shape
+
+```diff
++param([Parameter(Mandatory = $true)] $SDK)
++
++New-Module -Name SDK.AutoinstallTest -ScriptBlock {
++    param([Parameter(Mandatory = $true)] $SDK)
++    $mod = @{ SDK = $SDK }
++    . "$PSScriptRoot\..\helpers\PowerShell.ps1"
++
++    $AutoinstallTest = New-Object PSObject
++
++    # Methods added in following commit
 +
 +    $SDK.Extend("AutoinstallTest", $AutoinstallTest)
 +    Export-ModuleMember -Function @()
 +} -ArgumentList $SDK | Import-Module -Force
 ```
 
-Reason: Cleanup method and module export.
+Reason: AutoinstallTest module skeleton - uses AutoinstallBuild for worker creation.
 
 ---
 
-### Commit 56: `book-0-builder/host-sdk/SDK.ps1` - Add test module loading
+### Commit 55: `book-0-builder/host-sdk/modules/AutoinstallTest.ps1` - Add Run method
+
+```diff
++    Add-ScriptMethods $AutoinstallTest @{
++        Run = {
++            param([hashtable]$Overrides = @{})
++            $worker = $mod.SDK.AutoinstallBuild.CreateWorker($Overrides)
++            $mod.SDK.Log.Info("Setting up autoinstall test worker: $($worker.Name)")
++            $worker.Ensure(); $worker.Start()
++            $mod.SDK.Log.Info("Waiting for SSH availability...")
++            $mod.SDK.Network.WaitForSSH($worker.SSHHost, $worker.SSHPort, 600)
++            $mod.SDK.Testing.Reset()
++            foreach ($f in $mod.SDK.Fragments.IsoRequired()) {
++                $worker.Test($f.Name, "Test $($f.Name)", $f.TestCommand, $f.ExpectedPattern)
++            }
++            $mod.SDK.Testing.Summary()
++            return @{ Success = ($mod.SDK.Testing.FailCount -eq 0); Results = $mod.SDK.Testing.Results; WorkerName = $worker.Name }
++        }
++    }
+
+     $SDK.Extend("AutoinstallTest", $AutoinstallTest)
+```
+
+Reason: Run method - create worker via AutoinstallBuild, execute tests (insert before Extend).
+
+---
+
+### Commit 56: `book-0-builder/host-sdk/SDK.ps1` - Add build/test module loading
 
 ```diff
      & "$PSScriptRoot/modules/Testing.ps1" -SDK $SDK
++    & "$PSScriptRoot/modules/CloudInitBuild.ps1" -SDK $SDK
 +    & "$PSScriptRoot/modules/CloudInitTest.ps1" -SDK $SDK
++    & "$PSScriptRoot/modules/AutoinstallBuild.ps1" -SDK $SDK
 +    & "$PSScriptRoot/modules/AutoinstallTest.ps1" -SDK $SDK
 ```
 
-Reason: Load test modules after Testing module.
+Reason: Load build modules before test modules (test modules depend on build modules).
 
 ---
 
@@ -1260,3 +1285,5 @@ After all commits:
 - [ ] PowerShell: `$SDK.Log.Info("test")` outputs colored text
 - [ ] PowerShell: `$SDK.Fragments.Layers` returns fragment list
 - [ ] PowerShell: `$SDK.Testing.All` returns layer numbers
+- [ ] PowerShell: `$SDK.CloudInitBuild` exists (build logic reusable)
+- [ ] PowerShell: `$SDK.AutoinstallBuild` exists (build logic reusable)
