@@ -85,8 +85,40 @@ This rule governs validation, splitting, and `PLAN.md` maintenance for **existin
 Run this command before every commit to verify Rule 2 compliance:
 
 ```bash
-git diff --cached --numstat | awk '!/\.md$/{print $1+$2, $3; sum+=$1+$2} END{if(sum>20){print "---\nValidation failed. Commit exceeds line limit (" sum " lines).\nAre you sure this is the smallest commit size?\nCan you break this into smaller commits?" > "/dev/stderr"; exit 1}}'
+git diff --cached --numstat -M | awk '
+  /\.md$/ { next }                           # Skip markdown files
+  /=>/ { next }                              # Skip renames/moves (detected by -M)
+  $1 == 0 { next }                           # Skip pure deletions
+  {
+    lines = $1 + $2
+    print lines, $3
+    sum += lines
+    if ($2 == 0 && $1 > 0) { newfiles = newfiles $3 "\n" }
+  }
+  END {
+    if (sum > 20) {
+      msg = "---\nValidation failed. Commit exceeds line limit (" sum " lines).\n"
+      msg = msg "Are you sure this is the smallest commit size?\n"
+      msg = msg "Can you break this into smaller commits?\n"
+      msg = msg "- reference Rule 3 from RULES.md"
+      if (length(newfiles) > 0) {
+        msg = msg "\n\nNew file(s) detected:\n" newfiles
+        msg = msg "\nWas this (these) supposed to be a move/rename?\n"
+        msg = msg "- If yes: investigate why git did not detect it (use git diff -M)\n"
+        msg = msg "- If move + contribution: split into 2 commits per Rule 3 (move first, then contribute)"
+      }
+      print msg > "/dev/stderr"
+      exit 1
+    }
+  }
+'
 ```
+
+**What this validates:**
+- Counts lines changed in code files (excludes `.md`)
+- Exempts file deletions (no line limit)
+- Exempts file renames/moves (detected via `-M` flag)
+- If a new file addition fails validation, prompts to check if it should have been a rename
 
 If the command exits with an error, the commit is too large.
 
