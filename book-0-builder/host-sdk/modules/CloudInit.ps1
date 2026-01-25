@@ -44,6 +44,12 @@ New-Module -Name SDK.CloudInit -ScriptBlock {
         }
     }
 
+    Add-ScriptMethods $CloudInit @{
+        Clean = {
+            return $mod.SDK.Builder.Clean()
+        }
+    }
+
     $SDK.Extend("CloudInit", $CloudInit)
     Export-ModuleMember -Function @()
 } -ArgumentList $SDK | Import-Module -Force
