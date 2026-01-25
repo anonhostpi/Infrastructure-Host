@@ -132,13 +132,14 @@ class FragmentValidationError(Exception):
         return '\n'.join(f"  {i+1:3d}: {line}" for i, line in enumerate(lines))
 
 
-def render_cloud_init(ctx, include=None, exclude=None):
+def render_cloud_init(ctx, include=None, exclude=None, layer=None):
     """Render and merge cloud-init fragments, return as dict.
 
     Args:
         ctx: Build context
         include: List of fragment names to include (default: all)
         exclude: List of fragment names to exclude (default: none)
+        layer: Maximum build_layer to include (default: all)
 
     Fragment names are matched against the 'name' field in build.yaml.
 
@@ -162,6 +163,12 @@ def render_cloud_init(ctx, include=None, exclude=None):
         # Filter by exclude list (if specified)
         if exclude is not None and fragment_name in exclude:
             continue
+
+        # Filter by layer (if specified)
+        if layer is not None:
+            fragment_layer = fragment.get('build_layer', 0)
+            if fragment_layer > layer:
+                continue
 
         template_path = tpl_path.as_posix()
         rendered = render_text(ctx, template_path, scripts=scripts)
