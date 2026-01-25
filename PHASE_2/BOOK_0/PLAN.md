@@ -1278,12 +1278,16 @@ This plan blocks:
 ## Validation
 
 After all commits:
+
+**Host (PowerShell):**
+- [ ] `. SDK.ps1 -Globalize` loads without errors
+- [ ] `$SDK.Log.Info("test")` outputs colored text
+- [ ] `$SDK.Fragments.Layers` returns fragment list
+- [ ] `$SDK.Testing.All` returns layer numbers
+- [ ] `$SDK.CloudInitBuild` exists (build logic reusable)
+- [ ] `$SDK.AutoinstallBuild` exists (build logic reusable)
+
+**Builder VM** (via `$SDK.Builder.Stage()` then `$SDK.Builder.Exec()`):
 - [ ] `python -m builder --list` shows discovered fragments
 - [ ] `make cloud-init` succeeds
 - [ ] `make all` succeeds
-- [ ] PowerShell: `. SDK.ps1 -Globalize` loads without errors
-- [ ] PowerShell: `$SDK.Log.Info("test")` outputs colored text
-- [ ] PowerShell: `$SDK.Fragments.Layers` returns fragment list
-- [ ] PowerShell: `$SDK.Testing.All` returns layer numbers
-- [ ] PowerShell: `$SDK.CloudInitBuild` exists (build logic reusable)
-- [ ] PowerShell: `$SDK.AutoinstallBuild` exists (build logic reusable)
