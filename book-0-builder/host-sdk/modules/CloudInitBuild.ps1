@@ -31,6 +31,14 @@ New-Module -Name SDK.CloudInitBuild -ScriptBlock {
         }
     }
 
+    Add-ScriptMethods $CloudInitBuild @{
+        Cleanup = {
+            param([string]$Name)
+            if (-not $Name) { $Name = $mod.SDK.Settings.Virtualization.Runner.Name }
+            if ($mod.SDK.Multipass.Exists($Name)) { $mod.SDK.Multipass.Destroy($Name) }
+        }
+    }
+
     $SDK.Extend("CloudInitBuild", $CloudInitBuild)
     Export-ModuleMember -Function @()
 } -ArgumentList $SDK | Import-Module -Force
