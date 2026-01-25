@@ -47,6 +47,12 @@ New-Module -Name SDK.Autoinstall -ScriptBlock {
         }
     }
 
+    Add-ScriptMethods $Autoinstall @{
+        Clean = {
+            return $mod.SDK.Builder.Clean()
+        }
+    }
+
     $SDK.Extend("Autoinstall", $Autoinstall)
     Export-ModuleMember -Function @()
 } -ArgumentList $SDK | Import-Module -Force
