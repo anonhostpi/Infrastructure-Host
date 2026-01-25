@@ -47,9 +47,9 @@ New-Module -Name Helpers.Config -ScriptBlock {
             $yaml = ConvertFrom-Yaml $content
 
             # Auto-unwrap: if single key matches filename, unwrap it
-            # NOTE: Use Measure-Object for reliable key count (hashtable.Count can be unreliable)
+            # NOTE: OrderedHashtable.Keys doesn't pipeline correctly without ForEach-Object
             if ($yaml -is [hashtable]) {
-                $keyCount = ($yaml.Keys | Measure-Object).Count
+                $keyCount = ($yaml.Keys | ForEach-Object { $_ } | Measure-Object).Count
                 if ($keyCount -eq 1) {
                     $onlyKey = @($yaml.Keys)[0]
                     if ($onlyKey -eq $key) {
