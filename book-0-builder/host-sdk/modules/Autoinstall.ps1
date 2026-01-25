@@ -1,11 +1,11 @@
 param([Parameter(Mandatory = $true)] $SDK)
 
-New-Module -Name SDK.AutoinstallBuild -ScriptBlock {
+New-Module -Name SDK.Autoinstall -ScriptBlock {
     param([Parameter(Mandatory = $true)] $SDK)
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\helpers\PowerShell.ps1"
 
-    $AutoinstallBuild = New-Object PSObject
+    $Autoinstall = New-Object PSObject
 
     Add-ScriptMethods $AutoinstallBuild @{
         GetArtifacts = {
