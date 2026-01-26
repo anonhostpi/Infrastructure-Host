@@ -188,3 +188,167 @@ New-Module -Name SDK.Worker -ScriptBlock {
 **Reserved** (do not rename):
 - `$SDK.Multipass.Worker` - factory method
 - `$SDK.Vbox.Worker` - factory method
+
+---
+
+## Worker.Status Method
+
+**Proposal**: Add `Status` to SDK.Worker.Methods based on MultipassWorker.Status pattern.
+
+### Current State
+
+```powershell
+# Multipass.ps1 - core module
+Status = {
+    param([string]$VMName)
+    $result = $this.Exec($VMName, "cloud-init status")
+    return $result.Output
+}
+
+# Multipass.ps1 - worker method
+Status = {
+    return $mod.SDK.Multipass.Status($this.Name)
+}
+```
+
+### Proposed Worker.Methods Addition
+
+```powershell
+Status = {
+    $result = $this.Exec("cloud-init status")
+    return $result.Output
+}
+```
+
+This generalizes to any worker type since it uses `$this.Exec()`.
+
+---
+
+## Remove UntilInstalled Duplication
+
+**Issue**: UntilInstalled is defined in multiple places:
+
+| Location | Implementation |
+|----------|----------------|
+| `$SDK.Multipass.UntilInstalled($VMName)` | `$this.Exec($VMName, "cloud-init status --wait")` |
+| `MultipassWorker.UntilInstalled()` | Delegates to `$SDK.Multipass.UntilInstalled($this.Name)` |
+| `SDK.Worker.Methods` (proposed) | `$this.Exec("cloud-init status --wait")` |
+
+**Action**:
+1. Remove `UntilInstalled` from `$SDK.Multipass` core module
+2. Remove `UntilInstalled` from `$mod.Worker.Methods` in Multipass.ps1
+3. Keep only in `SDK.Worker.Methods` (uses `$this.Exec()`)
+
+---
+
+## Move Setup to SDK.Worker.Methods
+
+**Current**: Setup only exists in MultipassWorker.
+
+```powershell
+# Multipass.ps1 - worker method
+Setup = {
+    param([bool]$FailOnNotInitialized)
+    $created = $this.Ensure()
+    if (-not $created) {
+        throw "Failed to create VM '$($this.Name)'"
+    }
+    $initialized = $this.UntilInstalled()
+    if (-not $initialized -and $FailOnNotInitialized) {
+        throw "Cloud-init failed for VM '$($this.Name)'"
+    }
+    return $initialized
+}
+```
+
+**Proposal**: Move to SDK.Worker.Methods since it only uses worker methods (`Ensure`, `UntilInstalled`).
+
+Works for both MultipassWorker and VboxWorker.
+
+---
+
+## Add SDK.Network.SCP for File Transfers
+
+**Proposal**: Add SCP method to SDK.Network module.
+
+```powershell
+# SDK.Network
+SCP = {
+    param(
+        [string]$Source,
+        [string]$Destination,
+        [string]$KeyPath = $mod.SDK.Settings.KeyPath,
+        [int]$Port = 22
+    )
+    # scp -i $KeyPath -P $Port $Source $Destination
+    $args = @("-i", $KeyPath, "-P", $Port, "-o", "StrictHostKeyChecking=no", $Source, $Destination)
+    $result = & scp @args 2>&1
+    return @{
+        Output = $result
+        ExitCode = $LASTEXITCODE
+        Success = $LASTEXITCODE -eq 0
+    }
+}
+```
+
+---
+
+## Add Base Pull/Push to SDK.Worker.Methods
+
+**Proposal**: Add Pull and Push methods that use SCP, overridable by Multipass.
+
+### SDK.Worker.Methods (base implementation)
+
+```powershell
+Pull = {
+    param([string]$Source, [string]$Destination)
+    # Uses SSH-based SCP: user@host:source -> destination
+    $remote = "$($this.SSHUser)@$($this.SSHHost):$Source"
+    return $mod.SDK.Network.SCP($remote, $Destination, $mod.SDK.Settings.KeyPath, $this.SSHPort).Success
+}
+Push = {
+    param([string]$Source, [string]$Destination)
+    # Uses SSH-based SCP: source -> user@host:destination
+    $remote = "$($this.SSHUser)@$($this.SSHHost):$Destination"
+    return $mod.SDK.Network.SCP($Source, $remote, $mod.SDK.Settings.KeyPath, $this.SSHPort).Success
+}
+```
+
+### Multipass.Worker Override
+
+```powershell
+# Multipass uses multipass transfer instead of SCP
+Pull = {
+    param([string]$Source, [string]$Destination)
+    return $mod.SDK.Multipass.Transfer("$($this.Name):$Source", $Destination)
+}
+Push = {
+    param([string]$Source, [string]$Destination)
+    return $mod.SDK.Multipass.Transfer($Source, "$($this.Name):$Destination")
+}
+```
+
+---
+
+## Add Base Shell to SDK.Worker.Methods
+
+**Proposal**: Add Shell method that spawns interactive SSH session, overridable by Multipass.
+
+### SDK.Worker.Methods (base implementation)
+
+```powershell
+Shell = {
+    # Spawn interactive SSH session
+    $keyPath = $mod.SDK.Settings.KeyPath
+    & ssh -i $keyPath -p $this.SSHPort -o StrictHostKeyChecking=no "$($this.SSHUser)@$($this.SSHHost)"
+}
+```
+
+### Multipass.Worker Override
+
+```powershell
+# Multipass uses multipass shell instead of SSH
+Shell = {
+    $mod.SDK.Multipass.Shell($this.Name)
+}
+```

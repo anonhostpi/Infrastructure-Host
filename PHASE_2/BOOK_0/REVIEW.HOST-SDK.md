@@ -212,27 +212,28 @@ MultipassWorker:                                  # Sources: [M]=Multipass.ps1, 
   Disk: string
   Network: string
   CloudInit: string
-  # From $mod.Worker.Methods [M]
-  Info: () → object
-  Addresses: () → string[]
-  Address: () → string
+  # From $mod.Worker.Methods [M] - Common
   Exists: () → bool
   Running: () → bool
-  Create: () → bool
-  Destroy: () → bool
   Start: () → bool
   Shutdown: ($Force?) → bool
+  Destroy: () → bool
+  Create: () → bool
+  Exec: ($Command, $WorkingDir?) → ExecResult
+  # From $mod.Worker.Methods [M] - Multipass-specific
   UntilShutdown: ($TimeoutSeconds?) → bool
   Status: () → string
   Setup: ($FailOnNotInitialized?) → bool
+  Pull: ($Source, $Destination) → bool
+  Push: ($Source, $Destination) → bool
+  Shell: () → void
+  Info: () → object
+  Addresses: () → string[]
+  Address: () → string
   Mount: ($SourcePath, $TargetPath) → bool
   Unmount: ($TargetPath?) → bool
   Mounts: () → object
   Mounted: ($HostPath) → object
-  Pull: ($Source, $Destination) → bool
-  Push: ($Source, $Destination) → bool
-  Exec: ($Command, $WorkingDir?) → ExecResult
-  Shell: () → void
   # From SDK.Worker.Methods [W]
   Ensure: () → bool
   Test: ($TestId, $Name, $Command, $ExpectedPattern) → TestResult
