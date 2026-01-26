@@ -23,7 +23,7 @@ name: ui
 description: Desktop UI packages (optional GUI environment)
 iso_required: false
 build_order: 90
-build_layer: 7
+build_layer: 15
 ```
 
 Reason: Fragment metadata required for SDK discovery.

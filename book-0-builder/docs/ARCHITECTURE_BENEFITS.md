@@ -39,6 +39,6 @@ The fragment-based architecture enables:
 - **Separation of concerns** - Each fragment handles one aspect (network, users, security, etc.)
 - **Selective inclusion** - Enable/disable features by including or excluding fragments
 - **Independent maintenance** - Update security settings without touching virtualization config
-- **Clear organization** - Numeric prefixes control merge order (10-network, 20-users, etc.)
+- **Clear organization** - Fragment directories in `book-*` structure with `build.yaml` metadata controlling merge order
 
 See [Chapter 6](../CLOUD_INIT_CONFIGURATION/OVERVIEW.md) for the full fragment catalog.

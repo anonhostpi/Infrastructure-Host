@@ -11,7 +11,7 @@ New-Module -Name SDK.Network -ScriptBlock {
 
     $mod = @{ SDK = $SDK }
 
-    . "$PSScriptRoot\helpers\PowerShell.ps1"
+    . "$PSScriptRoot\..\helpers\PowerShell.ps1"
 
     $Network = New-Object PSObject
 
@@ -70,21 +70,23 @@ New-Module -Name SDK.Network -ScriptBlock {
 
             return $false
         }
-        UntilSSH = {
+        WaitForSSH = {
             param(
                 [Parameter(Mandatory = $true)]
                 [string]$Address,
                 [int]$Port = 22,
-                [int]$TimeoutSeconds
+                [int]$TimeoutSeconds = 300,
+                [bool]$Throw = $true
             )
-            return $mod.SDK.Job({
-                while(-not $SDK.Network.TestSSH($Address, $Port)) {
+            $timedOut = $mod.SDK.Job({
+                while (-not $SDK.Network.TestSSH($Address, $Port)) {
                     Start-Sleep -Seconds 5
                 }
-            }, $TimeoutSeconds, @{
-                Address = $Address
-                Port = $Port
-            })
+            }, $TimeoutSeconds, @{ Address = $Address; Port = $Port })
+            if ($timedOut -and $Throw) {
+                throw "Timed out waiting for SSH on ${Address}:${Port}"
+            }
+            return -not $timedOut
         }
         SSH = {
             param(
@@ -131,6 +133,89 @@ New-Module -Name SDK.Network -ScriptBlock {
                     Success = $false
                 }
             }
+        }
+        SCP = {
+            param(
+                [Parameter(Mandatory = $true)]
+                [string]$Username,
+                [Parameter(Mandatory = $true)]
+                [string]$Address,
+                [int]$Port = 22,
+                [Parameter(Mandatory = $true)]
+                [string]$LocalPath,
+                [Parameter(Mandatory = $true)]
+                [string]$RemotePath,
+                [ValidateSet("Push", "Pull")]
+                [string]$Direction = "Push",
+                [string]$KeyPath = $mod.SDK.Settings.KeyPath
+            )
+
+            $key_path = If (Test-Path $KeyPath) {
+                "$(Resolve-Path $KeyPath)"
+            } Else {
+                "$(Resolve-Path "$env:USERPROFILE\.ssh\$KeyPath" -ErrorAction SilentlyContinue)"
+            }
+
+            if (-not (Test-Path $key_path)) {
+                throw "SSH key not found at path: $key_path"
+            }
+
+            $remote = "${Username}@${Address}:${RemotePath}"
+            $source, $dest = if ($Direction -eq "Push") { $LocalPath, $remote } else { $remote, $LocalPath }
+
+            $params = @(
+                "-o", "BatchMode=yes",
+                "-o", "StrictHostKeyChecking=no",
+                "-o", "UserKnownHostsFile=/dev/null",
+                "-i", $key_path,
+                "-P", $Port,
+                $source, $dest
+            )
+
+            Try {
+                $output = & scp @params 2>&1
+                return @{
+                    Output = $output
+                    ExitCode = $LASTEXITCODE
+                    Success = ($LASTEXITCODE -eq 0)
+                }
+            } Catch {
+                return @{
+                    Output = $_.Exception.Message
+                    ExitCode = 1
+                    Success = $false
+                }
+            }
+        }
+        Shell = {
+            param(
+                [Parameter(Mandatory = $true)]
+                [string]$Username,
+                [Parameter(Mandatory = $true)]
+                [string]$Address,
+                [int]$Port = 22,
+                [string]$KeyPath = $mod.SDK.Settings.KeyPath
+            )
+
+            $key_path = If (Test-Path $KeyPath) {
+                "$(Resolve-Path $KeyPath)"
+            } Else {
+                "$(Resolve-Path "$env:USERPROFILE\.ssh\$KeyPath" -ErrorAction SilentlyContinue)"
+            }
+
+            if (-not (Test-Path $key_path)) {
+                throw "SSH key not found at path: $key_path"
+            }
+
+            $params = @(
+                "-o", "StrictHostKeyChecking=no",
+                "-o", "UserKnownHostsFile=/dev/null",
+                "-i", $key_path,
+                "-p", $Port,
+                "$Username@$Address"
+            )
+
+            & ssh @params
         }
     }
 

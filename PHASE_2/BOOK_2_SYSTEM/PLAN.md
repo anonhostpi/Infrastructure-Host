@@ -23,7 +23,7 @@ name: system
 description: System configuration (timezone, locale, hostname)
 iso_required: false
 build_order: 40
-build_layer: 5
+build_layer: 6
 ```
 
 Reason: Fragment metadata required for SDK discovery.

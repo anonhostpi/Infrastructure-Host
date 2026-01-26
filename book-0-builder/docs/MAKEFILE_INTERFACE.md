@@ -8,14 +8,15 @@ The Makefile provides a standard interface for building deployment artifacts wit
 .PHONY: all clean scripts cloud-init autoinstall iso help list-fragments
 
 # Source dependencies
-CONFIGS := $(wildcard src/config/*.config.yaml)
-SCRIPTS := $(wildcard src/scripts/*.tpl)
-CLOUD_INIT_FRAGMENTS := $(wildcard src/autoinstall/cloud-init/*.yaml.tpl)
-AUTOINSTALL_TEMPLATES := $(wildcard src/autoinstall/*.yaml.tpl)
+CONFIGS := $(wildcard book-0-builder/config/*.yaml) $(wildcard book-*/*/config/production.yaml)
+SCRIPTS := $(wildcard book-*/*/scripts/*.sh.tpl)
+FRAGMENTS := $(wildcard book-*/*/fragment.yaml.tpl)
+BUILD_YAMLS := $(wildcard book-*/*/build.yaml)
 
 # Fragment selection (override via command line)
 INCLUDE ?=
 EXCLUDE ?=
+LAYER ?=
 
 # Default: build everything
 all: scripts cloud-init autoinstall
@@ -27,8 +28,14 @@ help:
 	@echo "  scripts        - Generate shell scripts"
 	@echo "  cloud-init     - Generate cloud-init config"
 	@echo "  autoinstall    - Generate user-data"
+	@echo "  iso            - Build modified Ubuntu ISO with embedded user-data"
 	@echo "  list-fragments - List available cloud-init fragments"
 	@echo "  clean          - Remove generated files"
+	@echo ""
+	@echo "Fragment Selection (cloud-init target only):"
+	@echo "  LAYER     - Include fragments up to build_layer N"
+	@echo "  INCLUDE   - Include only specified fragments"
+	@echo "  EXCLUDE   - Exclude specified fragments"
 
 # List available fragments
 list-fragments:
@@ -43,14 +50,18 @@ output/scripts/%.sh: src/scripts/%.sh.tpl $(CONFIGS)
 # Generate cloud-init config (renders scripts internally)
 cloud-init: output/cloud-init.yaml
 
-output/cloud-init.yaml: $(CLOUD_INIT_FRAGMENTS) $(SCRIPTS) $(CONFIGS)
+output/cloud-init.yaml: $(FRAGMENTS) $(SCRIPTS) $(CONFIGS) $(BUILD_YAMLS)
+ifdef LAYER
+	python3 -m builder render cloud-init -o $@ --layer $(LAYER)
+else
 	python3 -m builder render cloud-init -o $@ $(INCLUDE) $(EXCLUDE)
+endif
 
 # Generate autoinstall user-data (renders scripts + cloud-init internally)
 autoinstall: output/user-data
 
-output/user-data: $(AUTOINSTALL_TEMPLATES) $(CLOUD_INIT_FRAGMENTS) $(SCRIPTS) $(CONFIGS)
-	python -m builder render autoinstall -o $@
+output/user-data: $(FRAGMENTS) $(SCRIPTS) $(CONFIGS) $(BUILD_YAMLS)
+	python3 -m builder render autoinstall -o $@
 
 # Build ISO (runs in multipass VM)
 iso: output/user-data
@@ -77,40 +88,41 @@ clean:
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `INCLUDE` | Include only specified fragments | `-i 20-users -i 25-ssh` |
-| `EXCLUDE` | Exclude specified fragments | `-x 10-network` |
+| `LAYER` | Include fragments up to build_layer N | `3` (up to Users layer) |
+| `INCLUDE` | Include only specified fragments | `-i users -i ssh` |
+| `EXCLUDE` | Exclude specified fragments | `-x network` |
 
 ## Dependency Graph
 
 ```
-                     src/config/*.config.yaml
-                               │
-         ┌─────────────────────┼─────────────────────┐
-         ▼                     ▼                     ▼
-  src/scripts/*.tpl    src/autoinstall/       src/autoinstall/
-         │             cloud-init/*.yaml.tpl  *.yaml.tpl
-         │                     │                     │
-         ▼                     │                     │
-   render_scripts()            │                     │
-   (returns dict)              │                     │
-         │                     │                     │
-         ├──────► scripts ─────┤                     │
-         │        context      ▼                     │
-         │              render_cloud_init()          │
-         │              (returns dict)               │
-         │                     │                     │
-         │                     ├──► cloud_init ──────┤
-         │                     │    context          ▼
-         │                     │            render_autoinstall()
-         │                     │                     │
-         ▼                     ▼                     ▼
-  output/scripts/*.sh   output/cloud-init.yaml   output/user-data
-      (standalone)                                   │
-                                                     ▼
-                                                build-iso.sh
-                                                     │
-                                                     ▼
-                                                 ISO file
+                  book-*/*/config/*.yaml
+                           │
+      ┌────────────────────┼─────────────────────┐
+      ▼                    ▼                     ▼
+book-*/*/scripts/   book-*/*/fragment.yaml.tpl  book-*/*/build.yaml
+   *.sh.tpl                │                     │
+      │                    │                     │
+      ▼                    │                     │
+render_scripts()           │                     │
+(returns dict)             │                     │
+      │                    │                     │
+      ├────► scripts ──────┤                     │
+      │      context       ▼                     │
+      │            render_cloud_init()           │
+      │            (returns dict)                │
+      │                    │                     │
+      │                    ├──► cloud_init ──────┤
+      │                    │    context          ▼
+      │                    │          render_autoinstall()
+      │                    │                     │
+      ▼                    ▼                     ▼
+output/scripts/*.sh  output/cloud-init.yaml  output/user-data
+   (standalone)                                  │
+                                                 ▼
+                                            build-iso.sh
+                                                 │
+                                                 ▼
+                                              ISO file
 ```
 
 **Context Flow:**
@@ -132,11 +144,14 @@ make autoinstall
 # List available fragments
 make list-fragments
 
+# Build cloud-init up to a specific layer
+make cloud-init LAYER=3           # Up to Users layer
+
 # Build cloud-init excluding network fragment (useful for testing)
-make cloud-init EXCLUDE="-x 10-network"
+make cloud-init EXCLUDE="-x network"
 
 # Build cloud-init with only specific fragments
-make cloud-init INCLUDE="-i 20-users -i 25-ssh"
+make cloud-init INCLUDE="-i users -i ssh"
 
 # Force rebuild (ignores timestamps)
 make -B scripts

@@ -11,7 +11,7 @@ New-Module -Name SDK.Multipass -ScriptBlock {
 
     $mod = @{ SDK = $SDK }
 
-    . "$PSScriptRoot\helpers\PowerShell.ps1"
+    . "$PSScriptRoot\..\helpers\PowerShell.ps1"
 
     $mod.Configurator = @{
         Defaulter = {
@@ -75,6 +75,12 @@ New-Module -Name SDK.Multipass -ScriptBlock {
             Disk = {
                 return $this.Rendered.Disk
             }
+            Network = {
+                return $this.Rendered.Network
+            }
+            CloudInit = {
+                return $this.Rendered.CloudInit
+            }
         }
         Methods = @{
             #region: Worker VM Info
@@ -99,18 +105,12 @@ New-Module -Name SDK.Multipass -ScriptBlock {
                 $config = $this.Rendered
                 return $mod.SDK.Multipass.Create(
                     $this.Name,
-                    $null,
-                    $null,
+                    $config.CloudInit,
+                    $config.Network,
                     $config.CPUs,
                     $config.Memory,
                     $config.Disk
                 )
-            }
-            Ensure = {
-                if( -not $this.Exists() ) {
-                    return $this.Create()
-                }
-                return $true
             }
             Destroy = {
                 if( -not $this.Exists() ) { return $true }
@@ -136,26 +136,6 @@ New-Module -Name SDK.Multipass -ScriptBlock {
             UntilShutdown = {
                 param( [int] $TimeoutSeconds )
                 return $mod.SDK.Multipass.UntilShutdown($this.Name, $TimeoutSeconds)
-            }
-            
-            #region: Worker Cloud-Init
-            Status = {
-                return $mod.SDK.Multipass.Status($this.Name)
-            }
-            UntilInstalled = {
-                return $mod.SDK.Multipass.UntilInstalled($this.Name)
-            }
-            Setup = {
-                param( [bool]$FailOnNotInitialized )
-                $created = $this.Ensure()
-                if( -not $created ) {
-                    throw "Failed to create VM '$($this.Name)'"
-                }
-                $initialized = $this.UntilInstalled()
-                if( -not $initialized -and $FailOnNotInitialized ) {
-                    throw "Cloud-init failed for VM '$($this.Name)'"
-                }
-                return $initialized
             }
 
             #region: Worker File Sharing
@@ -246,7 +226,9 @@ New-Module -Name SDK.Multipass -ScriptBlock {
 
             Add-ScriptProperties $worker $mod.Worker.Properties
             Add-ScriptMethods $worker $mod.Worker.Methods
-            
+
+            $mod.SDK.Worker.Methods($worker)
+
             return $worker
         }
     }
@@ -290,14 +272,6 @@ New-Module -Name SDK.Multipass -ScriptBlock {
                 return @()
             }
             return $result.Output | ConvertFrom-Csv
-        }
-        Status = {
-            param(
-                [Parameter(Mandatory = $true)]
-                [string]$VMName
-            )
-            $result = $this.Exec($VMName, "cloud-init status")
-            return $result.Output
         }
         Mounts = {
             param(
@@ -350,14 +324,6 @@ New-Module -Name SDK.Multipass -ScriptBlock {
                 [string]$VMName
             )
             return $this.Invoke("start", $VMName).Success
-        }
-        UntilInstalled = {
-            param(
-                [Parameter(Mandatory = $true)]
-                [string]$VMName
-            )
-            $result = $this.Exec($VMName, "cloud-init status --wait")
-            return $result.Success
         }
         Shutdown = {
             param(

@@ -39,7 +39,7 @@ book-2-cloud/ssh/
   description: SSH server configuration and hardening
   iso_required: true
   build_order: 25
-  build_layer: 3
+  build_layer: 4
   ```
 
 ### 2.2 Config Restructure (Fragments only - skip for Book 0)

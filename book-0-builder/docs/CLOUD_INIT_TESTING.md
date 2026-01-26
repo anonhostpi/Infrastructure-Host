@@ -28,21 +28,21 @@ Cloud-init fragments are tested **incrementally** - each test level includes all
 
 | Level | Fragment(s) | Cumulative Fragments |
 |-------|-------------|----------------------|
-| 6.1 | 10-network | 10-network |
-| 6.2 | 15-kernel | 10-network, 15-kernel |
-| 6.3 | 20-users | 10-network, 15-kernel, 20-users |
-| 6.4 | 25-ssh | + 25-ssh |
-| 6.5 | 30-ufw | + 30-ufw |
-| 6.6 | 40-system | + 40-system |
-| 6.7 | 45-msmtp | + 45-msmtp |
-| 6.8 | 50-packages, 50-pkg-security, 999-pkg-upgrade | + 50-packages, 50-pkg-security, 999-pkg-upgrade |
-| 6.9 | 55-security-mon | + 55-security-mon |
-| 6.10 | 60-virtualization | + 60-virtualization |
-| 6.11 | 70-cockpit | + 70-cockpit |
-| 6.12 | 75-claude-code | + 75-claude-code |
-| 6.13 | 76-copilot-cli | + 76-copilot-cli |
-| 6.14 | 77-opencode | + 77-opencode |
-| 6.15 | 90-ui | + 90-ui (all fragments) |
+| 6.1 | network | network |
+| 6.2 | kernel | network, kernel |
+| 6.3 | users | network, kernel, users |
+| 6.4 | ssh | + ssh |
+| 6.5 | ufw | + ufw |
+| 6.6 | system | + system |
+| 6.7 | msmtp | + msmtp |
+| 6.8 | packages, pkg-security, pkg-upgrade | + packages, pkg-security, pkg-upgrade |
+| 6.9 | security-mon | + security-mon |
+| 6.10 | virtualization | + virtualization |
+| 6.11 | cockpit | + cockpit |
+| 6.12 | claude-code | + claude-code |
+| 6.13 | copilot-cli | + copilot-cli |
+| 6.14 | opencode | + opencode |
+| 6.15 | ui | + ui (all fragments) |
 
 ### Extended Test Levels
 
@@ -109,8 +109,8 @@ Levels to test: 6.1 6.2 6.3
   Done
 
 [3/6] Building cloud-init -- This may take a while. Please wait...
-  Fragments: 10-network, 15-kernel, 20-users
-  Builder args: -i 10-network -i 15-kernel -i 20-users
+  Fragments: network, kernel, users
+  Builder args: -i network -i kernel -i users
   Output: D:\Orchestrations\Infrastructure-Host\output\cloud-init.yaml
   Done
 
@@ -191,7 +191,7 @@ Detailed test specifications for each fragment are in [CLOUD_INIT_TESTS/](./CLOU
 
 ## Configuration Files
 
-Configuration files in `src/config/` are created once from examples and **persist across test runs**. They contain values gathered during earlier chapters.
+Configuration files in `book-*/*/config/` directories are created once from examples and **persist across test runs**. They contain values gathered during earlier chapters.
 
 | File | Created From | Contains |
 |------|--------------|----------|
@@ -241,7 +241,7 @@ If you need to manually test or debug:
 python -m builder list-fragments
 
 # Build cloud-init with specific fragments
-python -m builder render cloud-init -o output/cloud-init.yaml -i 10-network -i 20-users -i 25-ssh
+python -m builder render cloud-init -o output/cloud-init.yaml -i network -i users -i ssh
 ```
 
 ### Step 2: Launch Test VM
