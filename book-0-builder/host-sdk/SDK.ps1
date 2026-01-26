@@ -26,10 +26,11 @@ New-Module -Name SDK -ScriptBlock {
                 [Parameter(Mandatory = $true)]
                 [string]$ModuleName,
                 [Parameter(Mandatory = $true)]
-                $ModuleObject
+                $ModuleObject,
+                $Target = $this
             )
 
-            $this | Add-Member -MemberType NoteProperty -Name $ModuleName -Value $ModuleObject -Force
+            $Target | Add-Member -MemberType NoteProperty -Name $ModuleName -Value $ModuleObject -Force
         }
         Job = {
             param(
