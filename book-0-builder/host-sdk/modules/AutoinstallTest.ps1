@@ -24,6 +24,6 @@ New-Module -Name SDK.Autoinstall.Test -ScriptBlock {
         }
     }
 
-    $SDK.Autoinstall | Add-Member -MemberType NoteProperty -Name Test -Value $AutoinstallTest
+    $mod.SDK.Extend("Test", $AutoinstallTest, $mod.SDK.Autoinstall)
     Export-ModuleMember -Function @()
 } -ArgumentList $SDK | Import-Module -Force

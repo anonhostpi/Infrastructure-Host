@@ -137,26 +137,6 @@ New-Module -Name SDK.Multipass -ScriptBlock {
                 param( [int] $TimeoutSeconds )
                 return $mod.SDK.Multipass.UntilShutdown($this.Name, $TimeoutSeconds)
             }
-            
-            #region: Worker Cloud-Init
-            Status = {
-                return $mod.SDK.Multipass.Status($this.Name)
-            }
-            UntilInstalled = {
-                return $mod.SDK.Multipass.UntilInstalled($this.Name)
-            }
-            Setup = {
-                param( [bool]$FailOnNotInitialized )
-                $created = $this.Ensure()
-                if( -not $created ) {
-                    throw "Failed to create VM '$($this.Name)'"
-                }
-                $initialized = $this.UntilInstalled()
-                if( -not $initialized -and $FailOnNotInitialized ) {
-                    throw "Cloud-init failed for VM '$($this.Name)'"
-                }
-                return $initialized
-            }
 
             #region: Worker File Sharing
             Mount = {
@@ -247,7 +227,7 @@ New-Module -Name SDK.Multipass -ScriptBlock {
             Add-ScriptProperties $worker $mod.Worker.Properties
             Add-ScriptMethods $worker $mod.Worker.Methods
 
-            Add-CommonWorkerMethods $worker
+            $mod.SDK.Worker.Methods($worker)
 
             return $worker
         }
@@ -292,14 +272,6 @@ New-Module -Name SDK.Multipass -ScriptBlock {
                 return @()
             }
             return $result.Output | ConvertFrom-Csv
-        }
-        Status = {
-            param(
-                [Parameter(Mandatory = $true)]
-                [string]$VMName
-            )
-            $result = $this.Exec($VMName, "cloud-init status")
-            return $result.Output
         }
         Mounts = {
             param(
@@ -352,14 +324,6 @@ New-Module -Name SDK.Multipass -ScriptBlock {
                 [string]$VMName
             )
             return $this.Invoke("start", $VMName).Success
-        }
-        UntilInstalled = {
-            param(
-                [Parameter(Mandatory = $true)]
-                [string]$VMName
-            )
-            $result = $this.Exec($VMName, "cloud-init status --wait")
-            return $result.Success
         }
         Shutdown = {
             param(

@@ -192,6 +192,6 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
         }
     }
 
-    $SDK.Testing | Add-Member -MemberType NoteProperty -Name Verifications -Value $Verifications
+    $mod.SDK.Extend("Verifications", $Verifications, $mod.SDK.Testing)
     Export-ModuleMember -Function @()
 } -ArgumentList $SDK | Import-Module -Force

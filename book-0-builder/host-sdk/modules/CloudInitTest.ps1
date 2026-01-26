@@ -10,7 +10,7 @@ New-Module -Name SDK.CloudInit.Test -ScriptBlock {
     Add-ScriptMethods $CloudInitTest @{
         Run = {
             param([int]$Layer, [hashtable]$Overrides = @{})
-            $worker = $mod.SDK.CloudInit.CreateWorker($Layer, $Overrides)
+            $worker = $mod.SDK.CloudInit.Worker($Layer, $Overrides)
             $mod.SDK.Log.Info("Setting up cloud-init test worker: $($worker.Name)")
             $worker.Setup($true)
             $mod.SDK.Testing.Reset()
@@ -24,6 +24,6 @@ New-Module -Name SDK.CloudInit.Test -ScriptBlock {
         }
     }
 
-    $SDK.CloudInit | Add-Member -MemberType NoteProperty -Name Test -Value $CloudInitTest
+    $mod.SDK.Extend("Test", $CloudInitTest, $mod.SDK.CloudInit)
     Export-ModuleMember -Function @()
 } -ArgumentList $SDK | Import-Module -Force

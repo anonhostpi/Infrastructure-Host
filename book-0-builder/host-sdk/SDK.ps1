@@ -75,7 +75,6 @@ New-Module -Name SDK -ScriptBlock {
     & "$PSScriptRoot/modules/Worker.ps1" -SDK $SDK
     & "$PSScriptRoot/modules/Settings.ps1" -SDK $SDK
     & "$PSScriptRoot/modules/Network.ps1" -SDK $SDK
-    & "$PSScriptRoot/modules/General.ps1" -SDK $SDK
     & "$PSScriptRoot/modules/Vbox.ps1" -SDK $SDK
     & "$PSScriptRoot/modules/Multipass.ps1" -SDK $SDK
     & "$PSScriptRoot/modules/Builder.ps1" -SDK $SDK

@@ -109,7 +109,7 @@ New-Module -Name SDK.Vbox -ScriptBlock {
             Add-ScriptProperties $worker $mod.Worker.Properties
             Add-ScriptMethods $worker $mod.Worker.Methods
 
-            Add-CommonWorkerMethods $worker
+            $mod.SDK.Worker.Methods($worker)
 
             return $worker
         }

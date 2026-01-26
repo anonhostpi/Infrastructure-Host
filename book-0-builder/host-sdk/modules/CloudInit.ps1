@@ -25,7 +25,7 @@ New-Module -Name SDK.CloudInit -ScriptBlock {
             if (-not $artifacts -or -not $artifacts.cloud_init) { throw "No cloud-init artifact found." }
             return $artifacts
         }
-        CreateWorker = {
+        Worker = {
             param([int]$Layer, [hashtable]$Overrides = @{})
             $artifacts = $this.Build($Layer)
             $baseConfig = $mod.SDK.Settings.Virtualization.Runner
