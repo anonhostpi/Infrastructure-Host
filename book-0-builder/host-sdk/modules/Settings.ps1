@@ -50,10 +50,14 @@ New-Module -Name SDK.Settings -ScriptBlock {
     }
 
     $mod.VirtConfig = $Settings.Load("vm.config.yaml")
+    $mod.LayersConfig = $Settings.Load("book-0-builder/config/build_layers.yaml")
 
     Add-ScriptProperties $Settings @{
         Virtualization = {
             return $mod.VirtConfig
+        }
+        Layers = {
+            return $mod.LayersConfig
         }
     }
 
