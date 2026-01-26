@@ -269,22 +269,51 @@ Works for both MultipassWorker and VboxWorker.
 
 ## Add SDK.Network.SCP for File Transfers
 
-**Proposal**: Add SCP method to SDK.Network module.
+**Proposal**: Add SCP method to SDK.Network module with signature matching SSH.
 
 ```powershell
-# SDK.Network
+# SDK.Network - signature mirrors SSH
 SCP = {
     param(
-        [string]$Source,
-        [string]$Destination,
-        [string]$KeyPath = $mod.SDK.Settings.KeyPath,
-        [int]$Port = 22
+        [Parameter(Mandatory = $true)]
+        [string]$Username,
+        [Parameter(Mandatory = $true)]
+        [string]$Address,
+        [int]$Port = 22,
+        [Parameter(Mandatory = $true)]
+        [string]$LocalPath,
+        [Parameter(Mandatory = $true)]
+        [string]$RemotePath,
+        [ValidateSet("Push", "Pull")]
+        [string]$Direction = "Push",
+        [string]$KeyPath = $mod.SDK.Settings.KeyPath
     )
-    # scp -i $KeyPath -P $Port $Source $Destination
-    $args = @("-i", $KeyPath, "-P", $Port, "-o", "StrictHostKeyChecking=no", $Source, $Destination)
-    $result = & scp @args 2>&1
+
+    $key_path = If (Test-Path $KeyPath) {
+        "$(Resolve-Path $KeyPath)"
+    } Else {
+        "$(Resolve-Path "$env:USERPROFILE\.ssh\$KeyPath" -ErrorAction SilentlyContinue)"
+    }
+
+    if (-not (Test-Path $key_path)) {
+        throw "SSH key not found at path: $key_path"
+    }
+
+    $remote = "$Username@$Address`:$RemotePath"
+    $source, $dest = if ($Direction -eq "Push") { $LocalPath, $remote } else { $remote, $LocalPath }
+
+    $params = @(
+        "-o", "BatchMode=yes",
+        "-o", "StrictHostKeyChecking=no",
+        "-o", "UserKnownHostsFile=/dev/null",
+        "-i", $key_path,
+        "-P", $Port,
+        $source, $dest
+    )
+
+    $output = & scp @params 2>&1
     return @{
-        Output = $result
+        Output = $output
         ExitCode = $LASTEXITCODE
         Success = $LASTEXITCODE -eq 0
     }
@@ -295,22 +324,24 @@ SCP = {
 
 ## Add Base Pull/Push to SDK.Worker.Methods
 
-**Proposal**: Add Pull and Push methods that use SCP, overridable by Multipass.
+**Proposal**: Add Pull and Push methods that delegate to SDK.Network.SCP, overridable by Multipass.
 
 ### SDK.Worker.Methods (base implementation)
 
 ```powershell
 Pull = {
-    param([string]$Source, [string]$Destination)
-    # Uses SSH-based SCP: user@host:source -> destination
-    $remote = "$($this.SSHUser)@$($this.SSHHost):$Source"
-    return $mod.SDK.Network.SCP($remote, $Destination, $mod.SDK.Settings.KeyPath, $this.SSHPort).Success
+    param([string]$RemotePath, [string]$LocalPath)
+    return $mod.SDK.Network.SCP(
+        $this.SSHUser, $this.SSHHost, $this.SSHPort,
+        $LocalPath, $RemotePath, "Pull"
+    ).Success
 }
 Push = {
-    param([string]$Source, [string]$Destination)
-    # Uses SSH-based SCP: source -> user@host:destination
-    $remote = "$($this.SSHUser)@$($this.SSHHost):$Destination"
-    return $mod.SDK.Network.SCP($Source, $remote, $mod.SDK.Settings.KeyPath, $this.SSHPort).Success
+    param([string]$LocalPath, [string]$RemotePath)
+    return $mod.SDK.Network.SCP(
+        $this.SSHUser, $this.SSHHost, $this.SSHPort,
+        $LocalPath, $RemotePath, "Push"
+    ).Success
 }
 ```
 
@@ -319,12 +350,12 @@ Push = {
 ```powershell
 # Multipass uses multipass transfer instead of SCP
 Pull = {
-    param([string]$Source, [string]$Destination)
-    return $mod.SDK.Multipass.Transfer("$($this.Name):$Source", $Destination)
+    param([string]$RemotePath, [string]$LocalPath)
+    return $mod.SDK.Multipass.Transfer("$($this.Name):$RemotePath", $LocalPath)
 }
 Push = {
-    param([string]$Source, [string]$Destination)
-    return $mod.SDK.Multipass.Transfer($Source, "$($this.Name):$Destination")
+    param([string]$LocalPath, [string]$RemotePath)
+    return $mod.SDK.Multipass.Transfer($LocalPath, "$($this.Name):$RemotePath")
 }
 ```
 
