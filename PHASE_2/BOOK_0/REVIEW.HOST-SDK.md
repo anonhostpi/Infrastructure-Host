@@ -43,7 +43,7 @@ SDK:
     SSH: ($Username, $Address, $Port?, $Command?, $KeyPath?) → ExecResult
 
   Worker:
-    AddCommonMethods: ($Worker) → void            # Adds Ensure, Test, UntilInstalled, Errored
+    Methods: ($Target) → void                     # Adds Ensure, Test, UntilInstalled, Errored
 
   Multipass:
     Invoke: (...args) → ExecResult
@@ -201,7 +201,8 @@ Artifacts:
   iso: string                                     # Path to ISO file
   scripts: hashtable                              # Script name → path
 
-MultipassWorker:
+MultipassWorker:                                  # Sources: [M]=Multipass.ps1, [W]=Worker.ps1
+  # From $mod.Worker.Properties [M]
   Config: hashtable
   Defaults: hashtable
   Rendered: hashtable                             # Merged config (cached)
@@ -211,7 +212,7 @@ MultipassWorker:
   Disk: string
   Network: string
   CloudInit: string
-  # Lifecycle
+  # From $mod.Worker.Methods [M]
   Info: () → object
   Addresses: () → string[]
   Address: () → string
@@ -223,24 +224,23 @@ MultipassWorker:
   Shutdown: ($Force?) → bool
   UntilShutdown: ($TimeoutSeconds?) → bool
   Status: () → string
-  UntilInstalled: () → bool
   Setup: ($FailOnNotInitialized?) → bool
-  # File Sharing
   Mount: ($SourcePath, $TargetPath) → bool
   Unmount: ($TargetPath?) → bool
   Mounts: () → object
   Mounted: ($HostPath) → object
   Pull: ($Source, $Destination) → bool
   Push: ($Source, $Destination) → bool
-  # Execution
   Exec: ($Command, $WorkingDir?) → ExecResult
   Shell: () → void
-  # From Worker.AddCommonMethods
+  # From SDK.Worker.Methods [W]
   Ensure: () → bool
   Test: ($TestId, $Name, $Command, $ExpectedPattern) → TestResult
-  Errored: () → bool                              # (from General.ps1 merge)
+  UntilInstalled: () → bool                       # (proposed: from General.ps1 merge)
+  Errored: () → bool                              # (proposed: from General.ps1 merge)
 
-VboxWorker:
+VboxWorker:                                       # Sources: [V]=Vbox.ps1, [W]=Worker.ps1
+  # From $mod.Worker.Properties [V]
   Config: hashtable
   Defaults: hashtable
   Rendered: hashtable
@@ -254,7 +254,7 @@ VboxWorker:
   SSHUser: string
   SSHHost: string
   SSHPort: int
-  # Lifecycle
+  # From $mod.Worker.Methods [V]
   Exists: () → bool
   Running: () → bool
   Start: ($Type?) → bool
@@ -262,11 +262,10 @@ VboxWorker:
   UntilShutdown: ($TimeoutSeconds?) → bool
   Destroy: () → bool
   Create: () → bool
-  # Execution
   Exec: ($Command) → ExecResult
-  # From Worker.AddCommonMethods
+  # From SDK.Worker.Methods [W]
   Ensure: () → bool
   Test: ($TestId, $Name, $Command, $ExpectedPattern) → TestResult
-  UntilInstalled: () → bool                       # (from General.ps1 merge)
-  Errored: () → bool                              # (from General.ps1 merge)
+  UntilInstalled: () → bool                       # (proposed: from General.ps1 merge)
+  Errored: () → bool                              # (proposed: from General.ps1 merge)
 ```

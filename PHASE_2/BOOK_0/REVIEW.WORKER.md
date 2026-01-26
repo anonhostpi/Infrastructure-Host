@@ -101,7 +101,7 @@ New-Module -Name SDK.Worker -ScriptBlock {
     $Worker = New-Object PSObject
 
     Add-ScriptMethods $Worker @{
-        AddCommonMethods = {
+        Methods = {
             param($Target)
             Add-ScriptMethods $Target @{
                 Ensure = {
@@ -157,7 +157,7 @@ New-Module -Name SDK.Worker -ScriptBlock {
 | Change | Before | After |
 |--------|--------|-------|
 | Function export | `Export-ModuleMember -Function Add-CommonWorkerMethods` | `Export-ModuleMember -Function @()` |
-| Method access | `Add-CommonWorkerMethods $worker` | `$SDK.Worker.AddCommonMethods($worker)` |
+| Method access | `Add-CommonWorkerMethods $worker` | `$SDK.Worker.Methods($worker)` |
 | UntilInstalled | `Network.SSH($KeyPath, $User, $Addr, $Port, ...)` | `$this.Exec("cloud-init status --wait")` |
 | Errored | Uses undefined `$Username`, `$Address`, `$Port` | Uses `$this.Exec("cloud-init status")` |
 | General.ps1 | Exists as separate module | Deleted |
@@ -168,8 +168,8 @@ New-Module -Name SDK.Worker -ScriptBlock {
 
 | File | Current | Proposed |
 |------|---------|----------|
-| Multipass.ps1:250 | `Add-CommonWorkerMethods $worker` | `$mod.SDK.Worker.AddCommonMethods($worker)` |
-| Vbox.ps1:112 | `Add-CommonWorkerMethods $worker` | `$mod.SDK.Worker.AddCommonMethods($worker)` |
+| Multipass.ps1:250 | `Add-CommonWorkerMethods $worker` | `$mod.SDK.Worker.Methods($worker)` |
+| Vbox.ps1:112 | `Add-CommonWorkerMethods $worker` | `$mod.SDK.Worker.Methods($worker)` |
 | SDK.ps1 | Loads General.ps1 | Remove General.ps1 loading |
 
 ---
