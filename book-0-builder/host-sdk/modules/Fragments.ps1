@@ -5,10 +5,8 @@ New-Module -Name SDK.Fragments -ScriptBlock {
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\helpers\PowerShell.ps1"
 
-    # Load build layers config
-    $layersPath = "$PSScriptRoot\..\..\config\build_layers.yaml"
-    $mod.LayersConfig = Get-Content $layersPath -Raw | ConvertFrom-Yaml
-    $mod.LayerNames = $mod.LayersConfig.layers
+    # Use centralized layers config from Settings
+    $mod.LayerNames = $mod.SDK.Settings.Layers.layers
 
     $Fragments = New-Object PSObject
 
