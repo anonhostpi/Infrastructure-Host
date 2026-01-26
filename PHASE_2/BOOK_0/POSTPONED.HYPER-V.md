@@ -63,3 +63,9 @@ multipass start my-vm
 1. Should HyperV module be standalone or integrated into Multipass?
 2. How to handle the stop/configure/start dance cleanly?
 3. Does Builder need nested virt for ISO building?
+
+---
+
+### TODO
+
+- [ ] Look for where Vbox is used
