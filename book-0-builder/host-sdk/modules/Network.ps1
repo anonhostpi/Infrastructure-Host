@@ -134,6 +134,59 @@ New-Module -Name SDK.Network -ScriptBlock {
                 }
             }
         }
+        SCP = {
+            param(
+                [Parameter(Mandatory = $true)]
+                [string]$Username,
+                [Parameter(Mandatory = $true)]
+                [string]$Address,
+                [int]$Port = 22,
+                [Parameter(Mandatory = $true)]
+                [string]$LocalPath,
+                [Parameter(Mandatory = $true)]
+                [string]$RemotePath,
+                [ValidateSet("Push", "Pull")]
+                [string]$Direction = "Push",
+                [string]$KeyPath = $mod.SDK.Settings.KeyPath
+            )
+
+            $key_path = If (Test-Path $KeyPath) {
+                "$(Resolve-Path $KeyPath)"
+            } Else {
+                "$(Resolve-Path "$env:USERPROFILE\.ssh\$KeyPath" -ErrorAction SilentlyContinue)"
+            }
+
+            if (-not (Test-Path $key_path)) {
+                throw "SSH key not found at path: $key_path"
+            }
+
+            $remote = "${Username}@${Address}:${RemotePath}"
+            $source, $dest = if ($Direction -eq "Push") { $LocalPath, $remote } else { $remote, $LocalPath }
+
+            $params = @(
+                "-o", "BatchMode=yes",
+                "-o", "StrictHostKeyChecking=no",
+                "-o", "UserKnownHostsFile=/dev/null",
+                "-i", $key_path,
+                "-P", $Port,
+                $source, $dest
+            )
+
+            Try {
+                $output = & scp @params 2>&1
+                return @{
+                    Output = $output
+                    ExitCode = $LASTEXITCODE
+                    Success = ($LASTEXITCODE -eq 0)
+                }
+            } Catch {
+                return @{
+                    Output = $_.Exception.Message
+                    ExitCode = 1
+                    Success = $false
+                }
+            }
+        }
     }
 
     $SDK.Extend("Network", $Network)
