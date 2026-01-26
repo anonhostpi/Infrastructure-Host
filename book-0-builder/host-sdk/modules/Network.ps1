@@ -187,6 +187,36 @@ New-Module -Name SDK.Network -ScriptBlock {
                 }
             }
         }
+        Shell = {
+            param(
+                [Parameter(Mandatory = $true)]
+                [string]$Username,
+                [Parameter(Mandatory = $true)]
+                [string]$Address,
+                [int]$Port = 22,
+                [string]$KeyPath = $mod.SDK.Settings.KeyPath
+            )
+
+            $key_path = If (Test-Path $KeyPath) {
+                "$(Resolve-Path $KeyPath)"
+            } Else {
+                "$(Resolve-Path "$env:USERPROFILE\.ssh\$KeyPath" -ErrorAction SilentlyContinue)"
+            }
+
+            if (-not (Test-Path $key_path)) {
+                throw "SSH key not found at path: $key_path"
+            }
+
+            $params = @(
+                "-o", "StrictHostKeyChecking=no",
+                "-o", "UserKnownHostsFile=/dev/null",
+                "-i", $key_path,
+                "-p", $Port,
+                "$Username@$Address"
+            )
+
+            & ssh @params
+        }
     }
 
     $SDK.Extend("Network", $Network)

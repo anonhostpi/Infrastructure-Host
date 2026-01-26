@@ -79,8 +79,7 @@ New-Module -Name SDK.Worker -ScriptBlock {
                     ).Success
                 }
                 Shell = {
-                    $keyPath = $mod.SDK.Settings.KeyPath
-                    & ssh -i $keyPath -p $this.SSHPort -o StrictHostKeyChecking=no "$($this.SSHUser)@$($this.SSHHost)"
+                    $mod.SDK.Network.Shell($this.SSHUser, $this.SSHHost, $this.SSHPort)
                 }
             }
         }
