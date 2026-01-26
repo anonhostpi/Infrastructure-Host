@@ -2,35 +2,29 @@
 
 ## Review Items
 
-### 1. General.ps1 and Worker.ps1 Analysis
+### 1. General.ps1 and Worker.ps1 Merge
 
-**Finding**: These should NOT be combined. Instead, **General.ps1 should be deleted**.
+**Clarification**: Worker.ps1 should adopt General.ps1's module shape. The methods in General.ps1 existed for workers.
 
-**Evidence**:
-- `$SDK.General` is never referenced anywhere in the codebase (dead code)
-- `General.Errored()` has a bug - uses undefined variables `$Username`, `$Address`, `$Port`
-- `Add-CommonWorkerMethods` from Worker.ps1 is actively used by Multipass.ps1 and Vbox.ps1
+**Current State**:
+- Worker.ps1 exports a function `Add-CommonWorkerMethods` - should be a module method instead
+- General.ps1 methods (`UntilInstalled`, `Errored`) were meant for workers but call `Network.SSH` directly
 
-**General.ps1 contents** (unused):
-```
-$SDK.General
-  .UntilInstalled($Username, $Address, $Port, $TimeoutSeconds) → bool
-  .Errored() → bool  # BUG: undefined variables
-```
+**Research - $this.Exec Viability**:
+- VboxWorker.Exec already uses SSH internally: `$mod.SDK.Network.SSH($this.SSHUser, $this.SSHHost, $this.SSHPort, $Command)`
+- MultipassWorker.Exec uses `multipass exec`
+- Both return `@{Output; ExitCode; Success}`
 
-**Worker.ps1 contents** (active):
-```
-$SDK.Worker  # Empty placeholder object
-Add-CommonWorkerMethods($Worker)  # Exported function, adds Ensure/Test to workers
-```
+**Conclusion**: General.ps1 methods should use `$this.Exec()` instead of `Network.SSH`. This would work for both worker types since each implements Exec appropriately.
 
-**Recommendation**: Delete General.ps1, keep Worker.ps1 as-is.
+**Proposed Merge**:
+- Move General.ps1 methods into Worker.ps1
+- Convert `Add-CommonWorkerMethods` from exported function to module method
+- Update methods to use `$this.Exec("cloud-init status --wait")` instead of `Network.SSH(...)`
 
 ---
 
 ### 2. Invoke-*.ps1 Scripts Use Old API
-
-The Invoke scripts still reference the old `$SDK.AutoinstallTest` and `$SDK.CloudInitTest` paths instead of the new submodule paths.
 
 **Invoke-AutoinstallTest.ps1**:
 ```powershell
@@ -54,11 +48,88 @@ $result = $SDK.CloudInit.Test.Run($Layer)
 $SDK.CloudInit.Cleanup()
 ```
 
-**Recommendation**: Update both scripts to use the new submodule API paths.
+---
+
+### 3. SDK.Extend Third Argument
+
+**Proposal**: Update `SDK.Extend` to accept optional third argument for target object.
+
+**Current**:
+```powershell
+Extend = {
+    param([string]$ModuleName, $ModuleObject)
+    $this | Add-Member -MemberType NoteProperty -Name $ModuleName -Value $ModuleObject -Force
+}
+```
+
+**Proposed**:
+```powershell
+Extend = {
+    param([string]$ModuleName, $ModuleObject, $Target = $this)
+    $Target | Add-Member -MemberType NoteProperty -Name $ModuleName -Value $ModuleObject -Force
+}
+```
+
+**NoteProperty Instances (submodule candidates)**:
+
+| File | Line | Current Usage | Candidate? |
+|------|------|---------------|------------|
+| SDK.ps1 | 32 | `$this \| Add-Member ... $ModuleName` | Base impl |
+| AutoinstallTest.ps1 | 27 | `$SDK.Autoinstall \| Add-Member ... Test` | **Yes** |
+| CloudInitTest.ps1 | 27 | `$SDK.CloudInit \| Add-Member ... Test` | **Yes** |
+| Verifications.ps1 | 195 | `$SDK.Testing \| Add-Member ... Verifications` | **Yes** |
+| Multipass.ps1 | 63 | `$this \| Add-Member ... Rendered` | No (caching) |
+| Vbox.ps1 | 45 | `$this \| Add-Member ... Rendered` | No (caching) |
+
+Submodules could use: `$SDK.Extend("Test", $TestObject, $SDK.CloudInit)`
 
 ---
 
-## 3. SDK Shape Documentation
+### 4. SDK.Settings - Build Layers Config
+
+**Request**: Add hashtable for `build_layers.yaml` values, similar to `Virtualization`.
+
+**Current**: Fragments.ps1 loads `build_layers.yaml` directly into `$mod.LayersConfig`.
+
+**Proposed**: Settings.ps1 should expose:
+```powershell
+$SDK.Settings.BuildLayers  # From build_layers.yaml
+```
+
+Then Fragments.ps1 would reference `$mod.SDK.Settings.BuildLayers` instead of loading the file itself.
+
+---
+
+### 5. CreateWorker → Worker Rename
+
+**Instances to rename** (where "Worker" is not reserved):
+
+| File | Current | Proposed |
+|------|---------|----------|
+| CloudInit.ps1:28 | `CreateWorker = {` | `Worker = {` |
+| CloudInit.ps1 (caller) | `$mod.SDK.CloudInit.CreateWorker(...)` | `$mod.SDK.CloudInit.Worker(...)` |
+| CloudInitTest.ps1:13 | `$mod.SDK.CloudInit.CreateWorker(...)` | `$mod.SDK.CloudInit.Worker(...)` |
+| Autoinstall.ps1:16 | `CreateWorker = {` | `Worker = {` |
+| Autoinstall.ps1 (caller) | (line 18 internal) | N/A |
+| AutoinstallTest.ps1:13 | `$mod.SDK.Autoinstall.CreateWorker(...)` | `$mod.SDK.Autoinstall.Worker(...)` |
+
+**Reserved** (do not rename):
+- `$SDK.Multipass.Worker` - factory method
+- `$SDK.Vbox.Worker` - factory method
+
+---
+
+### 6. Functions Starting with "Get"
+
+| File | Method | Usage |
+|------|--------|-------|
+| Autoinstall.ps1:11 | `GetArtifacts` | Gets artifacts, throws if no ISO |
+| Network.ps1:19 | `GetGuestAdapter` | Gets network adapter by name |
+| Vbox.ps1:159 | `GetGuestAdapter` | Wrapper for Network.GetGuestAdapter |
+
+---
+
+## SDK Shape Documentation
 
 ### Core
 
@@ -66,7 +137,7 @@ $SDK.CloudInit.Cleanup()
 $SDK
   .Path           : string                    # Path to SDK.ps1
   .Root()         → string                    # Git repository root
-  .Extend($Name, $Object)                     # Add module to SDK
+  .Extend($Name, $Object, $Target?)           # Add module to SDK (or target)
   .Job($ScriptBlock, $Timeout, $Env) → bool   # Run background job, returns true if timed out
 ```
 
@@ -93,6 +164,7 @@ $SDK.Settings
   .KeyPath        : string                    # SSH key path
   .Load($Path)    → hashtable                 # Load YAML config file
   .Virtualization : hashtable                 # From vm.config.yaml
+  .BuildLayers    : hashtable                 # From build_layers.yaml (PROPOSED)
 
   # Dynamic properties from *.config.yaml files (PascalCase):
   .Identity       : hashtable                 # identity.config.yaml
@@ -120,20 +192,9 @@ $SDK.Network
 ### $SDK.Worker
 
 ```
-$SDK.Worker                                   # Empty placeholder
-
-# Exported function (not on $SDK):
-Add-CommonWorkerMethods($Worker)              # Adds to any worker object:
-  $Worker.Ensure() → bool                     # Create if not exists
-  $Worker.Test($TestId, $Name, $Command, $ExpectedPattern) → @{Test; Name; Pass; Output; Error}
-```
-
-### $SDK.General (DEAD CODE - recommend deletion)
-
-```
-$SDK.General
-  .UntilInstalled($Username, $Address, $Port, $TimeoutSeconds) → bool
-  .Errored() → bool                           # BUG: undefined variables
+$SDK.Worker
+  # After merge with General.ps1:
+  .AddCommonMethods($Worker)                  # Adds Ensure, Test, UntilInstalled, Errored to worker
 ```
 
 ### $SDK.Multipass
@@ -216,9 +277,11 @@ MultipassWorker
   .Exec($Command, $WorkingDir) → @{Output; ExitCode; Success}
   .Shell()
 
-  # From Add-CommonWorkerMethods:
+  # From Add-CommonWorkerMethods (to become SDK.Worker.AddCommonMethods):
   .Ensure() → bool
   .Test($TestId, $Name, $Command, $ExpectedPattern) → @{...}
+  .UntilInstalled() → bool                    # (from General.ps1 merge)
+  .Errored() → bool                           # (from General.ps1 merge)
 ```
 
 ### $SDK.Vbox
@@ -295,6 +358,8 @@ VboxWorker
   # From Add-CommonWorkerMethods:
   .Ensure() → bool
   .Test($TestId, $Name, $Command, $ExpectedPattern) → @{...}
+  .UntilInstalled() → bool                    # (from General.ps1 merge)
+  .Errored() → bool                           # (from General.ps1 merge)
 ```
 
 ### $SDK.Builder
@@ -369,7 +434,7 @@ $SDK.CloudInit
   .Build($Layer) → artifacts                  # Build cloud-init, return artifacts (idempotent)
   .Clean() → bool                             # Delegate to Builder.Clean()
   .Cleanup($Name)                             # Destroy runner by name
-  .CreateWorker($Layer, $Overrides) → MultipassWorker
+  .Worker($Layer, $Overrides) → MultipassWorker  # (renamed from CreateWorker)
 ```
 
 ### $SDK.CloudInit.Test (submodule)
@@ -387,7 +452,7 @@ $SDK.Autoinstall
   .Build($Layer) → artifacts                  # Build autoinstall (idempotent)
   .Clean() → bool                             # Delegate to Builder.Clean()
   .Cleanup($Name)                             # Destroy VBox VM by name
-  .CreateWorker($Overrides) → VboxWorker
+  .Worker($Overrides) → VboxWorker            # (renamed from CreateWorker)
 ```
 
 ### $SDK.Autoinstall.Test (submodule)
@@ -403,7 +468,9 @@ $SDK.Autoinstall.Test
 
 | Item | Status | Action |
 |------|--------|--------|
-| General.ps1 | DEAD CODE | **Delete** - never referenced, has bugs |
-| Worker.ps1 | Active | Keep as-is |
-| Invoke-AutoinstallTest.ps1 | Broken | Update `$SDK.AutoinstallTest` → `$SDK.Autoinstall.Test` |
-| Invoke-IncrementalTest.ps1 | Broken | Update `$SDK.CloudInitTest` → `$SDK.CloudInit.Test` |
+| General.ps1 + Worker.ps1 | Merge | Merge General into Worker, use $this.Exec |
+| SDK.Extend | Enhancement | Add optional $Target parameter |
+| SDK.Settings.BuildLayers | New | Add build_layers.yaml config |
+| CreateWorker → Worker | Rename | CloudInit, Autoinstall |
+| Invoke-*.ps1 | Broken | Update API paths |
+| Submodule pattern | Refactor | Use SDK.Extend with $Target |
