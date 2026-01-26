@@ -23,7 +23,7 @@ SDK:
     KeyPath: string                               # SSH key path
     Load: ($Path) → hashtable                     # Load YAML config file
     Virtualization: hashtable                     # From vm.config.yaml
-    BuildLayers: hashtable                        # From build_layers.yaml (PROPOSED)
+    Layers: hashtable                             # From build_layers.yaml (PROPOSED)
     # Dynamic properties from *.config.yaml (PascalCase):
     Identity: hashtable
     Network: hashtable

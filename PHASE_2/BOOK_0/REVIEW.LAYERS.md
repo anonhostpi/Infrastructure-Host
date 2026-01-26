@@ -1,6 +1,6 @@
-# Review: Build Layers Configuration
+# Review: Layers Configuration
 
-## SDK.Settings.BuildLayers
+## SDK.Settings.Layers
 
 **Request**: Add hashtable for `build_layers.yaml` values, similar to `Virtualization`.
 
@@ -22,12 +22,12 @@ $mod.LayerNames = $mod.LayersConfig.layers
 
 Settings.ps1 should expose:
 ```powershell
-$SDK.Settings.BuildLayers  # From build_layers.yaml
+$SDK.Settings.Layers  # From build_layers.yaml
 ```
 
 Then Fragments.ps1 would reference:
 ```powershell
-$mod.LayerNames = $mod.SDK.Settings.BuildLayers.layers
+$mod.LayerNames = $mod.SDK.Settings.Layers.layers
 ```
 
 ---
