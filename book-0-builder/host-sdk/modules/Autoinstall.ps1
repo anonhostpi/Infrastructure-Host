@@ -8,14 +8,10 @@ New-Module -Name SDK.Autoinstall -ScriptBlock {
     $Autoinstall = New-Object PSObject
 
     Add-ScriptMethods $Autoinstall @{
-        GetArtifacts = {
+        Worker = {
+            param([hashtable]$Overrides = @{})
             $artifacts = $mod.SDK.Builder.Artifacts
             if (-not $artifacts -or -not $artifacts.iso) { throw "No ISO artifact found. Build the ISO first." }
-            return $artifacts
-        }
-        CreateWorker = {
-            param([hashtable]$Overrides = @{})
-            $artifacts = $this.GetArtifacts()
             $baseConfig = $mod.SDK.Settings.Virtualization.Vbox
             $config = @{}; foreach ($k in $baseConfig.Keys) { $config[$k] = $baseConfig[$k] }
             $config.IsoPath = $artifacts.iso
