@@ -6,11 +6,11 @@ param([int]$Layer, [switch]$SkipCleanup)
 $SDK.Builder.Stage()
 
 # Run cloud-init tests (builds for layer, then tests)
-$result = $SDK.CloudInitTest.Run($Layer)
+$result = $SDK.CloudInit.Test.Run($Layer)
 
 # Cleanup
 if (-not $SkipCleanup) {
-    $SDK.CloudInitTest.Cleanup()
+    $SDK.CloudInit.Cleanup()
     $SDK.Builder.Destroy()
 }
 
