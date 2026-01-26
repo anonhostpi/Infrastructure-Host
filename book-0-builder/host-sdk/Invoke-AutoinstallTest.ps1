@@ -4,13 +4,13 @@ param([switch]$SkipCleanup)
 
 # Assumes ISO was already built (artifacts.iso populated)
 # Run autoinstall tests (ISO path queried from artifacts automatically)
-$result = $SDK.AutoinstallTest.Run(@{
+$result = $SDK.Autoinstall.Test.Run(@{
     Network = "Ethernet"  # optional overrides
 })
 
 # Cleanup
 if (-not $SkipCleanup) {
-    $SDK.AutoinstallTest.Cleanup()
+    $SDK.Autoinstall.Cleanup()
 }
 
 exit $(if ($result.Success) { 0 } else { 1 })
