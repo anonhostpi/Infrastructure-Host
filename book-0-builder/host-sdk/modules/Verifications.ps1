@@ -355,6 +355,16 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 Pass = ($msmtprc -match "port\s+$($smtp.port)")
                 Output = "Expected: $($smtp.port)"
             })
+            $mod.SDK.Testing.Record(@{
+                Test = "6.7.4"; Name = "SMTP from matches"
+                Pass = ($msmtprc -match "from\s+$([regex]::Escape($smtp.from_email))")
+                Output = "Expected: $($smtp.from_email)"
+            })
+            $mod.SDK.Testing.Record(@{
+                Test = "6.7.4"; Name = "SMTP user matches"
+                Pass = ($msmtprc -match "user\s+$([regex]::Escape($smtp.user))")
+                Output = "Expected: $($smtp.user)"
+            })
         }
     }
 
