@@ -24,8 +24,22 @@ New-Module -Name "Verify.OpenCode" -ScriptBlock {
                 Pass = ($result.Success -and $result.Output -match "npm"); Output = $result.Output
             })
         }
-        "OpenCode installed" = { param($Worker) }
-        "OpenCode config directory" = { param($Worker) }
+        "OpenCode installed" = {
+            param($Worker)
+            $result = $Worker.Exec("which opencode")
+            $SDK.Testing.Record(@{
+                Test = "6.14.3"; Name = "OpenCode installed"
+                Pass = ($result.Success -and $result.Output -match "opencode"); Output = $result.Output
+            })
+        }
+        "OpenCode config directory" = {
+            param($Worker)
+            $result = $Worker.Exec("sudo test -d /home/$username/.config/opencode && echo exists")
+            $SDK.Testing.Record(@{
+                Test = "6.14.4"; Name = "OpenCode config directory"
+                Pass = ($result.Output -match "exists"); Output = "/home/$username/.config/opencode"
+            })
+        }
         "OpenCode auth file" = { param($Worker) }
         "OpenCode AI response" = { param($Worker) }
         "OpenCode credential chain" = { param($Worker) }
