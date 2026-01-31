@@ -15,5 +15,14 @@ New-Module -Name "Verify.PackageSecurity" -ScriptBlock {
         "apt-notify script exists" = { param($Worker) }
         "dpkg notification hooks" = { param($Worker) }
         "Verbose upgrade reporting" = { param($Worker) }
+        "snap-update script" = { param($Worker) }
+        "snap refresh.hold configured" = { param($Worker) }
+        "brew-update script" = { param($Worker) }
+        "pip-global-update script" = { param($Worker) }
+        "npm-global-update script" = { param($Worker) }
+        "deno-update script" = { param($Worker) }
+        "pkg-managers-update timer" = { param($Worker) }
+        "apt-notify common library" = { param($Worker) }
+        "apt-notify-flush script" = { param($Worker) }
     })
 } -ArgumentList $SDK
