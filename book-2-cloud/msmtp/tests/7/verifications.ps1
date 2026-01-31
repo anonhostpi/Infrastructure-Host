@@ -51,8 +51,24 @@ New-Module -Name "Verify.MSMTPMail" -ScriptBlock {
                 Pass = ($msmtprc -match "port\s+$($smtp.port)"); Output = "Expected: $($smtp.port)"
             })
         }
-        "SMTP from matches" = { param($Worker) }
-        "SMTP user matches" = { param($Worker) }
+        "SMTP from matches" = {
+            param($Worker)
+            if (-not $smtpConfigured) { $SDK.Testing.Verifications.Fork("6.7.4", "SKIP", "No SMTP configured"); return }
+            $msmtprc = $Worker.Exec("sudo cat /etc/msmtprc").Output
+            $SDK.Testing.Record(@{
+                Test = "6.7.4"; Name = "SMTP from matches"
+                Pass = ($msmtprc -match "from\s+$([regex]::Escape($smtp.from_email))"); Output = "Expected: $($smtp.from_email)"
+            })
+        }
+        "SMTP user matches" = {
+            param($Worker)
+            if (-not $smtpConfigured) { $SDK.Testing.Verifications.Fork("6.7.4", "SKIP", "No SMTP configured"); return }
+            $msmtprc = $Worker.Exec("sudo cat /etc/msmtprc").Output
+            $SDK.Testing.Record(@{
+                Test = "6.7.4"; Name = "SMTP user matches"
+                Pass = ($msmtprc -match "user\s+$([regex]::Escape($smtp.user))"); Output = "Expected: $($smtp.user)"
+            })
+        }
         "Provider config valid" = { param($Worker) }
         "Auth method valid" = { param($Worker) }
         "TLS settings valid" = { param($Worker) }
