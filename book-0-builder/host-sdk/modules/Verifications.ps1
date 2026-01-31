@@ -474,6 +474,20 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 Pass = ($result.Output -match 'Unattended-Upgrade.*"1"')
                 Output = "Auto-upgrade enabled"
             })
+            # 6.8.4: Service enabled
+            $result = $Worker.Exec("systemctl is-enabled unattended-upgrades")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.8.4"; Name = "Service enabled"
+                Pass = ($result.Output -match "enabled")
+                Output = $result.Output
+            })
+            # 6.8.5: apt-listchanges installed
+            $result = $Worker.Exec("dpkg -l apt-listchanges")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.8.5"; Name = "apt-listchanges installed"
+                Pass = ($result.Output -match "ii.*apt-listchanges")
+                Output = "Package installed"
+            })
         }
     }
 
