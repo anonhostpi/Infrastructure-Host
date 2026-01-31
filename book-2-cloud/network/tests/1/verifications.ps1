@@ -5,5 +5,15 @@ New-Module -Name "Verify.Network" -ScriptBlock {
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\..\..\..\book-0-builder\host-sdk\helpers\PowerShell.ps1"
 
-    $SDK.Testing.Verifications.Register("network", 1, [ordered]@{})
+    $SDK.Testing.Verifications.Register("network", 1, [ordered]@{
+        "Short hostname set" = { param($Worker) }
+        "FQDN has domain" = { param($Worker) }
+        "Hostname in /etc/hosts" = { param($Worker) }
+        "Netplan config exists" = { param($Worker) }
+        "IP address assigned" = { param($Worker) }
+        "Default gateway configured" = { param($Worker) }
+        "DNS resolution works" = { param($Worker) }
+        "net-setup.log exists" = { param($Worker) }
+        "net-setup.sh executed" = { param($Worker) }
+    })
 } -ArgumentList $SDK
