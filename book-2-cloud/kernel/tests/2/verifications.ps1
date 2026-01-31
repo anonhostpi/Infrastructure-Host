@@ -5,5 +5,22 @@ New-Module -Name "Verify.KernelHardening" -ScriptBlock {
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\..\..\..\book-0-builder\host-sdk\helpers\PowerShell.ps1"
 
-    $SDK.Testing.Verifications.Register("kernel", 2, [ordered]@{})
+    $SDK.Testing.Verifications.Register("kernel", 2, [ordered]@{
+        "Security sysctl config exists" = {
+            param($Worker)
+            $result = $Worker.Exec("test -f /etc/sysctl.d/99-security.conf")
+            $SDK.Testing.Record(@{
+                Test = "6.2.1"; Name = "Security sysctl config exists"
+                Pass = $result.Success; Output = "/etc/sysctl.d/99-security.conf"
+            })
+        }
+        "Reverse path filtering enabled" = {
+            param($Worker)
+            $result = $Worker.Exec("sysctl net.ipv4.conf.all.rp_filter")
+            $SDK.Testing.Record(@{
+                Test = "6.2.2"; Name = "Reverse path filtering enabled"
+                Pass = ($result.Output -match "= 1"); Output = $result.Output
+            })
+        }
+    })
 } -ArgumentList $SDK
