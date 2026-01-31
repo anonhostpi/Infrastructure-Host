@@ -675,6 +675,13 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 Pass = ($result.Output -match "enabled")
                 Output = $result.Output
             })
+            # 6.11.3: cockpit-machines installed
+            $result = $Worker.Exec("dpkg -l cockpit-machines")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.11.3"; Name = "cockpit-machines installed"
+                Pass = ($result.Output -match "ii.*cockpit-machines")
+                Output = "Package installed"
+            })
         }
     }
 
