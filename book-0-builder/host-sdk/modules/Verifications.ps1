@@ -2,7 +2,7 @@ param([Parameter(Mandatory = $true)] $SDK)
 
 New-Module -Name SDK.Testing.Verifications -ScriptBlock {
     param([Parameter(Mandatory = $true)] $SDK)
-    $mod = @{ SDK = $SDK }
+    $mod = @{ SDK = $SDK; Tests = [ordered]@{} }
     . "$PSScriptRoot\..\helpers\PowerShell.ps1"
 
     $Verifications = New-Object PSObject
@@ -27,8 +27,15 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
             return $results
         }
         Register = {
-            param([hashtable]$Tests)
-            $mod.Pending = $Tests
+            param([System.Collections.Specialized.OrderedDictionary]$Tests)
+            foreach ($key in $Tests.Keys) {
+                $mod.Tests[$key] = $Tests[$key]
+            }
+        }
+        Test = {
+            param([string]$Name)
+            $test = $mod.Tests[$Name]
+            if ($test) { & $test }
         }
         Load = {
             param([string]$Path)
