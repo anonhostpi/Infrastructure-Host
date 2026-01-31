@@ -1,5 +1,5 @@
 
-### Commit 1: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add Virtualization method shape with tests 6.10.1-6.10.2
+### Commit 1: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add Virtualization method shape with tests 6.10.1-6.10.2 [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.virt-shape
 
@@ -49,7 +49,7 @@ Add Virtualization method shape with tests 6.10.1-6.10.2
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 2: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add Virtualization tests 6.10.3-6.10.4
+### Commit 2: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add Virtualization tests 6.10.3-6.10.4 [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.virt-6103-6104
 
@@ -94,7 +94,7 @@ Add Virtualization tests 6.10.3-6.10.4
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 3: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add Virtualization tests 6.10.5-6.10.6
+### Commit 3: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add Virtualization tests 6.10.5-6.10.6 [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.virt-6105-6106
 
@@ -139,7 +139,7 @@ Add Virtualization tests 6.10.5-6.10.6
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 4: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add Virtualization 6.10.7 KVM check and 6.10.8-9 fork shape
+### Commit 4: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add Virtualization 6.10.7 KVM check and 6.10.8-9 fork shape [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.virt-6107-fork
 
@@ -184,7 +184,7 @@ Add Virtualization 6.10.7 KVM check and 6.10.8-9 fork shape
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 5: `book-0-builder/host-sdk/modules/Verifications.ps1` - Implement Virtualization 6.10.8-6.10.9 nested VM tests
+### Commit 5: `book-0-builder/host-sdk/modules/Verifications.ps1` - Implement Virtualization 6.10.8-6.10.9 nested VM tests [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.virt-6108-6109-impl
 
@@ -225,7 +225,7 @@ Implement Virtualization 6.10.8-6.10.9 nested VM tests
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 6: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add Cockpit method shape with tests 6.11.1-6.11.2
+### Commit 6: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add Cockpit method shape with tests 6.11.1-6.11.2 [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.cockpit-shape
 
@@ -275,7 +275,7 @@ Add Cockpit method shape with tests 6.11.1-6.11.2
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 7a: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add Cockpit 6.11.3 cockpit-machines package
+### Commit 7a: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add Cockpit 6.11.3 cockpit-machines package [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.cockpit-6113
 
@@ -313,7 +313,7 @@ Add Cockpit 6.11.3 cockpit-machines package
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 7b: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add Cockpit 6.11.4 port detection and socket activation
+### Commit 7b: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add Cockpit 6.11.4 port detection and socket activation [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.cockpit-6114
 
@@ -354,7 +354,7 @@ Add Cockpit 6.11.4 port detection and socket activation
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 8a: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add Cockpit 6.11.5-6.11.6 web UI and login page
+### Commit 8a: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add Cockpit 6.11.5-6.11.6 web UI and login page [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.cockpit-6115-6116
 
@@ -399,7 +399,7 @@ Add Cockpit 6.11.5-6.11.6 web UI and login page
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 8b: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add Cockpit 6.11.7 listen address restriction check
+### Commit 8b: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add Cockpit 6.11.7 listen address restriction check [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.cockpit-6117
 
@@ -437,7 +437,7 @@ Add Cockpit 6.11.7 listen address restriction check
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 9a: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add ClaudeCode method shape with test 6.12.1
+### Commit 9a: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add ClaudeCode method shape with test 6.12.1 [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.claude-shape
 
@@ -481,7 +481,7 @@ Add ClaudeCode method shape with test 6.12.1
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 9b: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add ClaudeCode 6.12.2-6.12.3 config dir and settings
+### Commit 9b: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add ClaudeCode 6.12.2-6.12.3 config dir and settings [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.claude-6122-6123
 
@@ -526,7 +526,7 @@ Add ClaudeCode 6.12.2-6.12.3 config dir and settings
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 10: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add ClaudeCode 6.12.4 auth check (fail if no auth)
+### Commit 10: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add ClaudeCode 6.12.4 auth check (fail if no auth) [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.claude-6124
 
@@ -571,7 +571,7 @@ Add ClaudeCode 6.12.4 auth check (fail if no auth)
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 11: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add ClaudeCode 6.12.5 AI response test
+### Commit 11: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add ClaudeCode 6.12.5 AI response test [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.claude-6125
 
@@ -615,7 +615,7 @@ Add ClaudeCode 6.12.5 AI response test
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 12: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add CopilotCLI method shape with test 6.13.1
+### Commit 12: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add CopilotCLI method shape with test 6.13.1 [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.copilot-shape
 
@@ -659,7 +659,7 @@ Add CopilotCLI method shape with test 6.13.1
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 13: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add CopilotCLI 6.13.2-6.13.3 config dir and file
+### Commit 13: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add CopilotCLI 6.13.2-6.13.3 config dir and file [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.copilot-6132-6133
 
@@ -704,7 +704,7 @@ Add CopilotCLI 6.13.2-6.13.3 config dir and file
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 14: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add CopilotCLI 6.13.4 auth check (fail if no auth)
+### Commit 14: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add CopilotCLI 6.13.4 auth check (fail if no auth) [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.copilot-6134
 
@@ -748,7 +748,7 @@ Add CopilotCLI 6.13.4 auth check (fail if no auth)
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 15: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add CopilotCLI 6.13.5 AI response test
+### Commit 15: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add CopilotCLI 6.13.5 AI response test [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.copilot-6135
 
@@ -792,7 +792,7 @@ Add CopilotCLI 6.13.5 AI response test
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 16a: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add OpenCode method shape with test 6.14.1
+### Commit 16a: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add OpenCode method shape with test 6.14.1 [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.opencode-shape
 
@@ -836,7 +836,7 @@ Add OpenCode method shape with test 6.14.1
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 16b: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add OpenCode 6.14.2-6.14.3 npm and opencode binaries
+### Commit 16b: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add OpenCode 6.14.2-6.14.3 npm and opencode binaries [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.opencode-6142-6143
 
@@ -881,7 +881,7 @@ Add OpenCode 6.14.2-6.14.3 npm and opencode binaries
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 17: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add OpenCode 6.14.4-6.14.5 config dir and auth file
+### Commit 17: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add OpenCode 6.14.4-6.14.5 config dir and auth file [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.opencode-6144-6145
 
@@ -926,7 +926,7 @@ Add OpenCode 6.14.4-6.14.5 config dir and auth file
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 18: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add OpenCode 6.14.6 AI response test
+### Commit 18: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add OpenCode 6.14.6 AI response test [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.opencode-6146
 
@@ -966,7 +966,7 @@ Add OpenCode 6.14.6 AI response test
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 19: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add OpenCode 6.14.7 credential chain verification
+### Commit 19: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add OpenCode 6.14.7 credential chain verification [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.opencode-6147
 
@@ -1012,7 +1012,7 @@ Add OpenCode 6.14.7 credential chain verification
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 20: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add PackageManagerUpdates method shape with 6.8.19 testing gate
+### Commit 20: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add PackageManagerUpdates method shape with 6.8.19 testing gate [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.pkgmgr-shape
 
@@ -1057,7 +1057,7 @@ Add PackageManagerUpdates method shape with 6.8.19 testing gate
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 21: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add PackageManagerUpdates 6.8.20 snap-update test
+### Commit 21: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add PackageManagerUpdates 6.8.20 snap-update test [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.pkgmgr-6820
 
@@ -1100,7 +1100,7 @@ Add PackageManagerUpdates 6.8.20 snap-update test
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 22a: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add PackageManagerUpdates 6.8.21 npm-global-update shape
+### Commit 22a: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add PackageManagerUpdates 6.8.21 npm-global-update shape [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.pkgmgr-6821-shape
 
@@ -1138,7 +1138,7 @@ Add PackageManagerUpdates 6.8.21 npm-global-update shape
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 22b: `book-0-builder/host-sdk/modules/Verifications.ps1` - Implement PackageManagerUpdates 6.8.21 npm test body
+### Commit 22b: `book-0-builder/host-sdk/modules/Verifications.ps1` - Implement PackageManagerUpdates 6.8.21 npm test body [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.pkgmgr-6821-impl
 
@@ -1177,7 +1177,7 @@ Implement PackageManagerUpdates 6.8.21 npm test body
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 23: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add PackageManagerUpdates 6.8.22 pip-global-update test
+### Commit 23: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add PackageManagerUpdates 6.8.22 pip-global-update test [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.pkgmgr-6822
 
@@ -1224,7 +1224,7 @@ Add PackageManagerUpdates 6.8.22 pip-global-update test
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 24: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add PackageManagerUpdates 6.8.23 brew-update test
+### Commit 24: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add PackageManagerUpdates 6.8.23 brew-update test [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.pkgmgr-6823
 
@@ -1267,7 +1267,7 @@ Add PackageManagerUpdates 6.8.23 brew-update test
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 25: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add PackageManagerUpdates 6.8.24 deno-update test
+### Commit 25: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add PackageManagerUpdates 6.8.24 deno-update test [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.pkgmgr-6824
 
@@ -1310,7 +1310,7 @@ Add PackageManagerUpdates 6.8.24 deno-update test
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 26: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add UpdateSummary method shape with 6.8.25 report generation
+### Commit 26: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add UpdateSummary method shape with 6.8.25 report generation [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.summary-shape
 
@@ -1359,7 +1359,7 @@ Add UpdateSummary method shape with 6.8.25 report generation
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 27: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add UpdateSummary 6.8.26 report content validation
+### Commit 27: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add UpdateSummary 6.8.26 report content validation [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.summary-6826
 
@@ -1399,7 +1399,7 @@ Add UpdateSummary 6.8.26 report content validation
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 28: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add UpdateSummary 6.8.27 AI summary CLI detection
+### Commit 28: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add UpdateSummary 6.8.27 AI summary CLI detection [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.summary-6827-cli
 
@@ -1445,7 +1445,7 @@ Add UpdateSummary 6.8.27 AI summary CLI detection
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 29: `book-0-builder/host-sdk/modules/Verifications.ps1` - Implement UpdateSummary 6.8.27 model match and record
+### Commit 29: `book-0-builder/host-sdk/modules/Verifications.ps1` - Implement UpdateSummary 6.8.27 model match and record [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.summary-6827-match
 
@@ -1485,7 +1485,7 @@ Implement UpdateSummary 6.8.27 model match and record
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 30: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add NotificationFlush method with test 6.8.28
+### Commit 30: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add NotificationFlush method with test 6.8.28 [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.flush-6828
 
