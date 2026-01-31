@@ -38,8 +38,22 @@ New-Module -Name "Verify.PackageSecurity" -ScriptBlock {
                 Pass = ($result.Output -match "enabled"); Output = $result.Output
             })
         }
-        "apt-listchanges installed" = { param($Worker) }
-        "apt-listchanges email config" = { param($Worker) }
+        "apt-listchanges installed" = {
+            param($Worker)
+            $result = $Worker.Exec("dpkg -l apt-listchanges")
+            $SDK.Testing.Record(@{
+                Test = "6.8.5"; Name = "apt-listchanges installed"
+                Pass = ($result.Output -match "ii.*apt-listchanges"); Output = "Package installed"
+            })
+        }
+        "apt-listchanges email config" = {
+            param($Worker)
+            $result = $Worker.Exec("cat /etc/apt/listchanges.conf")
+            $SDK.Testing.Record(@{
+                Test = "6.8.6"; Name = "apt-listchanges email config"
+                Pass = ($result.Output -match "frontend=mail"); Output = "Changelogs sent via email"
+            })
+        }
         "apt-notify script exists" = { param($Worker) }
         "dpkg notification hooks" = { param($Worker) }
         "Verbose upgrade reporting" = { param($Worker) }
