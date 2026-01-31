@@ -337,6 +337,24 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 Pass = $result.Success
                 Output = "/usr/sbin/sendmail"
             })
+            # SMTP config gate
+            $smtp = $mod.SDK.Settings.SMTP
+            if (-not $smtp -or -not $smtp.host) {
+                $this.Fork("6.7.4-6.7.11", "SKIP", "No SMTP configured")
+                return
+            }
+            $msmtprc = $Worker.Exec("sudo cat /etc/msmtprc").Output
+            # 6.7.4: Config values match SDK.Settings.SMTP
+            $mod.SDK.Testing.Record(@{
+                Test = "6.7.4"; Name = "SMTP host matches"
+                Pass = ($msmtprc -match "host\s+$([regex]::Escape($smtp.host))")
+                Output = "Expected: $($smtp.host)"
+            })
+            $mod.SDK.Testing.Record(@{
+                Test = "6.7.4"; Name = "SMTP port matches"
+                Pass = ($msmtprc -match "port\s+$($smtp.port)")
+                Output = "Expected: $($smtp.port)"
+            })
         }
     }
 
