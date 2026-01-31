@@ -1,0 +1,5 @@
+name: packages
+description: Base package installation
+iso_required: false
+build_order: 50
+build_layer: 8
