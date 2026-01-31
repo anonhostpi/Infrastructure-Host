@@ -22,5 +22,13 @@ New-Module -Name "Verify.SystemSettings" -ScriptBlock {
                 Pass = ($result.Output -match "LANG="); Output = ($result.Output | Select-Object -First 1)
             })
         }
+        "NTP enabled" = {
+            param($Worker)
+            $result = $Worker.Exec("timedatectl show --property=NTP --value")
+            $SDK.Testing.Record(@{
+                Test = "6.6.3"; Name = "NTP enabled"
+                Pass = ($result.Output -match "yes"); Output = "NTP=$($result.Output)"
+            })
+        }
     })
 } -ArgumentList $SDK
