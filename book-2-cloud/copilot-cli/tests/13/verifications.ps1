@@ -24,7 +24,14 @@ New-Module -Name "Verify.CopilotCLI" -ScriptBlock {
                 Pass = ($result.Output -match "exists"); Output = "/home/$username/.copilot"
             })
         }
-        "Copilot CLI config file" = { param($Worker) }
+        "Copilot CLI config file" = {
+            param($Worker)
+            $result = $Worker.Exec("sudo test -f /home/$username/.copilot/config.json && echo exists")
+            $SDK.Testing.Record(@{
+                Test = "6.13.3"; Name = "Copilot CLI config file"
+                Pass = ($result.Output -match "exists"); Output = "/home/$username/.copilot/config.json"
+            })
+        }
         "Copilot CLI auth configured" = { param($Worker) }
         "Copilot CLI AI response" = { param($Worker) }
     })
