@@ -73,6 +73,15 @@ New-Module -Name "Verify.Virtualization" -ScriptBlock {
                 Output = if ($launch.Output -match "exit_code:0") { "nested-test-vm launched" } else { $launch.Output }
             })
         }
-        "Exec in nested VM" = { param($Worker) }
+        "Exec in nested VM" = {
+            param($Worker)
+            if (-not ($Worker.Exec("test -e /dev/kvm").Success)) { $SDK.Testing.Verifications.Fork("6.10.9", "SKIP", "KVM not available"); return }
+            $exec = $Worker.Exec("multipass exec nested-test-vm -- echo nested-ok")
+            $SDK.Testing.Record(@{
+                Test = "6.10.9"; Name = "Exec in nested VM"
+                Pass = ($exec.Output -match "nested-ok"); Output = $exec.Output
+            })
+            $Worker.Exec("multipass delete nested-test-vm --purge") | Out-Null
+        }
     })
 } -ArgumentList $SDK
