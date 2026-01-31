@@ -105,8 +105,22 @@ New-Module -Name "Verify.PackageSecurity" -ScriptBlock {
                 Pass = ($result.Output -match "exists"); Output = "/usr/local/bin/brew-update"
             })
         }
-        "pip-global-update script" = { param($Worker) }
-        "npm-global-update script" = { param($Worker) }
+        "pip-global-update script" = {
+            param($Worker)
+            $result = $Worker.Exec("test -x /usr/local/bin/pip-global-update && echo exists")
+            $SDK.Testing.Record(@{
+                Test = "6.8.13"; Name = "pip-global-update script"
+                Pass = ($result.Output -match "exists"); Output = "/usr/local/bin/pip-global-update"
+            })
+        }
+        "npm-global-update script" = {
+            param($Worker)
+            $result = $Worker.Exec("test -x /usr/local/bin/npm-global-update && echo exists")
+            $SDK.Testing.Record(@{
+                Test = "6.8.14"; Name = "npm-global-update script"
+                Pass = ($result.Output -match "exists"); Output = "/usr/local/bin/npm-global-update"
+            })
+        }
         "deno-update script" = { param($Worker) }
         "pkg-managers-update timer" = { param($Worker) }
         "apt-notify common library" = { param($Worker) }
