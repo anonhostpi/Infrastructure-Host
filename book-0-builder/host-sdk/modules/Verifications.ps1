@@ -399,6 +399,24 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 Pass = $authPass
                 Output = "auth=$authMethod"
             })
+            # 6.7.7: TLS settings valid
+            $tlsOn = ($msmtprc -match 'tls\s+on')
+            $implicitTls = ($smtp.port -eq 465 -and ($msmtprc -match 'tls_starttls\s+off'))
+            $mod.SDK.Testing.Record(@{
+                Test = "6.7.7"; Name = "TLS settings valid"
+                Pass = ($tlsOn -or $implicitTls)
+                Output = "tls=on, implicit=$implicitTls"
+            })
+            # 6.7.8: Credential config valid
+            $hasCreds = ($msmtprc -match 'password\s') -or ($msmtprc -match 'passwordeval')
+            if (-not $hasCreds) {
+                $hasCreds = $Worker.Exec("sudo test -f /etc/msmtp-password").Success
+            }
+            $mod.SDK.Testing.Record(@{
+                Test = "6.7.8"; Name = "Credential config valid"
+                Pass = $hasCreds
+                Output = if ($hasCreds) { "Credentials configured" } else { "No credentials found" }
+            })
         }
     }
 
