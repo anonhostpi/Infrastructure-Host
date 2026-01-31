@@ -1,7 +1,7 @@
 # Plan
 
 
-### Commit 1: `book-0-builder/host-sdk/modules/Vbox.ps1` - Fix VBox worker SSH defaults: load network.config.yaml for SSHHost, remove SSHPort hardcode
+### Commit 1: `book-0-builder/host-sdk/modules/Vbox.ps1` - Fix VBox worker SSH defaults: load network.config.yaml for SSHHost, remove SSHPort hardcode [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Vbox.fix-ssh-defaults
 
@@ -40,7 +40,7 @@ Fix VBox worker SSH defaults: load network.config.yaml for SSHHost, remove SSHPo
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 2: `book-0-builder/host-sdk/modules/Vbox.ps1` - Remove SSHPort from Configurator.Defaults, let SDK.Network.SSH default to port 22
+### Commit 2: `book-0-builder/host-sdk/modules/Vbox.ps1` - Remove SSHPort from Configurator.Defaults, let SDK.Network.SSH default to port 22 [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Vbox.remove-sshport-default
 
@@ -77,7 +77,7 @@ Remove SSHPort from Configurator.Defaults, let SDK.Network.SSH default to port 2
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 3: `book-0-builder/config/build_layers.yaml` - Add layers 16-18 for Package Security testing extensions (6.8-updates, 6.8-summary, 6.8-flush)
+### Commit 3: `book-0-builder/config/build_layers.yaml` - Add layers 16-18 for Package Security testing extensions (6.8-updates, 6.8-summary, 6.8-flush) [COMPLETE]
 
 ### book-0-builder.config.build_layers.add-testing-layers
 
@@ -109,7 +109,7 @@ Add layers 16-18 for Package Security testing extensions (6.8-updates, 6.8-summa
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 4a: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add SSH verification method shape with test 6.4.1 (hardening config exists)
+### Commit 4a: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add SSH verification method shape with test 6.4.1 (hardening config exists) [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.ssh-shape
 
@@ -148,7 +148,7 @@ Add SSH verification method shape with test 6.4.1 (hardening config exists)
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 4b: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add SSH tests 6.4.2-6.4.3: key settings verification, service active check
+### Commit 4b: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add SSH tests 6.4.2-6.4.3: key settings verification, service active check [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.ssh-settings
 
@@ -195,7 +195,7 @@ Add SSH tests 6.4.2-6.4.3: key settings verification, service active check
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 4c: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add SSH test 6.4.4-6.4.5: root login rejected and key auth via Worker.Exec internal SSH
+### Commit 4c: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add SSH test 6.4.4-6.4.5: root login rejected and key auth via Worker.Exec internal SSH [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.ssh-root-login
 
@@ -239,7 +239,7 @@ Add SSH test 6.4.4-6.4.5: root login rejected and key auth via Worker.Exec inter
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 5a: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add UFW verification method shape with test 6.5.1 (UFW active)
+### Commit 5a: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add UFW verification method shape with test 6.5.1 (UFW active) [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.ufw-shape
 
@@ -277,7 +277,7 @@ Add UFW verification method shape with test 6.5.1 (UFW active)
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 5b: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add UFW tests 6.5.2-6.5.3: SSH allowed, default deny incoming
+### Commit 5b: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add UFW tests 6.5.2-6.5.3: SSH allowed, default deny incoming [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.ufw-rules
 
@@ -315,7 +315,7 @@ Add UFW tests 6.5.2-6.5.3: SSH allowed, default deny incoming
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 6a: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add System verification method shape with test 6.6.1 (timezone)
+### Commit 6a: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add System verification method shape with test 6.6.1 (timezone) [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.system-shape
 
@@ -353,7 +353,7 @@ Add System verification method shape with test 6.6.1 (timezone)
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 6b: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add System tests 6.6.2-6.6.3: locale set, NTP enabled
+### Commit 6b: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add System tests 6.6.2-6.6.3: locale set, NTP enabled [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.system-locale-ntp
 
@@ -392,7 +392,7 @@ Add System tests 6.6.2-6.6.3: locale set, NTP enabled
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 7a: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add SecurityMonitoring method shape with test 6.9.1 (fail2ban installed)
+### Commit 7a: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add SecurityMonitoring method shape with test 6.9.1 (fail2ban installed) [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.secmon-shape
 
@@ -430,7 +430,7 @@ Add SecurityMonitoring method shape with test 6.9.1 (fail2ban installed)
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 7b: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add SecurityMonitoring tests 6.9.2-6.9.3: service active, SSH jail
+### Commit 7b: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add SecurityMonitoring tests 6.9.2-6.9.3: service active, SSH jail [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.secmon-service-jail
 
@@ -469,7 +469,7 @@ Add SecurityMonitoring tests 6.9.2-6.9.3: service active, SSH jail
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 8: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add UI verification method (6.15.1-6.15.2): MOTD directory exists, scripts present
+### Commit 8: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add UI verification method (6.15.1-6.15.2): MOTD directory exists, scripts present [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.add-ui-method
 
