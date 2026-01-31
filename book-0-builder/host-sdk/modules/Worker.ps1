@@ -16,11 +16,16 @@ New-Module -Name SDK.Worker -ScriptBlock {
                     return $true
                 }
                 Test = {
-                    param([string]$TestId, [string]$Name, [string]$Command, [string]$ExpectedPattern)
+                    param([string]$TestId, [string]$Name, [string]$Command, $ExpectedPattern)
                     $mod.SDK.Log.Debug("Running test: $Name")
                     try {
                         $result = $this.Exec($Command)
-                        $pass = $result.Success -and ($result.Output -join "`n") -match $ExpectedPattern
+                        $joined = $result.Output -join "`n"
+                        if ($ExpectedPattern -is [scriptblock]) {
+                            $pass = $result.Success -and (& $ExpectedPattern $joined)
+                        } else {
+                            $pass = $result.Success -and $joined -match $ExpectedPattern
+                        }
                         $testResult = @{ Test = $TestId; Name = $Name; Pass = $pass; Output = $result.Output; Error = $result.Error }
                         $mod.SDK.Testing.Record($testResult)
                         if ($pass) { $mod.SDK.Log.Write("[PASS] $Name", "Green") }
