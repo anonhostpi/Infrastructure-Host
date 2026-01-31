@@ -70,7 +70,20 @@ New-Module -Name "Verify.PackageManagerUpdates" -ScriptBlock {
                 Output = if ($pipDetected) { "Detected pip update" } else { "No PIP_UPGRADED in queue" }
             })
         }
-        "brew-update" = { param($Worker) }
+        "brew-update" = {
+            param($Worker)
+            $tm = $Worker.Exec("source /usr/local/lib/apt-notify/common.sh && echo `$TESTING_MODE").Output
+            if ($tm -notmatch "true") { $SDK.Testing.Verifications.Fork("6.8.23", "SKIP", "Testing mode disabled"); return }
+            if (-not ($Worker.Exec("command -v brew || test -x /home/linuxbrew/.linuxbrew/bin/brew")).Success) {
+                $SDK.Testing.Record(@{ Test = "6.8.23"; Name = "brew-update"; Pass = $true; Output = "Skipped - brew not installed" }); return
+            }
+            $result = $Worker.Exec("sudo /usr/local/bin/brew-update 2>&1; echo exit_code:`$?")
+            $SDK.Testing.Record(@{
+                Test = "6.8.23"; Name = "brew-update script"
+                Pass = ($result.Output -match "exit_code:0")
+                Output = if ($result.Output -match "exit_code:0") { "Ran successfully" } else { $result.Output }
+            })
+        }
         "deno-update" = { param($Worker) }
     })
 } -ArgumentList $SDK
