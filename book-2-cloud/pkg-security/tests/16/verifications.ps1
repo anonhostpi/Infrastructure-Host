@@ -33,7 +33,25 @@ New-Module -Name "Verify.PackageManagerUpdates" -ScriptBlock {
                 Output = if ($result.Output -match "exit_code:0") { "Ran successfully" } else { $result.Output }
             })
         }
-        "npm-global-update" = { param($Worker) }
+        "npm-global-update" = {
+            param($Worker)
+            $tm = $Worker.Exec("source /usr/local/lib/apt-notify/common.sh && echo `$TESTING_MODE").Output
+            if ($tm -notmatch "true") { $SDK.Testing.Verifications.Fork("6.8.21", "SKIP", "Testing mode disabled"); return }
+            if (-not ($Worker.Exec("which npm")).Success) {
+                $SDK.Testing.Record(@{ Test = "6.8.21"; Name = "npm-global-update"; Pass = $true; Output = "Skipped - npm not installed" }); return
+            }
+            $Worker.Exec("sudo npm install -g is-odd@2.0.0 2>/dev/null") | Out-Null
+            $Worker.Exec("sudo rm -f /var/lib/apt-notify/queue") | Out-Null
+            $result = $Worker.Exec("sudo /usr/local/bin/npm-global-update 2>&1; echo exit_code:`$?")
+            $queue = $Worker.Exec("cat /var/lib/apt-notify/queue 2>/dev/null").Output
+            $npmDetected = ($queue -match "NPM_UPGRADED")
+            $SDK.Testing.Record(@{
+                Test = "6.8.21"; Name = "npm-global-update script"
+                Pass = ($result.Output -match "exit_code:0" -and $npmDetected)
+                Output = if ($npmDetected) { "Detected npm update" } else { "No NPM_UPGRADED in queue" }
+            })
+            $Worker.Exec("sudo npm uninstall -g is-odd 2>/dev/null") | Out-Null
+        }
         "pip-global-update" = { param($Worker) }
         "brew-update" = { param($Worker) }
         "deno-update" = { param($Worker) }
