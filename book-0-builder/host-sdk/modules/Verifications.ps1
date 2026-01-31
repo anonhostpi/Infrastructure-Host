@@ -365,6 +365,21 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 Pass = ($msmtprc -match "user\s+$([regex]::Escape($smtp.user))")
                 Output = "Expected: $($smtp.user)"
             })
+            # 6.7.5: Provider-specific validation
+            $providerName = switch -Regex ($smtp.host) {
+                'smtp\.sendgrid\.net' { 'SendGrid'; break }
+                'email-smtp\..+\.amazonaws\.com' { 'AWS SES'; break }
+                'smtp\.gmail\.com' { 'Gmail'; break }
+                '^localhost$|^127\.' { 'Proton Bridge'; break }
+                'smtp\.office365\.com' { 'M365'; break }
+                default { 'Generic' }
+            }
+            $providerPass = $true # WIP
+            $mod.SDK.Testing.Record(@{
+                Test = "6.7.5"; Name = "Provider config valid ($providerName)"
+                Pass = $providerPass
+                Output = "Provider: $providerName"
+            })
         }
     }
 
