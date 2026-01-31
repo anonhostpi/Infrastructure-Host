@@ -24,7 +24,14 @@ New-Module -Name "Verify.ClaudeCode" -ScriptBlock {
                 Pass = ($result.Output -match "exists"); Output = "/home/$username/.claude"
             })
         }
-        "Claude Code settings file" = { param($Worker) }
+        "Claude Code settings file" = {
+            param($Worker)
+            $result = $Worker.Exec("sudo test -f /home/$username/.claude/settings.json && echo exists")
+            $SDK.Testing.Record(@{
+                Test = "6.12.3"; Name = "Claude Code settings file"
+                Pass = ($result.Output -match "exists"); Output = "/home/$username/.claude/settings.json"
+            })
+        }
         "Claude Code auth configured" = { param($Worker) }
         "Claude Code AI response" = { param($Worker) }
     })
