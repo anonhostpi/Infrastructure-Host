@@ -460,6 +460,20 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 Pass = ($result.Output -match "ii.*unattended-upgrades")
                 Output = "Package installed"
             })
+            # 6.8.2: Config exists
+            $result = $Worker.Exec("test -f /etc/apt/apt.conf.d/50unattended-upgrades")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.8.2"; Name = "Unattended upgrades config"
+                Pass = $result.Success
+                Output = "/etc/apt/apt.conf.d/50unattended-upgrades"
+            })
+            # 6.8.3: Auto-upgrades enabled
+            $result = $Worker.Exec("cat /etc/apt/apt.conf.d/20auto-upgrades")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.8.3"; Name = "Auto-upgrades configured"
+                Pass = ($result.Output -match 'Unattended-Upgrade.*"1"')
+                Output = "Auto-upgrade enabled"
+            })
         }
     }
 
