@@ -692,6 +692,20 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 Pass = ($result.Output -match ":$port")
                 Output = $result.Output
             })
+            # 6.11.5: Cockpit web UI responds
+            $result = $Worker.Exec("curl -sk -o /dev/null -w '%{http_code}' https://localhost:$port/")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.11.5"; Name = "Cockpit web UI responds"
+                Pass = ($result.Output -match "200")
+                Output = "HTTP $($result.Output)"
+            })
+            # 6.11.6: Cockpit login page content
+            $result = $Worker.Exec("curl -sk https://localhost:$port/ | grep -E 'login.js|login.css'")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.11.6"; Name = "Cockpit login page"
+                Pass = ($result.Success -and $result.Output)
+                Output = "Login page served"
+            })
         }
     }
 
