@@ -88,8 +88,23 @@ New-Module -Name "Verify.PackageSecurity" -ScriptBlock {
                 Pass = ($result.Output -match "exists"); Output = "/usr/local/bin/snap-update"
             })
         }
-        "snap refresh.hold configured" = { param($Worker) }
-        "brew-update script" = { param($Worker) }
+        "snap refresh.hold configured" = {
+            param($Worker)
+            $result = $Worker.Exec("sudo snap get system refresh.hold 2>/dev/null || echo not-set")
+            $SDK.Testing.Record(@{
+                Test = "6.8.11"; Name = "snap refresh.hold configured"
+                Pass = ($result.Output -match "forever" -or $result.Output -match "20[0-9]{2}")
+                Output = "refresh.hold=$($result.Output)"
+            })
+        }
+        "brew-update script" = {
+            param($Worker)
+            $result = $Worker.Exec("test -x /usr/local/bin/brew-update && echo exists")
+            $SDK.Testing.Record(@{
+                Test = "6.8.12"; Name = "brew-update script"
+                Pass = ($result.Output -match "exists"); Output = "/usr/local/bin/brew-update"
+            })
+        }
         "pip-global-update script" = { param($Worker) }
         "npm-global-update script" = { param($Worker) }
         "deno-update script" = { param($Worker) }
