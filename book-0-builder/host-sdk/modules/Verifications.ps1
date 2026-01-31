@@ -242,6 +242,18 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
         }
     }
 
+    Add-ScriptMethods $Verifications @{
+        UFW = {
+            param($Worker)
+            $result = $Worker.Exec("sudo ufw status")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.5.1"; Name = "UFW is active"
+                Pass = ($result.Output -match "Status: active")
+                Output = $result.Output | Select-Object -First 1
+            })
+        }
+    }
+
     $mod.SDK.Extend("Verifications", $Verifications, $mod.SDK.Testing)
     Export-ModuleMember -Function @()
 } -ArgumentList $SDK | Import-Module -Force
