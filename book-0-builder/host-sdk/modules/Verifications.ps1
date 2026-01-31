@@ -26,9 +26,15 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
             }
             return $results
         }
+        Register = {
+            param([hashtable]$Tests)
+            $mod.Pending = $Tests
+        }
         Load = {
             param([string]$Path)
-            return (& $Path -SDK $mod.SDK)
+            $mod.Pending = @{}
+            & $Path -SDK $mod.SDK
+            return $mod.Pending
         }
         Run = {
             param($Worker, [int]$Layer)
