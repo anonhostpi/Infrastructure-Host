@@ -22,8 +22,22 @@ New-Module -Name "Verify.Virtualization" -ScriptBlock {
                 Pass = ($result.Output -match "^active$"); Output = $result.Output
             })
         }
-        "QEMU installed" = { param($Worker) }
-        "libvirt default network" = { param($Worker) }
+        "QEMU installed" = {
+            param($Worker)
+            $result = $Worker.Exec("which qemu-system-x86_64")
+            $SDK.Testing.Record(@{
+                Test = "6.10.3"; Name = "QEMU installed"
+                Pass = ($result.Success -and $result.Output -match "qemu"); Output = $result.Output
+            })
+        }
+        "libvirt default network" = {
+            param($Worker)
+            $result = $Worker.Exec("sudo virsh net-list --all")
+            $SDK.Testing.Record(@{
+                Test = "6.10.4"; Name = "libvirt default network"
+                Pass = ($result.Output -match "default"); Output = $result.Output
+            })
+        }
         "multipass installed" = { param($Worker) }
         "multipassd service active" = { param($Worker) }
         "KVM available for nesting" = { param($Worker) }
