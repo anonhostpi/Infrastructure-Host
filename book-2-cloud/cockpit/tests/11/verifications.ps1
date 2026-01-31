@@ -30,7 +30,17 @@ New-Module -Name "Verify.Cockpit" -ScriptBlock {
                 Pass = ($result.Output -match "ii.*cockpit-machines"); Output = "Package installed"
             })
         }
-        "Cockpit listening on port" = { param($Worker) }
+        "Cockpit listening on port" = {
+            param($Worker)
+            $portConf = $Worker.Exec("cat /etc/systemd/system/cockpit.socket.d/listen.conf 2>/dev/null").Output
+            $port = if ($portConf -match 'ListenStream=(\d+)') { $matches[1] } else { "9090" }
+            $Worker.Exec("curl -sk https://localhost:$port/ > /dev/null 2>&1") | Out-Null
+            $result = $Worker.Exec("ss -tlnp | grep :$port")
+            $SDK.Testing.Record(@{
+                Test = "6.11.4"; Name = "Cockpit listening on port $port"
+                Pass = ($result.Output -match ":$port"); Output = $result.Output
+            })
+        }
         "Cockpit web UI responds" = { param($Worker) }
         "Cockpit login page" = { param($Worker) }
         "Cockpit restricted to localhost" = { param($Worker) }
