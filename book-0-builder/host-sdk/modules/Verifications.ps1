@@ -772,6 +772,20 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
     }
 
     Add-ScriptMethods $Verifications @{
+        CopilotCLI = {
+            param($Worker)
+            $username = $mod.SDK.Settings.Identity.username
+            # 6.13.1: Copilot CLI installed
+            $result = $Worker.Exec("which copilot")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.13.1"; Name = "Copilot CLI installed"
+                Pass = ($result.Success -and $result.Output -match "copilot")
+                Output = $result.Output
+            })
+        }
+    }
+
+    Add-ScriptMethods $Verifications @{
         UI = {
             param($Worker)
             $result = $Worker.Exec("test -d /etc/update-motd.d")
