@@ -140,7 +140,15 @@ New-Module -Name "Verify.MSMTPMail" -ScriptBlock {
                 Pass = $aliasPass; Output = "Root alias in /etc/aliases"
             })
         }
-        "msmtp-config helper exists" = { param($Worker) }
+        "msmtp-config helper exists" = {
+            param($Worker)
+            if (-not $smtpConfigured) { $SDK.Testing.Verifications.Fork("6.7.10", "SKIP", "No SMTP configured"); return }
+            $result = $Worker.Exec("test -x /usr/local/bin/msmtp-config")
+            $SDK.Testing.Record(@{
+                Test = "6.7.10"; Name = "msmtp-config helper exists"
+                Pass = $result.Success; Output = "/usr/local/bin/msmtp-config"
+            })
+        }
         "Test email sent" = { param($Worker) }
     })
 } -ArgumentList $SDK
