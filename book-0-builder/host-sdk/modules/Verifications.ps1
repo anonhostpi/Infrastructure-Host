@@ -517,6 +517,20 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 Pass = (($uuConf -match 'Verbose.*"true"') -and ($uuConf -match 'MailReport.*"always"'))
                 Output = "Verbose=true, MailReport=always"
             })
+            # 6.8.10: snap-update script
+            $result = $Worker.Exec("test -x /usr/local/bin/snap-update && echo exists")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.8.10"; Name = "snap-update script"
+                Pass = ($result.Output -match "exists")
+                Output = "/usr/local/bin/snap-update"
+            })
+            # 6.8.11: snap refresh.hold configured
+            $result = $Worker.Exec("sudo snap get system refresh.hold 2>/dev/null || echo not-set")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.8.11"; Name = "snap refresh.hold configured"
+                Pass = ($result.Output -match "forever" -or $result.Output -match "20[0-9]{2}")
+                Output = "refresh.hold=$($result.Output)"
+            })
         }
     }
 
