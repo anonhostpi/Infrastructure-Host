@@ -22,7 +22,14 @@ New-Module -Name "Verify.Cockpit" -ScriptBlock {
                 Pass = ($result.Output -match "enabled"); Output = $result.Output
             })
         }
-        "cockpit-machines installed" = { param($Worker) }
+        "cockpit-machines installed" = {
+            param($Worker)
+            $result = $Worker.Exec("dpkg -l cockpit-machines")
+            $SDK.Testing.Record(@{
+                Test = "6.11.3"; Name = "cockpit-machines installed"
+                Pass = ($result.Output -match "ii.*cockpit-machines"); Output = "Package installed"
+            })
+        }
         "Cockpit listening on port" = { param($Worker) }
         "Cockpit web UI responds" = { param($Worker) }
         "Cockpit login page" = { param($Worker) }
