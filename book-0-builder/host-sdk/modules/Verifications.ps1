@@ -35,9 +35,9 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
             }
         }
         Test = {
-            param([string]$Fragment, [int]$Layer, [string]$Name)
+            param([string]$Fragment, [int]$Layer, [string]$Name, $Worker)
             $test = $mod.Tests[$Fragment][$Layer][$Name]
-            if ($test) { & $test }
+            if ($test) { & $test $Worker }
         }
         Load = {
             param([string]$Path)
@@ -54,7 +54,7 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                     $frag = $entry.Fragment
                     if ($mod.Tests[$frag] -and $mod.Tests[$frag][$l]) {
                         foreach ($name in $mod.Tests[$frag][$l].Keys) {
-                            $this.Test($frag, $l, $name)
+                            $this.Test($frag, $l, $name, $Worker)
                         }
                     }
                 }
