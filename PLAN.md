@@ -1,5 +1,5 @@
 
-### Commit 1: `book-0-builder/host-sdk/modules/Worker.ps1` - Enhance Test to accept scriptblock evaluator
+### Commit 1: `book-0-builder/host-sdk/modules/Worker.ps1` - Enhance Test to accept scriptblock evaluator [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Worker.enhance-worker-test
 
@@ -40,7 +40,7 @@ Enhance Test to accept scriptblock evaluator
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 2: `book-0-builder/host-sdk/modules/Verifications.ps1` - Replace with loader shell (module boilerplate + Extend)
+### Commit 2: `book-0-builder/host-sdk/modules/Verifications.ps1` - Replace with loader shell (module boilerplate + Extend) [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.loader-shell
 
@@ -79,7 +79,7 @@ Replace with loader shell (module boilerplate + Extend)
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 3: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add Fork method to Verifications
+### Commit 3: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add Fork method to Verifications [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.add-fork
 
@@ -114,7 +114,7 @@ Add Fork method to Verifications
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 4: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add Discover method for filesystem scan
+### Commit 4: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add Discover method for filesystem scan [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.add-discover
 
@@ -155,7 +155,7 @@ Add Discover method for filesystem scan
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 5: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add Load method
+### Commit 5: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add Load method [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.add-load
 
@@ -188,7 +188,7 @@ Add Load method
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 6: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add Run method to iterate layers and dispatch tests
+### Commit 6: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add Run method to iterate layers and dispatch tests [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.add-run
 
@@ -232,7 +232,7 @@ Add Run method to iterate layers and dispatch tests
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 7: `book-1-foundation/base/build.yaml` - Add build.yaml for base, network, kernel (3 files)
+### Commit 7: `book-1-foundation/base/build.yaml` - Add build.yaml for base, network, kernel (3 files) [COMPLETE]
 
 ### book-1-foundation.base.build.build-yaml-batch-1
 
@@ -264,7 +264,7 @@ Add build.yaml for base, network, kernel (3 files)
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 8: `book-2-cloud/users/build.yaml` - Add build.yaml for users, ssh, ufw (3 files)
+### Commit 8: `book-2-cloud/users/build.yaml` - Add build.yaml for users, ssh, ufw (3 files) [COMPLETE]
 
 ### book-2-cloud.users.build.build-yaml-batch-2
 
@@ -296,7 +296,7 @@ Add build.yaml for users, ssh, ufw (3 files)
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 9: `book-2-cloud/system/build.yaml` - Add build.yaml for system, msmtp, packages (3 files)
+### Commit 9: `book-2-cloud/system/build.yaml` - Add build.yaml for system, msmtp, packages (3 files) [COMPLETE]
 
 ### book-2-cloud.system.build.build-yaml-batch-3
 
@@ -328,7 +328,7 @@ Add build.yaml for system, msmtp, packages (3 files)
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 10: `book-2-cloud/pkg-security/build.yaml` - Add build.yaml for pkg-security, security-mon, virtualization (3 files)
+### Commit 10: `book-2-cloud/pkg-security/build.yaml` - Add build.yaml for pkg-security, security-mon, virtualization (3 files) [COMPLETE]
 
 ### book-2-cloud.pkg-security.build.build-yaml-batch-4
 
@@ -360,7 +360,7 @@ Add build.yaml for pkg-security, security-mon, virtualization (3 files)
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 11: `book-2-cloud/cockpit/build.yaml` - Add build.yaml for cockpit, claude-code, copilot-cli (3 files)
+### Commit 11: `book-2-cloud/cockpit/build.yaml` - Add build.yaml for cockpit, claude-code, copilot-cli (3 files) [COMPLETE]
 
 ### book-2-cloud.cockpit.build.build-yaml-batch-5
 
@@ -392,7 +392,7 @@ Add build.yaml for cockpit, claude-code, copilot-cli (3 files)
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 12: `book-2-cloud/opencode/build.yaml` - Add build.yaml for opencode, ui, pkg-upgrade (3 files)
+### Commit 12: `book-2-cloud/opencode/build.yaml` - Add build.yaml for opencode, ui, pkg-upgrade (3 files) [COMPLETE]
 
 ### book-2-cloud.opencode.build.build-yaml-batch-6
 
@@ -424,7 +424,7 @@ Add build.yaml for opencode, ui, pkg-upgrade (3 files)
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 13: `book-1-foundation/base/tests/0/verifications.ps1` - Add skeleton verifications for base (layer 0) and network (layer 1)
+### Commit 13: `book-1-foundation/base/tests/0/verifications.ps1` - Add skeleton verifications for base (layer 0) and network (layer 1) [COMPLETE]
 
 ### book-1-foundation.base.tests.0.verifications.skeleton-layer-0-1
 
@@ -460,7 +460,7 @@ Add skeleton verifications for base (layer 0) and network (layer 1)
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 14: `book-2-cloud/kernel/tests/2/verifications.ps1` - Add skeleton verifications for kernel (layer 2) and users (layer 3)
+### Commit 14: `book-2-cloud/kernel/tests/2/verifications.ps1` - Add skeleton verifications for kernel (layer 2) and users (layer 3) [COMPLETE]
 
 ### book-2-cloud.kernel.tests.2.verifications.skeleton-layer-2-3
 
@@ -496,7 +496,7 @@ Add skeleton verifications for kernel (layer 2) and users (layer 3)
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 15: `book-2-cloud/ssh/tests/4/verifications.ps1` - Add skeleton verifications for ssh (layer 4) and ufw (layer 5)
+### Commit 15: `book-2-cloud/ssh/tests/4/verifications.ps1` - Add skeleton verifications for ssh (layer 4) and ufw (layer 5) [COMPLETE]
 
 ### book-2-cloud.ssh.tests.4.verifications.skeleton-layer-4-5
 
@@ -532,7 +532,7 @@ Add skeleton verifications for ssh (layer 4) and ufw (layer 5)
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 16: `book-2-cloud/system/tests/6/verifications.ps1` - Add skeleton verifications for system (layer 6) and msmtp (layer 7)
+### Commit 16: `book-2-cloud/system/tests/6/verifications.ps1` - Add skeleton verifications for system (layer 6) and msmtp (layer 7) [COMPLETE]
 
 ### book-2-cloud.system.tests.6.verifications.skeleton-layer-6-7
 
@@ -568,7 +568,7 @@ Add skeleton verifications for system (layer 6) and msmtp (layer 7)
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 17: `book-2-cloud/pkg-security/tests/8/verifications.ps1` - Add skeleton verifications for pkg-security (layer 8) and security-mon (layer 9)
+### Commit 17: `book-2-cloud/pkg-security/tests/8/verifications.ps1` - Add skeleton verifications for pkg-security (layer 8) and security-mon (layer 9) [COMPLETE]
 
 ### book-2-cloud.pkg-security.tests.8.verifications.skeleton-layer-8-9
 
@@ -604,7 +604,7 @@ Add skeleton verifications for pkg-security (layer 8) and security-mon (layer 9)
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 18: `book-2-cloud/virtualization/tests/10/verifications.ps1` - Add skeleton verifications for virtualization (layer 10) and cockpit (layer 11)
+### Commit 18: `book-2-cloud/virtualization/tests/10/verifications.ps1` - Add skeleton verifications for virtualization (layer 10) and cockpit (layer 11) [COMPLETE]
 
 ### book-2-cloud.virtualization.tests.10.verifications.skeleton-layer-10-11
 
@@ -640,7 +640,7 @@ Add skeleton verifications for virtualization (layer 10) and cockpit (layer 11)
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 19: `book-2-cloud/claude-code/tests/12/verifications.ps1` - Add skeleton verifications for claude-code (layer 12) and copilot-cli (layer 13)
+### Commit 19: `book-2-cloud/claude-code/tests/12/verifications.ps1` - Add skeleton verifications for claude-code (layer 12) and copilot-cli (layer 13) [COMPLETE]
 
 ### book-2-cloud.claude-code.tests.12.verifications.skeleton-layer-12-13
 
@@ -676,7 +676,7 @@ Add skeleton verifications for claude-code (layer 12) and copilot-cli (layer 13)
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 20: `book-2-cloud/opencode/tests/14/verifications.ps1` - Add skeleton verifications for opencode (layer 14) and ui (layer 15)
+### Commit 20: `book-2-cloud/opencode/tests/14/verifications.ps1` - Add skeleton verifications for opencode (layer 14) and ui (layer 15) [COMPLETE]
 
 ### book-2-cloud.opencode.tests.14.verifications.skeleton-layer-14-15
 
@@ -712,7 +712,7 @@ Add skeleton verifications for opencode (layer 14) and ui (layer 15)
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 21: `book-2-cloud/pkg-security/tests/16/verifications.ps1` - Add skeleton verifications for pkg-security layers 16 and 17
+### Commit 21: `book-2-cloud/pkg-security/tests/16/verifications.ps1` - Add skeleton verifications for pkg-security layers 16 and 17 [COMPLETE]
 
 ### book-2-cloud.pkg-security.tests.16.verifications.skeleton-layer-16-17
 
@@ -748,7 +748,7 @@ Add skeleton verifications for pkg-security layers 16 and 17
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 22: `book-2-cloud/pkg-security/tests/18/verifications.ps1` - Add skeleton verifications for pkg-security layer 18
+### Commit 22: `book-2-cloud/pkg-security/tests/18/verifications.ps1` - Add skeleton verifications for pkg-security layer 18 [COMPLETE]
 
 ### book-2-cloud.pkg-security.tests.18.verifications.skeleton-layer-18
 
