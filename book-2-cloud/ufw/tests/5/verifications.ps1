@@ -22,5 +22,13 @@ New-Module -Name "Verify.UFWFirewall" -ScriptBlock {
                 Pass = ($result.Output -match "22.*ALLOW"); Output = "Port 22 rule checked"
             })
         }
+        "Default deny incoming" = {
+            param($Worker)
+            $verbose = $Worker.Exec("sudo ufw status verbose")
+            $SDK.Testing.Record(@{
+                Test = "6.5.3"; Name = "Default deny incoming"
+                Pass = ($verbose.Output -match "deny \(incoming\)"); Output = "Default incoming policy"
+            })
+        }
     })
 } -ArgumentList $SDK
