@@ -836,6 +836,20 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 Pass = ($result.Success -and $result.Output -match "node")
                 Output = $result.Output
             })
+            # 6.14.2: npm installed
+            $result = $Worker.Exec("which npm")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.14.2"; Name = "npm installed"
+                Pass = ($result.Success -and $result.Output -match "npm")
+                Output = $result.Output
+            })
+            # 6.14.3: opencode installed
+            $result = $Worker.Exec("which opencode")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.14.3"; Name = "OpenCode installed"
+                Pass = ($result.Success -and $result.Output -match "opencode")
+                Output = $result.Output
+            })
         }
     }
 
