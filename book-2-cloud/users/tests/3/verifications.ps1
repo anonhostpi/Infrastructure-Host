@@ -40,6 +40,13 @@ New-Module -Name "Verify.Users" -ScriptBlock {
                 Pass = $result.Success; Output = "/etc/sudoers.d/$username"
             })
         }
-        "Root account locked" = { param($Worker) }
+        "Root account locked" = {
+            param($Worker)
+            $result = $Worker.Exec("sudo passwd -S root")
+            $SDK.Testing.Record(@{
+                Test = "6.3.4"; Name = "Root account locked"
+                Pass = ($result.Output -match "root L" -or $result.Output -match "root LK"); Output = $result.Output
+            })
+        }
     })
 } -ArgumentList $SDK
