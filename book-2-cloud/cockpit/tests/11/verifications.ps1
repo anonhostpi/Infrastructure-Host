@@ -61,6 +61,15 @@ New-Module -Name "Verify.Cockpit" -ScriptBlock {
                 Pass = ($result.Success -and $result.Output); Output = "Login page served"
             })
         }
-        "Cockpit restricted to localhost" = { param($Worker) }
+        "Cockpit restricted to localhost" = {
+            param($Worker)
+            $portConf = $Worker.Exec("cat /etc/systemd/system/cockpit.socket.d/listen.conf 2>/dev/null").Output
+            $restricted = ($portConf -match "127\.0\.0\.1" -or $portConf -match "::1" -or $portConf -match "localhost")
+            $SDK.Testing.Record(@{
+                Test = "6.11.7"; Name = "Cockpit restricted to localhost"
+                Pass = $restricted
+                Output = if ($restricted) { "Listen restricted" } else { "Warning: may be externally accessible" }
+            })
+        }
     })
 } -ArgumentList $SDK
