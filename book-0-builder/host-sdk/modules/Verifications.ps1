@@ -31,6 +31,13 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
         }
     }
 
+    Add-ScriptMethods $Verifications @{
+        Load = {
+            param([string]$Path)
+            return (& $Path -SDK $mod.SDK)
+        }
+    }
+
     $SDK.Extend("Verifications", $Verifications, $SDK.Testing)
     Export-ModuleMember -Function @()
 } -ArgumentList $SDK | Import-Module -Force
