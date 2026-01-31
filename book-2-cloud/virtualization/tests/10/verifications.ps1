@@ -38,8 +38,22 @@ New-Module -Name "Verify.Virtualization" -ScriptBlock {
                 Pass = ($result.Output -match "default"); Output = $result.Output
             })
         }
-        "multipass installed" = { param($Worker) }
-        "multipassd service active" = { param($Worker) }
+        "multipass installed" = {
+            param($Worker)
+            $result = $Worker.Exec("which multipass")
+            $SDK.Testing.Record(@{
+                Test = "6.10.5"; Name = "multipass installed"
+                Pass = ($result.Success -and $result.Output -match "multipass"); Output = $result.Output
+            })
+        }
+        "multipassd service active" = {
+            param($Worker)
+            $result = $Worker.Exec("systemctl is-active snap.multipass.multipassd.service")
+            $SDK.Testing.Record(@{
+                Test = "6.10.6"; Name = "multipassd service active"
+                Pass = ($result.Output -match "^active$"); Output = $result.Output
+            })
+        }
         "KVM available for nesting" = { param($Worker) }
         "Launch nested VM" = { param($Worker) }
         "Exec in nested VM" = { param($Worker) }
