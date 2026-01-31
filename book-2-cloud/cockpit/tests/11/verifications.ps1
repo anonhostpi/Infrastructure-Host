@@ -51,7 +51,16 @@ New-Module -Name "Verify.Cockpit" -ScriptBlock {
                 Pass = ($result.Output -match "200"); Output = "HTTP $($result.Output)"
             })
         }
-        "Cockpit login page" = { param($Worker) }
+        "Cockpit login page" = {
+            param($Worker)
+            $portConf = $Worker.Exec("cat /etc/systemd/system/cockpit.socket.d/listen.conf 2>/dev/null").Output
+            $port = if ($portConf -match 'ListenStream=(\d+)') { $matches[1] } else { "9090" }
+            $result = $Worker.Exec("curl -sk https://localhost:$port/ | grep -E 'login.js|login.css'")
+            $SDK.Testing.Record(@{
+                Test = "6.11.6"; Name = "Cockpit login page"
+                Pass = ($result.Success -and $result.Output); Output = "Login page served"
+            })
+        }
         "Cockpit restricted to localhost" = { param($Worker) }
     })
 } -ArgumentList $SDK
