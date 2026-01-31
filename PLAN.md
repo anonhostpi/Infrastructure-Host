@@ -784,7 +784,7 @@ Add skeleton verifications for pkg-security layer 18
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 23: `book-0-builder/host-sdk/modules/Verifications.ps1` - Thread Worker through Test and Run methods
+### Commit 23: `book-0-builder/host-sdk/modules/Verifications.ps1` - Thread Worker through Test and Run methods [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.worker-threading
 
@@ -823,7 +823,7 @@ Thread Worker through Test and Run methods
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 24: `book-2-cloud/ui/tests/15/verifications.ps1` - Add UI layer tests (MOTD directory and scripts)
+### Commit 24: `book-2-cloud/ui/tests/15/verifications.ps1` - Add UI layer tests (MOTD directory and scripts) [COMPLETE]
 
 ### book-2-cloud.ui.tests.15.verifications.ui-tests
 
@@ -869,7 +869,7 @@ Add UI layer tests (MOTD directory and scripts)
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 25: `book-2-cloud/pkg-security/tests/18/verifications.ps1` - Add NotificationFlush test (flush logged)
+### Commit 25: `book-2-cloud/pkg-security/tests/18/verifications.ps1` - Add NotificationFlush test (flush logged) [COMPLETE]
 
 ### book-2-cloud.pkg-security.tests.18.verifications.notification-flush-tests
 
@@ -908,7 +908,7 @@ Add NotificationFlush test (flush logged)
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 26a: `book-2-cloud/security-mon/tests/9/verifications.ps1` - Add SecurityMonitoring Register shape with first 2 tests
+### Commit 26a: `book-2-cloud/security-mon/tests/9/verifications.ps1` - Add SecurityMonitoring Register shape with first 2 tests [COMPLETE]
 
 ### book-2-cloud.security-mon.tests.9.verifications.secmon-shape
 
@@ -954,7 +954,7 @@ Add SecurityMonitoring Register shape with first 2 tests
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 26b: `book-2-cloud/security-mon/tests/9/verifications.ps1` - Add SSH jail test to SecurityMonitoring
+### Commit 26b: `book-2-cloud/security-mon/tests/9/verifications.ps1` - Add SSH jail test to SecurityMonitoring [COMPLETE]
 
 ### book-2-cloud.security-mon.tests.9.verifications.secmon-ssh-jail
 
@@ -989,7 +989,7 @@ Add SSH jail test to SecurityMonitoring
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 27: `book-2-cloud/system/tests/6/verifications.ps1` - Add System tests: timezone and locale
+### Commit 27: `book-2-cloud/system/tests/6/verifications.ps1` - Add System tests: timezone and locale [COMPLETE]
 
 ### book-2-cloud.system.tests.6.verifications.system-tests-a
 
@@ -1035,7 +1035,7 @@ Add System tests: timezone and locale
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 28: `book-2-cloud/system/tests/6/verifications.ps1` - Add NTP test to System layer
+### Commit 28: `book-2-cloud/system/tests/6/verifications.ps1` - Add NTP test to System layer [COMPLETE]
 
 ### book-2-cloud.system.tests.6.verifications.system-ntp
 
@@ -1070,7 +1070,7 @@ Add NTP test to System layer
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 29: `book-2-cloud/ufw/tests/5/verifications.ps1` - Add UFW tests: active status and SSH allowed
+### Commit 29: `book-2-cloud/ufw/tests/5/verifications.ps1` - Add UFW tests: active status and SSH allowed [COMPLETE]
 
 ### book-2-cloud.ufw.tests.5.verifications.ufw-tests-a
 
@@ -1116,7 +1116,7 @@ Add UFW tests: active status and SSH allowed
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 30: `book-2-cloud/ufw/tests/5/verifications.ps1` - Add default deny incoming test to UFW
+### Commit 30: `book-2-cloud/ufw/tests/5/verifications.ps1` - Add default deny incoming test to UFW [COMPLETE]
 
 ### book-2-cloud.ufw.tests.5.verifications.ufw-deny
 
@@ -1151,7 +1151,7 @@ Add default deny incoming test to UFW
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 31: `book-2-cloud/kernel/tests/2/verifications.ps1` - Add Kernel tests: sysctl config and reverse path filter
+### Commit 31: `book-2-cloud/kernel/tests/2/verifications.ps1` - Add Kernel tests: sysctl config and reverse path filter [COMPLETE]
 
 ### book-2-cloud.kernel.tests.2.verifications.kernel-tests-a
 
@@ -1197,7 +1197,7 @@ Add Kernel tests: sysctl config and reverse path filter
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 32: `book-2-cloud/kernel/tests/2/verifications.ps1` - Add Kernel tests: SYN cookies and ICMP redirects
+### Commit 32: `book-2-cloud/kernel/tests/2/verifications.ps1` - Add Kernel tests: SYN cookies and ICMP redirects [COMPLETE]
 
 ### book-2-cloud.kernel.tests.2.verifications.kernel-tests-b
 
@@ -1240,7 +1240,7 @@ Add Kernel tests: SYN cookies and ICMP redirects
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 33: `book-2-cloud/users/tests/3/verifications.ps1` - Add Users Register shape (5 tests: user exists, shell, sudo, sudoers, root locked)
+### Commit 33: `book-2-cloud/users/tests/3/verifications.ps1` - Add Users Register shape (5 tests: user exists, shell, sudo, sudoers, root locked) [COMPLETE]
 
 ### book-2-cloud.users.tests.3.verifications.users-shape
 
@@ -1275,7 +1275,7 @@ Add Users Register shape (5 tests: user exists, shell, sudo, sudoers, root locke
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 34: `book-2-cloud/ssh/tests/4/verifications.ps1` - Add SSH Register shape (5 tests: hardening config, settings, service, root rejected, key auth)
+### Commit 34: `book-2-cloud/ssh/tests/4/verifications.ps1` - Add SSH Register shape (5 tests: hardening config, settings, service, root rejected, key auth) [COMPLETE]
 
 ### book-2-cloud.ssh.tests.4.verifications.ssh-shape
 
