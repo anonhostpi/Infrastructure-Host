@@ -40,7 +40,14 @@ New-Module -Name "Verify.OpenCode" -ScriptBlock {
                 Pass = ($result.Output -match "exists"); Output = "/home/$username/.config/opencode"
             })
         }
-        "OpenCode auth file" = { param($Worker) }
+        "OpenCode auth file" = {
+            param($Worker)
+            $result = $Worker.Exec("sudo test -f /home/$username/.local/share/opencode/auth.json && echo exists")
+            $SDK.Testing.Record(@{
+                Test = "6.14.5"; Name = "OpenCode auth file"
+                Pass = ($result.Output -match "exists"); Output = "/home/$username/.local/share/opencode/auth.json"
+            })
+        }
         "OpenCode AI response" = { param($Worker) }
         "OpenCode credential chain" = { param($Worker) }
     })
