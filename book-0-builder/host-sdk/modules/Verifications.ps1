@@ -313,6 +313,24 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
         }
     }
 
+    Add-ScriptMethods $Verifications @{
+        UI = {
+            param($Worker)
+            $result = $Worker.Exec("test -d /etc/update-motd.d")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.15.1"; Name = "MOTD directory exists"
+                Pass = $result.Success
+                Output = "/etc/update-motd.d"
+            })
+            $result = $Worker.Exec("ls /etc/update-motd.d/ | wc -l")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.15.2"; Name = "MOTD scripts present"
+                Pass = ([int]$result.Output -gt 0)
+                Output = "$($result.Output) scripts"
+            })
+        }
+    }
+
     $mod.SDK.Extend("Verifications", $Verifications, $mod.SDK.Testing)
     Export-ModuleMember -Function @()
 } -ArgumentList $SDK | Import-Module -Force
