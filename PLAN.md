@@ -1,7 +1,7 @@
 # Plan
 
 
-### Commit 1: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add MSMTP method shape with test 6.7.1 (msmtp installed)
+### Commit 1: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add MSMTP method shape with test 6.7.1 (msmtp installed) [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.msmtp-shape
 
@@ -40,7 +40,7 @@ Add MSMTP method shape with test 6.7.1 (msmtp installed)
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 2: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add MSMTP tests 6.7.2-6.7.3: config exists, sendmail alias
+### Commit 2: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add MSMTP tests 6.7.2-6.7.3: config exists, sendmail alias [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.msmtp-basic
 
@@ -81,7 +81,7 @@ Add MSMTP tests 6.7.2-6.7.3: config exists, sendmail alias
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 3: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add SMTP config gate + read msmtprc + 6.7.4 host/port checks
+### Commit 3: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add SMTP config gate + read msmtprc + 6.7.4 host/port checks [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.msmtp-config-gate
 
@@ -126,7 +126,7 @@ Add SMTP config gate + read msmtprc + 6.7.4 host/port checks
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 4: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add MSMTP 6.7.4 from_email/user config checks
+### Commit 4: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add MSMTP 6.7.4 from_email/user config checks [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.msmtp-config-from-user
 
@@ -163,7 +163,7 @@ Add MSMTP 6.7.4 from_email/user config checks
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 5: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add MSMTP 6.7.5 provider name resolution + test shape with placeholder
+### Commit 5: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add MSMTP 6.7.5 provider name resolution + test shape with placeholder [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.msmtp-provider-shape
 
@@ -205,7 +205,7 @@ Add MSMTP 6.7.5 provider name resolution + test shape with placeholder
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 6: `book-0-builder/host-sdk/modules/Verifications.ps1` - Implement MSMTP 6.7.5 provider validation switch
+### Commit 6: `book-0-builder/host-sdk/modules/Verifications.ps1` - Implement MSMTP 6.7.5 provider validation switch [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.msmtp-provider-impl
 
@@ -241,7 +241,7 @@ Implement MSMTP 6.7.5 provider validation switch
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 7: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add MSMTP 6.7.6 auth method validation
+### Commit 7: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add MSMTP 6.7.6 auth method validation [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.msmtp-auth
 
@@ -280,7 +280,7 @@ Add MSMTP 6.7.6 auth method validation
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 8: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add MSMTP 6.7.7-6.7.8 TLS settings and credential config checks
+### Commit 8: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add MSMTP 6.7.7-6.7.8 TLS settings and credential config checks [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.msmtp-tls-creds
 
@@ -325,7 +325,7 @@ Add MSMTP 6.7.7-6.7.8 TLS settings and credential config checks
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 9: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add MSMTP 6.7.9-6.7.10 root alias and msmtp-config helper
+### Commit 9: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add MSMTP 6.7.9-6.7.10 root alias and msmtp-config helper [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.msmtp-alias-helper
 
@@ -368,7 +368,7 @@ Add MSMTP 6.7.9-6.7.10 root alias and msmtp-config helper
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 10: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add MSMTP 6.7.11 conditional test email send
+### Commit 10: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add MSMTP 6.7.11 conditional test email send [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.msmtp-test-email
 
@@ -411,7 +411,7 @@ Automated test.' | sudo msmtp '$($smtp.recipient)'")
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 11: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add PackageSecurity method shape with test 6.8.1 (unattended-upgrades)
+### Commit 11: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add PackageSecurity method shape with test 6.8.1 (unattended-upgrades) [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.pkgsec-shape
 
@@ -450,7 +450,7 @@ Add PackageSecurity method shape with test 6.8.1 (unattended-upgrades)
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 12a: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add PackageSecurity 6.8.2-6.8.3: config exists, auto-upgrades
+### Commit 12a: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add PackageSecurity 6.8.2-6.8.3: config exists, auto-upgrades [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.pkgsec-config-auto
 
@@ -491,7 +491,7 @@ Add PackageSecurity 6.8.2-6.8.3: config exists, auto-upgrades
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 12b: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add PackageSecurity 6.8.4-6.8.5: service enabled, apt-listchanges
+### Commit 12b: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add PackageSecurity 6.8.4-6.8.5: service enabled, apt-listchanges [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.pkgsec-service-listchanges
 
@@ -532,7 +532,7 @@ Add PackageSecurity 6.8.4-6.8.5: service enabled, apt-listchanges
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 12c: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add PackageSecurity 6.8.6-6.8.7: listchanges email config, apt-notify script
+### Commit 12c: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add PackageSecurity 6.8.6-6.8.7: listchanges email config, apt-notify script [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.pkgsec-listchanges-notify
 
@@ -573,7 +573,7 @@ Add PackageSecurity 6.8.6-6.8.7: listchanges email config, apt-notify script
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 13: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add PackageSecurity 6.8.8-6.8.9: dpkg hooks, verbose reporting
+### Commit 13: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add PackageSecurity 6.8.8-6.8.9: dpkg hooks, verbose reporting [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.pkgsec-hooks-verbose
 
@@ -615,7 +615,7 @@ Add PackageSecurity 6.8.8-6.8.9: dpkg hooks, verbose reporting
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 14a: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add PackageSecurity 6.8.10-6.8.11: snap-update, snap refresh.hold
+### Commit 14a: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add PackageSecurity 6.8.10-6.8.11: snap-update, snap refresh.hold [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.pkgsec-snap
 
@@ -656,7 +656,7 @@ Add PackageSecurity 6.8.10-6.8.11: snap-update, snap refresh.hold
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 14b: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add PackageSecurity 6.8.12-6.8.13: brew-update, pip-global-update
+### Commit 14b: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add PackageSecurity 6.8.12-6.8.13: brew-update, pip-global-update [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.pkgsec-brew-pip
 
@@ -697,7 +697,7 @@ Add PackageSecurity 6.8.12-6.8.13: brew-update, pip-global-update
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 14c: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add PackageSecurity 6.8.14-6.8.15: npm-global-update, deno-update
+### Commit 14c: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add PackageSecurity 6.8.14-6.8.15: npm-global-update, deno-update [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.pkgsec-npm-deno
 
@@ -738,7 +738,7 @@ Add PackageSecurity 6.8.14-6.8.15: npm-global-update, deno-update
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 15: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add PackageSecurity 6.8.16-6.8.17: systemd timer, common library
+### Commit 15: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add PackageSecurity 6.8.16-6.8.17: systemd timer, common library [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.pkgsec-timer-common
 
@@ -780,7 +780,7 @@ Add PackageSecurity 6.8.16-6.8.17: systemd timer, common library
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 16: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add PackageSecurity 6.8.18: apt-notify-flush script
+### Commit 16: `book-0-builder/host-sdk/modules/Verifications.ps1` - Add PackageSecurity 6.8.18: apt-notify-flush script [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.pkgsec-flush
 
