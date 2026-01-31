@@ -251,6 +251,17 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 Pass = ($result.Output -match "Status: active")
                 Output = $result.Output | Select-Object -First 1
             })
+            $mod.SDK.Testing.Record(@{
+                Test = "6.5.2"; Name = "SSH allowed in UFW"
+                Pass = ($result.Output -match "22.*ALLOW")
+                Output = "Port 22 rule checked"
+            })
+            $verbose = $Worker.Exec("sudo ufw status verbose")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.5.3"; Name = "Default deny incoming"
+                Pass = ($verbose.Output -match "deny \(incoming\)")
+                Output = "Default incoming policy"
+            })
         }
     }
 
