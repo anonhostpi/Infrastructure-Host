@@ -121,8 +121,24 @@ New-Module -Name "Verify.PackageSecurity" -ScriptBlock {
                 Pass = ($result.Output -match "exists"); Output = "/usr/local/bin/npm-global-update"
             })
         }
-        "deno-update script" = { param($Worker) }
-        "pkg-managers-update timer" = { param($Worker) }
+        "deno-update script" = {
+            param($Worker)
+            $result = $Worker.Exec("test -x /usr/local/bin/deno-update && echo exists")
+            $SDK.Testing.Record(@{
+                Test = "6.8.15"; Name = "deno-update script"
+                Pass = ($result.Output -match "exists"); Output = "/usr/local/bin/deno-update"
+            })
+        }
+        "pkg-managers-update timer" = {
+            param($Worker)
+            $enabled = $Worker.Exec("systemctl is-enabled pkg-managers-update.timer 2>/dev/null")
+            $active = $Worker.Exec("systemctl is-active pkg-managers-update.timer 2>/dev/null")
+            $SDK.Testing.Record(@{
+                Test = "6.8.16"; Name = "pkg-managers-update timer"
+                Pass = ($enabled.Output -match "enabled") -and ($active.Output -match "active")
+                Output = "enabled=$($enabled.Output), active=$($active.Output)"
+            })
+        }
         "apt-notify common library" = { param($Worker) }
         "apt-notify-flush script" = { param($Worker) }
     })
