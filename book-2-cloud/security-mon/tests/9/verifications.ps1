@@ -22,5 +22,13 @@ New-Module -Name "Verify.SecurityMonitoring" -ScriptBlock {
                 Pass = ($result.Output -match "^active$"); Output = $result.Output
             })
         }
+        "SSH jail configured" = {
+            param($Worker)
+            $result = $Worker.Exec("sudo fail2ban-client status")
+            $SDK.Testing.Record(@{
+                Test = "6.9.3"; Name = "SSH jail configured"
+                Pass = ($result.Output -match "sshd"); Output = "sshd jail"
+            })
+        }
     })
 } -ArgumentList $SDK
