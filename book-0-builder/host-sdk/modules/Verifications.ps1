@@ -796,6 +796,19 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 Pass = ($result.Output -match "exists")
                 Output = "/home/$username/.copilot/config.json"
             })
+            # 6.13.4: Auth configuration (fail if no auth)
+            $hasAuth = $false; $authOutput = "No auth found"
+            $tokens = $Worker.Exec("sudo grep -q 'copilot_tokens' /home/$username/.copilot/config.json 2>/dev/null && echo configured")
+            if ($tokens.Output -match "configured") {
+                $hasAuth = $true; $authOutput = "OAuth tokens in config.json"
+            } else {
+                $env = $Worker.Exec("grep -q 'GH_TOKEN' /etc/environment && echo configured")
+                if ($env.Output -match "configured") { $hasAuth = $true; $authOutput = "GH_TOKEN configured" }
+            }
+            $mod.SDK.Testing.Record(@{
+                Test = "6.13.4"; Name = "Copilot CLI auth configured"
+                Pass = $hasAuth; Output = $authOutput
+            })
         }
     }
 
