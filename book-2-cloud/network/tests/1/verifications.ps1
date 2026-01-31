@@ -5,5 +5,5 @@ New-Module -Name "Verify.Network" -ScriptBlock {
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\..\..\..\book-0-builder\host-sdk\helpers\PowerShell.ps1"
 
-    return @{}
+    $SDK.Testing.Verifications.Register(@{})
 } -ArgumentList $SDK
