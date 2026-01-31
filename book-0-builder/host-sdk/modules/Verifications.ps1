@@ -38,6 +38,24 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
         }
     }
 
+    Add-ScriptMethods $Verifications @{
+        Run = {
+            param($Worker, [int]$Layer)
+            foreach ($l in 1..$Layer) {
+                $layerName = $mod.SDK.Fragments.LayerName($l)
+                $testFiles = $this.Discover($l)
+                foreach ($entry in $testFiles) {
+                    $mod.SDK.Log.Write("`n--- $layerName - $($entry.Fragment) ---", "Cyan")
+                    $tests = $this.Load($entry.Path)
+                    foreach ($id in $tests.Keys | Sort-Object) {
+                        $test = $tests[$id]
+                        $Worker.Test($id, $test.Name, $test.Command, $test.Pattern)
+                    }
+                }
+            }
+        }
+    }
+
     $SDK.Extend("Verifications", $Verifications, $SDK.Testing)
     Export-ModuleMember -Function @()
 } -ArgumentList $SDK | Import-Module -Force
