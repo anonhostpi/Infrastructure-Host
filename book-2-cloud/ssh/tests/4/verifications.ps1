@@ -50,6 +50,14 @@ New-Module -Name "Verify.SSHHardening" -ScriptBlock {
                 Output = if ($rootBlocked) { "Root login correctly rejected" } else { $result.Output }
             })
         }
-        "SSH key auth" = { param($Worker) }
+        "SSH key auth" = {
+            param($Worker)
+            $result = $Worker.Exec("ssh -o BatchMode=yes -o ConnectTimeout=5 -o StrictHostKeyChecking=no ${username}@localhost echo OK")
+            $SDK.Testing.Record(@{
+                Test = "6.4.5"; Name = "SSH key auth for $username"
+                Pass = ($result.Success -and $result.Output -match "OK")
+                Output = if ($result.Success) { "Key authentication successful" } else { $result.Output }
+            })
+        }
     })
 } -ArgumentList $SDK
