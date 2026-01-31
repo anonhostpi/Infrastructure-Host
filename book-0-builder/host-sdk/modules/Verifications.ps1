@@ -488,6 +488,20 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 Pass = ($result.Output -match "ii.*apt-listchanges")
                 Output = "Package installed"
             })
+            # 6.8.6: apt-listchanges email config
+            $result = $Worker.Exec("cat /etc/apt/listchanges.conf")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.8.6"; Name = "apt-listchanges email config"
+                Pass = ($result.Output -match "frontend=mail")
+                Output = "Changelogs sent via email"
+            })
+            # 6.8.7: apt-notify script exists
+            $result = $Worker.Exec("test -x /usr/local/bin/apt-notify")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.8.7"; Name = "apt-notify script exists"
+                Pass = $result.Success
+                Output = "/usr/local/bin/apt-notify"
+            })
         }
     }
 
