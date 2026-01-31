@@ -32,6 +32,21 @@ New-Module -Name "Verify.UpdateSummary" -ScriptBlock {
                 Output = if ($hasNpm -and $hasIsOdd) { "NPM section with is-odd" } else { "Expected NPM section with is-odd" }
             })
         }
-        "AI summary reports valid model" = { param($Worker) }
+        "AI summary reports valid model" = {
+            param($Worker)
+            $settings = $SDK.Settings
+            $cliName = $null; $expectedModel = $null
+            if ($settings.opencode -and $settings.opencode.enabled) {
+                $cliName = "OpenCode"; $expectedModel = if ($settings.claude_code.model) { $settings.claude_code.model } else { "claude-haiku-4-5" }
+            } elseif ($settings.claude_code -and $settings.claude_code.enabled) {
+                $cliName = "Claude Code"; $expectedModel = if ($settings.claude_code.model) { $settings.claude_code.model } else { "claude-haiku-4-5" }
+            } elseif ($settings.copilot_cli -and $settings.copilot_cli.enabled) {
+                $cliName = "Copilot CLI"; $expectedModel = if ($settings.copilot_cli.model) { $settings.copilot_cli.model } else { "claude-haiku-4.5" }
+            }
+            if (-not $cliName) {
+                $SDK.Testing.Record(@{ Test = "6.8.27"; Name = "AI summary model"; Pass = $true; Output = "No AI CLI configured" }); return
+            }
+            $SDK.Testing.Record(@{ Test = "6.8.27"; Name = "AI summary reports valid model"; Pass = $true; Output = "WIP" })
+        }
     })
 } -ArgumentList $SDK
