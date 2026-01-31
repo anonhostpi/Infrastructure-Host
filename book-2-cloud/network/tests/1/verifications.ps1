@@ -38,8 +38,22 @@ New-Module -Name "Verify.Network" -ScriptBlock {
                 Pass = ($result.Success -and $result.Output); Output = $result.Output
             })
         }
-        "IP address assigned" = { param($Worker) }
-        "Default gateway configured" = { param($Worker) }
+        "IP address assigned" = {
+            param($Worker)
+            $result = $Worker.Exec("ip -4 addr show scope global | grep 'inet '")
+            $SDK.Testing.Record(@{
+                Test = "6.1.4"; Name = "IP address assigned"
+                Pass = ($result.Output -match "inet "); Output = $result.Output
+            })
+        }
+        "Default gateway configured" = {
+            param($Worker)
+            $result = $Worker.Exec("ip route | grep '^default'")
+            $SDK.Testing.Record(@{
+                Test = "6.1.4"; Name = "Default gateway configured"
+                Pass = ($result.Output -match "default via"); Output = $result.Output
+            })
+        }
         "DNS resolution works" = { param($Worker) }
         "net-setup.log exists" = { param($Worker) }
         "net-setup.sh executed" = { param($Worker) }
