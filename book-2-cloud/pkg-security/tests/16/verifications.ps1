@@ -52,7 +52,24 @@ New-Module -Name "Verify.PackageManagerUpdates" -ScriptBlock {
             })
             $Worker.Exec("sudo npm uninstall -g is-odd 2>/dev/null") | Out-Null
         }
-        "pip-global-update" = { param($Worker) }
+        "pip-global-update" = {
+            param($Worker)
+            $tm = $Worker.Exec("source /usr/local/lib/apt-notify/common.sh && echo `$TESTING_MODE").Output
+            if ($tm -notmatch "true") { $SDK.Testing.Verifications.Fork("6.8.22", "SKIP", "Testing mode disabled"); return }
+            if (-not ($Worker.Exec("which pip3")).Success) {
+                $SDK.Testing.Record(@{ Test = "6.8.22"; Name = "pip-global-update"; Pass = $true; Output = "Skipped - pip not installed" }); return
+            }
+            $Worker.Exec("sudo pip3 install six==1.15.0 2>/dev/null") | Out-Null
+            $Worker.Exec("sudo rm -f /var/lib/apt-notify/queue") | Out-Null
+            $result = $Worker.Exec("sudo /usr/local/bin/pip-global-update 2>&1; echo exit_code:`$?")
+            $queue = $Worker.Exec("cat /var/lib/apt-notify/queue 2>/dev/null").Output
+            $pipDetected = ($queue -match "PIP_UPGRADED")
+            $SDK.Testing.Record(@{
+                Test = "6.8.22"; Name = "pip-global-update script"
+                Pass = ($result.Output -match "exit_code:0" -and $pipDetected)
+                Output = if ($pipDetected) { "Detected pip update" } else { "No PIP_UPGRADED in queue" }
+            })
+        }
         "brew-update" = { param($Worker) }
         "deno-update" = { param($Worker) }
     })
