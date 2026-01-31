@@ -54,8 +54,23 @@ New-Module -Name "Verify.PackageSecurity" -ScriptBlock {
                 Pass = ($result.Output -match "frontend=mail"); Output = "Changelogs sent via email"
             })
         }
-        "apt-notify script exists" = { param($Worker) }
-        "dpkg notification hooks" = { param($Worker) }
+        "apt-notify script exists" = {
+            param($Worker)
+            $result = $Worker.Exec("test -x /usr/local/bin/apt-notify")
+            $SDK.Testing.Record(@{
+                Test = "6.8.7"; Name = "apt-notify script exists"
+                Pass = $result.Success; Output = "/usr/local/bin/apt-notify"
+            })
+        }
+        "dpkg notification hooks" = {
+            param($Worker)
+            $result = $Worker.Exec("cat /etc/apt/apt.conf.d/90pkg-notify")
+            $hookOk = ($result.Output -match "DPkg::Pre-Invoke" -and $result.Output -match "DPkg::Post-Invoke")
+            $SDK.Testing.Record(@{
+                Test = "6.8.8"; Name = "dpkg notification hooks"
+                Pass = $hookOk; Output = "Pre/Post-Invoke hooks configured"
+            })
+        }
         "Verbose upgrade reporting" = { param($Worker) }
         "snap-update script" = { param($Worker) }
         "snap refresh.hold configured" = { param($Worker) }
