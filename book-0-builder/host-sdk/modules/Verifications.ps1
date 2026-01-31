@@ -2,7 +2,7 @@ param([Parameter(Mandatory = $true)] $SDK)
 
 New-Module -Name SDK.Testing.Verifications -ScriptBlock {
     param([Parameter(Mandatory = $true)] $SDK)
-    $mod = @{ SDK = $SDK; Tests = [ordered]@{} }
+    $mod = @{ SDK = $SDK; Tests = @{} }
     . "$PSScriptRoot\..\helpers\PowerShell.ps1"
 
     $Verifications = New-Object PSObject
@@ -27,14 +27,16 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
             return $results
         }
         Register = {
-            param([System.Collections.Specialized.OrderedDictionary]$Tests)
+            param([string]$Fragment, [int]$Layer, [System.Collections.Specialized.OrderedDictionary]$Tests)
+            if (-not $mod.Tests[$Fragment]) { $mod.Tests[$Fragment] = @{} }
+            if (-not $mod.Tests[$Fragment][$Layer]) { $mod.Tests[$Fragment][$Layer] = [ordered]@{} }
             foreach ($key in $Tests.Keys) {
-                $mod.Tests[$key] = $Tests[$key]
+                $mod.Tests[$Fragment][$Layer][$key] = $Tests[$key]
             }
         }
         Test = {
-            param([string]$Name)
-            $test = $mod.Tests[$Name]
+            param([string]$Fragment, [int]$Layer, [string]$Name)
+            $test = $mod.Tests[$Fragment][$Layer][$Name]
             if ($test) { & $test }
         }
         Load = {
@@ -48,10 +50,12 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 $testFiles = $this.Discover($l)
                 foreach ($entry in $testFiles) {
                     $mod.SDK.Log.Write("`n--- $layerName - $($entry.Fragment) ---", "Cyan")
-                    $mod.Tests = [ordered]@{}
                     $this.Load($entry.Path)
-                    foreach ($name in $mod.Tests.Keys) {
-                        $this.Test($name)
+                    $frag = $entry.Fragment
+                    if ($mod.Tests[$frag] -and $mod.Tests[$frag][$l]) {
+                        foreach ($name in $mod.Tests[$frag][$l].Keys) {
+                            $this.Test($frag, $l, $name)
+                        }
                     }
                 }
             }
