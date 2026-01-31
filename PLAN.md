@@ -1311,7 +1311,7 @@ Add SSH Register shape (5 tests: hardening config, settings, service, root rejec
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 35: `book-2-cloud/network/tests/1/verifications.ps1` - Add Network Register shape (9 tests: hostname, hosts, netplan, IP, gateway, DNS, net-setup)
+### Commit 35: `book-2-cloud/network/tests/1/verifications.ps1` - Add Network Register shape (9 tests: hostname, hosts, netplan, IP, gateway, DNS, net-setup) [COMPLETE]
 
 ### book-2-cloud.network.tests.1.verifications.network-shape
 
@@ -1350,7 +1350,7 @@ Add Network Register shape (9 tests: hostname, hosts, netplan, IP, gateway, DNS,
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 36: `book-2-cloud/msmtp/tests/7/verifications.ps1` - Add MSMTP Register shape (11 tests: install, config, sendmail, SMTP settings, provider, auth, TLS, creds, alias, helper, send)
+### Commit 36: `book-2-cloud/msmtp/tests/7/verifications.ps1` - Add MSMTP Register shape (11 tests: install, config, sendmail, SMTP settings, provider, auth, TLS, creds, alias, helper, send) [COMPLETE]
 
 ### book-2-cloud.msmtp.tests.7.verifications.msmtp-shape
 
