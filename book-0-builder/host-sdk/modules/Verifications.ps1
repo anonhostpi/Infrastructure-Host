@@ -314,6 +314,19 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
     }
 
     Add-ScriptMethods $Verifications @{
+        MSMTP = {
+            param($Worker)
+            # 6.7.1: msmtp installed
+            $result = $Worker.Exec("which msmtp")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.7.1"; Name = "msmtp installed"
+                Pass = ($result.Success -and $result.Output -match "msmtp")
+                Output = $result.Output
+            })
+        }
+    }
+
+    Add-ScriptMethods $Verifications @{
         UI = {
             param($Worker)
             $result = $Worker.Exec("test -d /etc/update-motd.d")
