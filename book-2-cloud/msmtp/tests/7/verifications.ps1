@@ -33,8 +33,24 @@ New-Module -Name "Verify.MSMTPMail" -ScriptBlock {
                 Pass = $result.Success; Output = "/usr/sbin/sendmail"
             })
         }
-        "SMTP host matches" = { param($Worker) }
-        "SMTP port matches" = { param($Worker) }
+        "SMTP host matches" = {
+            param($Worker)
+            if (-not $smtpConfigured) { $SDK.Testing.Verifications.Fork("6.7.4", "SKIP", "No SMTP configured"); return }
+            $msmtprc = $Worker.Exec("sudo cat /etc/msmtprc").Output
+            $SDK.Testing.Record(@{
+                Test = "6.7.4"; Name = "SMTP host matches"
+                Pass = ($msmtprc -match "host\s+$([regex]::Escape($smtp.host))"); Output = "Expected: $($smtp.host)"
+            })
+        }
+        "SMTP port matches" = {
+            param($Worker)
+            if (-not $smtpConfigured) { $SDK.Testing.Verifications.Fork("6.7.4", "SKIP", "No SMTP configured"); return }
+            $msmtprc = $Worker.Exec("sudo cat /etc/msmtprc").Output
+            $SDK.Testing.Record(@{
+                Test = "6.7.4"; Name = "SMTP port matches"
+                Pass = ($msmtprc -match "port\s+$($smtp.port)"); Output = "Expected: $($smtp.port)"
+            })
+        }
         "SMTP from matches" = { param($Worker) }
         "SMTP user matches" = { param($Worker) }
         "Provider config valid" = { param($Worker) }
