@@ -298,6 +298,18 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 Pass = ($result.Success -and $result.Output -match "fail2ban")
                 Output = $result.Output
             })
+            $result = $Worker.Exec("sudo systemctl is-active fail2ban")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.9.2"; Name = "fail2ban service active"
+                Pass = ($result.Output -match "^active$")
+                Output = $result.Output
+            })
+            $result = $Worker.Exec("sudo fail2ban-client status")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.9.3"; Name = "SSH jail configured"
+                Pass = ($result.Output -match "sshd")
+                Output = "sshd jail"
+            })
         }
     }
 
