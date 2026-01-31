@@ -629,6 +629,20 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 Pass = ($result.Output -match "^active$")
                 Output = $result.Output
             })
+            # 6.10.7: KVM available
+            $result = $Worker.Exec("test -e /dev/kvm && echo available")
+            $kvmAvailable = ($result.Output -match "available")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.10.7"; Name = "KVM available for nesting"
+                Pass = $kvmAvailable
+                Output = if ($kvmAvailable) { "/dev/kvm present" } else { "KVM not available" }
+            })
+            # 6.10.8-6.10.9: Nested VM test (conditional on KVM)
+            if (-not $kvmAvailable) {
+                $this.Fork("6.10.8-6.10.9", "SKIP", "KVM not available")
+            } else {
+                # WIP: nested VM tests
+            }
         }
     }
 
