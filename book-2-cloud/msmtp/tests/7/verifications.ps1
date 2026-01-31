@@ -81,7 +81,14 @@ New-Module -Name "Verify.MSMTPMail" -ScriptBlock {
                 'smtp\.office365\.com' { 'M365'; break }
                 default { 'Generic' }
             }
-            $providerPass = $true  # WIP: provider-specific validation
+            $providerPass = switch ($providerName) {
+                'SendGrid' { $msmtprc -match 'user\s+apikey' }
+                'AWS SES' { $smtp.port -in @(587, 465) }
+                'Gmail' { $msmtprc -match 'passwordeval' }
+                'Proton Bridge' { $msmtprc -match 'tls_certcheck\s+off' }
+                'M365' { $smtp.port -eq 587 }
+                default { $true }
+            }
             $SDK.Testing.Record(@{
                 Test = "6.7.5"; Name = "Provider config valid ($providerName)"
                 Pass = $providerPass; Output = "Provider: $providerName"
