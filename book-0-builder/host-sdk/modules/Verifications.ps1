@@ -850,6 +850,20 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 Pass = ($result.Success -and $result.Output -match "opencode")
                 Output = $result.Output
             })
+            # 6.14.4: opencode config directory
+            $result = $Worker.Exec("sudo test -d /home/$username/.config/opencode && echo exists")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.14.4"; Name = "OpenCode config directory"
+                Pass = ($result.Output -match "exists")
+                Output = "/home/$username/.config/opencode"
+            })
+            # 6.14.5: opencode auth file
+            $result = $Worker.Exec("sudo test -f /home/$username/.local/share/opencode/auth.json && echo exists")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.14.5"; Name = "OpenCode auth file"
+                Pass = ($result.Output -match "exists")
+                Output = "/home/$username/.local/share/opencode/auth.json"
+            })
         }
     }
 
