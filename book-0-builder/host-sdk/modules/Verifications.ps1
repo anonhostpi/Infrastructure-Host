@@ -659,6 +659,26 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
     }
 
     Add-ScriptMethods $Verifications @{
+        Cockpit = {
+            param($Worker)
+            # 6.11.1: cockpit-bridge installed
+            $result = $Worker.Exec("which cockpit-bridge")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.11.1"; Name = "Cockpit installed"
+                Pass = ($result.Success -and $result.Output -match "cockpit")
+                Output = $result.Output
+            })
+            # 6.11.2: cockpit.socket enabled
+            $result = $Worker.Exec("systemctl is-enabled cockpit.socket")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.11.2"; Name = "Cockpit socket enabled"
+                Pass = ($result.Output -match "enabled")
+                Output = $result.Output
+            })
+        }
+    }
+
+    Add-ScriptMethods $Verifications @{
         UI = {
             param($Worker)
             $result = $Worker.Exec("test -d /etc/update-motd.d")
