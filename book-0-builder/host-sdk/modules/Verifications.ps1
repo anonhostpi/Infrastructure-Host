@@ -1000,6 +1000,21 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 Pass = ($hasNpm -and $hasIsOdd)
                 Output = if ($hasNpm -and $hasIsOdd) { "NPM section with is-odd" } else { "Expected NPM section with is-odd" }
             })
+            # 6.8.27: AI model validation
+            $aiSummary = $Worker.Exec("cat /var/lib/apt-notify/test-ai-summary.txt 2>/dev/null").Output
+            $settings = $mod.SDK.Settings
+            $cliName = $null; $expectedModel = $null
+            if ($settings.opencode -and $settings.opencode.enabled) {
+                $cliName = "OpenCode"
+                $expectedModel = if ($settings.claude_code.model) { $settings.claude_code.model } else { "claude-haiku-4-5" }
+            } elseif ($settings.claude_code -and $settings.claude_code.enabled) {
+                $cliName = "Claude Code"
+                $expectedModel = if ($settings.claude_code.model) { $settings.claude_code.model } else { "claude-haiku-4-5" }
+            } elseif ($settings.copilot_cli -and $settings.copilot_cli.enabled) {
+                $cliName = "Copilot CLI"
+                $expectedModel = if ($settings.copilot_cli.model) { $settings.copilot_cli.model } else { "claude-haiku-4.5" }
+            }
+            # WIP: model match + record
         }
     }
 
