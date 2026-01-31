@@ -387,6 +387,18 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 Pass = $providerPass
                 Output = "Provider: $providerName"
             })
+            # 6.7.6: Auth method validation
+            $authMethod = if ($msmtprc -match 'auth\s+(\S+)') { $matches[1] } else { 'on' }
+            $validAuth = @('on', 'plain', 'login', 'xoauth2', 'oauthbearer', 'external')
+            $authPass = $authMethod -in $validAuth
+            if ($authMethod -in @('xoauth2', 'oauthbearer')) {
+                $authPass = $authPass -and ($msmtprc -match 'passwordeval')
+            }
+            $mod.SDK.Testing.Record(@{
+                Test = "6.7.6"; Name = "Auth method valid"
+                Pass = $authPass
+                Output = "auth=$authMethod"
+            })
         }
     }
 
