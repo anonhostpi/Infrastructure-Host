@@ -6,8 +6,22 @@ New-Module -Name "Verify.PackageSecurity" -ScriptBlock {
     . "$PSScriptRoot\..\..\..\..\book-0-builder\host-sdk\helpers\PowerShell.ps1"
 
     $SDK.Testing.Verifications.Register("pkg-security", 8, [ordered]@{
-        "unattended-upgrades installed" = { param($Worker) }
-        "Unattended upgrades config" = { param($Worker) }
+        "unattended-upgrades installed" = {
+            param($Worker)
+            $result = $Worker.Exec("dpkg -l unattended-upgrades")
+            $SDK.Testing.Record(@{
+                Test = "6.8.1"; Name = "unattended-upgrades installed"
+                Pass = ($result.Output -match "ii.*unattended-upgrades"); Output = "Package installed"
+            })
+        }
+        "Unattended upgrades config" = {
+            param($Worker)
+            $result = $Worker.Exec("test -f /etc/apt/apt.conf.d/50unattended-upgrades")
+            $SDK.Testing.Record(@{
+                Test = "6.8.2"; Name = "Unattended upgrades config"
+                Pass = $result.Success; Output = "/etc/apt/apt.conf.d/50unattended-upgrades"
+            })
+        }
         "Auto-upgrades configured" = { param($Worker) }
         "Service enabled" = { param($Worker) }
         "apt-listchanges installed" = { param($Worker) }
