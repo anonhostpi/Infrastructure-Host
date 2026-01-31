@@ -222,6 +222,23 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 Pass = ($result.Output -match "^active$")
                 Output = $result.Output
             })
+            # 6.4.4: Verify root SSH login rejected (internal test)
+            $result = $Worker.Exec("ssh -o BatchMode=yes -o ConnectTimeout=5 -o StrictHostKeyChecking=no root@localhost exit 2>&1; echo exit_code:`$?")
+            $rootBlocked = ($result.Output -match "Permission denied" -or $result.Output -match "publickey")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.4.4"; Name = "Root SSH login rejected"
+                Pass = $rootBlocked
+                Output = if ($rootBlocked) { "Root login correctly rejected" } else { $result.Output }
+            })
+            # 6.4.5: Verify SSH key auth works (internal loopback)
+            $identity = $mod.SDK.Settings.Identity
+            $username = $identity.username
+            $result = $Worker.Exec("ssh -o BatchMode=yes -o ConnectTimeout=5 -o StrictHostKeyChecking=no ${username}@localhost echo OK")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.4.5"; Name = "SSH key auth for $username"
+                Pass = ($result.Success -and $result.Output -match "OK")
+                Output = if ($result.Success) { "Key authentication successful" } else { $result.Output }
+            })
         }
     }
 
