@@ -559,6 +559,21 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 Pass = ($result.Output -match "exists")
                 Output = "/usr/local/bin/deno-update"
             })
+            # 6.8.16: pkg-managers-update timer
+            $enabled = $Worker.Exec("systemctl is-enabled pkg-managers-update.timer 2>/dev/null")
+            $active = $Worker.Exec("systemctl is-active pkg-managers-update.timer 2>/dev/null")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.8.16"; Name = "pkg-managers-update timer"
+                Pass = ($enabled.Output -match "enabled") -and ($active.Output -match "active")
+                Output = "enabled=$($enabled.Output), active=$($active.Output)"
+            })
+            # 6.8.17: apt-notify common library
+            $result = $Worker.Exec("test -f /usr/local/lib/apt-notify/common.sh && echo exists")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.8.17"; Name = "apt-notify common library"
+                Pass = ($result.Output -match "exists")
+                Output = "/usr/local/lib/apt-notify/common.sh"
+            })
         }
     }
 
