@@ -1,0 +1,5 @@
+name: ssh
+description: SSH server configuration and hardening
+iso_required: true
+build_order: 25
+build_layer: 4
