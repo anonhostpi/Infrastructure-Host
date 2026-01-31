@@ -1030,6 +1030,19 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
     }
 
     Add-ScriptMethods $Verifications @{
+        NotificationFlush = {
+            param($Worker)
+            # 6.8.28: Flush execution logged
+            $result = $Worker.Exec("grep 'apt-notify-flush: complete' /var/lib/apt-notify/apt-notify.log")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.8.28"; Name = "apt-notify-flush logged"
+                Pass = ($result.Success -and $result.Output -match "apt-notify-flush")
+                Output = if ($result.Success) { "Flush logged" } else { "No flush log entry" }
+            })
+        }
+    }
+
+    Add-ScriptMethods $Verifications @{
         UI = {
             param($Worker)
             $result = $Worker.Exec("test -d /etc/update-motd.d")
