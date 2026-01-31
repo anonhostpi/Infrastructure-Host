@@ -20,6 +20,7 @@ New-Module -Name SDK.Vbox -ScriptBlock {
             Disk = 40960
             SSHUser = $null
             SSHHost = $null
+            SSHPort = 22
         }
     }
 
