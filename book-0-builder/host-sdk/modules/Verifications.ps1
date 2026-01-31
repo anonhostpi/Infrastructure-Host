@@ -960,6 +960,18 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                     Output = if ($result.Output -match "exit_code:0") { "Ran successfully" } else { $result.Output }
                 })
             }
+            # 6.8.24: deno-update
+            $denoInstalled = $Worker.Exec("which deno")
+            if (-not $denoInstalled.Success) {
+                $mod.SDK.Testing.Record(@{ Test = "6.8.24"; Name = "deno-update"; Pass = $true; Output = "Skipped - deno not installed" })
+            } else {
+                $result = $Worker.Exec("sudo /usr/local/bin/deno-update 2>&1; echo exit_code:`$?")
+                $mod.SDK.Testing.Record(@{
+                    Test = "6.8.24"; Name = "deno-update script"
+                    Pass = ($result.Output -match "exit_code:0")
+                    Output = if ($result.Output -match "exit_code:0") { "Ran successfully" } else { $result.Output }
+                })
+            }
         }
     }
 
