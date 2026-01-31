@@ -39,9 +39,7 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
         }
         Load = {
             param([string]$Path)
-            $mod.Pending = @{}
             & $Path -SDK $mod.SDK
-            return $mod.Pending
         }
         Run = {
             param($Worker, [int]$Layer)
@@ -50,10 +48,10 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 $testFiles = $this.Discover($l)
                 foreach ($entry in $testFiles) {
                     $mod.SDK.Log.Write("`n--- $layerName - $($entry.Fragment) ---", "Cyan")
-                    $tests = $this.Load($entry.Path)
-                    foreach ($id in $tests.Keys | Sort-Object) {
-                        $test = $tests[$id]
-                        $Worker.Test($id, $test.Name, $test.Command, $test.Pattern)
+                    $mod.Tests = [ordered]@{}
+                    $this.Load($entry.Path)
+                    foreach ($name in $mod.Tests.Keys) {
+                        $this.Test($name)
                     }
                 }
             }
