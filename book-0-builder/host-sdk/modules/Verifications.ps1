@@ -417,6 +417,22 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 Pass = $hasCreds
                 Output = if ($hasCreds) { "Credentials configured" } else { "No credentials found" }
             })
+            # 6.7.9: Root alias configured
+            $aliases = $Worker.Exec("cat /etc/aliases").Output
+            $aliasPass = ($aliases -match "root:")
+            if ($smtp.recipient) { $aliasPass = $aliasPass -and ($aliases -match [regex]::Escape($smtp.recipient)) }
+            $mod.SDK.Testing.Record(@{
+                Test = "6.7.9"; Name = "Root alias configured"
+                Pass = $aliasPass
+                Output = "Root alias in /etc/aliases"
+            })
+            # 6.7.10: msmtp-config helper
+            $result = $Worker.Exec("test -x /usr/local/bin/msmtp-config")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.7.10"; Name = "msmtp-config helper exists"
+                Pass = $result.Success
+                Output = "/usr/local/bin/msmtp-config"
+            })
         }
     }
 
