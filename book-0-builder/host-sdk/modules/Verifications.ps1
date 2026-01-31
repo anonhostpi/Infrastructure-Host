@@ -826,6 +826,20 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
     }
 
     Add-ScriptMethods $Verifications @{
+        OpenCode = {
+            param($Worker)
+            $username = $mod.SDK.Settings.Identity.username
+            # 6.14.1: node installed
+            $result = $Worker.Exec("which node")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.14.1"; Name = "Node.js installed"
+                Pass = ($result.Success -and $result.Output -match "node")
+                Output = $result.Output
+            })
+        }
+    }
+
+    Add-ScriptMethods $Verifications @{
         UI = {
             param($Worker)
             $result = $Worker.Exec("test -d /etc/update-motd.d")
