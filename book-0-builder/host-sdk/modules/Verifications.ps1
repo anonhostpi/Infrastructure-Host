@@ -451,6 +451,19 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
     }
 
     Add-ScriptMethods $Verifications @{
+        PackageSecurity = {
+            param($Worker)
+            # 6.8.1: unattended-upgrades installed
+            $result = $Worker.Exec("dpkg -l unattended-upgrades")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.8.1"; Name = "unattended-upgrades installed"
+                Pass = ($result.Output -match "ii.*unattended-upgrades")
+                Output = "Package installed"
+            })
+        }
+    }
+
+    Add-ScriptMethods $Verifications @{
         UI = {
             param($Worker)
             $result = $Worker.Exec("test -d /etc/update-motd.d")
