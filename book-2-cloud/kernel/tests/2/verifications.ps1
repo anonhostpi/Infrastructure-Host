@@ -22,5 +22,21 @@ New-Module -Name "Verify.KernelHardening" -ScriptBlock {
                 Pass = ($result.Output -match "= 1"); Output = $result.Output
             })
         }
+        "SYN cookies enabled" = {
+            param($Worker)
+            $result = $Worker.Exec("sysctl net.ipv4.tcp_syncookies")
+            $SDK.Testing.Record(@{
+                Test = "6.2.2"; Name = "SYN cookies enabled"
+                Pass = ($result.Output -match "= 1"); Output = $result.Output
+            })
+        }
+        "ICMP redirects disabled" = {
+            param($Worker)
+            $result = $Worker.Exec("sysctl net.ipv4.conf.all.accept_redirects")
+            $SDK.Testing.Record(@{
+                Test = "6.2.2"; Name = "ICMP redirects disabled"
+                Pass = ($result.Output -match "= 0"); Output = $result.Output
+            })
+        }
     })
 } -ArgumentList $SDK
