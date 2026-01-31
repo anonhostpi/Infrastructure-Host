@@ -24,8 +24,22 @@ New-Module -Name "Verify.Users" -ScriptBlock {
                 Pass = ($result.Output -match "/bin/bash"); Output = $result.Output
             })
         }
-        "user in sudo group" = { param($Worker) }
-        "Sudoers file exists" = { param($Worker) }
+        "user in sudo group" = {
+            param($Worker)
+            $result = $Worker.Exec("groups $username")
+            $SDK.Testing.Record(@{
+                Test = "6.3.2"; Name = "$username in sudo group"
+                Pass = ($result.Output -match "\bsudo\b"); Output = $result.Output
+            })
+        }
+        "Sudoers file exists" = {
+            param($Worker)
+            $result = $Worker.Exec("sudo test -f /etc/sudoers.d/$username")
+            $SDK.Testing.Record(@{
+                Test = "6.3.3"; Name = "Sudoers file exists"
+                Pass = $result.Success; Output = "/etc/sudoers.d/$username"
+            })
+        }
         "Root account locked" = { param($Worker) }
     })
 } -ArgumentList $SDK
