@@ -5,5 +5,5 @@ New-Module -Name "Verify.Virtualization" -ScriptBlock {
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\..\..\..\book-0-builder\host-sdk\helpers\PowerShell.ps1"
 
-    $SDK.Testing.Verifications.Register([ordered]@{})
+    $SDK.Testing.Verifications.Register("virtualization", 10, [ordered]@{})
 } -ArgumentList $SDK

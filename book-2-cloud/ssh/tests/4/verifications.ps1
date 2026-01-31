@@ -5,5 +5,5 @@ New-Module -Name "Verify.SSHHardening" -ScriptBlock {
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\..\..\..\book-0-builder\host-sdk\helpers\PowerShell.ps1"
 
-    $SDK.Testing.Verifications.Register([ordered]@{})
+    $SDK.Testing.Verifications.Register("ssh", 4, [ordered]@{})
 } -ArgumentList $SDK

@@ -5,5 +5,5 @@ New-Module -Name "Verify.UITouches" -ScriptBlock {
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\..\..\..\book-0-builder\host-sdk\helpers\PowerShell.ps1"
 
-    $SDK.Testing.Verifications.Register([ordered]@{})
+    $SDK.Testing.Verifications.Register("ui", 15, [ordered]@{})
 } -ArgumentList $SDK

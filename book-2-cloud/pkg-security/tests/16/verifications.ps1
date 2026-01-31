@@ -5,5 +5,5 @@ New-Module -Name "Verify.PackageManagerUpdates" -ScriptBlock {
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\..\..\..\book-0-builder\host-sdk\helpers\PowerShell.ps1"
 
-    $SDK.Testing.Verifications.Register([ordered]@{})
+    $SDK.Testing.Verifications.Register("pkg-security", 16, [ordered]@{})
 } -ArgumentList $SDK

@@ -5,5 +5,5 @@ New-Module -Name "Verify.UFWFirewall" -ScriptBlock {
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\..\..\..\book-0-builder\host-sdk\helpers\PowerShell.ps1"
 
-    $SDK.Testing.Verifications.Register([ordered]@{})
+    $SDK.Testing.Verifications.Register("ufw", 5, [ordered]@{})
 } -ArgumentList $SDK
