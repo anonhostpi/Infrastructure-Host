@@ -545,6 +545,20 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 Pass = ($result.Output -match "exists")
                 Output = "/usr/local/bin/pip-global-update"
             })
+            # 6.8.14: npm-global-update script
+            $result = $Worker.Exec("test -x /usr/local/bin/npm-global-update && echo exists")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.8.14"; Name = "npm-global-update script"
+                Pass = ($result.Output -match "exists")
+                Output = "/usr/local/bin/npm-global-update"
+            })
+            # 6.8.15: deno-update script
+            $result = $Worker.Exec("test -x /usr/local/bin/deno-update && echo exists")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.8.15"; Name = "deno-update script"
+                Pass = ($result.Output -match "exists")
+                Output = "/usr/local/bin/deno-update"
+            })
         }
     }
 
