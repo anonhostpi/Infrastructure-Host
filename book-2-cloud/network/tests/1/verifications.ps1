@@ -54,7 +54,14 @@ New-Module -Name "Verify.Network" -ScriptBlock {
                 Pass = ($result.Output -match "default via"); Output = $result.Output
             })
         }
-        "DNS resolution works" = { param($Worker) }
+        "DNS resolution works" = {
+            param($Worker)
+            $result = $Worker.Exec("host -W 2 ubuntu.com")
+            $SDK.Testing.Record(@{
+                Test = "6.1.4"; Name = "DNS resolution works"
+                Pass = ($result.Output -match "has address" -or $result.Output -match "has IPv"); Output = $result.Output
+            })
+        }
         "net-setup.log exists" = { param($Worker) }
         "net-setup.sh executed" = { param($Worker) }
     })
