@@ -991,6 +991,15 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 Pass = ($reportExists.Output -match "exists")
                 Output = if ($reportExists.Output -match "exists") { "Report created" } else { "Report not created" }
             })
+            # 6.8.26: Report content validation
+            $report = $Worker.Exec("cat /var/lib/apt-notify/test-report.txt 2>/dev/null").Output
+            $hasNpm = ($report -match "NPM.*UPGRADED")
+            $hasIsOdd = ($report -match "is-odd")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.8.26"; Name = "Report contains npm section"
+                Pass = ($hasNpm -and $hasIsOdd)
+                Output = if ($hasNpm -and $hasIsOdd) { "NPM section with is-odd" } else { "Expected NPM section with is-odd" }
+            })
         }
     }
 
