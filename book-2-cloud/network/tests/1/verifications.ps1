@@ -22,8 +22,22 @@ New-Module -Name "Verify.Network" -ScriptBlock {
                 Pass = ($result.Output -match "\."); Output = $result.Output
             })
         }
-        "Hostname in /etc/hosts" = { param($Worker) }
-        "Netplan config exists" = { param($Worker) }
+        "Hostname in /etc/hosts" = {
+            param($Worker)
+            $result = $Worker.Exec("grep '127.0.1.1' /etc/hosts")
+            $SDK.Testing.Record(@{
+                Test = "6.1.2"; Name = "Hostname in /etc/hosts"
+                Pass = ($result.Success -and $result.Output); Output = $result.Output
+            })
+        }
+        "Netplan config exists" = {
+            param($Worker)
+            $result = $Worker.Exec("ls /etc/netplan/*.yaml 2>/dev/null")
+            $SDK.Testing.Record(@{
+                Test = "6.1.3"; Name = "Netplan config exists"
+                Pass = ($result.Success -and $result.Output); Output = $result.Output
+            })
+        }
         "IP address assigned" = { param($Worker) }
         "Default gateway configured" = { param($Worker) }
         "DNS resolution works" = { param($Worker) }
