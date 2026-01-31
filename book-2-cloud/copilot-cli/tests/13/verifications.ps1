@@ -47,6 +47,20 @@ New-Module -Name "Verify.CopilotCLI" -ScriptBlock {
                 Pass = $hasAuth; Output = $authOutput
             })
         }
-        "Copilot CLI AI response" = { param($Worker) }
+        "Copilot CLI AI response" = {
+            param($Worker)
+            $tokens = $Worker.Exec("sudo grep -q 'copilot_tokens' /home/$username/.copilot/config.json 2>/dev/null && echo configured")
+            $env = $Worker.Exec("grep -q 'GH_TOKEN' /etc/environment && echo configured")
+            $hasAuth = ($tokens.Output -match "configured") -or ($env.Output -match "configured")
+            if (-not $hasAuth) { $SDK.Testing.Verifications.Fork("6.13.5", "SKIP", "No auth configured"); return }
+            $result = $Worker.Exec("sudo -u $username env HOME=/home/$username timeout 30 copilot --model gpt-4.1 -p test 2>&1")
+            $clean = $result.Output -replace '\x1b\[[0-9;]*[a-zA-Z]', ''
+            $hasResponse = ($clean -and $clean.Length -gt 0 -and $clean -notmatch "^error|failed|timeout")
+            $SDK.Testing.Record(@{
+                Test = "6.13.5"; Name = "Copilot CLI AI response"
+                Pass = $hasResponse
+                Output = if ($hasResponse) { "Response received" } else { "Failed: $clean" }
+            })
+        }
     })
 } -ArgumentList $SDK
