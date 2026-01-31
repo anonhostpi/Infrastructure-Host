@@ -741,6 +741,20 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 Pass = ($result.Output -match "exists")
                 Output = "/home/$username/.claude/settings.json"
             })
+            # 6.12.4: Auth configuration (fail if no auth)
+            $hasAuth = $false; $authOutput = "No auth found"
+            $cred = $Worker.Exec("sudo test -f /home/$username/.claude/.credentials.json && echo exists")
+            $state = $Worker.Exec("sudo grep -q 'hasCompletedOnboarding' /home/$username/.claude.json 2>/dev/null && echo exists")
+            if ($cred.Output -match "exists" -and $state.Output -match "exists") {
+                $hasAuth = $true; $authOutput = "OAuth credentials configured"
+            } else {
+                $env = $Worker.Exec("grep -q 'ANTHROPIC_API_KEY' /etc/environment && echo configured")
+                if ($env.Output -match "configured") { $hasAuth = $true; $authOutput = "API Key configured" }
+            }
+            $mod.SDK.Testing.Record(@{
+                Test = "6.12.4"; Name = "Claude Code auth configured"
+                Pass = $hasAuth; Output = $authOutput
+            })
         }
     }
 
