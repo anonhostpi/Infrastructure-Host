@@ -192,6 +192,19 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
         }
     }
 
+    Add-ScriptMethods $Verifications @{
+        SSH = {
+            param($Worker)
+            # 6.4.1: SSH Hardening Config
+            $result = $Worker.Exec("test -f /etc/ssh/sshd_config.d/99-hardening.conf")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.4.1"; Name = "SSH hardening config exists"
+                Pass = $result.Success
+                Output = "/etc/ssh/sshd_config.d/99-hardening.conf"
+            })
+        }
+    }
+
     $mod.SDK.Extend("Verifications", $Verifications, $mod.SDK.Testing)
     Export-ModuleMember -Function @()
 } -ArgumentList $SDK | Import-Module -Force
