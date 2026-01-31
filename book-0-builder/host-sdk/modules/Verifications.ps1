@@ -323,6 +323,20 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 Pass = ($result.Success -and $result.Output -match "msmtp")
                 Output = $result.Output
             })
+            # 6.7.2: msmtp config exists
+            $result = $Worker.Exec("test -f /etc/msmtprc")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.7.2"; Name = "msmtp config exists"
+                Pass = $result.Success
+                Output = "/etc/msmtprc"
+            })
+            # 6.7.3: sendmail alias
+            $result = $Worker.Exec("test -L /usr/sbin/sendmail")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.7.3"; Name = "sendmail alias exists"
+                Pass = $result.Success
+                Output = "/usr/sbin/sendmail"
+            })
         }
     }
 
