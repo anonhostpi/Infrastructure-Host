@@ -25,7 +25,14 @@ New-Module -Name "Verify.MSMTPMail" -ScriptBlock {
                 Pass = $result.Success; Output = "/etc/msmtprc"
             })
         }
-        "sendmail alias exists" = { param($Worker) }
+        "sendmail alias exists" = {
+            param($Worker)
+            $result = $Worker.Exec("test -L /usr/sbin/sendmail")
+            $SDK.Testing.Record(@{
+                Test = "6.7.3"; Name = "sendmail alias exists"
+                Pass = $result.Success; Output = "/usr/sbin/sendmail"
+            })
+        }
         "SMTP host matches" = { param($Worker) }
         "SMTP port matches" = { param($Worker) }
         "SMTP from matches" = { param($Worker) }
