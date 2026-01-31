@@ -601,6 +601,20 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 Pass = ($result.Output -match "^active$")
                 Output = $result.Output
             })
+            # 6.10.3: QEMU installed
+            $result = $Worker.Exec("which qemu-system-x86_64")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.10.3"; Name = "QEMU installed"
+                Pass = ($result.Success -and $result.Output -match "qemu")
+                Output = $result.Output
+            })
+            # 6.10.4: libvirt default network
+            $result = $Worker.Exec("sudo virsh net-list --all")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.10.4"; Name = "libvirt default network"
+                Pass = ($result.Output -match "default")
+                Output = $result.Output
+            })
         }
     }
 
