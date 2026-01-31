@@ -903,6 +903,18 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
             })
             if ($testingMode -notmatch "true") { return }
             $Worker.Exec("sudo rm -f /var/lib/apt-notify/queue /var/lib/apt-notify/test-report.txt /var/lib/apt-notify/test-ai-summary.txt") | Out-Null
+            # 6.8.20: snap-update
+            $snapInstalled = $Worker.Exec("which snap")
+            if (-not $snapInstalled.Success) {
+                $mod.SDK.Testing.Record(@{ Test = "6.8.20"; Name = "snap-update"; Pass = $true; Output = "Skipped - snap not installed" })
+            } else {
+                $result = $Worker.Exec("sudo /usr/local/bin/snap-update 2>&1; echo exit_code:`$?")
+                $mod.SDK.Testing.Record(@{
+                    Test = "6.8.20"; Name = "snap-update script"
+                    Pass = ($result.Output -match "exit_code:0")
+                    Output = if ($result.Output -match "exit_code:0") { "Ran successfully" } else { $result.Output }
+                })
+            }
         }
     }
 
