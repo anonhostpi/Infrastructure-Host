@@ -641,7 +641,19 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
             if (-not $kvmAvailable) {
                 $this.Fork("6.10.8-6.10.9", "SKIP", "KVM not available")
             } else {
-                # WIP: nested VM tests
+                $launch = $Worker.Exec("multipass launch --name nested-test-vm --cpus 1 --memory 512M --disk 2G 2>&1; echo exit_code:`$?")
+                $mod.SDK.Testing.Record(@{
+                    Test = "6.10.8"; Name = "Launch nested VM"
+                    Pass = ($launch.Output -match "exit_code:0")
+                    Output = if ($launch.Output -match "exit_code:0") { "nested-test-vm launched" } else { $launch.Output }
+                })
+                $exec = $Worker.Exec("multipass exec nested-test-vm -- echo nested-ok")
+                $mod.SDK.Testing.Record(@{
+                    Test = "6.10.9"; Name = "Exec in nested VM"
+                    Pass = ($exec.Output -match "nested-ok")
+                    Output = $exec.Output
+                })
+                $Worker.Exec("multipass delete nested-test-vm --purge") | Out-Null
             }
         }
     }
