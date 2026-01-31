@@ -24,7 +24,7 @@ New-Module -Name SDK.Worker -ScriptBlock {
                         if ($ExpectedPattern -is [scriptblock]) {
                             $pass = $result.Success -and (& $ExpectedPattern $joined)
                         } else {
-                            $pass = $result.Success -and $joined -match $ExpectedPattern
+                            $pass = $result.Success -and ($joined -match $ExpectedPattern)
                         }
                         $testResult = @{ Test = $TestId; Name = $Name; Pass = $pass; Output = $result.Output; Error = $result.Error }
                         $mod.SDK.Testing.Record($testResult)
