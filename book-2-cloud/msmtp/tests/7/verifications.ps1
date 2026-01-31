@@ -118,7 +118,17 @@ New-Module -Name "Verify.MSMTPMail" -ScriptBlock {
                 Pass = ($tlsOn -or $implicitTls); Output = "tls=on, implicit=$implicitTls"
             })
         }
-        "Credential config valid" = { param($Worker) }
+        "Credential config valid" = {
+            param($Worker)
+            if (-not $smtpConfigured) { $SDK.Testing.Verifications.Fork("6.7.8", "SKIP", "No SMTP configured"); return }
+            $msmtprc = $Worker.Exec("sudo cat /etc/msmtprc").Output
+            $hasCreds = ($msmtprc -match 'password\s') -or ($msmtprc -match 'passwordeval')
+            if (-not $hasCreds) { $hasCreds = $Worker.Exec("sudo test -f /etc/msmtp-password").Success }
+            $SDK.Testing.Record(@{
+                Test = "6.7.8"; Name = "Credential config valid"
+                Pass = $hasCreds; Output = if ($hasCreds) { "Credentials configured" } else { "No credentials found" }
+            })
+        }
         "Root alias configured" = { param($Worker) }
         "msmtp-config helper exists" = { param($Worker) }
         "Test email sent" = { param($Worker) }
