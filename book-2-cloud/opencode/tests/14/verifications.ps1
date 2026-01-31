@@ -48,7 +48,17 @@ New-Module -Name "Verify.OpenCode" -ScriptBlock {
                 Pass = ($result.Output -match "exists"); Output = "/home/$username/.local/share/opencode/auth.json"
             })
         }
-        "OpenCode AI response" = { param($Worker) }
+        "OpenCode AI response" = {
+            param($Worker)
+            $result = $Worker.Exec("sudo -u $username env HOME=/home/$username timeout 30 opencode run test 2>&1")
+            $clean = $result.Output -replace '\x1b\[[0-9;]*[a-zA-Z]', ''
+            $hasResponse = ($clean -and $clean.Length -gt 0 -and $clean -notmatch "^error|failed|timeout")
+            $SDK.Testing.Record(@{
+                Test = "6.14.6"; Name = "OpenCode AI response"
+                Pass = $hasResponse
+                Output = if ($hasResponse) { "Response received" } else { "Failed: $clean" }
+            })
+        }
         "OpenCode credential chain" = { param($Worker) }
     })
 } -ArgumentList $SDK
