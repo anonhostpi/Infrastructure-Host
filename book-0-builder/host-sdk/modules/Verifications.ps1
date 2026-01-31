@@ -948,6 +948,18 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                     Output = if ($pipDetected) { "Detected pip update" } else { "No PIP_UPGRADED in queue" }
                 })
             }
+            # 6.8.23: brew-update
+            $brewInstalled = $Worker.Exec("command -v brew || test -x /home/linuxbrew/.linuxbrew/bin/brew")
+            if (-not $brewInstalled.Success) {
+                $mod.SDK.Testing.Record(@{ Test = "6.8.23"; Name = "brew-update"; Pass = $true; Output = "Skipped - brew not installed" })
+            } else {
+                $result = $Worker.Exec("sudo /usr/local/bin/brew-update 2>&1; echo exit_code:`$?")
+                $mod.SDK.Testing.Record(@{
+                    Test = "6.8.23"; Name = "brew-update script"
+                    Pass = ($result.Output -match "exit_code:0")
+                    Output = if ($result.Output -match "exit_code:0") { "Ran successfully" } else { $result.Output }
+                })
+            }
         }
     }
 
