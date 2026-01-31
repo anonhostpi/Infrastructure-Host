@@ -94,7 +94,19 @@ New-Module -Name "Verify.MSMTPMail" -ScriptBlock {
                 Pass = $providerPass; Output = "Provider: $providerName"
             })
         }
-        "Auth method valid" = { param($Worker) }
+        "Auth method valid" = {
+            param($Worker)
+            if (-not $smtpConfigured) { $SDK.Testing.Verifications.Fork("6.7.6", "SKIP", "No SMTP configured"); return }
+            $msmtprc = $Worker.Exec("sudo cat /etc/msmtprc").Output
+            $authMethod = if ($msmtprc -match 'auth\s+(\S+)') { $matches[1] } else { 'on' }
+            $validAuth = @('on', 'plain', 'login', 'xoauth2', 'oauthbearer', 'external')
+            $authPass = $authMethod -in $validAuth
+            if ($authMethod -in @('xoauth2', 'oauthbearer')) { $authPass = $authPass -and ($msmtprc -match 'passwordeval') }
+            $SDK.Testing.Record(@{
+                Test = "6.7.6"; Name = "Auth method valid"
+                Pass = $authPass; Output = "auth=$authMethod"
+            })
+        }
         "TLS settings valid" = { param($Worker) }
         "Credential config valid" = { param($Worker) }
         "Root alias configured" = { param($Worker) }
