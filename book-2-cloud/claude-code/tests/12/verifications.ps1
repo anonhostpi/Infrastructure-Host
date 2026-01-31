@@ -48,6 +48,21 @@ New-Module -Name "Verify.ClaudeCode" -ScriptBlock {
                 Pass = $hasAuth; Output = $authOutput
             })
         }
-        "Claude Code AI response" = { param($Worker) }
+        "Claude Code AI response" = {
+            param($Worker)
+            $cred = $Worker.Exec("sudo test -f /home/$username/.claude/.credentials.json && echo exists")
+            $state = $Worker.Exec("sudo grep -q 'hasCompletedOnboarding' /home/$username/.claude.json 2>/dev/null && echo exists")
+            $env = $Worker.Exec("grep -q 'ANTHROPIC_API_KEY' /etc/environment && echo configured")
+            $hasAuth = ($cred.Output -match "exists" -and $state.Output -match "exists") -or ($env.Output -match "configured")
+            if (-not $hasAuth) { $SDK.Testing.Verifications.Fork("6.12.5", "SKIP", "No auth configured"); return }
+            $result = $Worker.Exec("sudo -u $username env HOME=/home/$username timeout 30 claude -p test 2>&1")
+            $clean = $result.Output -replace '\x1b\[[0-9;]*[a-zA-Z]', ''
+            $hasResponse = ($clean -and $clean.Length -gt 0 -and $clean -notmatch "^error|failed|timeout")
+            $SDK.Testing.Record(@{
+                Test = "6.12.5"; Name = "Claude Code AI response"
+                Pass = $hasResponse
+                Output = if ($hasResponse) { "Response received" } else { "Failed: $clean" }
+            })
+        }
     })
 } -ArgumentList $SDK
