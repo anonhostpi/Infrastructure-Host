@@ -502,6 +502,21 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 Pass = $result.Success
                 Output = "/usr/local/bin/apt-notify"
             })
+            # 6.8.8: dpkg hooks configured
+            $result = $Worker.Exec("cat /etc/apt/apt.conf.d/90pkg-notify")
+            $hookOk = ($result.Output -match "DPkg::Pre-Invoke" -and $result.Output -match "DPkg::Post-Invoke")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.8.8"; Name = "dpkg notification hooks"
+                Pass = $hookOk
+                Output = "Pre/Post-Invoke hooks configured"
+            })
+            # 6.8.9: Verbose unattended-upgrades reporting
+            $uuConf = $Worker.Exec("cat /etc/apt/apt.conf.d/50unattended-upgrades").Output
+            $mod.SDK.Testing.Record(@{
+                Test = "6.8.9"; Name = "Verbose upgrade reporting"
+                Pass = (($uuConf -match 'Verbose.*"true"') -and ($uuConf -match 'MailReport.*"always"'))
+                Output = "Verbose=true, MailReport=always"
+            })
         }
     }
 
