@@ -40,7 +40,16 @@ New-Module -Name "Verify.SSHHardening" -ScriptBlock {
                 Pass = ($result.Output -match "^active$"); Output = $result.Output
             })
         }
-        "Root SSH login rejected" = { param($Worker) }
+        "Root SSH login rejected" = {
+            param($Worker)
+            $result = $Worker.Exec("ssh -o BatchMode=yes -o ConnectTimeout=5 -o StrictHostKeyChecking=no root@localhost exit 2>&1; echo exit_code:`$?")
+            $rootBlocked = ($result.Output -match "Permission denied" -or $result.Output -match "publickey")
+            $SDK.Testing.Record(@{
+                Test = "6.4.4"; Name = "Root SSH login rejected"
+                Pass = $rootBlocked
+                Output = if ($rootBlocked) { "Root login correctly rejected" } else { $result.Output }
+            })
+        }
         "SSH key auth" = { param($Worker) }
     })
 } -ArgumentList $SDK
