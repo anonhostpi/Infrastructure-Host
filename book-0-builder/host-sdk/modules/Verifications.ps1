@@ -14,9 +14,6 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
             if ($Reason) { $msg += " ($Reason)" }
             $mod.SDK.Log.Debug($msg)
         }
-    }
-
-    Add-ScriptMethods $Verifications @{
         Discover = {
             param([int]$Layer)
             $results = @()
@@ -29,16 +26,10 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
             }
             return $results
         }
-    }
-
-    Add-ScriptMethods $Verifications @{
         Load = {
             param([string]$Path)
             return (& $Path -SDK $mod.SDK)
         }
-    }
-
-    Add-ScriptMethods $Verifications @{
         Run = {
             param($Worker, [int]$Layer)
             foreach ($l in 1..$Layer) {
