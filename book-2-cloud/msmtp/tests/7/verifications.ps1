@@ -129,7 +129,17 @@ New-Module -Name "Verify.MSMTPMail" -ScriptBlock {
                 Pass = $hasCreds; Output = if ($hasCreds) { "Credentials configured" } else { "No credentials found" }
             })
         }
-        "Root alias configured" = { param($Worker) }
+        "Root alias configured" = {
+            param($Worker)
+            if (-not $smtpConfigured) { $SDK.Testing.Verifications.Fork("6.7.9", "SKIP", "No SMTP configured"); return }
+            $aliases = $Worker.Exec("cat /etc/aliases").Output
+            $aliasPass = ($aliases -match "root:")
+            if ($smtp.recipient) { $aliasPass = $aliasPass -and ($aliases -match [regex]::Escape($smtp.recipient)) }
+            $SDK.Testing.Record(@{
+                Test = "6.7.9"; Name = "Root alias configured"
+                Pass = $aliasPass; Output = "Root alias in /etc/aliases"
+            })
+        }
         "msmtp-config helper exists" = { param($Worker) }
         "Test email sent" = { param($Worker) }
     })
