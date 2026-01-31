@@ -5,5 +5,14 @@ New-Module -Name "Verify.SSHHardening" -ScriptBlock {
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\..\..\..\book-0-builder\host-sdk\helpers\PowerShell.ps1"
 
-    $SDK.Testing.Verifications.Register("ssh", 4, [ordered]@{})
+    $username = $SDK.Settings.Identity.username
+
+    $SDK.Testing.Verifications.Register("ssh", 4, [ordered]@{
+        "SSH hardening config exists" = { param($Worker) }
+        "PermitRootLogin no" = { param($Worker) }
+        "MaxAuthTries set" = { param($Worker) }
+        "SSH service active" = { param($Worker) }
+        "Root SSH login rejected" = { param($Worker) }
+        "SSH key auth" = { param($Worker) }
+    })
 } -ArgumentList $SDK
