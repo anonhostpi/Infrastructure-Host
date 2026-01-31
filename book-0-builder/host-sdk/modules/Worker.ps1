@@ -78,6 +78,10 @@ New-Module -Name SDK.Worker -ScriptBlock {
                         $LocalPath, $RemotePath, "Push"
                     ).Success
                 }
+                Exec = {
+                    param([string]$Command)
+                    return $mod.SDK.Network.SSH($this.SSHUser, $this.SSHHost, $this.SSHPort, $Command)
+                }
                 Shell = {
                     $mod.SDK.Network.Shell($this.SSHUser, $this.SSHHost, $this.SSHPort)
                 }

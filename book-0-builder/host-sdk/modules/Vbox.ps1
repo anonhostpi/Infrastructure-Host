@@ -89,10 +89,6 @@ New-Module -Name SDK.Vbox -ScriptBlock {
                     $this.CPUs
                 )
             }
-            Exec = {
-                param([string]$Command)
-                return $mod.SDK.Network.SSH($this.SSHUser, $this.SSHHost, $this.SSHPort, $Command)
-            }
         }
     }
 
