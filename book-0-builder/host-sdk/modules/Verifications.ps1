@@ -289,6 +289,18 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
         }
     }
 
+    Add-ScriptMethods $Verifications @{
+        SecurityMonitoring = {
+            param($Worker)
+            $result = $Worker.Exec("which fail2ban-client")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.9.1"; Name = "fail2ban installed"
+                Pass = ($result.Success -and $result.Output -match "fail2ban")
+                Output = $result.Output
+            })
+        }
+    }
+
     $mod.SDK.Extend("Verifications", $Verifications, $mod.SDK.Testing)
     Export-ModuleMember -Function @()
 } -ArgumentList $SDK | Import-Module -Force
