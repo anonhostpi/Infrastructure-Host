@@ -84,6 +84,19 @@ New-Module -Name "Verify.PackageManagerUpdates" -ScriptBlock {
                 Output = if ($result.Output -match "exit_code:0") { "Ran successfully" } else { $result.Output }
             })
         }
-        "deno-update" = { param($Worker) }
+        "deno-update" = {
+            param($Worker)
+            $tm = $Worker.Exec("source /usr/local/lib/apt-notify/common.sh && echo `$TESTING_MODE").Output
+            if ($tm -notmatch "true") { $SDK.Testing.Verifications.Fork("6.8.24", "SKIP", "Testing mode disabled"); return }
+            if (-not ($Worker.Exec("which deno")).Success) {
+                $SDK.Testing.Record(@{ Test = "6.8.24"; Name = "deno-update"; Pass = $true; Output = "Skipped - deno not installed" }); return
+            }
+            $result = $Worker.Exec("sudo /usr/local/bin/deno-update 2>&1; echo exit_code:`$?")
+            $SDK.Testing.Record(@{
+                Test = "6.8.24"; Name = "deno-update script"
+                Pass = ($result.Output -match "exit_code:0")
+                Output = if ($result.Output -match "exit_code:0") { "Ran successfully" } else { $result.Output }
+            })
+        }
     })
 } -ArgumentList $SDK
