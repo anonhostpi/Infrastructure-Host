@@ -717,6 +717,20 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
     }
 
     Add-ScriptMethods $Verifications @{
+        ClaudeCode = {
+            param($Worker)
+            $username = $mod.SDK.Settings.Identity.username
+            # 6.12.1: Claude Code installed
+            $result = $Worker.Exec("which claude")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.12.1"; Name = "Claude Code installed"
+                Pass = ($result.Success -and $result.Output -match "claude")
+                Output = $result.Output
+            })
+        }
+    }
+
+    Add-ScriptMethods $Verifications @{
         UI = {
             param($Worker)
             $result = $Worker.Exec("test -d /etc/update-motd.d")
