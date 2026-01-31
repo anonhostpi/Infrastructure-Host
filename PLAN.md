@@ -783,3 +783,913 @@ Add skeleton verifications for pkg-security layer 18
 | **Rule 3: Lines** | 9 lines | PASS |
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 23: `book-0-builder/host-sdk/modules/Verifications.ps1` - Thread Worker through Test and Run methods
+
+### book-0-builder.host-sdk.modules.Verifications.worker-threading
+
+> **File**: `book-0-builder/host-sdk/modules/Verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Thread Worker through Test and Run methods
+
+#### Diff
+
+```diff
+         Test = {
+-            param([string]$Fragment, [int]$Layer, [string]$Name)
++            param([string]$Fragment, [int]$Layer, [string]$Name, $Worker)
+             $test = $mod.Tests[$Fragment][$Layer][$Name]
+-            if ($test) { & $test }
++            if ($test) { & $test $Worker }
+         }
+...
+                         foreach ($name in $mod.Tests[$frag][$l].Keys) {
+-                            $this.Test($frag, $l, $name)
++                            $this.Test($frag, $l, $name, $Worker)
+                         }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 6 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 24: `book-2-cloud/ui/tests/15/verifications.ps1` - Add UI layer tests (MOTD directory and scripts)
+
+### book-2-cloud.ui.tests.15.verifications.ui-tests
+
+> **File**: `book-2-cloud/ui/tests/15/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 0 for this file
+
+#### Description
+
+Add UI layer tests (MOTD directory and scripts)
+
+#### Diff
+
+```diff
+-    $SDK.Testing.Verifications.Register("ui", 15, [ordered]@{})
++    $SDK.Testing.Verifications.Register("ui", 15, [ordered]@{
++        "MOTD directory exists" = {
++            param($Worker)
++            $result = $Worker.Exec("test -d /etc/update-motd.d")
++            $SDK.Testing.Record(@{
++                Test = "6.15.1"; Name = "MOTD directory exists"
++                Pass = $result.Success; Output = "/etc/update-motd.d"
++            })
++        }
++        "MOTD scripts present" = {
++            param($Worker)
++            $result = $Worker.Exec("ls /etc/update-motd.d/ | wc -l")
++            $SDK.Testing.Record(@{
++                Test = "6.15.2"; Name = "MOTD scripts present"
++                Pass = ([int]$result.Output -gt 0); Output = "$($result.Output) scripts"
++            })
++        }
++    })
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 19 lines | BORDERLINE |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 25: `book-2-cloud/pkg-security/tests/18/verifications.ps1` - Add NotificationFlush test (flush logged)
+
+### book-2-cloud.pkg-security.tests.18.verifications.notification-flush-tests
+
+> **File**: `book-2-cloud/pkg-security/tests/18/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add NotificationFlush test (flush logged)
+
+#### Diff
+
+```diff
+-    $SDK.Testing.Verifications.Register("pkg-security", 18, [ordered]@{})
++    $SDK.Testing.Verifications.Register("pkg-security", 18, [ordered]@{
++        "apt-notify-flush logged" = {
++            param($Worker)
++            $result = $Worker.Exec("grep 'apt-notify-flush: complete' /var/lib/apt-notify/apt-notify.log")
++            $SDK.Testing.Record(@{
++                Test = "6.8.28"; Name = "apt-notify-flush logged"
++                Pass = ($result.Success -and $result.Output -match "apt-notify-flush")
++                Output = if ($result.Success) { "Flush logged" } else { "No flush log entry" }
++            })
++        }
++    })
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 12 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 26a: `book-2-cloud/security-mon/tests/9/verifications.ps1` - Add SecurityMonitoring Register shape with first 2 tests
+
+### book-2-cloud.security-mon.tests.9.verifications.secmon-shape
+
+> **File**: `book-2-cloud/security-mon/tests/9/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 0 for this file
+
+#### Description
+
+Add SecurityMonitoring Register shape with first 2 tests
+
+#### Diff
+
+```diff
+-    $SDK.Testing.Verifications.Register("security-mon", 9, [ordered]@{})
++    $SDK.Testing.Verifications.Register("security-mon", 9, [ordered]@{
++        "fail2ban installed" = {
++            param($Worker)
++            $result = $Worker.Exec("which fail2ban-client")
++            $SDK.Testing.Record(@{
++                Test = "6.9.1"; Name = "fail2ban installed"
++                Pass = ($result.Success -and $result.Output -match "fail2ban"); Output = $result.Output
++            })
++        }
++        "fail2ban service active" = {
++            param($Worker)
++            $result = $Worker.Exec("sudo systemctl is-active fail2ban")
++            $SDK.Testing.Record(@{
++                Test = "6.9.2"; Name = "fail2ban service active"
++                Pass = ($result.Output -match "^active$"); Output = $result.Output
++            })
++        }
++    })
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 19 lines | BORDERLINE |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 26b: `book-2-cloud/security-mon/tests/9/verifications.ps1` - Add SSH jail test to SecurityMonitoring
+
+### book-2-cloud.security-mon.tests.9.verifications.secmon-ssh-jail
+
+> **File**: `book-2-cloud/security-mon/tests/9/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add SSH jail test to SecurityMonitoring
+
+#### Diff
+
+```diff
++        "SSH jail configured" = {
++            param($Worker)
++            $result = $Worker.Exec("sudo fail2ban-client status")
++            $SDK.Testing.Record(@{
++                Test = "6.9.3"; Name = "SSH jail configured"
++                Pass = ($result.Output -match "sshd"); Output = "sshd jail"
++            })
++        }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 8 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 27: `book-2-cloud/system/tests/6/verifications.ps1` - Add System tests: timezone and locale
+
+### book-2-cloud.system.tests.6.verifications.system-tests-a
+
+> **File**: `book-2-cloud/system/tests/6/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add System tests: timezone and locale
+
+#### Diff
+
+```diff
+-    $SDK.Testing.Verifications.Register("system", 6, [ordered]@{})
++    $SDK.Testing.Verifications.Register("system", 6, [ordered]@{
++        "Timezone configured" = {
++            param($Worker)
++            $result = $Worker.Exec("timedatectl show --property=Timezone --value")
++            $SDK.Testing.Record(@{
++                Test = "6.6.1"; Name = "Timezone configured"
++                Pass = ($result.Success -and $result.Output); Output = $result.Output
++            })
++        }
++        "Locale set" = {
++            param($Worker)
++            $result = $Worker.Exec("locale")
++            $SDK.Testing.Record(@{
++                Test = "6.6.2"; Name = "Locale set"
++                Pass = ($result.Output -match "LANG="); Output = ($result.Output | Select-Object -First 1)
++            })
++        }
++    })
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 19 lines | BORDERLINE |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 28: `book-2-cloud/system/tests/6/verifications.ps1` - Add NTP test to System layer
+
+### book-2-cloud.system.tests.6.verifications.system-ntp
+
+> **File**: `book-2-cloud/system/tests/6/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add NTP test to System layer
+
+#### Diff
+
+```diff
++        "NTP enabled" = {
++            param($Worker)
++            $result = $Worker.Exec("timedatectl show --property=NTP --value")
++            $SDK.Testing.Record(@{
++                Test = "6.6.3"; Name = "NTP enabled"
++                Pass = ($result.Output -match "yes"); Output = "NTP=$($result.Output)"
++            })
++        }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 8 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 29: `book-2-cloud/ufw/tests/5/verifications.ps1` - Add UFW tests: active status and SSH allowed
+
+### book-2-cloud.ufw.tests.5.verifications.ufw-tests-a
+
+> **File**: `book-2-cloud/ufw/tests/5/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add UFW tests: active status and SSH allowed
+
+#### Diff
+
+```diff
+-    $SDK.Testing.Verifications.Register("ufw", 5, [ordered]@{})
++    $SDK.Testing.Verifications.Register("ufw", 5, [ordered]@{
++        "UFW is active" = {
++            param($Worker)
++            $result = $Worker.Exec("sudo ufw status")
++            $SDK.Testing.Record(@{
++                Test = "6.5.1"; Name = "UFW is active"
++                Pass = ($result.Output -match "Status: active"); Output = $result.Output | Select-Object -First 1
++            })
++        }
++        "SSH allowed in UFW" = {
++            param($Worker)
++            $result = $Worker.Exec("sudo ufw status")
++            $SDK.Testing.Record(@{
++                Test = "6.5.2"; Name = "SSH allowed in UFW"
++                Pass = ($result.Output -match "22.*ALLOW"); Output = "Port 22 rule checked"
++            })
++        }
++    })
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 19 lines | BORDERLINE |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 30: `book-2-cloud/ufw/tests/5/verifications.ps1` - Add default deny incoming test to UFW
+
+### book-2-cloud.ufw.tests.5.verifications.ufw-deny
+
+> **File**: `book-2-cloud/ufw/tests/5/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add default deny incoming test to UFW
+
+#### Diff
+
+```diff
++        "Default deny incoming" = {
++            param($Worker)
++            $verbose = $Worker.Exec("sudo ufw status verbose")
++            $SDK.Testing.Record(@{
++                Test = "6.5.3"; Name = "Default deny incoming"
++                Pass = ($verbose.Output -match "deny (incoming)"); Output = "Default incoming policy"
++            })
++        }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 8 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 31: `book-2-cloud/kernel/tests/2/verifications.ps1` - Add Kernel tests: sysctl config and reverse path filter
+
+### book-2-cloud.kernel.tests.2.verifications.kernel-tests-a
+
+> **File**: `book-2-cloud/kernel/tests/2/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add Kernel tests: sysctl config and reverse path filter
+
+#### Diff
+
+```diff
+-    $SDK.Testing.Verifications.Register("kernel", 2, [ordered]@{})
++    $SDK.Testing.Verifications.Register("kernel", 2, [ordered]@{
++        "Security sysctl config exists" = {
++            param($Worker)
++            $result = $Worker.Exec("test -f /etc/sysctl.d/99-security.conf")
++            $SDK.Testing.Record(@{
++                Test = "6.2.1"; Name = "Security sysctl config exists"
++                Pass = $result.Success; Output = "/etc/sysctl.d/99-security.conf"
++            })
++        }
++        "Reverse path filtering enabled" = {
++            param($Worker)
++            $result = $Worker.Exec("sysctl net.ipv4.conf.all.rp_filter")
++            $SDK.Testing.Record(@{
++                Test = "6.2.2"; Name = "Reverse path filtering enabled"
++                Pass = ($result.Output -match "= 1"); Output = $result.Output
++            })
++        }
++    })
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 19 lines | BORDERLINE |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 32: `book-2-cloud/kernel/tests/2/verifications.ps1` - Add Kernel tests: SYN cookies and ICMP redirects
+
+### book-2-cloud.kernel.tests.2.verifications.kernel-tests-b
+
+> **File**: `book-2-cloud/kernel/tests/2/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add Kernel tests: SYN cookies and ICMP redirects
+
+#### Diff
+
+```diff
++        "SYN cookies enabled" = {
++            param($Worker)
++            $result = $Worker.Exec("sysctl net.ipv4.tcp_syncookies")
++            $SDK.Testing.Record(@{
++                Test = "6.2.2"; Name = "SYN cookies enabled"
++                Pass = ($result.Output -match "= 1"); Output = $result.Output
++            })
++        }
++        "ICMP redirects disabled" = {
++            param($Worker)
++            $result = $Worker.Exec("sysctl net.ipv4.conf.all.accept_redirects")
++            $SDK.Testing.Record(@{
++                Test = "6.2.2"; Name = "ICMP redirects disabled"
++                Pass = ($result.Output -match "= 0"); Output = $result.Output
++            })
++        }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 16 lines | BORDERLINE |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 33: `book-2-cloud/users/tests/3/verifications.ps1` - Add Users Register shape (5 tests: user exists, shell, sudo, sudoers, root locked)
+
+### book-2-cloud.users.tests.3.verifications.users-shape
+
+> **File**: `book-2-cloud/users/tests/3/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add Users Register shape (5 tests: user exists, shell, sudo, sudoers, root locked)
+
+#### Diff
+
+```diff
+-    $SDK.Testing.Verifications.Register("users", 3, [ordered]@{})
++    $SDK.Testing.Verifications.Register("users", 3, [ordered]@{
++        "user exists" = { param($Worker) }
++        "user shell is bash" = { param($Worker) }
++        "user in sudo group" = { param($Worker) }
++        "Sudoers file exists" = { param($Worker) }
++        "Root account locked" = { param($Worker) }
++    })
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 8 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 34: `book-2-cloud/ssh/tests/4/verifications.ps1` - Add SSH Register shape (5 tests: hardening config, settings, service, root rejected, key auth)
+
+### book-2-cloud.ssh.tests.4.verifications.ssh-shape
+
+> **File**: `book-2-cloud/ssh/tests/4/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add SSH Register shape (5 tests: hardening config, settings, service, root rejected, key auth)
+
+#### Diff
+
+```diff
+-    $SDK.Testing.Verifications.Register("ssh", 4, [ordered]@{})
++    $SDK.Testing.Verifications.Register("ssh", 4, [ordered]@{
++        "SSH hardening config exists" = { param($Worker) }
++        "PermitRootLogin no" = { param($Worker) }
++        "MaxAuthTries set" = { param($Worker) }
++        "SSH service active" = { param($Worker) }
++        "Root SSH login rejected" = { param($Worker) }
++        "SSH key auth" = { param($Worker) }
++    })
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 9 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 35: `book-2-cloud/network/tests/1/verifications.ps1` - Add Network Register shape (9 tests: hostname, hosts, netplan, IP, gateway, DNS, net-setup)
+
+### book-2-cloud.network.tests.1.verifications.network-shape
+
+> **File**: `book-2-cloud/network/tests/1/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add Network Register shape (9 tests: hostname, hosts, netplan, IP, gateway, DNS, net-setup)
+
+#### Diff
+
+```diff
+-    $SDK.Testing.Verifications.Register("network", 1, [ordered]@{})
++    $SDK.Testing.Verifications.Register("network", 1, [ordered]@{
++        "Short hostname set" = { param($Worker) }
++        "FQDN has domain" = { param($Worker) }
++        "Hostname in /etc/hosts" = { param($Worker) }
++        "Netplan config exists" = { param($Worker) }
++        "IP address assigned" = { param($Worker) }
++        "Default gateway configured" = { param($Worker) }
++        "DNS resolution works" = { param($Worker) }
++        "net-setup.log exists" = { param($Worker) }
++        "net-setup.sh executed" = { param($Worker) }
++    })
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 12 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 36: `book-2-cloud/msmtp/tests/7/verifications.ps1` - Add MSMTP Register shape (11 tests: install, config, sendmail, SMTP settings, provider, auth, TLS, creds, alias, helper, send)
+
+### book-2-cloud.msmtp.tests.7.verifications.msmtp-shape
+
+> **File**: `book-2-cloud/msmtp/tests/7/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add MSMTP Register shape (11 tests: install, config, sendmail, SMTP settings, provider, auth, TLS, creds, alias, helper, send)
+
+#### Diff
+
+```diff
+-    $SDK.Testing.Verifications.Register("msmtp", 7, [ordered]@{})
++    $SDK.Testing.Verifications.Register("msmtp", 7, [ordered]@{
++        "msmtp installed" = { param($Worker) }
++        "msmtp config exists" = { param($Worker) }
++        "sendmail alias exists" = { param($Worker) }
++        "SMTP host matches" = { param($Worker) }
++        "SMTP port matches" = { param($Worker) }
++        "SMTP from matches" = { param($Worker) }
++        "SMTP user matches" = { param($Worker) }
++        "Provider config valid" = { param($Worker) }
++        "Auth method valid" = { param($Worker) }
++        "TLS settings valid" = { param($Worker) }
++        "Credential config valid" = { param($Worker) }
++        "Root alias configured" = { param($Worker) }
++        "msmtp-config helper exists" = { param($Worker) }
++        "Test email sent" = { param($Worker) }
++    })
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 17 lines | BORDERLINE |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 37: `book-2-cloud/pkg-security/tests/8/verifications.ps1` - Add PackageSecurity Register shape (18 tests: unattended-upgrades, listchanges, apt-notify, update scripts, timer)
+
+### book-2-cloud.pkg-security.tests.8.verifications.pkgsec-shape
+
+> **File**: `book-2-cloud/pkg-security/tests/8/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add PackageSecurity Register shape (18 tests: unattended-upgrades, listchanges, apt-notify, update scripts, timer)
+
+#### Diff
+
+```diff
+-    $SDK.Testing.Verifications.Register("pkg-security", 8, [ordered]@{})
++    $SDK.Testing.Verifications.Register("pkg-security", 8, [ordered]@{
++        "unattended-upgrades installed" = { param($Worker) }
++        "Unattended upgrades config" = { param($Worker) }
++        "Auto-upgrades configured" = { param($Worker) }
++        "Service enabled" = { param($Worker) }
++        "apt-listchanges installed" = { param($Worker) }
++        "apt-listchanges email config" = { param($Worker) }
++        "apt-notify script exists" = { param($Worker) }
++        "dpkg notification hooks" = { param($Worker) }
++        "Verbose upgrade reporting" = { param($Worker) }
++        "snap-update script" = { param($Worker) }
++        "snap refresh.hold configured" = { param($Worker) }
++        "brew-update script" = { param($Worker) }
++        "pip-global-update script" = { param($Worker) }
++        "npm-global-update script" = { param($Worker) }
++        "deno-update script" = { param($Worker) }
++        "pkg-managers-update timer" = { param($Worker) }
++        "apt-notify common library" = { param($Worker) }
++        "apt-notify-flush script" = { param($Worker) }
++    })
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 21 lines | FAIL |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 38: `book-2-cloud/virtualization/tests/10/verifications.ps1` - Add Virtualization Register shape (9 tests: libvirt, QEMU, network, multipass, KVM, nested VM)
+
+### book-2-cloud.virtualization.tests.10.verifications.virt-shape
+
+> **File**: `book-2-cloud/virtualization/tests/10/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add Virtualization Register shape (9 tests: libvirt, QEMU, network, multipass, KVM, nested VM)
+
+#### Diff
+
+```diff
+-    $SDK.Testing.Verifications.Register("virtualization", 10, [ordered]@{})
++    $SDK.Testing.Verifications.Register("virtualization", 10, [ordered]@{
++        "libvirt installed" = { param($Worker) }
++        "libvirtd service active" = { param($Worker) }
++        "QEMU installed" = { param($Worker) }
++        "libvirt default network" = { param($Worker) }
++        "multipass installed" = { param($Worker) }
++        "multipassd service active" = { param($Worker) }
++        "KVM available for nesting" = { param($Worker) }
++        "Launch nested VM" = { param($Worker) }
++        "Exec in nested VM" = { param($Worker) }
++    })
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 12 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 39: `book-2-cloud/cockpit/tests/11/verifications.ps1` - Add Cockpit Register shape (7 tests: install, socket, machines, port, web UI, login, localhost)
+
+### book-2-cloud.cockpit.tests.11.verifications.cockpit-shape
+
+> **File**: `book-2-cloud/cockpit/tests/11/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add Cockpit Register shape (7 tests: install, socket, machines, port, web UI, login, localhost)
+
+#### Diff
+
+```diff
+-    $SDK.Testing.Verifications.Register("cockpit", 11, [ordered]@{})
++    $SDK.Testing.Verifications.Register("cockpit", 11, [ordered]@{
++        "Cockpit installed" = { param($Worker) }
++        "Cockpit socket enabled" = { param($Worker) }
++        "cockpit-machines installed" = { param($Worker) }
++        "Cockpit listening" = { param($Worker) }
++        "Cockpit web UI responds" = { param($Worker) }
++        "Cockpit login page" = { param($Worker) }
++        "Cockpit restricted to localhost" = { param($Worker) }
++    })
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 10 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 40: `book-2-cloud/claude-code/tests/12/verifications.ps1` - Add ClaudeCode Register shape (5 tests: install, config dir, settings, auth, AI response)
+
+### book-2-cloud.claude-code.tests.12.verifications.claude-shape
+
+> **File**: `book-2-cloud/claude-code/tests/12/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add ClaudeCode Register shape (5 tests: install, config dir, settings, auth, AI response)
+
+#### Diff
+
+```diff
+-    $SDK.Testing.Verifications.Register("claude-code", 12, [ordered]@{})
++    $SDK.Testing.Verifications.Register("claude-code", 12, [ordered]@{
++        "Claude Code installed" = { param($Worker) }
++        "Claude Code config directory" = { param($Worker) }
++        "Claude Code settings file" = { param($Worker) }
++        "Claude Code auth configured" = { param($Worker) }
++        "Claude Code AI response" = { param($Worker) }
++    })
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 8 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 41: `book-2-cloud/copilot-cli/tests/13/verifications.ps1` - Add CopilotCLI Register shape (5 tests: install, config dir, config file, auth, AI response)
+
+### book-2-cloud.copilot-cli.tests.13.verifications.copilot-shape
+
+> **File**: `book-2-cloud/copilot-cli/tests/13/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add CopilotCLI Register shape (5 tests: install, config dir, config file, auth, AI response)
+
+#### Diff
+
+```diff
+-    $SDK.Testing.Verifications.Register("copilot-cli", 13, [ordered]@{})
++    $SDK.Testing.Verifications.Register("copilot-cli", 13, [ordered]@{
++        "Copilot CLI installed" = { param($Worker) }
++        "Copilot CLI config directory" = { param($Worker) }
++        "Copilot CLI config file" = { param($Worker) }
++        "Copilot CLI auth configured" = { param($Worker) }
++        "Copilot CLI AI response" = { param($Worker) }
++    })
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 8 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 42: `book-2-cloud/opencode/tests/14/verifications.ps1` - Add OpenCode Register shape (7 tests: node, npm, install, config, auth, AI response, credential chain)
+
+### book-2-cloud.opencode.tests.14.verifications.opencode-shape
+
+> **File**: `book-2-cloud/opencode/tests/14/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add OpenCode Register shape (7 tests: node, npm, install, config, auth, AI response, credential chain)
+
+#### Diff
+
+```diff
+-    $SDK.Testing.Verifications.Register("opencode", 14, [ordered]@{})
++    $SDK.Testing.Verifications.Register("opencode", 14, [ordered]@{
++        "Node.js installed" = { param($Worker) }
++        "npm installed" = { param($Worker) }
++        "OpenCode installed" = { param($Worker) }
++        "OpenCode config directory" = { param($Worker) }
++        "OpenCode auth file" = { param($Worker) }
++        "OpenCode AI response" = { param($Worker) }
++        "OpenCode credential chain" = { param($Worker) }
++    })
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 10 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 43: `book-2-cloud/pkg-security/tests/16/verifications.ps1` - Add PackageManagerUpdates Register shape (6 tests: testing mode, snap, npm, pip, brew, deno)
+
+### book-2-cloud.pkg-security.tests.16.verifications.pkgmgr-updates-shape
+
+> **File**: `book-2-cloud/pkg-security/tests/16/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add PackageManagerUpdates Register shape (6 tests: testing mode, snap, npm, pip, brew, deno)
+
+#### Diff
+
+```diff
+-    $SDK.Testing.Verifications.Register("pkg-security", 16, [ordered]@{})
++    $SDK.Testing.Verifications.Register("pkg-security", 16, [ordered]@{
++        "Testing mode enabled" = { param($Worker) }
++        "snap-update script" = { param($Worker) }
++        "npm-global-update script" = { param($Worker) }
++        "pip-global-update script" = { param($Worker) }
++        "brew-update script" = { param($Worker) }
++        "deno-update script" = { param($Worker) }
++    })
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 9 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 44: `book-2-cloud/pkg-security/tests/17/verifications.ps1` - Add UpdateSummary Register shape (3 tests: report, content, AI model)
+
+### book-2-cloud.pkg-security.tests.17.verifications.update-summary-shape
+
+> **File**: `book-2-cloud/pkg-security/tests/17/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add UpdateSummary Register shape (3 tests: report, content, AI model)
+
+#### Diff
+
+```diff
+-    $SDK.Testing.Verifications.Register("pkg-security", 17, [ordered]@{})
++    $SDK.Testing.Verifications.Register("pkg-security", 17, [ordered]@{
++        "Report generated" = { param($Worker) }
++        "Report contains npm section" = { param($Worker) }
++        "AI summary reports valid model" = { param($Worker) }
++    })
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 6 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
