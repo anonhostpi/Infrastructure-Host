@@ -915,6 +915,13 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                     Output = if ($result.Output -match "exit_code:0") { "Ran successfully" } else { $result.Output }
                 })
             }
+            # 6.8.21: npm-global-update
+            $npmInstalled = $Worker.Exec("which npm")
+            if (-not $npmInstalled.Success) {
+                $mod.SDK.Testing.Record(@{ Test = "6.8.21"; Name = "npm-global-update"; Pass = $true; Output = "Skipped - npm not installed" })
+            } else {
+                # WIP: npm test
+            }
         }
     }
 
