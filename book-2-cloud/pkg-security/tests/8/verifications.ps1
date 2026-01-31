@@ -71,8 +71,23 @@ New-Module -Name "Verify.PackageSecurity" -ScriptBlock {
                 Pass = $hookOk; Output = "Pre/Post-Invoke hooks configured"
             })
         }
-        "Verbose upgrade reporting" = { param($Worker) }
-        "snap-update script" = { param($Worker) }
+        "Verbose upgrade reporting" = {
+            param($Worker)
+            $uuConf = $Worker.Exec("cat /etc/apt/apt.conf.d/50unattended-upgrades").Output
+            $SDK.Testing.Record(@{
+                Test = "6.8.9"; Name = "Verbose upgrade reporting"
+                Pass = (($uuConf -match 'Verbose.*"true"') -and ($uuConf -match 'MailReport.*"always"'))
+                Output = "Verbose=true, MailReport=always"
+            })
+        }
+        "snap-update script" = {
+            param($Worker)
+            $result = $Worker.Exec("test -x /usr/local/bin/snap-update && echo exists")
+            $SDK.Testing.Record(@{
+                Test = "6.8.10"; Name = "snap-update script"
+                Pass = ($result.Output -match "exists"); Output = "/usr/local/bin/snap-update"
+            })
+        }
         "snap refresh.hold configured" = { param($Worker) }
         "brew-update script" = { param($Worker) }
         "pip-global-update script" = { param($Worker) }
