@@ -585,6 +585,26 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
     }
 
     Add-ScriptMethods $Verifications @{
+        Virtualization = {
+            param($Worker)
+            # 6.10.1: libvirt installed
+            $result = $Worker.Exec("which virsh")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.10.1"; Name = "libvirt installed"
+                Pass = ($result.Success -and $result.Output -match "virsh")
+                Output = $result.Output
+            })
+            # 6.10.2: libvirtd service active
+            $result = $Worker.Exec("systemctl is-active libvirtd")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.10.2"; Name = "libvirtd service active"
+                Pass = ($result.Output -match "^active$")
+                Output = $result.Output
+            })
+        }
+    }
+
+    Add-ScriptMethods $Verifications @{
         UI = {
             param($Worker)
             $result = $Worker.Exec("test -d /etc/update-motd.d")
