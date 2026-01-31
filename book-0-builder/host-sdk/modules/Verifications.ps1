@@ -782,6 +782,20 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 Pass = ($result.Success -and $result.Output -match "copilot")
                 Output = $result.Output
             })
+            # 6.13.2: config directory
+            $result = $Worker.Exec("sudo test -d /home/$username/.copilot && echo exists")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.13.2"; Name = "Copilot CLI config directory"
+                Pass = ($result.Output -match "exists")
+                Output = "/home/$username/.copilot"
+            })
+            # 6.13.3: config file
+            $result = $Worker.Exec("sudo test -f /home/$username/.copilot/config.json && echo exists")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.13.3"; Name = "Copilot CLI config file"
+                Pass = ($result.Output -match "exists")
+                Output = "/home/$username/.copilot/config.json"
+            })
         }
     }
 
