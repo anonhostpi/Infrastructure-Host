@@ -7,6 +7,15 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
 
     $Verifications = New-Object PSObject
 
+    Add-ScriptMethods $Verifications @{
+        Fork = {
+            param([string]$Test, [string]$Decision, [string]$Reason = "")
+            $msg = "[FORK] $Test : $Decision"
+            if ($Reason) { $msg += " ($Reason)" }
+            $mod.SDK.Log.Debug($msg)
+        }
+    }
+
     $SDK.Extend("Verifications", $Verifications, $SDK.Testing)
     Export-ModuleMember -Function @()
 } -ArgumentList $SDK | Import-Module -Force
