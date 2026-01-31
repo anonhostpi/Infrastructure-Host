@@ -755,6 +755,19 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 Test = "6.12.4"; Name = "Claude Code auth configured"
                 Pass = $hasAuth; Output = $authOutput
             })
+            # 6.12.5: AI response test (conditional on auth)
+            if (-not $hasAuth) {
+                $this.Fork("6.12.5", "SKIP", "No auth configured")
+            } else {
+                $result = $Worker.Exec("sudo -u $username env HOME=/home/$username timeout 30 claude -p test 2>&1")
+                $clean = $result.Output -replace '\x1b\[[0-9;]*[a-zA-Z]', ''
+                $hasResponse = ($clean -and $clean.Length -gt 0 -and $clean -notmatch "^error|failed|timeout")
+                $mod.SDK.Testing.Record(@{
+                    Test = "6.12.5"; Name = "Claude Code AI response"
+                    Pass = $hasResponse
+                    Output = if ($hasResponse) { "Response received" } else { "Failed: $clean" }
+                })
+            }
         }
     }
 
