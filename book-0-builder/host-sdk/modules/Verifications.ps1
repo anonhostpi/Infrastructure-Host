@@ -574,6 +574,13 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 Pass = ($result.Output -match "exists")
                 Output = "/usr/local/lib/apt-notify/common.sh"
             })
+            # 6.8.18: apt-notify-flush script
+            $result = $Worker.Exec("test -x /usr/local/bin/apt-notify-flush && echo exists")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.8.18"; Name = "apt-notify-flush script"
+                Pass = ($result.Output -match "exists")
+                Output = "/usr/local/bin/apt-notify-flush"
+            })
         }
     }
 
