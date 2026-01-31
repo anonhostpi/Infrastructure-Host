@@ -706,6 +706,13 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 Pass = ($result.Success -and $result.Output)
                 Output = "Login page served"
             })
+            # 6.11.7: Cockpit listen address restricted
+            $restricted = ($portConf -match "127\.0\.0\.1" -or $portConf -match "::1" -or $portConf -match "localhost")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.11.7"; Name = "Cockpit restricted to localhost"
+                Pass = $restricted
+                Output = if ($restricted) { "Listen restricted" } else { "Warning: may be externally accessible" }
+            })
         }
     }
 
