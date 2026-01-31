@@ -727,6 +727,20 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 Pass = ($result.Success -and $result.Output -match "claude")
                 Output = $result.Output
             })
+            # 6.12.2: config directory
+            $result = $Worker.Exec("sudo test -d /home/$username/.claude && echo exists")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.12.2"; Name = "Claude Code config directory"
+                Pass = ($result.Output -match "exists")
+                Output = "/home/$username/.claude"
+            })
+            # 6.12.3: settings file
+            $result = $Worker.Exec("sudo test -f /home/$username/.claude/settings.json && echo exists")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.12.3"; Name = "Claude Code settings file"
+                Pass = ($result.Output -match "exists")
+                Output = "/home/$username/.claude/settings.json"
+            })
         }
     }
 
