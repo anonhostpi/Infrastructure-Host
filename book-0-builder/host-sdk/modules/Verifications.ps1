@@ -920,7 +920,17 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
             if (-not $npmInstalled.Success) {
                 $mod.SDK.Testing.Record(@{ Test = "6.8.21"; Name = "npm-global-update"; Pass = $true; Output = "Skipped - npm not installed" })
             } else {
-                # WIP: npm test
+                $Worker.Exec("sudo npm install -g is-odd@2.0.0 2>/dev/null") | Out-Null
+                $Worker.Exec("sudo rm -f /var/lib/apt-notify/queue") | Out-Null
+                $result = $Worker.Exec("sudo /usr/local/bin/npm-global-update 2>&1; echo exit_code:`$?")
+                $queue = $Worker.Exec("cat /var/lib/apt-notify/queue 2>/dev/null").Output
+                $npmDetected = ($queue -match "NPM_UPGRADED")
+                $mod.SDK.Testing.Record(@{
+                    Test = "6.8.21"; Name = "npm-global-update script"
+                    Pass = ($result.Output -match "exit_code:0" -and $npmDetected)
+                    Output = if ($npmDetected) { "Detected npm update" } else { "No NPM_UPGRADED in queue" }
+                })
+                $Worker.Exec("sudo npm uninstall -g is-odd 2>/dev/null") | Out-Null
             }
         }
     }
