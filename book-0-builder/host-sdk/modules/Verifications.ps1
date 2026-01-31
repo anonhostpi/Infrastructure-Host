@@ -202,6 +202,26 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 Pass = $result.Success
                 Output = "/etc/ssh/sshd_config.d/99-hardening.conf"
             })
+            # 6.4.2: Key Settings
+            $result = $Worker.Exec("sudo grep -r 'PermitRootLogin' /etc/ssh/sshd_config.d/")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.4.2"; Name = "PermitRootLogin no"
+                Pass = ($result.Output -match "PermitRootLogin no")
+                Output = $result.Output
+            })
+            $result = $Worker.Exec("sudo grep -r 'MaxAuthTries' /etc/ssh/sshd_config.d/")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.4.2"; Name = "MaxAuthTries set"
+                Pass = ($result.Output -match "MaxAuthTries")
+                Output = $result.Output
+            })
+            # 6.4.3: SSH Service Running
+            $result = $Worker.Exec("systemctl is-active ssh")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.4.3"; Name = "SSH service active"
+                Pass = ($result.Output -match "^active$")
+                Output = $result.Output
+            })
         }
     }
 
