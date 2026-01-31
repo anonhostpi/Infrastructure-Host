@@ -6,8 +6,22 @@ New-Module -Name "Verify.Virtualization" -ScriptBlock {
     . "$PSScriptRoot\..\..\..\..\book-0-builder\host-sdk\helpers\PowerShell.ps1"
 
     $SDK.Testing.Verifications.Register("virtualization", 10, [ordered]@{
-        "libvirt installed" = { param($Worker) }
-        "libvirtd service active" = { param($Worker) }
+        "libvirt installed" = {
+            param($Worker)
+            $result = $Worker.Exec("which virsh")
+            $SDK.Testing.Record(@{
+                Test = "6.10.1"; Name = "libvirt installed"
+                Pass = ($result.Success -and $result.Output -match "virsh"); Output = $result.Output
+            })
+        }
+        "libvirtd service active" = {
+            param($Worker)
+            $result = $Worker.Exec("systemctl is-active libvirtd")
+            $SDK.Testing.Record(@{
+                Test = "6.10.2"; Name = "libvirtd service active"
+                Pass = ($result.Output -match "^active$"); Output = $result.Output
+            })
+        }
         "QEMU installed" = { param($Worker) }
         "libvirt default network" = { param($Worker) }
         "multipass installed" = { param($Worker) }
