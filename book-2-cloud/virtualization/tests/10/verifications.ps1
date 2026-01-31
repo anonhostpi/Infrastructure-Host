@@ -54,7 +54,15 @@ New-Module -Name "Verify.Virtualization" -ScriptBlock {
                 Pass = ($result.Output -match "^active$"); Output = $result.Output
             })
         }
-        "KVM available for nesting" = { param($Worker) }
+        "KVM available for nesting" = {
+            param($Worker)
+            $result = $Worker.Exec("test -e /dev/kvm && echo available")
+            $SDK.Testing.Record(@{
+                Test = "6.10.7"; Name = "KVM available for nesting"
+                Pass = ($result.Output -match "available")
+                Output = if ($result.Output -match "available") { "/dev/kvm present" } else { "KVM not available" }
+            })
+        }
         "Launch nested VM" = { param($Worker) }
         "Exec in nested VM" = { param($Worker) }
     })
