@@ -274,6 +274,18 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 Pass = ($result.Success -and $result.Output)
                 Output = $result.Output
             })
+            $result = $Worker.Exec("locale")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.6.2"; Name = "Locale set"
+                Pass = ($result.Output -match "LANG=")
+                Output = ($result.Output | Select-Object -First 1)
+            })
+            $result = $Worker.Exec("timedatectl show --property=NTP --value")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.6.3"; Name = "NTP enabled"
+                Pass = ($result.Output -match "yes")
+                Output = "NTP=$($result.Output)"
+            })
         }
     }
 
