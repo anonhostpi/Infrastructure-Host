@@ -24,8 +24,22 @@ New-Module -Name "Verify.SSHHardening" -ScriptBlock {
                 Pass = ($result.Output -match "PermitRootLogin no"); Output = $result.Output
             })
         }
-        "MaxAuthTries set" = { param($Worker) }
-        "SSH service active" = { param($Worker) }
+        "MaxAuthTries set" = {
+            param($Worker)
+            $result = $Worker.Exec("sudo grep -r 'MaxAuthTries' /etc/ssh/sshd_config.d/")
+            $SDK.Testing.Record(@{
+                Test = "6.4.2"; Name = "MaxAuthTries set"
+                Pass = ($result.Output -match "MaxAuthTries"); Output = $result.Output
+            })
+        }
+        "SSH service active" = {
+            param($Worker)
+            $result = $Worker.Exec("systemctl is-active ssh")
+            $SDK.Testing.Record(@{
+                Test = "6.4.3"; Name = "SSH service active"
+                Pass = ($result.Output -match "^active$"); Output = $result.Output
+            })
+        }
         "Root SSH login rejected" = { param($Worker) }
         "SSH key auth" = { param($Worker) }
     })
