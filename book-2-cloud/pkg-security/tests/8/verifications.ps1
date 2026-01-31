@@ -22,8 +22,22 @@ New-Module -Name "Verify.PackageSecurity" -ScriptBlock {
                 Pass = $result.Success; Output = "/etc/apt/apt.conf.d/50unattended-upgrades"
             })
         }
-        "Auto-upgrades configured" = { param($Worker) }
-        "Service enabled" = { param($Worker) }
+        "Auto-upgrades configured" = {
+            param($Worker)
+            $result = $Worker.Exec("cat /etc/apt/apt.conf.d/20auto-upgrades")
+            $SDK.Testing.Record(@{
+                Test = "6.8.3"; Name = "Auto-upgrades configured"
+                Pass = ($result.Output -match 'Unattended-Upgrade.*"1"'); Output = "Auto-upgrade enabled"
+            })
+        }
+        "Service enabled" = {
+            param($Worker)
+            $result = $Worker.Exec("systemctl is-enabled unattended-upgrades")
+            $SDK.Testing.Record(@{
+                Test = "6.8.4"; Name = "Service enabled"
+                Pass = ($result.Output -match "enabled"); Output = $result.Output
+            })
+        }
         "apt-listchanges installed" = { param($Worker) }
         "apt-listchanges email config" = { param($Worker) }
         "apt-notify script exists" = { param($Worker) }
