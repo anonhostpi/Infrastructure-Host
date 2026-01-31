@@ -615,6 +615,20 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 Pass = ($result.Output -match "default")
                 Output = $result.Output
             })
+            # 6.10.5: multipass installed (nested)
+            $result = $Worker.Exec("which multipass")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.10.5"; Name = "multipass installed"
+                Pass = ($result.Success -and $result.Output -match "multipass")
+                Output = $result.Output
+            })
+            # 6.10.6: multipassd service active
+            $result = $Worker.Exec("systemctl is-active snap.multipass.multipassd.service")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.10.6"; Name = "multipassd service active"
+                Pass = ($result.Output -match "^active$")
+                Output = $result.Output
+            })
         }
     }
 
