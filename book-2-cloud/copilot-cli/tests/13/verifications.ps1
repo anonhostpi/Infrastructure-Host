@@ -5,5 +5,13 @@ New-Module -Name "Verify.CopilotCLI" -ScriptBlock {
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\..\..\..\book-0-builder\host-sdk\helpers\PowerShell.ps1"
 
-    $SDK.Testing.Verifications.Register("copilot-cli", 13, [ordered]@{})
+    $username = $SDK.Settings.Identity.username
+
+    $SDK.Testing.Verifications.Register("copilot-cli", 13, [ordered]@{
+        "Copilot CLI installed" = { param($Worker) }
+        "Copilot CLI config directory" = { param($Worker) }
+        "Copilot CLI config file" = { param($Worker) }
+        "Copilot CLI auth configured" = { param($Worker) }
+        "Copilot CLI AI response" = { param($Worker) }
+    })
 } -ArgumentList $SDK
