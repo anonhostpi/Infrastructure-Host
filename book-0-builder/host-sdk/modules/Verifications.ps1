@@ -531,6 +531,20 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 Pass = ($result.Output -match "forever" -or $result.Output -match "20[0-9]{2}")
                 Output = "refresh.hold=$($result.Output)"
             })
+            # 6.8.12: brew-update script
+            $result = $Worker.Exec("test -x /usr/local/bin/brew-update && echo exists")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.8.12"; Name = "brew-update script"
+                Pass = ($result.Output -match "exists")
+                Output = "/usr/local/bin/brew-update"
+            })
+            # 6.8.13: pip-global-update script
+            $result = $Worker.Exec("test -x /usr/local/bin/pip-global-update && echo exists")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.8.13"; Name = "pip-global-update script"
+                Pass = ($result.Output -match "exists")
+                Output = "/usr/local/bin/pip-global-update"
+            })
         }
     }
 
