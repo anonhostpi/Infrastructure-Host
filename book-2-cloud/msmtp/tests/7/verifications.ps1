@@ -9,8 +9,22 @@ New-Module -Name "Verify.MSMTPMail" -ScriptBlock {
     $smtpConfigured = ($smtp -and $smtp.host)
 
     $SDK.Testing.Verifications.Register("msmtp", 7, [ordered]@{
-        "msmtp installed" = { param($Worker) }
-        "msmtp config exists" = { param($Worker) }
+        "msmtp installed" = {
+            param($Worker)
+            $result = $Worker.Exec("which msmtp")
+            $SDK.Testing.Record(@{
+                Test = "6.7.1"; Name = "msmtp installed"
+                Pass = ($result.Success -and $result.Output -match "msmtp"); Output = $result.Output
+            })
+        }
+        "msmtp config exists" = {
+            param($Worker)
+            $result = $Worker.Exec("test -f /etc/msmtprc")
+            $SDK.Testing.Record(@{
+                Test = "6.7.2"; Name = "msmtp config exists"
+                Pass = $result.Success; Output = "/etc/msmtprc"
+            })
+        }
         "sendmail alias exists" = { param($Worker) }
         "SMTP host matches" = { param($Worker) }
         "SMTP port matches" = { param($Worker) }
