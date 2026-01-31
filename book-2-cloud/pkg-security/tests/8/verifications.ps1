@@ -139,7 +139,21 @@ New-Module -Name "Verify.PackageSecurity" -ScriptBlock {
                 Output = "enabled=$($enabled.Output), active=$($active.Output)"
             })
         }
-        "apt-notify common library" = { param($Worker) }
-        "apt-notify-flush script" = { param($Worker) }
+        "apt-notify common library" = {
+            param($Worker)
+            $result = $Worker.Exec("test -f /usr/local/lib/apt-notify/common.sh && echo exists")
+            $SDK.Testing.Record(@{
+                Test = "6.8.17"; Name = "apt-notify common library"
+                Pass = ($result.Output -match "exists"); Output = "/usr/local/lib/apt-notify/common.sh"
+            })
+        }
+        "apt-notify-flush script" = {
+            param($Worker)
+            $result = $Worker.Exec("test -x /usr/local/bin/apt-notify-flush && echo exists")
+            $SDK.Testing.Record(@{
+                Test = "6.8.18"; Name = "apt-notify-flush script"
+                Pass = ($result.Output -match "exists"); Output = "/usr/local/bin/apt-notify-flush"
+            })
+        }
     })
 } -ArgumentList $SDK
