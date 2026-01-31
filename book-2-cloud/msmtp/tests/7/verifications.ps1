@@ -149,6 +149,22 @@ New-Module -Name "Verify.MSMTPMail" -ScriptBlock {
                 Pass = $result.Success; Output = "/usr/local/bin/msmtp-config"
             })
         }
-        "Test email sent" = { param($Worker) }
+        "Test email sent" = {
+            param($Worker)
+            if (-not $smtpConfigured) { $SDK.Testing.Verifications.Fork("6.7.11", "SKIP", "No SMTP configured"); return }
+            $msmtprc = $Worker.Exec("sudo cat /etc/msmtprc").Output
+            $hasInline = ($msmtprc -match 'password\s+\S' -and $msmtprc -notmatch 'passwordeval')
+            if (-not $hasInline -or -not $smtp.recipient) {
+                $SDK.Testing.Verifications.Fork("6.7.11", "SKIP", "No inline password or recipient"); return
+            }
+            $subject = "Infrastructure-Host Verification Test"
+            $result = $Worker.Exec("echo -e 'Subject: $subject\n\nAutomated test.' | sudo msmtp '$($smtp.recipient)'")
+            $logCheck = $Worker.Exec("sudo tail -1 /var/log/msmtp.log")
+            $SDK.Testing.Record(@{
+                Test = "6.7.11"; Name = "Test email sent"
+                Pass = ($result.Success -and $logCheck.Output -match $smtp.recipient)
+                Output = if ($result.Success) { "Email sent" } else { $result.Output }
+            })
+        }
     })
 } -ArgumentList $SDK
