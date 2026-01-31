@@ -16,6 +16,21 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
         }
     }
 
+    Add-ScriptMethods $Verifications @{
+        Discover = {
+            param([int]$Layer)
+            $results = @()
+            foreach ($book in @("book-1-foundation", "book-2-cloud")) {
+                $pattern = Join-Path $book "*/tests/$Layer/verifications.ps1"
+                Get-ChildItem -Path $pattern -ErrorAction SilentlyContinue | ForEach-Object {
+                    $fragDir = $_.Directory.Parent.Parent
+                    $results += @{ Fragment = $fragDir.Name; Path = $_.FullName; Layer = $Layer }
+                }
+            }
+            return $results
+        }
+    }
+
     $SDK.Extend("Verifications", $Verifications, $SDK.Testing)
     Export-ModuleMember -Function @()
 } -ArgumentList $SDK | Import-Module -Force
