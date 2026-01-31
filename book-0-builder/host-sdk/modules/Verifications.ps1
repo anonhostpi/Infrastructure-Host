@@ -265,6 +265,18 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
         }
     }
 
+    Add-ScriptMethods $Verifications @{
+        System = {
+            param($Worker)
+            $result = $Worker.Exec("timedatectl show --property=Timezone --value")
+            $mod.SDK.Testing.Record(@{
+                Test = "6.6.1"; Name = "Timezone configured"
+                Pass = ($result.Success -and $result.Output)
+                Output = $result.Output
+            })
+        }
+    }
+
     $mod.SDK.Extend("Verifications", $Verifications, $mod.SDK.Testing)
     Export-ModuleMember -Function @()
 } -ArgumentList $SDK | Import-Module -Force
