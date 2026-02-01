@@ -269,7 +269,15 @@ New-Module -Name SDK.HyperV -ScriptBlock {
                 [bool]$Optimize = $true, [bool]$Hypervisor = $true
             )
             try {
-                # WIP: VM creation, storage, network, optimization
+                $memBytes = $MemoryMB * 1MB
+                $diskBytes = $DiskGB * 1GB
+                New-VM -Name $VMName -MemoryStartupBytes $memBytes -Generation $Generation -NewVHDPath $MediumPath -NewVHDSizeBytes $diskBytes -ErrorAction Stop | Out-Null
+                $this.SetProcessor($VMName, @{ Count = $CPUs })
+                $switch = $this.GetSwitch($SwitchName)
+                if ($switch) {
+                    Connect-VMNetworkAdapter -VMName $VMName -SwitchName $switch
+                }
+                # WIP: optimize, hypervisor, DVD
             } catch {
                 Write-Error "Error creating VM '$VMName': $_"
                 return $false
