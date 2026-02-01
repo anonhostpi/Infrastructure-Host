@@ -93,22 +93,16 @@ return (New-Module -Name "Verify.MSMTPMail" -ScriptBlock {
         "Root alias configured" = {
             param($Worker)
             if (-not $smtpConfigured) { $mod.SDK.Testing.Verifications.Fork("6.7.9", "SKIP", "No SMTP configured"); return }
-            $aliases = $Worker.Exec("cat /etc/aliases").Output
-            $aliasPass = ($aliases -match "root:")
-            if ($smtp.recipient) { $aliasPass = $aliasPass -and ($aliases -match [regex]::Escape($smtp.recipient)) }
-            $mod.SDK.Testing.Record(@{
-                Test = "6.7.9"; Name = "Root alias configured"
-                Pass = $aliasPass; Output = "Root alias in /etc/aliases"
+            $Worker.Test("6.7.9", "Root alias configured", "cat /etc/aliases", { param($out)
+            $pass = ($out -match "root:")
+            if ($smtp.recipient) { $pass = $pass -and ($out -match [regex]::Escape($smtp.recipient)) }
+            $pass
             })
         }
         "msmtp-config helper exists" = {
             param($Worker)
             if (-not $smtpConfigured) { $mod.SDK.Testing.Verifications.Fork("6.7.10", "SKIP", "No SMTP configured"); return }
-            $result = $Worker.Exec("test -x /usr/local/bin/msmtp-config")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.7.10"; Name = "msmtp-config helper exists"
-                Pass = $result.Success; Output = "/usr/local/bin/msmtp-config"
-            })
+            $Worker.Test("6.7.10", "msmtp-config helper exists", "test -x /usr/local/bin/msmtp-config", { $true })
         }
         "Test email sent" = {
             param($Worker)
