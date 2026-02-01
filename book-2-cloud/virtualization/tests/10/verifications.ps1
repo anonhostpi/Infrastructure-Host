@@ -20,27 +20,15 @@ return (New-Module -Name "Verify.Virtualization" -ScriptBlock {
         }
         "libvirt default network" = {
             param($Worker)
-            $result = $Worker.Exec("sudo virsh net-list --all")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.10.4"; Name = "libvirt default network"
-                Pass = ($result.Output -match "default"); Output = $result.Output
-            })
+            $Worker.Test("6.10.4", "libvirt default network", "sudo virsh net-list --all", "default")
         }
         "multipass installed" = {
             param($Worker)
-            $result = $Worker.Exec("which multipass")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.10.5"; Name = "multipass installed"
-                Pass = ($result.Success -and $result.Output -match "multipass"); Output = $result.Output
-            })
+            $Worker.Test("6.10.5", "multipass installed", "which multipass", "multipass")
         }
         "multipassd service active" = {
             param($Worker)
-            $result = $Worker.Exec("systemctl is-active snap.multipass.multipassd.service")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.10.6"; Name = "multipassd service active"
-                Pass = ($result.Output -match "^active$"); Output = $result.Output
-            })
+            $Worker.Test("6.10.6", "multipassd service active", "systemctl is-active snap.multipass.multipassd.service", "active")
         }
         "KVM available for nesting" = {
             param($Worker)
