@@ -8,27 +8,15 @@ return (New-Module -Name "Verify.Virtualization" -ScriptBlock {
     $mod.Tests = [ordered]@{
         "libvirt installed" = {
             param($Worker)
-            $result = $Worker.Exec("which virsh")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.10.1"; Name = "libvirt installed"
-                Pass = ($result.Success -and $result.Output -match "virsh"); Output = $result.Output
-            })
+            $Worker.Test("6.10.1", "libvirt installed", "which virsh", "virsh")
         }
         "libvirtd service active" = {
             param($Worker)
-            $result = $Worker.Exec("systemctl is-active libvirtd")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.10.2"; Name = "libvirtd service active"
-                Pass = ($result.Output -match "^active$"); Output = $result.Output
-            })
+            $Worker.Test("6.10.2", "libvirtd service active", "systemctl is-active libvirtd", "active")
         }
         "QEMU installed" = {
             param($Worker)
-            $result = $Worker.Exec("which qemu-system-x86_64")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.10.3"; Name = "QEMU installed"
-                Pass = ($result.Success -and $result.Output -match "qemu"); Output = $result.Output
-            })
+            $Worker.Test("6.10.3", "QEMU installed", "which qemu-system-x86_64", "qemu")
         }
         "libvirt default network" = {
             param($Worker)
