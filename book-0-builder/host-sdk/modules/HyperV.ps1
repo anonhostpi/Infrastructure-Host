@@ -211,6 +211,16 @@ New-Module -Name SDK.HyperV -ScriptBlock {
                 VMName = $VMName
             })
         }
+        SetProcessor = {
+            param([string]$VMName, [hashtable]$Settings)
+            $Settings.VMName = $VMName
+            try { Set-VMProcessor @Settings -ErrorAction Stop; return $true } catch { return $false }
+        }
+        SetMemory = {
+            param([string]$VMName, [hashtable]$Settings)
+            $Settings.VMName = $VMName
+            try { Set-VMMemory @Settings -ErrorAction Stop; return $true } catch { return $false }
+        }
     }
 
     $SDK.Extend("HyperV", $HyperV)
