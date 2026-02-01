@@ -231,6 +231,22 @@ New-Module -Name SDK.HyperV -ScriptBlock {
             $Settings.VMName = $VMName
             try { Set-VMFirmware @Settings -ErrorAction Stop; return $true } catch { return $false }
         }
+        Optimize = {
+            param([string]$VMName)
+            return $this.SetProcessor($VMName, @{
+                ExposeVirtualizationExtensions = $false
+            })
+        }
+        Hypervisor = {
+            param([string]$VMName)
+            return $this.SetProcessor($VMName, @{
+                ExposeVirtualizationExtensions = $true
+            }) -and $this.SetMemory($VMName, @{
+                DynamicMemoryEnabled = $false
+            }) -and $this.SetNetworkAdapter($VMName, @{
+                MacAddressSpoofing = "On"
+            })
+        }
     }
 
     $SDK.Extend("HyperV", $HyperV)
