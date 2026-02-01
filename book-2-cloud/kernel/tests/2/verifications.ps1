@@ -1,11 +1,11 @@
 param([Parameter(Mandatory = $true)] $SDK)
 
-New-Module -Name "Verify.KernelHardening" -ScriptBlock {
+return (New-Module -Name "Verify.KernelHardening" -ScriptBlock {
     param([Parameter(Mandatory = $true)] $SDK)
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\..\..\..\book-0-builder\host-sdk\helpers\PowerShell.ps1"
 
-    $mod.SDK.Testing.Verifications.Register("kernel", 2, [ordered]@{
+    $mod.Tests = [ordered]@{
         "Security sysctl config exists" = {
             param($Worker)
             $result = $Worker.Exec("test -f /etc/sysctl.d/99-security.conf")
@@ -38,5 +38,7 @@ New-Module -Name "Verify.KernelHardening" -ScriptBlock {
                 Pass = ($result.Output -match "= 0"); Output = $result.Output
             })
         }
-    })
-} -ArgumentList $SDK
+    }
+
+    Export-ModuleMember -Function @()
+} -ArgumentList $SDK)

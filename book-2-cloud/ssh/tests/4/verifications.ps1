@@ -1,13 +1,13 @@
 param([Parameter(Mandatory = $true)] $SDK)
 
-New-Module -Name "Verify.SSHHardening" -ScriptBlock {
+return (New-Module -Name "Verify.SSHHardening" -ScriptBlock {
     param([Parameter(Mandatory = $true)] $SDK)
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\..\..\..\book-0-builder\host-sdk\helpers\PowerShell.ps1"
 
     $username = $mod.SDK.Settings.Identity.username
 
-    $mod.SDK.Testing.Verifications.Register("ssh", 4, [ordered]@{
+    $mod.Tests = [ordered]@{
         "SSH hardening config exists" = {
             param($Worker)
             $result = $Worker.Exec("test -f /etc/ssh/sshd_config.d/99-hardening.conf")
@@ -59,5 +59,7 @@ New-Module -Name "Verify.SSHHardening" -ScriptBlock {
                 Output = if ($result.Success) { "Key authentication successful" } else { $result.Output }
             })
         }
-    })
-} -ArgumentList $SDK
+    }
+
+    Export-ModuleMember -Function @()
+} -ArgumentList $SDK)

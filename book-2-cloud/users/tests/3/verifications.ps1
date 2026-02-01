@@ -1,13 +1,13 @@
 param([Parameter(Mandatory = $true)] $SDK)
 
-New-Module -Name "Verify.Users" -ScriptBlock {
+return (New-Module -Name "Verify.Users" -ScriptBlock {
     param([Parameter(Mandatory = $true)] $SDK)
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\..\..\..\book-0-builder\host-sdk\helpers\PowerShell.ps1"
 
     $username = $mod.SDK.Settings.Identity.username
 
-    $mod.SDK.Testing.Verifications.Register("users", 3, [ordered]@{
+    $mod.Tests = [ordered]@{
         "user exists" = {
             param($Worker)
             $result = $Worker.Exec("id $username")
@@ -48,5 +48,7 @@ New-Module -Name "Verify.Users" -ScriptBlock {
                 Pass = ($result.Output -match "root L" -or $result.Output -match "root LK"); Output = $result.Output
             })
         }
-    })
-} -ArgumentList $SDK
+    }
+
+    Export-ModuleMember -Function @()
+} -ArgumentList $SDK)

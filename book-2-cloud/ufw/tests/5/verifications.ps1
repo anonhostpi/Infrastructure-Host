@@ -1,11 +1,11 @@
 param([Parameter(Mandatory = $true)] $SDK)
 
-New-Module -Name "Verify.UFWFirewall" -ScriptBlock {
+return (New-Module -Name "Verify.UFWFirewall" -ScriptBlock {
     param([Parameter(Mandatory = $true)] $SDK)
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\..\..\..\book-0-builder\host-sdk\helpers\PowerShell.ps1"
 
-    $mod.SDK.Testing.Verifications.Register("ufw", 5, [ordered]@{
+    $mod.Tests = [ordered]@{
         "UFW is active" = {
             param($Worker)
             $result = $Worker.Exec("sudo ufw status")
@@ -30,5 +30,7 @@ New-Module -Name "Verify.UFWFirewall" -ScriptBlock {
                 Pass = ($verbose.Output -match "deny \(incoming\)"); Output = "Default incoming policy"
             })
         }
-    })
-} -ArgumentList $SDK
+    }
+
+    Export-ModuleMember -Function @()
+} -ArgumentList $SDK)

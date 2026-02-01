@@ -1,11 +1,11 @@
 param([Parameter(Mandatory = $true)] $SDK)
 
-New-Module -Name "Verify.Network" -ScriptBlock {
+return (New-Module -Name "Verify.Network" -ScriptBlock {
     param([Parameter(Mandatory = $true)] $SDK)
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\..\..\..\book-0-builder\host-sdk\helpers\PowerShell.ps1"
 
-    $mod.SDK.Testing.Verifications.Register("network", 1, [ordered]@{
+    $mod.Tests = [ordered]@{
         "Short hostname set" = {
             param($Worker)
             $result = $Worker.Exec("hostname -s")
@@ -79,5 +79,7 @@ New-Module -Name "Verify.Network" -ScriptBlock {
                 Output = if ($result.Output) { ($result.Output | Select-Object -First 3) -join "; " } else { "(empty)" }
             })
         }
-    })
-} -ArgumentList $SDK
+    }
+
+    Export-ModuleMember -Function @()
+} -ArgumentList $SDK)
