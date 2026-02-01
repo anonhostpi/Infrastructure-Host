@@ -284,7 +284,7 @@ New-Module -Name SDK.HyperV -ScriptBlock {
             param(
                 [string]$VMName, [string]$MediumPath, [string]$DVDPath,
                 [string]$AdapterName, [int]$Generation = 2,
-                [hashtable]$Firmware = @{},
+                [string]$Firmware = "efi",
                 [int]$Size = 40960, [int]$RAM = 4096, [int]$CPU = 2,
                 [bool]$Optimize = $true, [bool]$Hypervisor = $true
             )
@@ -294,8 +294,8 @@ New-Module -Name SDK.HyperV -ScriptBlock {
                 New-VM -Name $VMName -MemoryStartupBytes $memBytes -Generation $Generation -NewVHDPath $MediumPath -NewVHDSizeBytes $diskBytes -ErrorAction Stop | Out-Null
                 $configured = $this.SetProcessor($VMName, @{ Count = $CPU })
                 if (-not $configured) { throw "Failed to configure processor for VM '$VMName'." }
-                if ($Firmware.Count -gt 0) {
-                    $configured = $this.SetFirmware($VMName, $Firmware)
+                if ($Firmware) {
+                    $configured = $this.SetFirmware($VMName, @{ Firmware = $Firmware })
                     if (-not $configured) { throw "Failed to configure firmware for VM '$VMName'." }
                 }
                 $switch = $this.GetGuestAdapter($AdapterName)
