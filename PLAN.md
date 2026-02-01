@@ -4803,3 +4803,1170 @@ Add key filtering to SetNetworkAdapter and SetFirmware
 | **Rule 3: Lines** | 12 lines | PASS |
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
+
+
+### Commit 130: `book-0-builder/host-sdk/modules/Vbox.ps1` - Restore .Keys pipeline in Vbox Set* methods to fix OrderedDictionary enumeration bug [COMPLETE]
+
+### book-0-builder.host-sdk.modules.Vbox.vbox-keys-pipeline-restore
+
+> **File**: `book-0-builder/host-sdk/modules/Vbox.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Restore .Keys pipeline in Vbox Set* methods to fix OrderedDictionary enumeration bug
+
+#### Diff
+
+```diff
+ SetProcessor = {
+     param([string]$VMName, [hashtable]$Settings)
+     $s = @{}
+-    foreach ($key in $Settings.Keys) {
++    foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) {
+         switch ($key) {
+...
+ SetMemory = {
+     param([string]$VMName, [hashtable]$Settings)
+     $s = @{}
+-    foreach ($key in $Settings.Keys) {
++    foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) {
+         switch ($key) {
+...
+ SetNetworkAdapter = {
+     param([string]$VMName, [hashtable]$Settings)
+     $s = @{}
+-    foreach ($key in $Settings.Keys) {
++    foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) {
+         switch ($key) {
+...
+ SetFirmware = {
+     param([string]$VMName, [hashtable]$Settings)
+     $s = @{}
+-    foreach ($key in $Settings.Keys) {
++    foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) {
+         switch ($key) {
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 8 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 131: `book-0-builder/host-sdk/modules/HyperV.ps1` - Restore .Keys pipeline in HyperV Set* methods to fix OrderedDictionary enumeration bug [COMPLETE]
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-keys-pipeline-restore
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Restore .Keys pipeline in HyperV Set* methods to fix OrderedDictionary enumeration bug
+
+#### Diff
+
+```diff
+ SetProcessor = {
+     param([string]$VMName, [hashtable]$Settings)
+     $s = @{ VMName = $VMName }
+-    foreach ($key in $Settings.Keys) {
++    foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) {
+         switch ($key) {
+...
+ SetMemory = {
+     param([string]$VMName, [hashtable]$Settings)
+     $s = @{ VMName = $VMName }
+-    foreach ($key in $Settings.Keys) {
++    foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) {
+         switch ($key) {
+...
+ SetNetworkAdapter = {
+     param([string]$VMName, [hashtable]$Settings)
+     $s = @{ VMName = $VMName }
+-    foreach ($key in $Settings.Keys) {
++    foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) {
+         switch ($key) {
+...
+ SetFirmware = {
+     param([string]$VMName, [hashtable]$Settings)
+     $s = @{ VMName = $VMName }
+-    foreach ($key in $Settings.Keys) {
++    foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) {
+         switch ($key) {
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 8 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 132: `book-0-builder/host-sdk/modules/Vbox.ps1` - Add cross-platform key skips to Vbox SetMemory, SetNetworkAdapter, SetFirmware [COMPLETE]
+
+### book-0-builder.host-sdk.modules.Vbox.vbox-cross-platform-skips
+
+> **File**: `book-0-builder/host-sdk/modules/Vbox.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add cross-platform key skips to Vbox SetMemory, SetNetworkAdapter, SetFirmware
+
+#### Diff
+
+```diff
+ SetMemory = {
+     ...
+     foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) {
+         switch ($key) {
+             "MemoryMB" { $s["memory"] = $Settings[$key] }
+             "MemoryGB" { $s["memory"] = $Settings[$key] * 1024 }
+             "StartupBytes" { $s["memory"] = [math]::Floor($Settings[$key] / 1MB) }
+             { $_ -in @("memory") } { $s[$key] = $Settings[$key] }
++            "DynamicMemoryEnabled" {} # HyperV only
+         }
+     }
+...
+ SetNetworkAdapter = {
+     ...
+     foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) {
+         switch ($key) {
+             { $_ -in @("nic1","bridgeadapter1") } { $s[$key] = $Settings[$key] }
++            "MacAddressSpoofing" {} # HyperV only
+         }
+     }
+...
+ SetFirmware = {
+     ...
+     foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) {
+         switch ($key) {
+             "Firmware" { $s["firmware"] = $Settings[$key] }
+             { $_ -in @("firmware") } { $s[$key] = $Settings[$key] }
++            { $_ -in @("EnableSecureBoot","SecureBootTemplate") } {} # HyperV only
+         }
+     }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 3 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 133: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add cross-platform key skips to HyperV SetProcessor, SetNetworkAdapter, SetFirmware [COMPLETE]
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-cross-platform-skips
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add cross-platform key skips to HyperV SetProcessor, SetNetworkAdapter, SetFirmware
+
+#### Diff
+
+```diff
+ SetProcessor = {
+     ...
+     foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) {
+         switch ($key) {
+             "cpus" { $s.Count = $Settings[$key] }
+             "nested-hw-virt" {
+                 $s.ExposeVirtualizationExtensions = $Settings[$key] -eq "on"
+             }
+             { $_ -in @("Count","ExposeVirtualizationExtensions") } {
+                 $s[$key] = $Settings[$key]
+             }
++            { $_ -in @("pae","nestedpaging","hwvirtex","largepages","graphicscontroller","vram") } {} # VBox only
+         }
+     }
+...
+ SetNetworkAdapter = {
+     ...
+     foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) {
+         switch ($key) {
+             { $_ -in @("MacAddressSpoofing") } { $s[$key] = $Settings[$key] }
++            { $_ -in @("nic1","bridgeadapter1") } {} # VBox only
+         }
+     }
+...
+ SetFirmware = {
+     ...
+     foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) {
+         switch ($key) {
+             { $_ -in @("EnableSecureBoot","SecureBootTemplate") } { $s[$key] = $Settings[$key] }
++            { $_ -in @("Firmware","firmware") } {} # VBox only
+         }
+     }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 3 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 134: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Elevated method to check if PowerShell session has Administrator privileges [COMPLETE]
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-elevated-check
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add Elevated method to check if PowerShell session has Administrator privileges
+
+#### Diff
+
+```diff
+ Add-ScriptMethods $HyperV @{
++    Elevated = {
++        $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
++        $principal = New-Object Security.Principal.WindowsPrincipal($identity)
++        return $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
++    }
++}
++
++Add-ScriptMethods $HyperV @{
+     GetGuestAdapter = {
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 8 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 135: `book-0-builder/host-sdk/modules/Multipass.ps1` - Add Backend method to detect hypervisor backend via multipass get local.driver [COMPLETE]
+
+### book-0-builder.host-sdk.modules.Multipass.multipass-backend
+
+> **File**: `book-0-builder/host-sdk/modules/Multipass.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add Backend method to detect hypervisor backend via multipass get local.driver
+
+#### Diff
+
+```diff
+ Add-ScriptMethods $Multipass @{
+     Invoke = {
+         $output = & multipass @args 2>&1
+         ...
+     }
++    Backend = {
++        $result = $this.Invoke("get", "local.driver")
++        if ($result.Success) { return ($result.Output | Out-String).Trim() }
++        return $null
++    }
+     Worker = {
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 5 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 136: `book-0-builder/host-sdk/modules/Multipass.ps1` - Add Hypervisor method to delegate nested virt to the correct SDK backend module [COMPLETE]
+
+### book-0-builder.host-sdk.modules.Multipass.multipass-hypervisor
+
+> **File**: `book-0-builder/host-sdk/modules/Multipass.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add Hypervisor method to delegate nested virt to the correct SDK backend module
+
+#### Diff
+
+```diff
++    Hypervisor = {
++        param([string]$VMName)
++        $backend = $this.Backend()
++        $map = @{ "hyperv" = "HyperV"; "virtualbox" = "Vbox" }
++        $sdkModule = $map[$backend]
++        if (-not $sdkModule) {
++            Write-Warning "Nested virtualization not supported for backend '$backend'"
++            return $false
++        }
++        return $mod.SDK."$sdkModule".Hypervisor($VMName)
++    }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 11 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 137: `book-0-builder/config/vm.config.yaml` - Add hyperv section to vm.config.yaml for HyperV test VM configuration [COMPLETE]
+
+### book-0-builder.config.vm.config.config-hyperv-section
+
+> **File**: `book-0-builder/config/vm.config.yaml`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add hyperv section to vm.config.yaml for HyperV test VM configuration
+
+#### Diff
+
+```diff
+ vbox:
+   name: "ubuntu-autoinstall-test"
+   memory: 4096
+   cpus: 2
+   disk_size: 40960  # MB (40GB for ZFS)
++
++# Hyper-V VM settings (for autoinstall ISO testing)
++hyperv:
++  name: "ubuntu-autoinstall-test-hv"
++  memory: 4096
++  cpus: 2
++  disk: 40960
++  network: "Ethernet 3"
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 8 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 138: `book-1-foundation/Invoke-AutoinstallTest.ps1` - Move Invoke-AutoinstallTest.ps1 to book-1-foundation and update SDK path [COMPLETE]
+
+### book-1-foundation.Invoke-AutoinstallTest.move-invoke-autoinstall
+
+> **File**: `book-0-builder/host-sdk/Invoke-AutoinstallTest.ps1 -> book-1-foundation/Invoke-AutoinstallTest.ps1`
+> **Type**: MOVED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Move Invoke-AutoinstallTest.ps1 to book-1-foundation and update SDK path
+
+#### Diff
+
+```diff
+ param([switch]$SkipCleanup)
+ 
+-. "$PSScriptRootSDK.ps1"
++. "$PSScriptRoot..ook-0-builderhost-sdkSDK.ps1"
+ 
+ # Assumes ISO was already built (artifacts.iso populated)
+ # Run autoinstall tests (ISO path queried from artifacts automatically)
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 2 lines | PASS |
+| **Rule 3: Exempt** | move | EXEMPT |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 139: `book-2-cloud/Invoke-IncrementalTest.ps1` - Move Invoke-IncrementalTest.ps1 to book-2-cloud and update SDK path [COMPLETE]
+
+### book-2-cloud.Invoke-IncrementalTest.move-invoke-incremental
+
+> **File**: `book-0-builder/host-sdk/Invoke-IncrementalTest.ps1 -> book-2-cloud/Invoke-IncrementalTest.ps1`
+> **Type**: MOVED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Move Invoke-IncrementalTest.ps1 to book-2-cloud and update SDK path
+
+#### Diff
+
+```diff
+ param([int]$Layer, [switch]$SkipCleanup)
+ 
+-. "$PSScriptRootSDK.ps1"
++. "$PSScriptRoot..ook-0-builderhost-sdkSDK.ps1"
+ 
+ # Setup builder (Build is called by CloudInitTest.Run with Layer)
+ $SDK.Builder.Stage()
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 2 lines | PASS |
+| **Rule 3: Exempt** | move | EXEMPT |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 140: `book-0-builder/host-sdk/modules/Verifications.ps1` - Remove Register method from Verifications.ps1 (fragments will declare tests on mod.Tests instead) [COMPLETE]
+
+### book-0-builder.host-sdk.modules.Verifications.verifications-remove-register
+
+> **File**: `book-0-builder/host-sdk/modules/Verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Remove Register method from Verifications.ps1 (fragments will declare tests on mod.Tests instead)
+
+#### Diff
+
+```diff
+-    Register = {
+-        param([string]$Fragment, [int]$Layer, [System.Collections.Specialized.OrderedDictionary]$Tests)
+-        if (-not $mod.Tests[$Fragment]) { $mod.Tests[$Fragment] = @{} }
+-        if (-not $mod.Tests[$Fragment][$Layer]) { $mod.Tests[$Fragment][$Layer] = [ordered]@{} }
+-        foreach ($key in ($Tests.Keys | ForEach-Object { $_ })) {
+-            $mod.Tests[$Fragment][$Layer][$key] = $Tests[$key]
+-        }
+-    }
+-    Test = {
+-        param([string]$Fragment, [int]$Layer, [string]$Name, $Worker)
+-        $test = $mod.Tests[$Fragment][$Layer][$Name]
+-        if ($test) { & $test $Worker }
+-    }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 13 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 141: `book-0-builder/host-sdk/modules/Verifications.ps1` - Refactor Load to accept Path/Layer/Book, invoke module, extract mod.Tests, register in multi-dimensional hashtable [COMPLETE]
+
+### book-0-builder.host-sdk.modules.Verifications.verifications-refactor-load
+
+> **File**: `book-0-builder/host-sdk/modules/Verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Refactor Load to accept Path/Layer/Book, invoke module, extract mod.Tests, register in multi-dimensional hashtable
+
+#### Diff
+
+```diff
+     Load = {
+-        param([string]$Path)
+-        & $Path -SDK $mod.SDK
++        param([string]$Path, [int]$Layer, [int]$Book)
++        $module = & $Path -SDK $mod.SDK
++        $tests = & $module { $mod.Tests }
++        if (-not $tests) { return }
++        $fragDir = Split-Path (Split-Path (Split-Path $Path))
++        $buildYaml = Join-Path $fragDir "build.yaml"
++        $meta = Get-Content $buildYaml -Raw | ConvertFrom-Yaml
++        $order = $meta.build_order
++        if (-not $mod.Tests[$Layer]) { $mod.Tests[$Layer] = @{} }
++        if (-not $mod.Tests[$Layer][$Book]) { $mod.Tests[$Layer][$Book] = @{} }
++        $mod.Tests[$Layer][$Book][$order] = $tests
+     }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 13 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 142: `book-0-builder/host-sdk/modules/Verifications.ps1` - Refactor Discover to iterate layers and books, passing layer and book number to Load [COMPLETE]
+
+### book-0-builder.host-sdk.modules.Verifications.verifications-refactor-discover
+
+> **File**: `book-0-builder/host-sdk/modules/Verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Refactor Discover to iterate layers and books, passing layer and book number to Load
+
+#### Diff
+
+```diff
+     Discover = {
+         param([int]$Layer)
+-        foreach ($l in 1..$Layer) {
++        foreach ($l in 0..$Layer) {
+             foreach ($book in @("book-1-foundation", "book-2-cloud")) {
+-                $pattern = Join-Path $book "*/tests/$l/verifications.ps1"
++                $bookNum = if ($book -match 'book-(d+)') { [int]$matches[1] } else { 0 }
++                $pattern = Join-Path $book "*/tests/$l/verifications.ps1"
+                 Get-ChildItem -Path $pattern -ErrorAction SilentlyContinue | ForEach-Object {
+-                    $this.Load($_.FullName)
++                    $this.Load($_.FullName, $l, $bookNum)
+                 }
+             }
+         }
+     }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 7 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 143: `book-0-builder/host-sdk/modules/Verifications.ps1` - Refactor Run to accept Runner/Layer/Book, iterate layer->book->build_order with optional book filtering [COMPLETE]
+
+### book-0-builder.host-sdk.modules.Verifications.verifications-refactor-run
+
+> **File**: `book-0-builder/host-sdk/modules/Verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Refactor Run to accept Runner/Layer/Book, iterate layer->book->build_order with optional book filtering
+
+#### Diff
+
+```diff
+     Run = {
+-        param($Worker, [int]$Layer)
++        param($Runner, [int]$Layer, $Book = $null)
+         $this.Discover($Layer)
+-        foreach ($l in 1..$Layer) {
+-            $layerName = $mod.SDK.Fragments.LayerName($l)
+-            foreach ($frag in ($mod.Tests.Keys | ForEach-Object { $_ })) {
+-                if (-not $mod.Tests[$frag][$l]) { continue }
+-                $mod.SDK.Log.Write("`n--- $layerName - $frag ---", "Cyan")
+-                foreach ($name in ($mod.Tests[$frag][$l].Keys | ForEach-Object { $_ })) {
+-                    $this.Test($frag, $l, $name, $Worker)
++        $bookOrder = if ($null -ne $Book) { @($Book) } else { @(2, 1) }
++        foreach ($l in 0..$Layer) {
++            if (-not $mod.Tests[$l]) { continue }
++            $layerName = $mod.SDK.Fragments.LayerName($l)
++            foreach ($b in $bookOrder) {
++                if (-not $mod.Tests[$l][$b]) { continue }
++                foreach ($order in ($mod.Tests[$l][$b].Keys | ForEach-Object { $_ } | Sort-Object)) {
++                    $tests = $mod.Tests[$l][$b][$order]
++                    foreach ($name in ($tests.Keys | ForEach-Object { $_ })) {
++                        & $tests[$name] $Runner
++                    }
+                 }
+             }
+         }
+     }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 20 lines | BORDERLINE |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 144: `book-1-foundation/base/tests/0/verifications.ps1` - Convert book-1 base verifications to return-module pattern with mod.Tests declaration [COMPLETE]
+
+### book-1-foundation.base.tests.0.verifications.fragment-decl-book1
+
+> **File**: `book-1-foundation/base/tests/0/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Convert book-1 base verifications to return-module pattern with mod.Tests declaration
+
+#### Diff
+
+```diff
+ param([Parameter(Mandatory = $true)] $SDK)
+ 
+-New-Module -Name "Verify.Base" -ScriptBlock {
++return (New-Module -Name "Verify.Base" -ScriptBlock {
+     param([Parameter(Mandatory = $true)] $SDK)
+     $mod = @{ SDK = $SDK }
+     . "$PSScriptRoot........ook-0-builderhost-sdkhelpersPowerShell.ps1"
+ 
+-    $mod.SDK.Testing.Verifications.Register("base", 0, [ordered]@{})
+-} -ArgumentList $SDK
++    $mod.Tests = [ordered]@{}
++
++    Export-ModuleMember -Function @()
++} -ArgumentList $SDK)
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 8 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 145: `book-2-cloud/network/tests/1/verifications.ps1` - Convert book-2 layers 1-5 verifications (network, kernel, users, ssh, ufw) to return-module pattern [COMPLETE]
+
+### book-2-cloud.network.tests.1.verifications.fragment-decl-book2-l1-5
+
+> **File**: `book-2-cloud/network/tests/1/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Convert book-2 layers 1-5 verifications (network, kernel, users, ssh, ufw) to return-module pattern
+
+#### Diff
+
+```diff
+ # Pattern applied to each of 5 files:
+ # network/tests/1, kernel/tests/2, users/tests/3, ssh/tests/4, ufw/tests/5
+ param([Parameter(Mandatory = $true)] $SDK)
+ 
+-New-Module -Name "Verify.<Name>" -ScriptBlock {
++return (New-Module -Name "Verify.<Name>" -ScriptBlock {
+     param([Parameter(Mandatory = $true)] $SDK)
+     $mod = @{ SDK = $SDK }
+     ...
+-    $mod.SDK.Testing.Verifications.Register("<name>", <N>, [ordered]@{
++    $mod.Tests = [ordered]@{
+         ...
+-    })
+-} -ArgumentList $SDK
++    }
++    Export-ModuleMember -Function @()
++} -ArgumentList $SDK)
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 9 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 146: `book-2-cloud/system/tests/6/verifications.ps1` - Convert book-2 layers 6-10 verifications (system, msmtp, pkg-security/8, security-mon, virtualization) to return-module pattern [COMPLETE]
+
+### book-2-cloud.system.tests.6.verifications.fragment-decl-book2-l6-10
+
+> **File**: `book-2-cloud/system/tests/6/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Convert book-2 layers 6-10 verifications (system, msmtp, pkg-security/8, security-mon, virtualization) to return-module pattern
+
+#### Diff
+
+```diff
+ # Pattern applied to each of 5 files:
+ # system/tests/6, msmtp/tests/7, pkg-security/tests/8, security-mon/tests/9, virtualization/tests/10
+ param([Parameter(Mandatory = $true)] $SDK)
+ 
+-New-Module -Name "Verify.<Name>" -ScriptBlock {
++return (New-Module -Name "Verify.<Name>" -ScriptBlock {
+     param([Parameter(Mandatory = $true)] $SDK)
+     $mod = @{ SDK = $SDK }
+     ...
+-    $mod.SDK.Testing.Verifications.Register("<name>", <N>, [ordered]@{
++    $mod.Tests = [ordered]@{
+         ...
+-    })
+-} -ArgumentList $SDK
++    }
++    Export-ModuleMember -Function @()
++} -ArgumentList $SDK)
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 9 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 147: `book-2-cloud/cockpit/tests/11/verifications.ps1` - Convert book-2 layers 11-15 verifications (cockpit, claude-code, copilot-cli, opencode, ui) to return-module pattern [COMPLETE]
+
+### book-2-cloud.cockpit.tests.11.verifications.fragment-decl-book2-l11-15
+
+> **File**: `book-2-cloud/cockpit/tests/11/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Convert book-2 layers 11-15 verifications (cockpit, claude-code, copilot-cli, opencode, ui) to return-module pattern
+
+#### Diff
+
+```diff
+ # Pattern applied to each of 5 files:
+ # cockpit/tests/11, claude-code/tests/12, copilot-cli/tests/13, opencode/tests/14, ui/tests/15
+ param([Parameter(Mandatory = $true)] $SDK)
+ 
+-New-Module -Name "Verify.<Name>" -ScriptBlock {
++return (New-Module -Name "Verify.<Name>" -ScriptBlock {
+     param([Parameter(Mandatory = $true)] $SDK)
+     $mod = @{ SDK = $SDK }
+     ...
+-    $mod.SDK.Testing.Verifications.Register("<name>", <N>, [ordered]@{
++    $mod.Tests = [ordered]@{
+         ...
+-    })
+-} -ArgumentList $SDK
++    }
++    Export-ModuleMember -Function @()
++} -ArgumentList $SDK)
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 9 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 148: `book-2-cloud/pkg-security/tests/16/verifications.ps1` - Convert book-2 layers 16-18 verifications (pkg-security/16, pkg-security/17, pkg-security/18) to return-module pattern [COMPLETE]
+
+### book-2-cloud.pkg-security.tests.16.verifications.fragment-decl-book2-l16-18
+
+> **File**: `book-2-cloud/pkg-security/tests/16/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Convert book-2 layers 16-18 verifications (pkg-security/16, pkg-security/17, pkg-security/18) to return-module pattern
+
+#### Diff
+
+```diff
+ # Pattern applied to each of 3 files:
+ # pkg-security/tests/16, pkg-security/tests/17, pkg-security/tests/18
+ param([Parameter(Mandatory = $true)] $SDK)
+ 
+-New-Module -Name "Verify.<Name>" -ScriptBlock {
++return (New-Module -Name "Verify.<Name>" -ScriptBlock {
+     param([Parameter(Mandatory = $true)] $SDK)
+     $mod = @{ SDK = $SDK }
+     ...
+-    $mod.SDK.Testing.Verifications.Register("<name>", <N>, [ordered]@{
++    $mod.Tests = [ordered]@{
+         ...
+-    })
+-} -ArgumentList $SDK
++    }
++    Export-ModuleMember -Function @()
++} -ArgumentList $SDK)
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 9 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 149: `book-0-builder/host-sdk/modules/CloudInitTest.ps1` - Accept Runner argument, delegate to Verifications.Run with Book=2 instead of iterating fragments directly [COMPLETE]
+
+### book-0-builder.host-sdk.modules.CloudInitTest.cloudinittest-runner-arg
+
+> **File**: `book-0-builder/host-sdk/modules/CloudInitTest.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Accept Runner argument, delegate to Verifications.Run with Book=2 instead of iterating fragments directly
+
+#### Diff
+
+```diff
+     Run = {
+-        param([int]$Layer, [hashtable]$Overrides = @{})
+-        $worker = $mod.SDK.CloudInit.Worker($Layer, $Overrides)
+-        $mod.SDK.Log.Info("Setting up cloud-init test worker: $($worker.Name)")
+-        $worker.Setup($true)
++        param([int]$Layer, [hashtable]$Overrides = @{}, $Runner = $null)
++        if (-not $Runner) {
++            $Runner = $mod.SDK.CloudInit.Worker($Layer, $Overrides)
++            $mod.SDK.Log.Info("Setting up cloud-init test worker: $($Runner.Name)")
++            $Runner.Setup($true)
++        }
+         $mod.SDK.Testing.Reset()
+-        foreach ($l in 1..$Layer) {
+-            foreach ($f in $mod.SDK.Fragments.At($l)) {
+-                $worker.Test($f.Name, "Test $($f.Name)", $f.TestCommand, $f.ExpectedPattern)
+-            }
+-        }
++        $mod.SDK.Testing.Verifications.Run($Runner, $Layer, 2)
+         $mod.SDK.Testing.Summary()
+-        return @{ Success = ($mod.SDK.Testing.FailCount -eq 0); Results = $mod.SDK.Testing.Results; Worker = $worker }
++        return @{ Success = ($mod.SDK.Testing.FailCount -eq 0); Results = $mod.SDK.Testing.Results; Worker = $Runner }
+     }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 18 lines | BORDERLINE |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 150a: `book-0-builder/host-sdk/modules/AutoinstallTest.ps1` - Replace AutoinstallTest.Run signature and remove old body, add placeholder
+
+### book-0-builder.host-sdk.modules.AutoinstallTest.autoinstalltest-new-signature
+
+> **File**: `book-0-builder/host-sdk/modules/AutoinstallTest.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 0 for this file
+
+#### Description
+
+Replace AutoinstallTest.Run signature and remove old body, add placeholder
+
+#### Diff
+
+```diff
+     Run = {
+-        param([hashtable]$Overrides = @{})
+-        $worker = $mod.SDK.Autoinstall.Worker($Overrides)
+-        $mod.SDK.Log.Info("Setting up autoinstall test worker: $($worker.Name)")
+-        $worker.Ensure(); $worker.Start()
+-        $mod.SDK.Log.Info("Waiting for SSH availability...")
+-        $mod.SDK.Network.WaitForSSH($worker.SSHHost, $worker.SSHPort, 600)
+-        $mod.SDK.Testing.Reset()
+-        foreach ($f in $mod.SDK.Fragments.IsoRequired()) {
+-            $worker.Test($f.Name, "Test $($f.Name)", $f.TestCommand, $f.ExpectedPattern)
+-        }
+-        $mod.SDK.Testing.Summary()
+-        return @{ Success = ($mod.SDK.Testing.FailCount -eq 0); Results = $mod.SDK.Testing.Results; Worker = $worker }
++        param(
++            [int]$Layer,
++            [string[]]$Hypervisors = @("Vbox", "HyperV"),
++            [hashtable]$Overrides = @{}
++        )
++        # WIP: orchestrate book 2 then book 1
+     }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 18 lines | BORDERLINE |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 150b: `book-0-builder/host-sdk/modules/AutoinstallTest.ps1` - Implement AutoinstallTest.Run body: CloudInitTest for book 2, then loop hypervisors for book 1
+
+### book-0-builder.host-sdk.modules.AutoinstallTest.autoinstalltest-impl-body
+
+> **File**: `book-0-builder/host-sdk/modules/AutoinstallTest.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Implement AutoinstallTest.Run body: CloudInitTest for book 2, then loop hypervisors for book 1
+
+#### Diff
+
+```diff
+         param(
+             [int]$Layer,
+             [string[]]$Hypervisors = @("Vbox", "HyperV"),
+             [hashtable]$Overrides = @{}
+         )
+-        # WIP: orchestrate book 2 then book 1
++        $mod.SDK.CloudInit.Test.Run($Layer, $Overrides)
++        foreach ($hypervisor in $Hypervisors) {
++            $config = $mod.SDK.Settings.Virtualization."$hypervisor"
++            if (-not $config) { continue }
++            $worker = $mod.SDK."$hypervisor".Worker(@{ Config = $config })
++            $worker.Ensure(); $worker.Start()
++            $mod.SDK.Network.WaitForSSH($worker.SSHHost, $worker.SSHPort, 600)
++            $mod.SDK.Testing.Verifications.Run($worker, $Layer, 1)
++        }
+     }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 10 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 151a: `book-1-foundation/base/tests/0/verifications.ps1` - Add verification tests shape with SSH reachable and OS version tests
+
+### book-1-foundation.base.tests.0.verifications.book1-verif-shape
+
+> **File**: `book-1-foundation/base/tests/0/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 0 for this file
+
+#### Description
+
+Add verification tests shape with SSH reachable and OS version tests
+
+#### Diff
+
+```diff
+-    $mod.Tests = [ordered]@{}
++    $mod.Tests = [ordered]@{
++        "SSH reachable" = {
++            param($Worker)
++            $result = $Worker.Exec("echo ok")
++            $mod.SDK.Testing.Record(@{
++                Test = "0.1"; Name = "SSH reachable"
++                Pass = $result.Success; Output = $result.Output
++            })
++        }
++        "OS version correct" = {
++            param($Worker)
++            $result = $Worker.Exec("lsb_release -cs")
++            $mod.SDK.Testing.Record(@{
++                Test = "0.2"; Name = "OS version correct"
++                Pass = ($result.Success -and $result.Output); Output = $result.Output
++            })
++        }
++    }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 19 lines | BORDERLINE |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 151b: `book-1-foundation/base/tests/0/verifications.ps1` - Add root filesystem ext4 and default user verification tests
+
+### book-1-foundation.base.tests.0.verifications.book1-verif-storage
+
+> **File**: `book-1-foundation/base/tests/0/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 0 for this file
+
+#### Description
+
+Add root filesystem ext4 and default user verification tests
+
+#### Diff
+
+```diff
+         "OS version correct" = {
+             ...
+         }
++        "Root filesystem is ext4" = {
++            param($Worker)
++            $result = $Worker.Exec("findmnt -n -o FSTYPE /")
++            $mod.SDK.Testing.Record(@{
++                Test = "0.3"; Name = "Root filesystem is ext4"
++                Pass = ($result.Output -match "ext4"); Output = $result.Output
++            })
++        }
++        "Default user exists" = {
++            param($Worker)
++            $result = $Worker.Exec("id -un")
++            $mod.SDK.Testing.Record(@{
++                Test = "0.4"; Name = "Default user exists"
++                Pass = ($result.Success -and $result.Output); Output = $result.Output
++            })
++        }
+     }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 16 lines | BORDERLINE |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 151c: `book-1-foundation/base/tests/0/verifications.ps1` - Add hostname set and SSH service active verification tests
+
+### book-1-foundation.base.tests.0.verifications.book1-verif-hostname-ssh
+
+> **File**: `book-1-foundation/base/tests/0/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add hostname set and SSH service active verification tests
+
+#### Diff
+
+```diff
+         "Default user exists" = {
+             ...
+         }
++        "Hostname set" = {
++            param($Worker)
++            $result = $Worker.Exec("hostname -s")
++            $mod.SDK.Testing.Record(@{
++                Test = "0.5"; Name = "Hostname set"
++                Pass = ($result.Success -and $result.Output -and $result.Output -ne "localhost")
++                Output = $result.Output
++            })
++        }
++        "SSH service active" = {
++            param($Worker)
++            $result = $Worker.Exec("systemctl is-active ssh")
++            $mod.SDK.Testing.Record(@{
++                Test = "0.6"; Name = "SSH service active"
++                Pass = ($result.Output -match "active"); Output = $result.Output
++            })
++        }
+     }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 17 lines | BORDERLINE |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 151d: `book-1-foundation/base/tests/0/verifications.ps1` - Add cloud-init finished and no cloud-init errors verification tests
+
+### book-1-foundation.base.tests.0.verifications.book1-verif-cloudinit
+
+> **File**: `book-1-foundation/base/tests/0/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add cloud-init finished and no cloud-init errors verification tests
+
+#### Diff
+
+```diff
+         "SSH service active" = {
+             ...
+         }
++        "Cloud-init finished" = {
++            param($Worker)
++            $result = $Worker.Exec("cloud-init status")
++            $mod.SDK.Testing.Record(@{
++                Test = "0.7"; Name = "Cloud-init finished"
++                Pass = ($result.Output -match "done"); Output = $result.Output
++            })
++        }
++        "No cloud-init errors" = {
++            param($Worker)
++            $result = $Worker.Exec("cloud-init status")
++            $mod.SDK.Testing.Record(@{
++                Test = "0.8"; Name = "No cloud-init errors"
++                Pass = ($result.Output -notmatch "error|degraded"); Output = $result.Output
++            })
++        }
+     }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 16 lines | BORDERLINE |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
