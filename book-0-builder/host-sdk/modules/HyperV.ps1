@@ -247,6 +247,20 @@ New-Module -Name SDK.HyperV -ScriptBlock {
                 MacAddressSpoofing = "On"
             })
         }
+        Destroy = {
+            param([string]$VMName)
+            if ($this.Running($VMName)) {
+                $this.Shutdown($VMName, $true) | Out-Null
+                $this.UntilShutdown($VMName, 60) | Out-Null
+            }
+            if ($this.Exists($VMName)) {
+                $drives = $this.Drives($VMName)
+                Remove-VM -Name $VMName -Force
+                foreach ($d in $drives) {
+                    if ($d.Path -and (Test-Path $d.Path)) { Remove-Item $d.Path -Force }
+                }
+            }
+        }
     }
 
     $SDK.Extend("HyperV", $HyperV)
