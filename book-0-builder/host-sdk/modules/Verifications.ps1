@@ -26,8 +26,17 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
             }
         }
         Load = {
-            param([string]$Path)
-            & $Path -SDK $mod.SDK
+            param([string]$Path, [int]$Layer, [int]$Book)
+            $module = & $Path -SDK $mod.SDK
+            $tests = & $module { $mod.Tests }
+            if (-not $tests) { return }
+            $fragDir = Split-Path (Split-Path (Split-Path $Path))
+            $buildYaml = Join-Path $fragDir "build.yaml"
+            $meta = Get-Content $buildYaml -Raw | ConvertFrom-Yaml
+            $order = $meta.build_order
+            if (-not $mod.Tests[$Layer]) { $mod.Tests[$Layer] = @{} }
+            if (-not $mod.Tests[$Layer][$Book]) { $mod.Tests[$Layer][$Book] = @{} }
+            $mod.Tests[$Layer][$Book][$order] = $tests
         }
         Run = {
             param($Worker, [int]$Layer)
