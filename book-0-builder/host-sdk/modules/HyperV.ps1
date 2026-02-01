@@ -261,6 +261,20 @@ New-Module -Name SDK.HyperV -ScriptBlock {
                 }
             }
         }
+        Create = {
+            param(
+                [string]$VMName, [string]$MediumPath, [string]$DVDPath,
+                [string]$SwitchName, [int]$Generation = 2,
+                [int]$DiskGB = 40, [int]$MemoryMB = 4096, [int]$CPUs = 2,
+                [bool]$Optimize = $true, [bool]$Hypervisor = $true
+            )
+            try {
+                # WIP: VM creation, storage, network, optimization
+            } catch {
+                Write-Error "Error creating VM '$VMName': $_"
+                return $false
+            }
+        }
     }
 
     $SDK.Extend("HyperV", $HyperV)
