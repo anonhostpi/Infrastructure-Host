@@ -42,13 +42,11 @@ return (New-Module -Name "Verify.OpenCode" -ScriptBlock {
                 $mod.SDK.Testing.Verifications.Fork("6.14.7", "SKIP", "OpenCode + Claude Code not both enabled"); return
             }
             $hostCreds = Get-Content "$env:USERPROFILE\.claude\.credentials.json" -Raw 2>$null | ConvertFrom-Json
-            $vmCreds = $Worker.Exec("sudo cat /home/$username/.local/share/opencode/auth.json").Output | ConvertFrom-Json
+            $Worker.Test("6.14.7", "OpenCode credential chain", "sudo cat /home/$username/.local/share/opencode/auth.json", { param($out)
+            $vmCreds = $out | ConvertFrom-Json
             $tokensMatch = ($hostCreds -and $vmCreds -and $hostCreds.accessToken -eq $vmCreds.anthropic.accessToken)
             $models = $Worker.Exec("sudo su - $username -c 'opencode models' 2>/dev/null")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.14.7"; Name = "OpenCode credential chain"
-                Pass = ($tokensMatch -and $models.Output -match "anthropic")
-                Output = if ($tokensMatch) { "Tokens match, provider: anthropic" } else { "Token mismatch" }
+            $tokensMatch -and $models.Output -match "anthropic"
             })
         }
     }
