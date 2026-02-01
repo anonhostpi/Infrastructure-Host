@@ -20,27 +20,15 @@ return (New-Module -Name "Verify.PackageSecurity" -ScriptBlock {
         }
         "Service enabled" = {
             param($Worker)
-            $result = $Worker.Exec("systemctl is-enabled unattended-upgrades")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.8.4"; Name = "Service enabled"
-                Pass = ($result.Output -match "enabled"); Output = $result.Output
-            })
+            $Worker.Test("6.8.4", "Service enabled", "systemctl is-enabled unattended-upgrades", "enabled")
         }
         "apt-listchanges installed" = {
             param($Worker)
-            $result = $Worker.Exec("dpkg -l apt-listchanges")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.8.5"; Name = "apt-listchanges installed"
-                Pass = ($result.Output -match "ii.*apt-listchanges"); Output = "Package installed"
-            })
+            $Worker.Test("6.8.5", "apt-listchanges installed", "dpkg -l apt-listchanges", "ii.*apt-listchanges")
         }
         "apt-listchanges email config" = {
             param($Worker)
-            $result = $Worker.Exec("cat /etc/apt/listchanges.conf")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.8.6"; Name = "apt-listchanges email config"
-                Pass = ($result.Output -match "frontend=mail"); Output = "Changelogs sent via email"
-            })
+            $Worker.Test("6.8.6", "apt-listchanges email config", "cat /etc/apt/listchanges.conf", "frontend=mail")
         }
         "apt-notify script exists" = {
             param($Worker)
