@@ -11,9 +11,9 @@ New-Module -Name SDK.CloudInit.Test -ScriptBlock {
         Run = {
             param([int]$Layer, [hashtable]$Overrides = @{}, $Runner = $null)
             if (-not $Runner) {
-                $Runner = $mod.SDK.CloudInit.Worker($Layer, $Overrides)
-                $mod.SDK.Log.Info("Setting up cloud-init test worker: $($Runner.Name)")
-                $Runner.Setup($true)
+                $config = $mod.SDK.Settings.Virtualization.Runner
+                foreach ($k in ($Overrides.Keys | ForEach-Object { $_ })) { $config[$k] = $Overrides[$k] }
+                $Runner = $mod.SDK.Builder.Runner($config, "Multipass", $Layer)
             }
             $mod.SDK.Testing.Reset()
             $mod.SDK.Testing.Verifications.Run($Runner, $Layer, 2)
