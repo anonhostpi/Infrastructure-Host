@@ -221,6 +221,16 @@ New-Module -Name SDK.HyperV -ScriptBlock {
             $Settings.VMName = $VMName
             try { Set-VMMemory @Settings -ErrorAction Stop; return $true } catch { return $false }
         }
+        SetNetworkAdapter = {
+            param([string]$VMName, [hashtable]$Settings)
+            $Settings.VMName = $VMName
+            try { Set-VMNetworkAdapter @Settings -ErrorAction Stop; return $true } catch { return $false }
+        }
+        SetFirmware = {
+            param([string]$VMName, [hashtable]$Settings)
+            $Settings.VMName = $VMName
+            try { Set-VMFirmware @Settings -ErrorAction Stop; return $true } catch { return $false }
+        }
     }
 
     $SDK.Extend("HyperV", $HyperV)
