@@ -72,29 +72,15 @@ return (New-Module -Name "Verify.PackageSecurity" -ScriptBlock {
         }
         "pkg-managers-update timer" = {
             param($Worker)
-            $enabled = $Worker.Exec("systemctl is-enabled pkg-managers-update.timer 2>/dev/null")
-            $active = $Worker.Exec("systemctl is-active pkg-managers-update.timer 2>/dev/null")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.8.16"; Name = "pkg-managers-update timer"
-                Pass = ($enabled.Output -match "enabled") -and ($active.Output -match "active")
-                Output = "enabled=$($enabled.Output), active=$($active.Output)"
-            })
+            $Worker.Test("6.8.16", "pkg-managers-update timer", "systemctl is-enabled pkg-managers-update.timer 2>/dev/null && systemctl is-active pkg-managers-update.timer 2>/dev/null", "enabled|active")
         }
         "apt-notify common library" = {
             param($Worker)
-            $result = $Worker.Exec("test -f /usr/local/lib/apt-notify/common.sh && echo exists")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.8.17"; Name = "apt-notify common library"
-                Pass = ($result.Output -match "exists"); Output = "/usr/local/lib/apt-notify/common.sh"
-            })
+            $Worker.Test("6.8.17", "apt-notify common library", "test -f /usr/local/lib/apt-notify/common.sh && echo exists", "exists")
         }
         "apt-notify-flush script" = {
             param($Worker)
-            $result = $Worker.Exec("test -x /usr/local/bin/apt-notify-flush && echo exists")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.8.18"; Name = "apt-notify-flush script"
-                Pass = ($result.Output -match "exists"); Output = "/usr/local/bin/apt-notify-flush"
-            })
+            $Worker.Test("6.8.18", "apt-notify-flush script", "test -x /usr/local/bin/apt-notify-flush && echo exists", "exists")
         }
     }
 
