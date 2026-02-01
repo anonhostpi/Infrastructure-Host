@@ -5,11 +5,11 @@ New-Module -Name "Verify.UITouches" -ScriptBlock {
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\..\..\..\book-0-builder\host-sdk\helpers\PowerShell.ps1"
 
-    $SDK.Testing.Verifications.Register("ui", 15, [ordered]@{
+    $mod.SDK.Testing.Verifications.Register("ui", 15, [ordered]@{
         "MOTD directory exists" = {
             param($Worker)
             $result = $Worker.Exec("test -d /etc/update-motd.d")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.15.1"; Name = "MOTD directory exists"
                 Pass = $result.Success; Output = "/etc/update-motd.d"
             })
@@ -17,7 +17,7 @@ New-Module -Name "Verify.UITouches" -ScriptBlock {
         "MOTD scripts present" = {
             param($Worker)
             $result = $Worker.Exec("ls /etc/update-motd.d/ | wc -l")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.15.2"; Name = "MOTD scripts present"
                 Pass = ([int]$result.Output -gt 0); Output = "$($result.Output) scripts"
             })
