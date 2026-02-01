@@ -8,27 +8,15 @@ return (New-Module -Name "Verify.Network" -ScriptBlock {
     $mod.Tests = [ordered]@{
         "Short hostname set" = {
             param($Worker)
-            $result = $Worker.Exec("hostname -s")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.1.1"; Name = "Short hostname set"
-                Pass = ($result.Success -and $result.Output -and $result.Output -ne "localhost"); Output = $result.Output
-            })
+            $Worker.Test("6.1.1", "Short hostname set", "hostname -s", { param($out) $out -and $out -ne "localhost" })
         }
         "FQDN has domain" = {
             param($Worker)
-            $result = $Worker.Exec("hostname -f")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.1.1"; Name = "FQDN has domain"
-                Pass = ($result.Output -match "\."); Output = $result.Output
-            })
+            $Worker.Test("6.1.1", "FQDN has domain", "hostname -f", "\.")
         }
         "Hostname in /etc/hosts" = {
             param($Worker)
-            $result = $Worker.Exec("grep '127.0.1.1' /etc/hosts")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.1.2"; Name = "Hostname in /etc/hosts"
-                Pass = ($result.Success -and $result.Output); Output = $result.Output
-            })
+            $Worker.Test("6.1.2", "Hostname in /etc/hosts", "grep '127.0.1.1' /etc/hosts", ".")
         }
         "Netplan config exists" = {
             param($Worker)
