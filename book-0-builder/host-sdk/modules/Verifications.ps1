@@ -42,7 +42,7 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
         Run = {
             param($Runner, [int]$Layer, $Book = $null)
             $this.Discover($Layer)
-            $bookOrder = if ($null -ne $Book) { @($Book) } else { @(2, 1) }
+            $bookOrder = if ($null -ne $Book) { @($Book) } else { @(1, 2) }
             foreach ($l in 0..$Layer) {
                 if (-not $mod.Tests[$l]) { continue }
                 foreach ($b in $bookOrder) {
