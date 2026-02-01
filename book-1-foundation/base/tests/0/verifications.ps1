@@ -20,28 +20,15 @@ return (New-Module -Name "Verify.Base" -ScriptBlock {
         }
         "Default user exists" = {
             param($Worker)
-            $result = $Worker.Exec("id -un")
-            $mod.SDK.Testing.Record(@{
-                Test = "0.4"; Name = "Default user exists"
-                Pass = ($result.Success -and $result.Output); Output = $result.Output
-            })
+            $Worker.Test("0.4", "Default user exists", "id -un", ".")
         }
         "Hostname set" = {
             param($Worker)
-            $result = $Worker.Exec("hostname -s")
-            $mod.SDK.Testing.Record(@{
-                Test = "0.5"; Name = "Hostname set"
-                Pass = ($result.Success -and $result.Output -and $result.Output -ne "localhost")
-                Output = $result.Output
-            })
+            $Worker.Test("0.5", "Hostname set", "hostname -s", { param($out) $out -and $out -ne "localhost" })
         }
         "SSH service active" = {
             param($Worker)
-            $result = $Worker.Exec("systemctl is-active ssh")
-            $mod.SDK.Testing.Record(@{
-                Test = "0.6"; Name = "SSH service active"
-                Pass = ($result.Output -match "active"); Output = $result.Output
-            })
+            $Worker.Test("0.6", "SSH service active", "systemctl is-active ssh", "active")
         }
         "Cloud-init finished" = {
             param($Worker)
