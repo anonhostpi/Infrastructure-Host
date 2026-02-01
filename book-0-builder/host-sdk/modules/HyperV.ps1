@@ -82,6 +82,23 @@ New-Module -Name SDK.HyperV -ScriptBlock {
 
     $HyperV = New-Object PSObject
 
+    Add-ScriptMethods $HyperV @{
+        Worker = {
+            param(
+                [Parameter(Mandatory = $true)]
+                [ValidateScript({ $null -ne $_.Config })]
+                $Base
+            )
+            $worker = If ($Base -is [System.Collections.IDictionary]) {
+                New-Object PSObject -Property $Base
+            } Else { $Base }
+            Add-ScriptProperties $worker $mod.Worker.Properties
+            Add-ScriptMethods $worker $mod.Worker.Methods
+            $mod.SDK.Worker.Methods($worker)
+            return $worker
+        }
+    }
+
     $SDK.Extend("HyperV", $HyperV)
     Export-ModuleMember -Function @()
 } -ArgumentList $SDK | Import-Module -Force
