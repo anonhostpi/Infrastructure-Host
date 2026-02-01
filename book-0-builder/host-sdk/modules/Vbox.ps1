@@ -560,7 +560,11 @@ New-Module -Name SDK.Vbox -ScriptBlock {
             foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) {
                 switch ($key) {
                     { $_ -in @("nic1","bridgeadapter1") } { $s[$key] = $Settings[$key] }
-                    "MacAddressSpoofing" {} # HyperV only
+                    "MacAddressSpoofing" {
+                        if ($Settings[$key] -eq "On" -or $Settings[$key] -eq $true) {
+                            $s["nicpromisc1"] = "allow-all"
+                        }
+                    }
                 }
             }
             return $this.Configure($VMName, $s)
