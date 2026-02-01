@@ -54,9 +54,6 @@ New-Module -Name SDK.Fragments -ScriptBlock {
         IsoRequired = {
             return $this.Layers | Where-Object { $_.IsoRequired }
         }
-    }
-
-    Add-ScriptMethods $Fragments @{
         LayerName = {
             param([int]$Layer)
             if ($mod.LayerNames -and $mod.LayerNames.ContainsKey($Layer)) {
