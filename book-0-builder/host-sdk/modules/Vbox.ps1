@@ -527,7 +527,7 @@ New-Module -Name SDK.Vbox -ScriptBlock {
         SetProcessor = {
             param([string]$VMName, [hashtable]$Settings)
             $s = @{}
-            foreach ($key in $Settings.Keys) {
+            foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) {
                 switch ($key) {
                     "Count" { $s["cpus"] = $Settings[$key] }
                     "ExposeVirtualizationExtensions" {
@@ -543,7 +543,7 @@ New-Module -Name SDK.Vbox -ScriptBlock {
         SetMemory = {
             param([string]$VMName, [hashtable]$Settings)
             $s = @{}
-            foreach ($key in $Settings.Keys) {
+            foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) {
                 switch ($key) {
                     "MemoryMB" { $s["memory"] = $Settings[$key] }
                     "MemoryGB" { $s["memory"] = $Settings[$key] * 1024 }
@@ -556,7 +556,7 @@ New-Module -Name SDK.Vbox -ScriptBlock {
         SetNetworkAdapter = {
             param([string]$VMName, [hashtable]$Settings)
             $s = @{}
-            foreach ($key in $Settings.Keys) {
+            foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) {
                 switch ($key) {
                     { $_ -in @("nic1","bridgeadapter1") } { $s[$key] = $Settings[$key] }
                 }
@@ -566,7 +566,7 @@ New-Module -Name SDK.Vbox -ScriptBlock {
         SetFirmware = {
             param([string]$VMName, [hashtable]$Settings)
             $s = @{}
-            foreach ($key in $Settings.Keys) {
+            foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) {
                 switch ($key) {
                     "Firmware" { $s["firmware"] = $Settings[$key] }
                     { $_ -in @("firmware") } { $s[$key] = $Settings[$key] }
