@@ -22,6 +22,22 @@ return (New-Module -Name "Verify.Base" -ScriptBlock {
                 Pass = ($result.Success -and $result.Output); Output = $result.Output
             })
         }
+        "Root filesystem is ext4" = {
+            param($Worker)
+            $result = $Worker.Exec("findmnt -n -o FSTYPE /")
+            $mod.SDK.Testing.Record(@{
+                Test = "0.3"; Name = "Root filesystem is ext4"
+                Pass = ($result.Output -match "ext4"); Output = $result.Output
+            })
+        }
+        "Default user exists" = {
+            param($Worker)
+            $result = $Worker.Exec("id -un")
+            $mod.SDK.Testing.Record(@{
+                Test = "0.4"; Name = "Default user exists"
+                Pass = ($result.Success -and $result.Output); Output = $result.Output
+            })
+        }
     }
 
     Export-ModuleMember -Function @()
