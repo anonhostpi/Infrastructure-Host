@@ -5,11 +5,11 @@ New-Module -Name "Verify.PackageSecurity" -ScriptBlock {
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\..\..\..\book-0-builder\host-sdk\helpers\PowerShell.ps1"
 
-    $SDK.Testing.Verifications.Register("pkg-security", 8, [ordered]@{
+    $mod.SDK.Testing.Verifications.Register("pkg-security", 8, [ordered]@{
         "unattended-upgrades installed" = {
             param($Worker)
             $result = $Worker.Exec("dpkg -l unattended-upgrades")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.8.1"; Name = "unattended-upgrades installed"
                 Pass = ($result.Output -match "ii.*unattended-upgrades"); Output = "Package installed"
             })
@@ -17,7 +17,7 @@ New-Module -Name "Verify.PackageSecurity" -ScriptBlock {
         "Unattended upgrades config" = {
             param($Worker)
             $result = $Worker.Exec("test -f /etc/apt/apt.conf.d/50unattended-upgrades")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.8.2"; Name = "Unattended upgrades config"
                 Pass = $result.Success; Output = "/etc/apt/apt.conf.d/50unattended-upgrades"
             })
@@ -25,7 +25,7 @@ New-Module -Name "Verify.PackageSecurity" -ScriptBlock {
         "Auto-upgrades configured" = {
             param($Worker)
             $result = $Worker.Exec("cat /etc/apt/apt.conf.d/20auto-upgrades")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.8.3"; Name = "Auto-upgrades configured"
                 Pass = ($result.Output -match 'Unattended-Upgrade.*"1"'); Output = "Auto-upgrade enabled"
             })
@@ -33,7 +33,7 @@ New-Module -Name "Verify.PackageSecurity" -ScriptBlock {
         "Service enabled" = {
             param($Worker)
             $result = $Worker.Exec("systemctl is-enabled unattended-upgrades")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.8.4"; Name = "Service enabled"
                 Pass = ($result.Output -match "enabled"); Output = $result.Output
             })
@@ -41,7 +41,7 @@ New-Module -Name "Verify.PackageSecurity" -ScriptBlock {
         "apt-listchanges installed" = {
             param($Worker)
             $result = $Worker.Exec("dpkg -l apt-listchanges")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.8.5"; Name = "apt-listchanges installed"
                 Pass = ($result.Output -match "ii.*apt-listchanges"); Output = "Package installed"
             })
@@ -49,7 +49,7 @@ New-Module -Name "Verify.PackageSecurity" -ScriptBlock {
         "apt-listchanges email config" = {
             param($Worker)
             $result = $Worker.Exec("cat /etc/apt/listchanges.conf")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.8.6"; Name = "apt-listchanges email config"
                 Pass = ($result.Output -match "frontend=mail"); Output = "Changelogs sent via email"
             })
@@ -57,7 +57,7 @@ New-Module -Name "Verify.PackageSecurity" -ScriptBlock {
         "apt-notify script exists" = {
             param($Worker)
             $result = $Worker.Exec("test -x /usr/local/bin/apt-notify")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.8.7"; Name = "apt-notify script exists"
                 Pass = $result.Success; Output = "/usr/local/bin/apt-notify"
             })
@@ -66,7 +66,7 @@ New-Module -Name "Verify.PackageSecurity" -ScriptBlock {
             param($Worker)
             $result = $Worker.Exec("cat /etc/apt/apt.conf.d/90pkg-notify")
             $hookOk = ($result.Output -match "DPkg::Pre-Invoke" -and $result.Output -match "DPkg::Post-Invoke")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.8.8"; Name = "dpkg notification hooks"
                 Pass = $hookOk; Output = "Pre/Post-Invoke hooks configured"
             })
@@ -74,7 +74,7 @@ New-Module -Name "Verify.PackageSecurity" -ScriptBlock {
         "Verbose upgrade reporting" = {
             param($Worker)
             $uuConf = $Worker.Exec("cat /etc/apt/apt.conf.d/50unattended-upgrades").Output
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.8.9"; Name = "Verbose upgrade reporting"
                 Pass = (($uuConf -match 'Verbose.*"true"') -and ($uuConf -match 'MailReport.*"always"'))
                 Output = "Verbose=true, MailReport=always"
