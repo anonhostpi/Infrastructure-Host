@@ -18,9 +18,6 @@ New-Module -Name SDK.Autoinstall -ScriptBlock {
             foreach ($k in ($Overrides.Keys | ForEach-Object { $_ })) { $config[$k] = $Overrides[$k] }
             return $mod.SDK.Vbox.Worker(@{ Config = $config })
         }
-    }
-
-    Add-ScriptMethods $Autoinstall @{
         Build = {
             param([int]$Layer)
             $artifacts = $mod.SDK.Builder.Artifacts
@@ -33,17 +30,11 @@ New-Module -Name SDK.Autoinstall -ScriptBlock {
             # ISO build is triggered separately via make iso
             return $mod.SDK.Builder.Artifacts
         }
-    }
-
-    Add-ScriptMethods $Autoinstall @{
         Cleanup = {
             param([string]$Name)
             if (-not $Name) { $Name = $mod.SDK.Settings.Virtualization.Vbox.Name }
             if ($mod.SDK.Vbox.Exists($Name)) { $mod.SDK.Vbox.Destroy($Name) }
         }
-    }
-
-    Add-ScriptMethods $Autoinstall @{
         Clean = {
             return $mod.SDK.Builder.Clean()
         }
