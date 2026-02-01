@@ -2565,7 +2565,7 @@ Replace . with .SDK. in msmtp/7 tests 11-14 (final third)
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 73: `book-0-builder/host-sdk/modules/Logger.ps1` - Consolidate 2 Add-ScriptMethods calls into 1
+### Commit 73: `book-0-builder/host-sdk/modules/Logger.ps1` - Consolidate 2 Add-ScriptMethods calls into 1 [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Logger.consolidate-logger
 
@@ -2597,7 +2597,7 @@ Consolidate 2 Add-ScriptMethods calls into 1
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 74: `book-0-builder/host-sdk/modules/Fragments.ps1` - Consolidate 2 Add-ScriptMethods calls into 1
+### Commit 74: `book-0-builder/host-sdk/modules/Fragments.ps1` - Consolidate 2 Add-ScriptMethods calls into 1 [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Fragments.consolidate-fragments
 
@@ -2629,7 +2629,7 @@ Consolidate 2 Add-ScriptMethods calls into 1
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 75: `book-0-builder/host-sdk/modules/Builder.ps1` - Consolidate 2 Add-ScriptMethods calls into 1, rename RegisterRunner to Register
+### Commit 75: `book-0-builder/host-sdk/modules/Builder.ps1` - Consolidate 2 Add-ScriptMethods calls into 1, rename RegisterRunner to Register [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Builder.consolidate-builder
 
@@ -2662,7 +2662,7 @@ Consolidate 2 Add-ScriptMethods calls into 1, rename RegisterRunner to Register
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 76: `book-0-builder/host-sdk/modules/CloudInit.ps1` - Consolidate 3 Add-ScriptMethods calls into 1
+### Commit 76: `book-0-builder/host-sdk/modules/CloudInit.ps1` - Consolidate 3 Add-ScriptMethods calls into 1 [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.CloudInit.consolidate-cloudinit
 
@@ -2700,7 +2700,7 @@ Consolidate 3 Add-ScriptMethods calls into 1
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 77: `book-0-builder/host-sdk/modules/Autoinstall.ps1` - Consolidate 4 Add-ScriptMethods calls into 1
+### Commit 77: `book-0-builder/host-sdk/modules/Autoinstall.ps1` - Consolidate 4 Add-ScriptMethods calls into 1 [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Autoinstall.consolidate-autoinstall
 
@@ -2744,7 +2744,7 @@ Consolidate 4 Add-ScriptMethods calls into 1
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 78: `book-0-builder/host-sdk/modules/Testing.ps1` - Consolidate 5 Add-ScriptMethods calls into 1
+### Commit 78: `book-0-builder/host-sdk/modules/Testing.ps1` - Consolidate 5 Add-ScriptMethods calls into 1 [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Testing.consolidate-testing
 
