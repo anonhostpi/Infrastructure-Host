@@ -6,6 +6,18 @@ New-Module -Name SDK.HyperV -ScriptBlock {
     . "$PSScriptRoot\..\helpers\PowerShell.ps1"
     Import-Module Hyper-V
 
+    $mod.Configurator = @{
+        Defaults = @{
+            CPUs = 2
+            MemoryMB = 4096
+            DiskGB = 40
+            SSHUser = $null
+            SSHHost = $null
+            SSHPort = 22
+            Generation = 2
+        }
+    }
+
     $HyperV = New-Object PSObject
 
     $SDK.Extend("HyperV", $HyperV)
