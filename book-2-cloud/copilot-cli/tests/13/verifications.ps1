@@ -34,13 +34,9 @@ return (New-Module -Name "Verify.CopilotCLI" -ScriptBlock {
             $env = $Worker.Exec("grep -q 'GH_TOKEN' /etc/environment && echo configured")
             $hasAuth = ($tokens.Output -match "configured") -or ($env.Output -match "configured")
             if (-not $hasAuth) { $mod.SDK.Testing.Verifications.Fork("6.13.5", "SKIP", "No auth configured"); return }
-            $result = $Worker.Exec("sudo -u $username env HOME=/home/$username timeout 30 copilot --model gpt-4.1 -p test 2>&1")
-            $clean = $result.Output -replace '\x1b\[[0-9;]*[a-zA-Z]', ''
-            $hasResponse = ($clean -and $clean.Length -gt 0 -and $clean -notmatch "^error|failed|timeout")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.13.5"; Name = "Copilot CLI AI response"
-                Pass = $hasResponse
-                Output = if ($hasResponse) { "Response received" } else { "Failed: $clean" }
+            $Worker.Test("6.13.5", "Copilot CLI AI response", "sudo -u $username env HOME=/home/$username timeout 30 copilot --model gpt-4.1 -p test 2>&1", { param($out)
+            $clean = $out -replace '\x1b\[[0-9;]*[a-zA-Z]', ''
+            $clean -and $clean.Length -gt 0 -and $clean -notmatch "^error|failed|timeout"
             })
         }
     }
