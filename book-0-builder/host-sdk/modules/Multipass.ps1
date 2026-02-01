@@ -216,6 +216,17 @@ New-Module -Name SDK.Multipass -ScriptBlock {
             if ($result.Success) { return ($result.Output | Out-String).Trim() }
             return $null
         }
+        Hypervisor = {
+            param([string]$VMName)
+            $backend = $this.Backend()
+            $map = @{ "hyperv" = "HyperV"; "virtualbox" = "Vbox" }
+            $sdkModule = $map[$backend]
+            if (-not $sdkModule) {
+                Write-Warning "Nested virtualization not supported for backend '$backend'"
+                return $false
+            }
+            return $mod.SDK."$sdkModule".Hypervisor($VMName)
+        }
         Worker = {
             param(
                 [Parameter(Mandatory = $true)]
