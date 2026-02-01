@@ -121,6 +121,19 @@ New-Module -Name SDK.HyperV -ScriptBlock {
             }
             return $all
         }
+        Attach = {
+            param([string]$VMName, [string]$Path, [string]$ControllerType = "SCSI")
+            try {
+                Add-VMHardDiskDrive -VMName $VMName -Path $Path -ControllerType $ControllerType -ErrorAction Stop
+                return $true
+            } catch { return $false }
+        }
+        Delete = {
+            param([string]$VMName, [string]$Path)
+            $drive = Get-VMHardDiskDrive -VMName $VMName | Where-Object { $_.Path -eq $Path }
+            if ($drive) { Remove-VMHardDiskDrive -VMHardDiskDrive $drive }
+            if (Test-Path $Path) { Remove-Item $Path -Force }
+        }
     }
 
     $SDK.Extend("HyperV", $HyperV)
