@@ -23,21 +23,13 @@ return (New-Module -Name "Verify.Cockpit" -ScriptBlock {
             $portConf = $Worker.Exec("cat /etc/systemd/system/cockpit.socket.d/listen.conf 2>/dev/null").Output
             $port = if ($portConf -match 'ListenStream=(\d+)') { $matches[1] } else { "9090" }
             $Worker.Exec("curl -sk https://localhost:$port/ > /dev/null 2>&1") | Out-Null
-            $result = $Worker.Exec("ss -tlnp | grep :$port")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.11.4"; Name = "Cockpit listening on port $port"
-                Pass = ($result.Output -match ":$port"); Output = $result.Output
-            })
+            $Worker.Test("6.11.4", "Cockpit listening on port $port", "ss -tlnp | grep :$port", ":$port")
         }
         "Cockpit web UI responds" = {
             param($Worker)
             $portConf = $Worker.Exec("cat /etc/systemd/system/cockpit.socket.d/listen.conf 2>/dev/null").Output
             $port = if ($portConf -match 'ListenStream=(\d+)') { $matches[1] } else { "9090" }
-            $result = $Worker.Exec("curl -sk -o /dev/null -w '%{http_code}' https://localhost:$port/")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.11.5"; Name = "Cockpit web UI responds"
-                Pass = ($result.Output -match "200"); Output = "HTTP $($result.Output)"
-            })
+            $Worker.Test("6.11.5", "Cockpit web UI responds", "curl -sk -o /dev/null -w '%{http_code}' https://localhost:$port/", "200")
         }
         "Cockpit login page" = {
             param($Worker)
