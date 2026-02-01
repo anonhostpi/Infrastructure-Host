@@ -5924,7 +5924,7 @@ Add hostname set and SSH service active verification tests
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 151d: `book-1-foundation/base/tests/0/verifications.ps1` - Add cloud-init finished and no cloud-init errors verification tests
+### Commit 151d: `book-1-foundation/base/tests/0/verifications.ps1` - Add cloud-init finished and no cloud-init errors verification tests [COMPLETE]
 
 ### book-1-foundation.base.tests.0.verifications.book1-verif-cloudinit
 
