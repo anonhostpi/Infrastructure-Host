@@ -11,27 +11,15 @@ return (New-Module -Name "Verify.MSMTPMail" -ScriptBlock {
     $mod.Tests = [ordered]@{
         "msmtp installed" = {
             param($Worker)
-            $result = $Worker.Exec("which msmtp")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.7.1"; Name = "msmtp installed"
-                Pass = ($result.Success -and $result.Output -match "msmtp"); Output = $result.Output
-            })
+            $Worker.Test("6.7.1", "msmtp installed", "which msmtp", "msmtp")
         }
         "msmtp config exists" = {
             param($Worker)
-            $result = $Worker.Exec("test -f /etc/msmtprc")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.7.2"; Name = "msmtp config exists"
-                Pass = $result.Success; Output = "/etc/msmtprc"
-            })
+            $Worker.Test("6.7.2", "msmtp config exists", "test -f /etc/msmtprc", { $true })
         }
         "sendmail alias exists" = {
             param($Worker)
-            $result = $Worker.Exec("test -L /usr/sbin/sendmail")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.7.3"; Name = "sendmail alias exists"
-                Pass = $result.Success; Output = "/usr/sbin/sendmail"
-            })
+            $Worker.Test("6.7.3", "sendmail alias exists", "test -L /usr/sbin/sendmail", { $true })
         }
         "SMTP host matches" = {
             param($Worker)
