@@ -1,6 +1,6 @@
 param([int]$Layer, [switch]$SkipCleanup)
 
-. "$PSScriptRoot\SDK.ps1"
+. "$PSScriptRoot\..\book-0-builder\host-sdk\SDK.ps1"
 
 # Setup builder (Build is called by CloudInitTest.Run with Layer)
 $SDK.Builder.Stage()
