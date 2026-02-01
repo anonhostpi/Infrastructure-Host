@@ -20,27 +20,15 @@ return (New-Module -Name "Verify.Network" -ScriptBlock {
         }
         "Netplan config exists" = {
             param($Worker)
-            $result = $Worker.Exec("ls /etc/netplan/*.yaml 2>/dev/null")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.1.3"; Name = "Netplan config exists"
-                Pass = ($result.Success -and $result.Output); Output = $result.Output
-            })
+            $Worker.Test("6.1.3", "Netplan config exists", "ls /etc/netplan/*.yaml 2>/dev/null", ".")
         }
         "IP address assigned" = {
             param($Worker)
-            $result = $Worker.Exec("ip -4 addr show scope global | grep 'inet '")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.1.4"; Name = "IP address assigned"
-                Pass = ($result.Output -match "inet "); Output = $result.Output
-            })
+            $Worker.Test("6.1.4", "IP address assigned", "ip -4 addr show scope global | grep 'inet '", "inet ")
         }
         "Default gateway configured" = {
             param($Worker)
-            $result = $Worker.Exec("ip route | grep '^default'")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.1.4"; Name = "Default gateway configured"
-                Pass = ($result.Output -match "default via"); Output = $result.Output
-            })
+            $Worker.Test("6.1.4", "Default gateway configured", "ip route | grep '^default'", "default via")
         }
         "DNS resolution works" = {
             param($Worker)
