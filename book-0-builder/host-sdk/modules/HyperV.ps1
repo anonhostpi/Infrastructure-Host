@@ -224,10 +224,15 @@ New-Module -Name SDK.HyperV -ScriptBlock {
         SetProcessor = {
             param([string]$VMName, [hashtable]$Settings)
             $s = @{ VMName = $VMName }
-            foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) {
+            foreach ($key in $Settings.Keys) {
                 switch ($key) {
-                    "Count" { $s["Count"] = $Settings[$key] }
-                    default { $s[$key] = $Settings[$key] }
+                    "cpus" { $s.Count = $Settings[$key] }
+                    "nested-hw-virt" {
+                        $s.ExposeVirtualizationExtensions = $Settings[$key] -eq "on"
+                    }
+                    { $_ -in @("Count","ExposeVirtualizationExtensions") } {
+                        $s[$key] = $Settings[$key]
+                    }
                 }
             }
             try { Set-VMProcessor @s -ErrorAction Stop; return $true } catch { return $false }
