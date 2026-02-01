@@ -77,23 +77,17 @@ return (New-Module -Name "Verify.MSMTPMail" -ScriptBlock {
         "TLS settings valid" = {
             param($Worker)
             if (-not $smtpConfigured) { $mod.SDK.Testing.Verifications.Fork("6.7.7", "SKIP", "No SMTP configured"); return }
-            $msmtprc = $Worker.Exec("sudo cat /etc/msmtprc").Output
-            $tlsOn = ($msmtprc -match 'tls\s+on')
-            $implicitTls = ($smtp.port -eq 465 -and ($msmtprc -match 'tls_starttls\s+off'))
-            $mod.SDK.Testing.Record(@{
-                Test = "6.7.7"; Name = "TLS settings valid"
-                Pass = ($tlsOn -or $implicitTls); Output = "tls=on, implicit=$implicitTls"
+            $Worker.Test("6.7.7", "TLS settings valid", "sudo cat /etc/msmtprc", { param($out)
+            ($out -match 'tls\s+on') -or ($smtp.port -eq 465 -and ($out -match 'tls_starttls\s+off'))
             })
         }
         "Credential config valid" = {
             param($Worker)
             if (-not $smtpConfigured) { $mod.SDK.Testing.Verifications.Fork("6.7.8", "SKIP", "No SMTP configured"); return }
-            $msmtprc = $Worker.Exec("sudo cat /etc/msmtprc").Output
-            $hasCreds = ($msmtprc -match 'password\s') -or ($msmtprc -match 'passwordeval')
+            $Worker.Test("6.7.8", "Credential config valid", "sudo cat /etc/msmtprc", { param($out)
+            $hasCreds = ($out -match 'password\s') -or ($out -match 'passwordeval')
             if (-not $hasCreds) { $hasCreds = $Worker.Exec("sudo test -f /etc/msmtp-password").Success }
-            $mod.SDK.Testing.Record(@{
-                Test = "6.7.8"; Name = "Credential config valid"
-                Pass = $hasCreds; Output = if ($hasCreds) { "Credentials configured" } else { "No credentials found" }
+            $hasCreds
             })
         }
         "Root alias configured" = {
