@@ -526,7 +526,14 @@ New-Module -Name SDK.Vbox -ScriptBlock {
         }
         SetProcessor = {
             param([string]$VMName, [hashtable]$Settings)
-            return $this.Configure($VMName, $Settings)
+            $s = @{}
+            foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) {
+                switch ($key) {
+                    "Count" { $s["cpus"] = $Settings[$key] }
+                    default { $s[$key] = $Settings[$key] }
+                }
+            }
+            return $this.Configure($VMName, $s)
         }
         SetMemory = {
             param([string]$VMName, [hashtable]$Settings)
