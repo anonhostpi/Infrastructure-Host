@@ -32,19 +32,11 @@ return (New-Module -Name "Verify.Base" -ScriptBlock {
         }
         "Cloud-init finished" = {
             param($Worker)
-            $result = $Worker.Exec("cloud-init status")
-            $mod.SDK.Testing.Record(@{
-                Test = "0.7"; Name = "Cloud-init finished"
-                Pass = ($result.Output -match "done"); Output = $result.Output
-            })
+            $Worker.Test("0.7", "Cloud-init finished", "cloud-init status", "done")
         }
         "No cloud-init errors" = {
             param($Worker)
-            $result = $Worker.Exec("cloud-init status")
-            $mod.SDK.Testing.Record(@{
-                Test = "0.8"; Name = "No cloud-init errors"
-                Pass = ($result.Output -notmatch "error|degraded"); Output = $result.Output
-            })
+            $Worker.Test("0.8", "No cloud-init errors", "cloud-init status", { param($out) $out -notmatch "error|degraded" })
         }
     }
 
