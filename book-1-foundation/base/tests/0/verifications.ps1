@@ -1,9 +1,11 @@
 param([Parameter(Mandatory = $true)] $SDK)
 
-New-Module -Name "Verify.Base" -ScriptBlock {
+return (New-Module -Name "Verify.Base" -ScriptBlock {
     param([Parameter(Mandatory = $true)] $SDK)
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\..\..\..\book-0-builder\host-sdk\helpers\PowerShell.ps1"
 
-    $mod.SDK.Testing.Verifications.Register("base", 0, [ordered]@{})
-} -ArgumentList $SDK
+    $mod.Tests = [ordered]@{}
+
+    Export-ModuleMember -Function @()
+} -ArgumentList $SDK)
