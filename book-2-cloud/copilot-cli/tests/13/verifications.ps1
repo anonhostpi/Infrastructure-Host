@@ -10,27 +10,15 @@ return (New-Module -Name "Verify.CopilotCLI" -ScriptBlock {
     $mod.Tests = [ordered]@{
         "Copilot CLI installed" = {
             param($Worker)
-            $result = $Worker.Exec("which copilot")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.13.1"; Name = "Copilot CLI installed"
-                Pass = ($result.Success -and $result.Output -match "copilot"); Output = $result.Output
-            })
+            $Worker.Test("6.13.1", "Copilot CLI installed", "which copilot", "copilot")
         }
         "Copilot CLI config directory" = {
             param($Worker)
-            $result = $Worker.Exec("sudo test -d /home/$username/.copilot && echo exists")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.13.2"; Name = "Copilot CLI config directory"
-                Pass = ($result.Output -match "exists"); Output = "/home/$username/.copilot"
-            })
+            $Worker.Test("6.13.2", "Copilot CLI config directory", "sudo test -d /home/$username/.copilot && echo exists", "exists")
         }
         "Copilot CLI config file" = {
             param($Worker)
-            $result = $Worker.Exec("sudo test -f /home/$username/.copilot/config.json && echo exists")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.13.3"; Name = "Copilot CLI config file"
-                Pass = ($result.Output -match "exists"); Output = "/home/$username/.copilot/config.json"
-            })
+            $Worker.Test("6.13.3", "Copilot CLI config file", "sudo test -f /home/$username/.copilot/config.json && echo exists", "exists")
         }
         "Copilot CLI auth configured" = {
             param($Worker)
