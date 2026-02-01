@@ -32,28 +32,15 @@ return (New-Module -Name "Verify.Network" -ScriptBlock {
         }
         "DNS resolution works" = {
             param($Worker)
-            $result = $Worker.Exec("host -W 2 ubuntu.com")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.1.4"; Name = "DNS resolution works"
-                Pass = ($result.Output -match "has address" -or $result.Output -match "has IPv"); Output = $result.Output
-            })
+            $Worker.Test("6.1.4", "DNS resolution works", "host -W 2 ubuntu.com", "has address|has IPv")
         }
         "net-setup.log exists" = {
             param($Worker)
-            $result = $Worker.Exec("test -f /var/lib/cloud/scripts/net-setup/net-setup.log")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.1.5"; Name = "net-setup.log exists"
-                Pass = $result.Success; Output = "/var/lib/cloud/scripts/net-setup/net-setup.log"
-            })
+            $Worker.Test("6.1.5", "net-setup.log exists", "test -f /var/lib/cloud/scripts/net-setup/net-setup.log", { $true })
         }
         "net-setup.sh executed" = {
             param($Worker)
-            $result = $Worker.Exec("cat /var/lib/cloud/scripts/net-setup/net-setup.log")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.1.5"; Name = "net-setup.sh executed"
-                Pass = ($result.Output -match "net-setup:")
-                Output = if ($result.Output) { ($result.Output | Select-Object -First 3) -join "; " } else { "(empty)" }
-            })
+            $Worker.Test("6.1.5", "net-setup.sh executed", "cat /var/lib/cloud/scripts/net-setup/net-setup.log", "net-setup:")
         }
     }
 
