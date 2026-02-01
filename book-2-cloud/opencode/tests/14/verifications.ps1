@@ -5,13 +5,13 @@ New-Module -Name "Verify.OpenCode" -ScriptBlock {
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\..\..\..\book-0-builder\host-sdk\helpers\PowerShell.ps1"
 
-    $username = $SDK.Settings.Identity.username
+    $username = $mod.SDK.Settings.Identity.username
 
-    $SDK.Testing.Verifications.Register("opencode", 14, [ordered]@{
+    $mod.SDK.Testing.Verifications.Register("opencode", 14, [ordered]@{
         "Node.js installed" = {
             param($Worker)
             $result = $Worker.Exec("which node")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.14.1"; Name = "Node.js installed"
                 Pass = ($result.Success -and $result.Output -match "node"); Output = $result.Output
             })
@@ -19,7 +19,7 @@ New-Module -Name "Verify.OpenCode" -ScriptBlock {
         "npm installed" = {
             param($Worker)
             $result = $Worker.Exec("which npm")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.14.2"; Name = "npm installed"
                 Pass = ($result.Success -and $result.Output -match "npm"); Output = $result.Output
             })
@@ -27,7 +27,7 @@ New-Module -Name "Verify.OpenCode" -ScriptBlock {
         "OpenCode installed" = {
             param($Worker)
             $result = $Worker.Exec("which opencode")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.14.3"; Name = "OpenCode installed"
                 Pass = ($result.Success -and $result.Output -match "opencode"); Output = $result.Output
             })
@@ -35,7 +35,7 @@ New-Module -Name "Verify.OpenCode" -ScriptBlock {
         "OpenCode config directory" = {
             param($Worker)
             $result = $Worker.Exec("sudo test -d /home/$username/.config/opencode && echo exists")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.14.4"; Name = "OpenCode config directory"
                 Pass = ($result.Output -match "exists"); Output = "/home/$username/.config/opencode"
             })
