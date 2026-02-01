@@ -1,13 +1,13 @@
 param([Parameter(Mandatory = $true)] $SDK)
 
-New-Module -Name "Verify.OpenCode" -ScriptBlock {
+return (New-Module -Name "Verify.OpenCode" -ScriptBlock {
     param([Parameter(Mandatory = $true)] $SDK)
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\..\..\..\book-0-builder\host-sdk\helpers\PowerShell.ps1"
 
     $username = $mod.SDK.Settings.Identity.username
 
-    $mod.SDK.Testing.Verifications.Register("opencode", 14, [ordered]@{
+    $mod.Tests = [ordered]@{
         "Node.js installed" = {
             param($Worker)
             $result = $Worker.Exec("which node")
@@ -75,5 +75,7 @@ New-Module -Name "Verify.OpenCode" -ScriptBlock {
                 Output = if ($tokensMatch) { "Tokens match, provider: anthropic" } else { "Token mismatch" }
             })
         }
-    })
-} -ArgumentList $SDK
+    }
+
+    Export-ModuleMember -Function @()
+} -ArgumentList $SDK)

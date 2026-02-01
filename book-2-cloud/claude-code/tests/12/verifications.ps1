@@ -1,13 +1,13 @@
 param([Parameter(Mandatory = $true)] $SDK)
 
-New-Module -Name "Verify.ClaudeCode" -ScriptBlock {
+return (New-Module -Name "Verify.ClaudeCode" -ScriptBlock {
     param([Parameter(Mandatory = $true)] $SDK)
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\..\..\..\book-0-builder\host-sdk\helpers\PowerShell.ps1"
 
     $username = $mod.SDK.Settings.Identity.username
 
-    $mod.SDK.Testing.Verifications.Register("claude-code", 12, [ordered]@{
+    $mod.Tests = [ordered]@{
         "Claude Code installed" = {
             param($Worker)
             $result = $Worker.Exec("which claude")
@@ -64,5 +64,7 @@ New-Module -Name "Verify.ClaudeCode" -ScriptBlock {
                 Output = if ($hasResponse) { "Response received" } else { "Failed: $clean" }
             })
         }
-    })
-} -ArgumentList $SDK
+    }
+
+    Export-ModuleMember -Function @()
+} -ArgumentList $SDK)

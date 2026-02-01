@@ -1,11 +1,11 @@
 param([Parameter(Mandatory = $true)] $SDK)
 
-New-Module -Name "Verify.UITouches" -ScriptBlock {
+return (New-Module -Name "Verify.UITouches" -ScriptBlock {
     param([Parameter(Mandatory = $true)] $SDK)
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\..\..\..\book-0-builder\host-sdk\helpers\PowerShell.ps1"
 
-    $mod.SDK.Testing.Verifications.Register("ui", 15, [ordered]@{
+    $mod.Tests = [ordered]@{
         "MOTD directory exists" = {
             param($Worker)
             $result = $Worker.Exec("test -d /etc/update-motd.d")
@@ -22,5 +22,7 @@ New-Module -Name "Verify.UITouches" -ScriptBlock {
                 Pass = ([int]$result.Output -gt 0); Output = "$($result.Output) scripts"
             })
         }
-    })
-} -ArgumentList $SDK
+    }
+
+    Export-ModuleMember -Function @()
+} -ArgumentList $SDK)

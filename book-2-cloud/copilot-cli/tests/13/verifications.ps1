@@ -1,13 +1,13 @@
 param([Parameter(Mandatory = $true)] $SDK)
 
-New-Module -Name "Verify.CopilotCLI" -ScriptBlock {
+return (New-Module -Name "Verify.CopilotCLI" -ScriptBlock {
     param([Parameter(Mandatory = $true)] $SDK)
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\..\..\..\book-0-builder\host-sdk\helpers\PowerShell.ps1"
 
     $username = $mod.SDK.Settings.Identity.username
 
-    $mod.SDK.Testing.Verifications.Register("copilot-cli", 13, [ordered]@{
+    $mod.Tests = [ordered]@{
         "Copilot CLI installed" = {
             param($Worker)
             $result = $Worker.Exec("which copilot")
@@ -62,5 +62,7 @@ New-Module -Name "Verify.CopilotCLI" -ScriptBlock {
                 Output = if ($hasResponse) { "Response received" } else { "Failed: $clean" }
             })
         }
-    })
-} -ArgumentList $SDK
+    }
+
+    Export-ModuleMember -Function @()
+} -ArgumentList $SDK)
