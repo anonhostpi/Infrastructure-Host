@@ -211,6 +211,11 @@ New-Module -Name SDK.Multipass -ScriptBlock {
                 Success = $LASTEXITCODE -eq 0
             }
         }
+        Backend = {
+            $result = $this.Invoke("get", "local.driver")
+            if ($result.Success) { return ($result.Output | Out-String).Trim() }
+            return $null
+        }
         Worker = {
             param(
                 [Parameter(Mandatory = $true)]
