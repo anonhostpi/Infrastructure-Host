@@ -222,8 +222,14 @@ New-Module -Name SDK.HyperV -ScriptBlock {
         }
         SetProcessor = {
             param([string]$VMName, [hashtable]$Settings)
-            $Settings.VMName = $VMName
-            try { Set-VMProcessor @Settings -ErrorAction Stop; return $true } catch { return $false }
+            $s = @{ VMName = $VMName }
+            foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) {
+                switch ($key) {
+                    "Count" { $s["Count"] = $Settings[$key] }
+                    default { $s[$key] = $Settings[$key] }
+                }
+            }
+            try { Set-VMProcessor @s -ErrorAction Stop; return $true } catch { return $false }
         }
         SetMemory = {
             param([string]$VMName, [hashtable]$Settings)
