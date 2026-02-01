@@ -120,47 +120,47 @@ New-Module -Name "Verify.MSMTPMail" -ScriptBlock {
         }
         "Credential config valid" = {
             param($Worker)
-            if (-not $smtpConfigured) { $SDK.Testing.Verifications.Fork("6.7.8", "SKIP", "No SMTP configured"); return }
+            if (-not $smtpConfigured) { $mod.SDK.Testing.Verifications.Fork("6.7.8", "SKIP", "No SMTP configured"); return }
             $msmtprc = $Worker.Exec("sudo cat /etc/msmtprc").Output
             $hasCreds = ($msmtprc -match 'password\s') -or ($msmtprc -match 'passwordeval')
             if (-not $hasCreds) { $hasCreds = $Worker.Exec("sudo test -f /etc/msmtp-password").Success }
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.7.8"; Name = "Credential config valid"
                 Pass = $hasCreds; Output = if ($hasCreds) { "Credentials configured" } else { "No credentials found" }
             })
         }
         "Root alias configured" = {
             param($Worker)
-            if (-not $smtpConfigured) { $SDK.Testing.Verifications.Fork("6.7.9", "SKIP", "No SMTP configured"); return }
+            if (-not $smtpConfigured) { $mod.SDK.Testing.Verifications.Fork("6.7.9", "SKIP", "No SMTP configured"); return }
             $aliases = $Worker.Exec("cat /etc/aliases").Output
             $aliasPass = ($aliases -match "root:")
             if ($smtp.recipient) { $aliasPass = $aliasPass -and ($aliases -match [regex]::Escape($smtp.recipient)) }
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.7.9"; Name = "Root alias configured"
                 Pass = $aliasPass; Output = "Root alias in /etc/aliases"
             })
         }
         "msmtp-config helper exists" = {
             param($Worker)
-            if (-not $smtpConfigured) { $SDK.Testing.Verifications.Fork("6.7.10", "SKIP", "No SMTP configured"); return }
+            if (-not $smtpConfigured) { $mod.SDK.Testing.Verifications.Fork("6.7.10", "SKIP", "No SMTP configured"); return }
             $result = $Worker.Exec("test -x /usr/local/bin/msmtp-config")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.7.10"; Name = "msmtp-config helper exists"
                 Pass = $result.Success; Output = "/usr/local/bin/msmtp-config"
             })
         }
         "Test email sent" = {
             param($Worker)
-            if (-not $smtpConfigured) { $SDK.Testing.Verifications.Fork("6.7.11", "SKIP", "No SMTP configured"); return }
+            if (-not $smtpConfigured) { $mod.SDK.Testing.Verifications.Fork("6.7.11", "SKIP", "No SMTP configured"); return }
             $msmtprc = $Worker.Exec("sudo cat /etc/msmtprc").Output
             $hasInline = ($msmtprc -match 'password\s+\S' -and $msmtprc -notmatch 'passwordeval')
             if (-not $hasInline -or -not $smtp.recipient) {
-                $SDK.Testing.Verifications.Fork("6.7.11", "SKIP", "No inline password or recipient"); return
+                $mod.SDK.Testing.Verifications.Fork("6.7.11", "SKIP", "No inline password or recipient"); return
             }
             $subject = "Infrastructure-Host Verification Test"
             $result = $Worker.Exec("echo -e 'Subject: $subject\n\nAutomated test.' | sudo msmtp '$($smtp.recipient)'")
             $logCheck = $Worker.Exec("sudo tail -1 /var/log/msmtp.log")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.7.11"; Name = "Test email sent"
                 Pass = ($result.Success -and $logCheck.Output -match $smtp.recipient)
                 Output = if ($result.Success) { "Email sent" } else { $result.Output }
