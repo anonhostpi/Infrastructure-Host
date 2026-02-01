@@ -265,7 +265,16 @@ New-Module -Name SDK.HyperV -ScriptBlock {
             foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) {
                 switch ($key) {
                     { $_ -in @("MacAddressSpoofing") } { $s[$key] = $Settings[$key] }
-                    { $_ -in @("nic1","bridgeadapter1") } {} # VBox only
+                    "bridgeadapter1" {
+                        $adapter = $Settings[$key]
+                        $switch = Get-VMSwitch -SwitchType External -ErrorAction SilentlyContinue |
+                            Where-Object { $_.NetAdapterInterfaceDescription -match [regex]::Escape($adapter) } |
+                            Select-Object -First 1
+                        if ($switch) {
+                            Connect-VMNetworkAdapter -VMName $VMName -SwitchName $switch.Name
+                        }
+                    }
+                    "nic1" {} # Handled implicitly via bridgeadapter1
                 }
             }
             try { Set-VMNetworkAdapter @s -ErrorAction Stop; return $true } catch { return $false }
