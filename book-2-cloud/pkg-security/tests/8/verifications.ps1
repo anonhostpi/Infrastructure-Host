@@ -60,27 +60,15 @@ return (New-Module -Name "Verify.PackageSecurity" -ScriptBlock {
         }
         "pip-global-update script" = {
             param($Worker)
-            $result = $Worker.Exec("test -x /usr/local/bin/pip-global-update && echo exists")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.8.13"; Name = "pip-global-update script"
-                Pass = ($result.Output -match "exists"); Output = "/usr/local/bin/pip-global-update"
-            })
+            $Worker.Test("6.8.13", "pip-global-update script", "test -x /usr/local/bin/pip-global-update && echo exists", "exists")
         }
         "npm-global-update script" = {
             param($Worker)
-            $result = $Worker.Exec("test -x /usr/local/bin/npm-global-update && echo exists")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.8.14"; Name = "npm-global-update script"
-                Pass = ($result.Output -match "exists"); Output = "/usr/local/bin/npm-global-update"
-            })
+            $Worker.Test("6.8.14", "npm-global-update script", "test -x /usr/local/bin/npm-global-update && echo exists", "exists")
         }
         "deno-update script" = {
             param($Worker)
-            $result = $Worker.Exec("test -x /usr/local/bin/deno-update && echo exists")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.8.15"; Name = "deno-update script"
-                Pass = ($result.Output -match "exists"); Output = "/usr/local/bin/deno-update"
-            })
+            $Worker.Test("6.8.15", "deno-update script", "test -x /usr/local/bin/deno-update && echo exists", "exists")
         }
         "pkg-managers-update timer" = {
             param($Worker)
