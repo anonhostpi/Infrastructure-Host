@@ -9,8 +9,9 @@ New-Module -Name SDK.HyperV -ScriptBlock {
     $mod.Configurator = @{
         Defaults = @{
             CPUs = 2
-            MemoryMB = 4096
-            DiskGB = 40
+            Memory = 4096
+            Disk = 40960
+            IsoPath = $null
             SSHUser = $null
             SSHHost = $null
             SSHPort = 22
