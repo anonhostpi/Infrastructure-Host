@@ -44,17 +44,14 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
         }
         Run = {
             param($Worker, [int]$Layer)
+            $this.Discover($Layer)
             foreach ($l in 1..$Layer) {
                 $layerName = $mod.SDK.Fragments.LayerName($l)
-                $testFiles = $this.Discover($l)
-                foreach ($entry in $testFiles) {
-                    $mod.SDK.Log.Write("`n--- $layerName - $($entry.Fragment) ---", "Cyan")
-                    $this.Load($entry.Path)
-                    $frag = $entry.Fragment
-                    if ($mod.Tests[$frag] -and $mod.Tests[$frag][$l]) {
-                        foreach ($name in $mod.Tests[$frag][$l].Keys) {
-                            $this.Test($frag, $l, $name, $Worker)
-                        }
+                foreach ($frag in ($mod.Tests.Keys | ForEach-Object { $_ })) {
+                    if (-not $mod.Tests[$frag][$l]) { continue }
+                    $mod.SDK.Log.Write("`n--- $layerName - $frag ---", "Cyan")
+                    foreach ($name in ($mod.Tests[$frag][$l].Keys | ForEach-Object { $_ })) {
+                        $this.Test($frag, $l, $name, $Worker)
                     }
                 }
             }
