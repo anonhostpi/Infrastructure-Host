@@ -97,10 +97,7 @@ New-Module -Name SDK.Builder -ScriptBlock {
             }
             return $true
         }
-    }
-
-    Add-ScriptMethods $Builder @{
-        RegisterRunner = {
+        Register = {
             param([string]$Name, $Worker)
             $mod.Runners[$Name] = $Worker
             return $Worker
