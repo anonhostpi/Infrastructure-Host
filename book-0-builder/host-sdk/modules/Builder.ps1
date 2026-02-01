@@ -37,6 +37,13 @@ New-Module -Name SDK.Builder -ScriptBlock {
                 Network = "Ethernet"
             }
         }
+        Artifacts = {
+            $path = Join-Path $mod.SDK.Root() "output/artifacts.yaml"
+            if (Test-Path $path) {
+                return Get-Content $path -Raw | ConvertFrom-Yaml
+            }
+            return $null
+        }
     }
     $Builder = $SDK.Multipass.Worker($Builder)
 
