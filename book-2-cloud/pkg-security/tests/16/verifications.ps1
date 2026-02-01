@@ -15,16 +15,10 @@ return (New-Module -Name "Verify.PackageManagerUpdates" -ScriptBlock {
             param($Worker)
             $testingMode = $Worker.Exec("source /usr/local/lib/apt-notify/common.sh && echo `$TESTING_MODE").Output
             if ($testingMode -notmatch "true") { $mod.SDK.Testing.Verifications.Fork("6.8.20", "SKIP", "Testing mode disabled"); return }
-            $snapInstalled = $Worker.Exec("which snap")
-            if (-not $snapInstalled.Success) {
-                $mod.SDK.Testing.Record(@{ Test = "6.8.20"; Name = "snap-update"; Pass = $true; Output = "Skipped - snap not installed" }); return
+            if (-not ($Worker.Exec("which snap")).Success) {
+                $Worker.Test("6.8.20", "snap-update", "echo skipped", { $true }); return
             }
-            $result = $Worker.Exec("sudo /usr/local/bin/snap-update 2>&1; echo exit_code:`$?")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.8.20"; Name = "snap-update script"
-                Pass = ($result.Output -match "exit_code:0")
-                Output = if ($result.Output -match "exit_code:0") { "Ran successfully" } else { $result.Output }
-            })
+            $Worker.Test("6.8.20", "snap-update script", "sudo /usr/local/bin/snap-update 2>&1; echo exit_code:`$?", "exit_code:0")
         }
         "npm-global-update" = {
             param($Worker)
