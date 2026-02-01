@@ -32,28 +32,18 @@ return (New-Module -Name "Verify.PackageSecurity" -ScriptBlock {
         }
         "apt-notify script exists" = {
             param($Worker)
-            $result = $Worker.Exec("test -x /usr/local/bin/apt-notify")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.8.7"; Name = "apt-notify script exists"
-                Pass = $result.Success; Output = "/usr/local/bin/apt-notify"
-            })
+            $Worker.Test("6.8.7", "apt-notify script exists", "test -x /usr/local/bin/apt-notify", { $true })
         }
         "dpkg notification hooks" = {
             param($Worker)
-            $result = $Worker.Exec("cat /etc/apt/apt.conf.d/90pkg-notify")
-            $hookOk = ($result.Output -match "DPkg::Pre-Invoke" -and $result.Output -match "DPkg::Post-Invoke")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.8.8"; Name = "dpkg notification hooks"
-                Pass = $hookOk; Output = "Pre/Post-Invoke hooks configured"
+            $Worker.Test("6.8.8", "dpkg notification hooks", "cat /etc/apt/apt.conf.d/90pkg-notify", { param($out)
+            ($out -match "DPkg::Pre-Invoke") -and ($out -match "DPkg::Post-Invoke")
             })
         }
         "Verbose upgrade reporting" = {
             param($Worker)
-            $uuConf = $Worker.Exec("cat /etc/apt/apt.conf.d/50unattended-upgrades").Output
-            $mod.SDK.Testing.Record(@{
-                Test = "6.8.9"; Name = "Verbose upgrade reporting"
-                Pass = (($uuConf -match 'Verbose.*"true"') -and ($uuConf -match 'MailReport.*"always"'))
-                Output = "Verbose=true, MailReport=always"
+            $Worker.Test("6.8.9", "Verbose upgrade reporting", "cat /etc/apt/apt.conf.d/50unattended-upgrades", { param($out)
+            ($out -match 'Verbose.*"true"') -and ($out -match 'MailReport.*"always"')
             })
         }
         "snap-update script" = {
