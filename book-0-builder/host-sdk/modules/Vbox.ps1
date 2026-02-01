@@ -556,13 +556,22 @@ New-Module -Name SDK.Vbox -ScriptBlock {
         SetNetworkAdapter = {
             param([string]$VMName, [hashtable]$Settings)
             $s = @{}
-            foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) { $s[$key] = $Settings[$key] }
+            foreach ($key in $Settings.Keys) {
+                switch ($key) {
+                    { $_ -in @("nic1","bridgeadapter1") } { $s[$key] = $Settings[$key] }
+                }
+            }
             return $this.Configure($VMName, $s)
         }
         SetFirmware = {
             param([string]$VMName, [hashtable]$Settings)
             $s = @{}
-            foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) { $s[$key] = $Settings[$key] }
+            foreach ($key in $Settings.Keys) {
+                switch ($key) {
+                    "Firmware" { $s["firmware"] = $Settings[$key] }
+                    { $_ -in @("firmware") } { $s[$key] = $Settings[$key] }
+                }
+            }
             return $this.Configure($VMName, $s)
         }
     }
