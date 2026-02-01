@@ -10,27 +10,15 @@ return (New-Module -Name "Verify.OpenCode" -ScriptBlock {
     $mod.Tests = [ordered]@{
         "Node.js installed" = {
             param($Worker)
-            $result = $Worker.Exec("which node")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.14.1"; Name = "Node.js installed"
-                Pass = ($result.Success -and $result.Output -match "node"); Output = $result.Output
-            })
+            $Worker.Test("6.14.1", "Node.js installed", "which node", "node")
         }
         "npm installed" = {
             param($Worker)
-            $result = $Worker.Exec("which npm")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.14.2"; Name = "npm installed"
-                Pass = ($result.Success -and $result.Output -match "npm"); Output = $result.Output
-            })
+            $Worker.Test("6.14.2", "npm installed", "which npm", "npm")
         }
         "OpenCode installed" = {
             param($Worker)
-            $result = $Worker.Exec("which opencode")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.14.3"; Name = "OpenCode installed"
-                Pass = ($result.Success -and $result.Output -match "opencode"); Output = $result.Output
-            })
+            $Worker.Test("6.14.3", "OpenCode installed", "which opencode", "opencode")
         }
         "OpenCode config directory" = {
             param($Worker)
