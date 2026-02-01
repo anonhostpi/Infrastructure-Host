@@ -1,11 +1,11 @@
 param([Parameter(Mandatory = $true)] $SDK)
 
-New-Module -Name "Verify.UpdateSummary" -ScriptBlock {
+return (New-Module -Name "Verify.UpdateSummary" -ScriptBlock {
     param([Parameter(Mandatory = $true)] $SDK)
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\..\..\..\book-0-builder\host-sdk\helpers\PowerShell.ps1"
 
-    $mod.SDK.Testing.Verifications.Register("pkg-security", 17, [ordered]@{
+    $mod.Tests = [ordered]@{
         "Report generated" = {
             param($Worker)
             $Worker.Exec("sudo rm -f /var/lib/apt-notify/test-report.txt /var/lib/apt-notify/test-ai-summary.txt /var/lib/apt-notify/apt-notify.log") | Out-Null
@@ -55,5 +55,7 @@ New-Module -Name "Verify.UpdateSummary" -ScriptBlock {
                 Output = if ($cliMatch) { "CLI: $cliName, Model: $expectedModel" } else { "Expected $cliName with $expectedModel" }
             })
         }
-    })
-} -ArgumentList $SDK
+    }
+
+    Export-ModuleMember -Function @()
+} -ArgumentList $SDK)

@@ -1,11 +1,11 @@
 param([Parameter(Mandatory = $true)] $SDK)
 
-New-Module -Name "Verify.NotificationFlush" -ScriptBlock {
+return (New-Module -Name "Verify.NotificationFlush" -ScriptBlock {
     param([Parameter(Mandatory = $true)] $SDK)
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\..\..\..\book-0-builder\host-sdk\helpers\PowerShell.ps1"
 
-    $mod.SDK.Testing.Verifications.Register("pkg-security", 18, [ordered]@{
+    $mod.Tests = [ordered]@{
         "apt-notify-flush logged" = {
             param($Worker)
             $result = $Worker.Exec("grep 'apt-notify-flush: complete' /var/lib/apt-notify/apt-notify.log")
@@ -15,5 +15,7 @@ New-Module -Name "Verify.NotificationFlush" -ScriptBlock {
                 Output = if ($result.Success) { "Flush logged" } else { "No flush log entry" }
             })
         }
-    })
-} -ArgumentList $SDK
+    }
+
+    Export-ModuleMember -Function @()
+} -ArgumentList $SDK)

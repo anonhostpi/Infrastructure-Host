@@ -1,11 +1,11 @@
 param([Parameter(Mandatory = $true)] $SDK)
 
-New-Module -Name "Verify.PackageManagerUpdates" -ScriptBlock {
+return (New-Module -Name "Verify.PackageManagerUpdates" -ScriptBlock {
     param([Parameter(Mandatory = $true)] $SDK)
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\..\..\..\book-0-builder\host-sdk\helpers\PowerShell.ps1"
 
-    $mod.SDK.Testing.Verifications.Register("pkg-security", 16, [ordered]@{
+    $mod.Tests = [ordered]@{
         "Testing mode enabled" = {
             param($Worker)
             $testingMode = $Worker.Exec("source /usr/local/lib/apt-notify/common.sh && echo `$TESTING_MODE").Output
@@ -98,5 +98,7 @@ New-Module -Name "Verify.PackageManagerUpdates" -ScriptBlock {
                 Output = if ($result.Output -match "exit_code:0") { "Ran successfully" } else { $result.Output }
             })
         }
-    })
-} -ArgumentList $SDK
+    }
+
+    Export-ModuleMember -Function @()
+} -ArgumentList $SDK)
