@@ -543,7 +543,14 @@ New-Module -Name SDK.Vbox -ScriptBlock {
         SetMemory = {
             param([string]$VMName, [hashtable]$Settings)
             $s = @{}
-            foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) { $s[$key] = $Settings[$key] }
+            foreach ($key in $Settings.Keys) {
+                switch ($key) {
+                    "MemoryMB" { $s["memory"] = $Settings[$key] }
+                    "MemoryGB" { $s["memory"] = $Settings[$key] * 1024 }
+                    "StartupBytes" { $s["memory"] = [math]::Floor($Settings[$key] / 1MB) }
+                    { $_ -in @("memory") } { $s[$key] = $Settings[$key] }
+                }
+            }
             return $this.Configure($VMName, $s)
         }
         SetNetworkAdapter = {
