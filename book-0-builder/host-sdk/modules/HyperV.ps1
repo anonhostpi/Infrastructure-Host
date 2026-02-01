@@ -74,7 +74,7 @@ New-Module -Name SDK.HyperV -ScriptBlock {
                     $this.IsoPath,
                     $this.Network,
                     $this.Generation,
-                    @{},
+                    "efi",
                     $this.Disk,
                     $this.Memory,
                     $this.CPUs
