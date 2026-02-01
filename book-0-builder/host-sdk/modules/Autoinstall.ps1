@@ -13,9 +13,9 @@ New-Module -Name SDK.Autoinstall -ScriptBlock {
             $artifacts = $mod.SDK.Builder.Artifacts
             if (-not $artifacts -or -not $artifacts.iso) { throw "No ISO artifact found. Build the ISO first." }
             $baseConfig = $mod.SDK.Settings.Virtualization.Vbox
-            $config = @{}; foreach ($k in $baseConfig.Keys) { $config[$k] = $baseConfig[$k] }
+            $config = @{}; foreach ($k in ($baseConfig.Keys | ForEach-Object { $_ })) { $config[$k] = $baseConfig[$k] }
             $config.IsoPath = $artifacts.iso
-            foreach ($k in $Overrides.Keys) { $config[$k] = $Overrides[$k] }
+            foreach ($k in ($Overrides.Keys | ForEach-Object { $_ })) { $config[$k] = $Overrides[$k] }
             return $mod.SDK.Vbox.Worker(@{ Config = $config })
         }
     }

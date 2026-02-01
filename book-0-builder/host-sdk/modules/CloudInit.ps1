@@ -29,9 +29,9 @@ New-Module -Name SDK.CloudInit -ScriptBlock {
             param([int]$Layer, [hashtable]$Overrides = @{})
             $artifacts = $this.Build($Layer)
             $baseConfig = $mod.SDK.Settings.Virtualization.Runner
-            $config = @{}; foreach ($k in $baseConfig.Keys) { $config[$k] = $baseConfig[$k] }
+            $config = @{}; foreach ($k in ($baseConfig.Keys | ForEach-Object { $_ })) { $config[$k] = $baseConfig[$k] }
             $config.CloudInit = "$($mod.SDK.Root())/$($artifacts.cloud_init)"
-            foreach ($k in $Overrides.Keys) { $config[$k] = $Overrides[$k] }
+            foreach ($k in ($Overrides.Keys | ForEach-Object { $_ })) { $config[$k] = $Overrides[$k] }
             return $mod.SDK.Multipass.Worker(@{ Config = $config })
         }
     }
