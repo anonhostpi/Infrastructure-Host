@@ -48,28 +48,15 @@ return (New-Module -Name "Verify.PackageSecurity" -ScriptBlock {
         }
         "snap-update script" = {
             param($Worker)
-            $result = $Worker.Exec("test -x /usr/local/bin/snap-update && echo exists")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.8.10"; Name = "snap-update script"
-                Pass = ($result.Output -match "exists"); Output = "/usr/local/bin/snap-update"
-            })
+            $Worker.Test("6.8.10", "snap-update script", "test -x /usr/local/bin/snap-update && echo exists", "exists")
         }
         "snap refresh.hold configured" = {
             param($Worker)
-            $result = $Worker.Exec("sudo snap get system refresh.hold 2>/dev/null || echo not-set")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.8.11"; Name = "snap refresh.hold configured"
-                Pass = ($result.Output -match "forever" -or $result.Output -match "20[0-9]{2}")
-                Output = "refresh.hold=$($result.Output)"
-            })
+            $Worker.Test("6.8.11", "snap refresh.hold configured", "sudo snap get system refresh.hold 2>/dev/null || echo not-set", "forever|20[0-9]{2}")
         }
         "brew-update script" = {
             param($Worker)
-            $result = $Worker.Exec("test -x /usr/local/bin/brew-update && echo exists")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.8.12"; Name = "brew-update script"
-                Pass = ($result.Output -match "exists"); Output = "/usr/local/bin/brew-update"
-            })
+            $Worker.Test("6.8.12", "brew-update script", "test -x /usr/local/bin/brew-update && echo exists", "exists")
         }
         "pip-global-update script" = {
             param($Worker)
