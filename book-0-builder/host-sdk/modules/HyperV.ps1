@@ -110,6 +110,17 @@ New-Module -Name SDK.HyperV -ScriptBlock {
             if ($ext) { return $ext.Name }
             return $null
         }
+        Drives = {
+            param([string]$VMName)
+            $all = @()
+            foreach ($d in (Get-VMHardDiskDrive -VMName $VMName)) {
+                $all += @{ Controller = $d.ControllerType; Port = $d.ControllerNumber; Path = $d.Path; IsDVD = $false }
+            }
+            foreach ($d in (Get-VMDvdDrive -VMName $VMName)) {
+                $all += @{ Controller = $d.ControllerType; Port = $d.ControllerNumber; Path = $d.Path; IsDVD = $true }
+            }
+            return $all
+        }
     }
 
     $SDK.Extend("HyperV", $HyperV)
