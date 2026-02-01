@@ -161,6 +161,15 @@ New-Module -Name SDK.HyperV -ScriptBlock {
                 Set-VMDvdDrive -VMDvdDrive ($dvds | Select-Object -First 1) -Path $ISOPath
             }
         }
+        Exists = {
+            param([string]$VMName)
+            return $null -ne (Get-VM -Name $VMName -ErrorAction SilentlyContinue)
+        }
+        Running = {
+            param([string]$VMName)
+            if (-not $this.Exists($VMName)) { return $false }
+            return (Get-VM -Name $VMName).State -eq 'Running'
+        }
     }
 
     $SDK.Extend("HyperV", $HyperV)
