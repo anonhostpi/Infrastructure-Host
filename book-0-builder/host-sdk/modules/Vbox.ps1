@@ -30,8 +30,8 @@ New-Module -Name SDK.Vbox -ScriptBlock {
                 $config = $this.Config
                 $defaults = if ($this.Defaults) { $this.Defaults } else { $mod.Configurator.Defaults }
                 $rendered = @{}
-                foreach ($key in $defaults.Keys) { $rendered[$key] = $defaults[$key] }
-                foreach ($key in $config.Keys) { $rendered[$key] = $config[$key] }
+                foreach ($key in ($defaults.Keys | ForEach-Object { $_ })) { $rendered[$key] = $defaults[$key] }
+                foreach ($key in ($config.Keys | ForEach-Object { $_ })) { $rendered[$key] = $config[$key] }
                 # Derive SSH settings from config files if not set
                 if (-not $rendered.SSHUser -or -not $rendered.SSHHost) {
                     $identity = $mod.SDK.Settings.Load("book-2-cloud/users/config/identity.config.yaml")
@@ -490,7 +490,7 @@ New-Module -Name SDK.Vbox -ScriptBlock {
 
             $params = @("modifyvm", $VMName)
 
-            foreach( $key in $Settings.Keys ){
+            foreach( $key in ($Settings.Keys | ForEach-Object { $_ }) ){
                 $value = $Settings[$key]
                 $params += "--$key"
                 $params += "$value"
