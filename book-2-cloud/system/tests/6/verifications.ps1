@@ -5,11 +5,11 @@ New-Module -Name "Verify.SystemSettings" -ScriptBlock {
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\..\..\..\book-0-builder\host-sdk\helpers\PowerShell.ps1"
 
-    $SDK.Testing.Verifications.Register("system", 6, [ordered]@{
+    $mod.SDK.Testing.Verifications.Register("system", 6, [ordered]@{
         "Timezone configured" = {
             param($Worker)
             $result = $Worker.Exec("timedatectl show --property=Timezone --value")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.6.1"; Name = "Timezone configured"
                 Pass = ($result.Success -and $result.Output); Output = $result.Output
             })
@@ -17,7 +17,7 @@ New-Module -Name "Verify.SystemSettings" -ScriptBlock {
         "Locale set" = {
             param($Worker)
             $result = $Worker.Exec("locale")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.6.2"; Name = "Locale set"
                 Pass = ($result.Output -match "LANG="); Output = ($result.Output | Select-Object -First 1)
             })
@@ -25,7 +25,7 @@ New-Module -Name "Verify.SystemSettings" -ScriptBlock {
         "NTP enabled" = {
             param($Worker)
             $result = $Worker.Exec("timedatectl show --property=NTP --value")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.6.3"; Name = "NTP enabled"
                 Pass = ($result.Output -match "yes"); Output = "NTP=$($result.Output)"
             })
