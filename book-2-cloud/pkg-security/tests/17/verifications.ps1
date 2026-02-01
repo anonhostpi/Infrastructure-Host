@@ -14,22 +14,12 @@ return (New-Module -Name "Verify.UpdateSummary" -ScriptBlock {
             $Worker.Exec("sudo rm -f /var/lib/apt-notify/apt-notify.queue") | Out-Null
             foreach ($line in $queueLines) { $Worker.Exec("sudo bash -c `"echo '$line' >> /var/lib/apt-notify/apt-notify.queue`"") | Out-Null }
             $Worker.Exec("sudo timeout 30 /usr/local/bin/apt-notify-flush") | Out-Null
-            $reportExists = $Worker.Exec("sudo test -s /var/lib/apt-notify/test-report.txt && echo exists")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.8.25"; Name = "Report generated"
-                Pass = ($reportExists.Output -match "exists")
-                Output = if ($reportExists.Output -match "exists") { "Report created" } else { "Report not created" }
-            })
+            $Worker.Test("6.8.25", "Report generated", "sudo test -s /var/lib/apt-notify/test-report.txt && echo exists", "exists")
         }
         "Report contains npm section" = {
             param($Worker)
-            $report = $Worker.Exec("cat /var/lib/apt-notify/test-report.txt 2>/dev/null").Output
-            $hasNpm = ($report -match "NPM.*UPGRADED")
-            $hasIsOdd = ($report -match "is-odd")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.8.26"; Name = "Report contains npm section"
-                Pass = ($hasNpm -and $hasIsOdd)
-                Output = if ($hasNpm -and $hasIsOdd) { "NPM section with is-odd" } else { "Expected NPM section with is-odd" }
+            $Worker.Test("6.8.26", "Report contains npm section", "cat /var/lib/apt-notify/test-report.txt 2>/dev/null", { param($out)
+            ($out -match "NPM.*UPGRADED") -and ($out -match "is-odd")
             })
         }
         "AI summary reports valid model" = {
