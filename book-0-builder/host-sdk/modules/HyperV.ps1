@@ -52,6 +52,20 @@ New-Module -Name SDK.HyperV -ScriptBlock {
             SSHPort = { return $this.Rendered.SSHPort }
             Generation = { return $this.Rendered.Generation }
         }
+        Methods = @{
+            Exists = { return $mod.SDK.HyperV.Exists($this.Name) }
+            Running = { return $mod.SDK.HyperV.Running($this.Name) }
+            Start = { return $mod.SDK.HyperV.Start($this.Name) }
+            Shutdown = {
+                param([bool]$Force)
+                return $mod.SDK.HyperV.Shutdown($this.Name, $Force)
+            }
+            UntilShutdown = {
+                param([int]$TimeoutSeconds)
+                return $mod.SDK.HyperV.UntilShutdown($this.Name, $TimeoutSeconds)
+            }
+            Destroy = { return $mod.SDK.HyperV.Destroy($this.Name) }
+        }
     }
 
     $HyperV = New-Object PSObject
