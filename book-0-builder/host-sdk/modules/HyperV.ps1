@@ -297,8 +297,18 @@ New-Module -Name SDK.HyperV -ScriptBlock {
                     $configured = $this.SetFirmware($VMName, $Firmware)
                     if (-not $configured) { throw "Failed to configure firmware for VM '$VMName'." }
                 }
-                if ($Optimize) { $this.Optimize($VMName) }
-                if ($Hypervisor) { $this.Hypervisor($VMName) }
+                $switch = $this.GetGuestAdapter($AdapterName)
+                if ($switch) {
+                    Connect-VMNetworkAdapter -VMName $VMName -SwitchName $switch
+                }
+                if ($Optimize) {
+                    $configured = $this.Optimize($VMName)
+                    if (-not $configured) { throw "Failed to optimize VM '$VMName'." }
+                }
+                if ($Hypervisor) {
+                    $configured = $this.Hypervisor($VMName)
+                    if (-not $configured) { throw "Failed to enable nested virtualization for VM '$VMName'." }
+                }
                 if ($DVDPath -and (Test-Path $DVDPath)) {
                     Add-VMDvdDrive -VMName $VMName -Path $DVDPath
                 }
