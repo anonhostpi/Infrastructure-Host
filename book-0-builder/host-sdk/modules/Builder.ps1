@@ -109,6 +109,26 @@ New-Module -Name SDK.Builder -ScriptBlock {
             $mod.Runners[$Name] = $Worker
             return $Worker
         }
+        Runner = {
+            param([hashtable]$Config, [string]$Backend = "Multipass")
+            $config = @{}
+            foreach ($k in ($Config.Keys | ForEach-Object { $_ })) { $config[$k] = $Config[$k] }
+            $artifacts = $this.Artifacts
+            if ($Backend -eq "Multipass") {
+                $remote = $artifacts.cloud_init
+                $local = Join-Path $mod.SDK.Root() "output" (Split-Path $remote -Leaf)
+                $this.Pull($remote, $local)
+                $config.CloudInit = $local
+            } else {
+                $remote = $artifacts.iso
+                $local = Join-Path $mod.SDK.Root() "output" (Split-Path $remote -Leaf)
+                $this.Pull($remote, $local)
+                $config.IsoPath = $local
+            }
+            $worker = $mod.SDK."$Backend".Worker(@{ Config = $config })
+            $this.Register($config.Name, $worker)
+            return $worker
+        }
     }
 
     $SDK.Extend("Builder", $Builder)
