@@ -8,27 +8,15 @@ return (New-Module -Name "Verify.Base" -ScriptBlock {
     $mod.Tests = [ordered]@{
         "SSH reachable" = {
             param($Worker)
-            $result = $Worker.Exec("echo ok")
-            $mod.SDK.Testing.Record(@{
-                Test = "0.1"; Name = "SSH reachable"
-                Pass = $result.Success; Output = $result.Output
-            })
+            $Worker.Test("0.1", "SSH reachable", "echo ok", "ok")
         }
         "OS version correct" = {
             param($Worker)
-            $result = $Worker.Exec("lsb_release -cs")
-            $mod.SDK.Testing.Record(@{
-                Test = "0.2"; Name = "OS version correct"
-                Pass = ($result.Success -and $result.Output); Output = $result.Output
-            })
+            $Worker.Test("0.2", "OS version correct", "lsb_release -cs", ".")
         }
         "Root filesystem is ext4" = {
             param($Worker)
-            $result = $Worker.Exec("findmnt -n -o FSTYPE /")
-            $mod.SDK.Testing.Record(@{
-                Test = "0.3"; Name = "Root filesystem is ext4"
-                Pass = ($result.Output -match "ext4"); Output = $result.Output
-            })
+            $Worker.Test("0.3", "Root filesystem is ext4", "findmnt -n -o FSTYPE /", "ext4")
         }
         "Default user exists" = {
             param($Worker)
