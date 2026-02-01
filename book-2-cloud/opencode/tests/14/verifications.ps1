@@ -43,7 +43,7 @@ New-Module -Name "Verify.OpenCode" -ScriptBlock {
         "OpenCode auth file" = {
             param($Worker)
             $result = $Worker.Exec("sudo test -f /home/$username/.local/share/opencode/auth.json && echo exists")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.14.5"; Name = "OpenCode auth file"
                 Pass = ($result.Output -match "exists"); Output = "/home/$username/.local/share/opencode/auth.json"
             })
@@ -53,7 +53,7 @@ New-Module -Name "Verify.OpenCode" -ScriptBlock {
             $result = $Worker.Exec("sudo -u $username env HOME=/home/$username timeout 30 opencode run test 2>&1")
             $clean = $result.Output -replace '\x1b\[[0-9;]*[a-zA-Z]', ''
             $hasResponse = ($clean -and $clean.Length -gt 0 -and $clean -notmatch "^error|failed|timeout")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.14.6"; Name = "OpenCode AI response"
                 Pass = $hasResponse
                 Output = if ($hasResponse) { "Response received" } else { "Failed: $clean" }
@@ -61,15 +61,15 @@ New-Module -Name "Verify.OpenCode" -ScriptBlock {
         }
         "OpenCode credential chain" = {
             param($Worker)
-            $settings = $SDK.Settings
+            $settings = $mod.SDK.Settings
             if (-not ($settings.opencode.enabled -and $settings.claude_code.enabled)) {
-                $SDK.Testing.Verifications.Fork("6.14.7", "SKIP", "OpenCode + Claude Code not both enabled"); return
+                $mod.SDK.Testing.Verifications.Fork("6.14.7", "SKIP", "OpenCode + Claude Code not both enabled"); return
             }
             $hostCreds = Get-Content "$env:USERPROFILE\.claude\.credentials.json" -Raw 2>$null | ConvertFrom-Json
             $vmCreds = $Worker.Exec("sudo cat /home/$username/.local/share/opencode/auth.json").Output | ConvertFrom-Json
             $tokensMatch = ($hostCreds -and $vmCreds -and $hostCreds.accessToken -eq $vmCreds.anthropic.accessToken)
             $models = $Worker.Exec("sudo su - $username -c 'opencode models' 2>/dev/null")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.14.7"; Name = "OpenCode credential chain"
                 Pass = ($tokensMatch -and $models.Output -match "anthropic")
                 Output = if ($tokensMatch) { "Tokens match, provider: anthropic" } else { "Token mismatch" }
