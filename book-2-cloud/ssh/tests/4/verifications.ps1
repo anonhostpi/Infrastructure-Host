@@ -22,21 +22,11 @@ return (New-Module -Name "Verify.SSHHardening" -ScriptBlock {
         }
         "SSH service active" = {
             param($Worker)
-            $result = $Worker.Exec("systemctl is-active ssh")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.4.3"; Name = "SSH service active"
-                Pass = ($result.Output -match "^active$"); Output = $result.Output
-            })
+            $Worker.Test("6.4.3", "SSH service active", "systemctl is-active ssh", "active")
         }
         "Root SSH login rejected" = {
             param($Worker)
-            $result = $Worker.Exec("ssh -o BatchMode=yes -o ConnectTimeout=5 -o StrictHostKeyChecking=no root@localhost exit 2>&1; echo exit_code:`$?")
-            $rootBlocked = ($result.Output -match "Permission denied" -or $result.Output -match "publickey")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.4.4"; Name = "Root SSH login rejected"
-                Pass = $rootBlocked
-                Output = if ($rootBlocked) { "Root login correctly rejected" } else { $result.Output }
-            })
+            $Worker.Test("6.4.4", "Root SSH login rejected", "ssh -o BatchMode=yes -o ConnectTimeout=5 -o StrictHostKeyChecking=no root@localhost exit 2>&1; echo exit_code:`$?", "Permission denied|publickey")
         }
         "SSH key auth" = {
             param($Worker)
