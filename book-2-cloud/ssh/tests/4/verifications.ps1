@@ -30,12 +30,7 @@ return (New-Module -Name "Verify.SSHHardening" -ScriptBlock {
         }
         "SSH key auth" = {
             param($Worker)
-            $result = $Worker.Exec("ssh -o BatchMode=yes -o ConnectTimeout=5 -o StrictHostKeyChecking=no ${username}@localhost echo OK")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.4.5"; Name = "SSH key auth for $username"
-                Pass = ($result.Success -and $result.Output -match "OK")
-                Output = if ($result.Success) { "Key authentication successful" } else { $result.Output }
-            })
+            $Worker.Test("6.4.5", "SSH key auth for $username", "ssh -o BatchMode=yes -o ConnectTimeout=5 -o StrictHostKeyChecking=no ${username}@localhost echo OK", "OK")
         }
     }
 
