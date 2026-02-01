@@ -4476,3 +4476,330 @@ Update Worker Create delegation for renamed params
 | **Rule 3: Lines** | 7 lines | PASS |
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 122: `book-0-builder/host-sdk/modules/HyperV.ps1` - Change Create Firmware from hashtable to string
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-create-firmware-string
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Change Create Firmware from hashtable to string
+
+#### Diff
+
+```diff
+-                [hashtable]$Firmware = @{},
++                [string]$Firmware = "efi",
+...
+-                if ($Firmware.Count -gt 0) {
+-                    $configured = $this.SetFirmware($VMName, $Firmware)
++                if ($Firmware) {
++                    $configured = $this.SetFirmware($VMName, @{ Firmware = $Firmware })
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 6 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 123: `book-0-builder/host-sdk/modules/HyperV.ps1` - Update Worker Create delegation to pass firmware string
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-worker-create-firmware-string
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Update Worker Create delegation to pass firmware string
+
+#### Diff
+
+```diff
+-                    @{},
++                    "efi",
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 2 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 124: `book-0-builder/host-sdk/modules/Vbox.ps1` - Add unified key map to SetProcessor
+
+### book-0-builder.host-sdk.modules.Vbox.vbox-set-processor-unified
+
+> **File**: `book-0-builder/host-sdk/modules/Vbox.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add unified key map to SetProcessor
+
+#### Diff
+
+```diff
+ SetProcessor = {
+     param([string]$VMName, [hashtable]$Settings)
+     $s = @{}
+-    foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) {
++    foreach ($key in $Settings.Keys) {
+         switch ($key) {
+             "Count" { $s["cpus"] = $Settings[$key] }
+-            default { $s[$key] = $Settings[$key] }
++            "ExposeVirtualizationExtensions" {
++                $s["nested-hw-virt"] = if ($Settings[$key]) { "on" } else { "off" }
++            }
++            { $_ -in @("cpus","pae","nestedpaging","hwvirtex","largepages","nested-hw-virt","graphicscontroller","vram") } {
++                $s[$key] = $Settings[$key]
++            }
+         }
+     }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 9 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 125: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add unified key map to SetProcessor
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-set-processor-unified
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add unified key map to SetProcessor
+
+#### Diff
+
+```diff
+ SetProcessor = {
+     param([string]$VMName, [hashtable]$Settings)
+     $s = @{ VMName = $VMName }
+-    foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) {
++    foreach ($key in $Settings.Keys) {
+         switch ($key) {
+-            "Count" { $s["Count"] = $Settings[$key] }
+-            default { $s[$key] = $Settings[$key] }
++            "cpus" { $s.Count = $Settings[$key] }
++            "nested-hw-virt" {
++                $s.ExposeVirtualizationExtensions = $Settings[$key] -eq "on"
++            }
++            { $_ -in @("Count","ExposeVirtualizationExtensions") } {
++                $s[$key] = $Settings[$key]
++            }
+         }
+     }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 11 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 126: `book-0-builder/host-sdk/modules/Vbox.ps1` - Add unified key map to SetMemory
+
+### book-0-builder.host-sdk.modules.Vbox.vbox-set-memory-unified
+
+> **File**: `book-0-builder/host-sdk/modules/Vbox.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add unified key map to SetMemory
+
+#### Diff
+
+```diff
+ SetMemory = {
+     param([string]$VMName, [hashtable]$Settings)
+     $s = @{}
+-    foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) { $s[$key] = $Settings[$key] }
++    foreach ($key in $Settings.Keys) {
++        switch ($key) {
++            "MemoryMB" { $s["memory"] = $Settings[$key] }
++            "MemoryGB" { $s["memory"] = $Settings[$key] * 1024 }
++            "StartupBytes" { $s["memory"] = [math]::Floor($Settings[$key] / 1MB) }
++            { $_ -in @("memory") } { $s[$key] = $Settings[$key] }
++        }
++    }
+     return $this.Configure($VMName, $s)
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 9 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 127: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add unified key map to SetMemory
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-set-memory-unified
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add unified key map to SetMemory
+
+#### Diff
+
+```diff
+ SetMemory = {
+     param([string]$VMName, [hashtable]$Settings)
+     $s = @{ VMName = $VMName }
+-    foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) { $s[$key] = $Settings[$key] }
++    foreach ($key in $Settings.Keys) {
++        switch ($key) {
++            "MemoryMB" { $s.StartupBytes = $Settings[$key] * 1MB }
++            "MemoryGB" { $s.StartupBytes = $Settings[$key] * 1GB }
++            "memory" { $s.StartupBytes = $Settings[$key] * 1MB }
++            { $_ -in @("DynamicMemoryEnabled","StartupBytes") } { $s[$key] = $Settings[$key] }
++        }
++    }
+     try { Set-VMMemory @s -ErrorAction Stop; return $true } catch { return $false }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 9 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 128: `book-0-builder/host-sdk/modules/Vbox.ps1` - Add key filtering to SetNetworkAdapter and SetFirmware
+
+### book-0-builder.host-sdk.modules.Vbox.vbox-set-net-firmware-filter
+
+> **File**: `book-0-builder/host-sdk/modules/Vbox.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add key filtering to SetNetworkAdapter and SetFirmware
+
+#### Diff
+
+```diff
+ SetNetworkAdapter = {
+     param([string]$VMName, [hashtable]$Settings)
+     $s = @{}
+-    foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) { $s[$key] = $Settings[$key] }
++    foreach ($key in $Settings.Keys) {
++        switch ($key) {
++            { $_ -in @("nic1","bridgeadapter1") } { $s[$key] = $Settings[$key] }
++        }
++    }
+     return $this.Configure($VMName, $s)
+ }
+ SetFirmware = {
+     param([string]$VMName, [hashtable]$Settings)
+     $s = @{}
+-    foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) { $s[$key] = $Settings[$key] }
++    foreach ($key in $Settings.Keys) {
++        switch ($key) {
++            "Firmware" { $s["firmware"] = $Settings[$key] }
++            { $_ -in @("firmware") } { $s[$key] = $Settings[$key] }
++        }
++    }
+     return $this.Configure($VMName, $s)
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 13 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 129: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add key filtering to SetNetworkAdapter and SetFirmware
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-set-net-firmware-filter
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add key filtering to SetNetworkAdapter and SetFirmware
+
+#### Diff
+
+```diff
+ SetNetworkAdapter = {
+     param([string]$VMName, [hashtable]$Settings)
+     $s = @{ VMName = $VMName }
+-    foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) { $s[$key] = $Settings[$key] }
++    foreach ($key in $Settings.Keys) {
++        switch ($key) {
++            { $_ -in @("MacAddressSpoofing") } { $s[$key] = $Settings[$key] }
++        }
++    }
+     try { Set-VMNetworkAdapter @s -ErrorAction Stop; return $true } catch { return $false }
+ }
+ SetFirmware = {
+     param([string]$VMName, [hashtable]$Settings)
+     $s = @{ VMName = $VMName }
+-    foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) { $s[$key] = $Settings[$key] }
++    foreach ($key in $Settings.Keys) {
++        switch ($key) {
++            { $_ -in @("EnableSecureBoot","SecureBootTemplate") } { $s[$key] = $Settings[$key] }
++        }
++    }
+     try { Set-VMFirmware @s -ErrorAction Stop; return $true } catch { return $false }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 12 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
