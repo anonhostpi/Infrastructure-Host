@@ -41,6 +41,16 @@ New-Module -Name SDK.HyperV -ScriptBlock {
                 $this | Add-Member -MemberType NoteProperty -Name Rendered -Value $rendered -Force
                 return $rendered
             }
+            Name = { return $this.Rendered.Name }
+            CPUs = { return $this.Rendered.CPUs }
+            MemoryMB = { return $this.Rendered.MemoryMB }
+            DiskGB = { return $this.Rendered.DiskGB }
+            Network = { return $this.Rendered.Network }
+            MediumPath = { return $this.Rendered.MediumPath }
+            SSHUser = { return $this.Rendered.SSHUser }
+            SSHHost = { return $this.Rendered.SSHHost }
+            SSHPort = { return $this.Rendered.SSHPort }
+            Generation = { return $this.Rendered.Generation }
         }
     }
 
