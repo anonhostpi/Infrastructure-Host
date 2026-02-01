@@ -65,6 +65,18 @@ New-Module -Name SDK.HyperV -ScriptBlock {
                 return $mod.SDK.HyperV.UntilShutdown($this.Name, $TimeoutSeconds)
             }
             Destroy = { return $mod.SDK.HyperV.Destroy($this.Name) }
+            Create = {
+                return $mod.SDK.HyperV.Create(
+                    $this.Name,
+                    $this.MediumPath,
+                    $null,
+                    $this.Network,
+                    $this.Generation,
+                    $this.DiskGB,
+                    $this.MemoryMB,
+                    $this.CPUs
+                )
+            }
         }
     }
 
