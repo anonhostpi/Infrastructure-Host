@@ -33,7 +33,7 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
             if (-not $tests) { return }
             $fragDir = Split-Path (Split-Path (Split-Path $Path))
             $fragment = $mod.SDK.Fragments.Layers | Where-Object { $_.Path -eq $fragDir }
-            if (-not $fragment) { return }
+            if (-not $fragment) { throw "No fragment found for path: $fragDir" }
             $order = $fragment.Order
             if (-not $mod.Tests[$Layer]) { $mod.Tests[$Layer] = @{} }
             if (-not $mod.Tests[$Layer][$Book]) { $mod.Tests[$Layer][$Book] = @{} }
