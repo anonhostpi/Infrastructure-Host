@@ -29,7 +29,7 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
             param([string]$Fragment, [int]$Layer, [System.Collections.Specialized.OrderedDictionary]$Tests)
             if (-not $mod.Tests[$Fragment]) { $mod.Tests[$Fragment] = @{} }
             if (-not $mod.Tests[$Fragment][$Layer]) { $mod.Tests[$Fragment][$Layer] = [ordered]@{} }
-            foreach ($key in $Tests.Keys) {
+            foreach ($key in ($Tests.Keys | ForEach-Object { $_ })) {
                 $mod.Tests[$Fragment][$Layer][$key] = $Tests[$key]
             }
         }
