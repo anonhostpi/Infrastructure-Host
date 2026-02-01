@@ -276,7 +276,13 @@ New-Module -Name SDK.HyperV -ScriptBlock {
             foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) {
                 switch ($key) {
                     { $_ -in @("EnableSecureBoot","SecureBootTemplate") } { $s[$key] = $Settings[$key] }
-                    { $_ -in @("Firmware","firmware") } {} # VBox only
+                    { $_ -in @("Firmware","firmware") } {
+                        if ($Settings[$key] -eq "efi") {
+                            $s.EnableSecureBoot = "On"
+                        } else {
+                            Write-Warning "HyperV Gen2 does not support BIOS firmware"
+                        }
+                    }
                 }
             }
             try { Set-VMFirmware @s -ErrorAction Stop; return $true } catch { return $false }
