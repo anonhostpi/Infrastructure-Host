@@ -103,6 +103,14 @@ New-Module -Name SDK.HyperV -ScriptBlock {
     }
 
     Add-ScriptMethods $HyperV @{
+        Elevated = {
+            $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
+            $principal = New-Object Security.Principal.WindowsPrincipal($identity)
+            return $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+        }
+    }
+
+    Add-ScriptMethods $HyperV @{
         GetGuestAdapter = {
             param([Parameter(Mandatory = $true)] [string]$AdapterName)
             $adapter = $mod.SDK.Network.GetGuestAdapter($AdapterName)
