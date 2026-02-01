@@ -8,7 +8,7 @@ New-Module -Name Helpers.Config -ScriptBlock {
         )
 
         $result = $Base.Clone()
-        foreach ($key in $Override.Keys) {
+        foreach ($key in ($Override.Keys | ForEach-Object { $_ })) {
             if ($result.ContainsKey($key)) {
                 if ($result[$key] -is [hashtable] -and $Override[$key] -is [hashtable]) {
                     $result[$key] = Merge-DeepHashtable -Base $result[$key] -Override $Override[$key]
@@ -51,7 +51,7 @@ New-Module -Name Helpers.Config -ScriptBlock {
             if ($yaml -is [hashtable]) {
                 $keyCount = ($yaml.Keys | ForEach-Object { $_ } | Measure-Object).Count
                 if ($keyCount -eq 1) {
-                    $onlyKey = @($yaml.Keys)[0]
+                    $onlyKey = @(($yaml.Keys | ForEach-Object { $_ }))[0]
                     if ($onlyKey -eq $key) {
                         $yaml = $yaml[$onlyKey]
                     }
@@ -64,7 +64,7 @@ New-Module -Name Helpers.Config -ScriptBlock {
         # Apply testing config overrides (mirrors BuildContext._apply_testing_overrides)
         $testingConfig = $config['testing']
         if ($testingConfig -is [hashtable] -and $testingConfig['testing'] -eq $true) {
-            foreach ($key in $testingConfig.Keys) {
+            foreach ($key in ($testingConfig.Keys | ForEach-Object { $_ })) {
                 if ($key -eq 'testing') { continue }
 
                 if ($config.ContainsKey($key) -and $testingConfig[$key] -is [hashtable]) {
