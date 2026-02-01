@@ -113,13 +113,7 @@ return (New-Module -Name "Verify.MSMTPMail" -ScriptBlock {
                 $mod.SDK.Testing.Verifications.Fork("6.7.11", "SKIP", "No inline password or recipient"); return
             }
             $subject = "Infrastructure-Host Verification Test"
-            $result = $Worker.Exec("echo -e 'Subject: $subject\n\nAutomated test.' | sudo msmtp '$($smtp.recipient)'")
-            $logCheck = $Worker.Exec("sudo tail -1 /var/log/msmtp.log")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.7.11"; Name = "Test email sent"
-                Pass = ($result.Success -and $logCheck.Output -match $smtp.recipient)
-                Output = if ($result.Success) { "Email sent" } else { $result.Output }
-            })
+            $Worker.Test("6.7.11", "Test email sent", "echo -e 'Subject: $subject\n\nAutomated test.' | sudo msmtp '$($smtp.recipient)' && sudo tail -1 /var/log/msmtp.log", "$([regex]::Escape($smtp.recipient))")
         }
     }
 
