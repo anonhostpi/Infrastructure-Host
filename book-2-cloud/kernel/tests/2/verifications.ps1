@@ -8,19 +8,11 @@ return (New-Module -Name "Verify.KernelHardening" -ScriptBlock {
     $mod.Tests = [ordered]@{
         "Security sysctl config exists" = {
             param($Worker)
-            $result = $Worker.Exec("test -f /etc/sysctl.d/99-security.conf")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.2.1"; Name = "Security sysctl config exists"
-                Pass = $result.Success; Output = "/etc/sysctl.d/99-security.conf"
-            })
+            $Worker.Test("6.2.1", "Security sysctl config exists", "test -f /etc/sysctl.d/99-security.conf", { $true })
         }
         "Reverse path filtering enabled" = {
             param($Worker)
-            $result = $Worker.Exec("sysctl net.ipv4.conf.all.rp_filter")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.2.2"; Name = "Reverse path filtering enabled"
-                Pass = ($result.Output -match "= 1"); Output = $result.Output
-            })
+            $Worker.Test("6.2.2", "Reverse path filtering enabled", "sysctl net.ipv4.conf.all.rp_filter", "= 1")
         }
         "SYN cookies enabled" = {
             param($Worker)
