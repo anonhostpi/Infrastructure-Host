@@ -224,7 +224,7 @@ New-Module -Name SDK.HyperV -ScriptBlock {
         SetProcessor = {
             param([string]$VMName, [hashtable]$Settings)
             $s = @{ VMName = $VMName }
-            foreach ($key in $Settings.Keys) {
+            foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) {
                 switch ($key) {
                     "cpus" { $s.Count = $Settings[$key] }
                     "nested-hw-virt" {
@@ -240,7 +240,7 @@ New-Module -Name SDK.HyperV -ScriptBlock {
         SetMemory = {
             param([string]$VMName, [hashtable]$Settings)
             $s = @{ VMName = $VMName }
-            foreach ($key in $Settings.Keys) {
+            foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) {
                 switch ($key) {
                     "MemoryMB" { $s.StartupBytes = $Settings[$key] * 1MB }
                     "MemoryGB" { $s.StartupBytes = $Settings[$key] * 1GB }
@@ -253,7 +253,7 @@ New-Module -Name SDK.HyperV -ScriptBlock {
         SetNetworkAdapter = {
             param([string]$VMName, [hashtable]$Settings)
             $s = @{ VMName = $VMName }
-            foreach ($key in $Settings.Keys) {
+            foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) {
                 switch ($key) {
                     { $_ -in @("MacAddressSpoofing") } { $s[$key] = $Settings[$key] }
                 }
@@ -263,7 +263,7 @@ New-Module -Name SDK.HyperV -ScriptBlock {
         SetFirmware = {
             param([string]$VMName, [hashtable]$Settings)
             $s = @{ VMName = $VMName }
-            foreach ($key in $Settings.Keys) {
+            foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) {
                 switch ($key) {
                     { $_ -in @("EnableSecureBoot","SecureBootTemplate") } { $s[$key] = $Settings[$key] }
                 }
