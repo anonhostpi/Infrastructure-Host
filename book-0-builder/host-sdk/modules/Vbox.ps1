@@ -504,12 +504,12 @@ New-Module -Name SDK.Vbox -ScriptBlock {
                 [string] $VMName
             )
 
-            return $this.Configure($VMName, @{
+            return $this.SetProcessor($VMName, @{
                 "pae" = "on"
                 "nestedpaging" = "on"
                 "hwvirtex" = "on"
                 "largepages" = "on"
-            }) -and $this.Configure($VMName, @{
+            }) -and $this.SetProcessor($VMName, @{
                 "graphicscontroller" = "vmsvga"
                 "vram" = "16"
             })
@@ -520,7 +520,7 @@ New-Module -Name SDK.Vbox -ScriptBlock {
                 [string] $VMName
             )
 
-            return $this.Configure($VMName, @{
+            return $this.SetProcessor($VMName, @{
                 "nested-hw-virt" = "on"
             })
         }
