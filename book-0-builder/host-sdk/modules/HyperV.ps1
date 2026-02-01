@@ -245,8 +245,9 @@ New-Module -Name SDK.HyperV -ScriptBlock {
         }
         SetFirmware = {
             param([string]$VMName, [hashtable]$Settings)
-            $Settings.VMName = $VMName
-            try { Set-VMFirmware @Settings -ErrorAction Stop; return $true } catch { return $false }
+            $s = @{ VMName = $VMName }
+            foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) { $s[$key] = $Settings[$key] }
+            try { Set-VMFirmware @s -ErrorAction Stop; return $true } catch { return $false }
         }
         Optimize = {
             param([string]$VMName)
