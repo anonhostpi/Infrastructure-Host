@@ -8,27 +8,15 @@ return (New-Module -Name "Verify.Cockpit" -ScriptBlock {
     $mod.Tests = [ordered]@{
         "Cockpit installed" = {
             param($Worker)
-            $result = $Worker.Exec("which cockpit-bridge")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.11.1"; Name = "Cockpit installed"
-                Pass = ($result.Success -and $result.Output -match "cockpit"); Output = $result.Output
-            })
+            $Worker.Test("6.11.1", "Cockpit installed", "which cockpit-bridge", "cockpit")
         }
         "Cockpit socket enabled" = {
             param($Worker)
-            $result = $Worker.Exec("systemctl is-enabled cockpit.socket")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.11.2"; Name = "Cockpit socket enabled"
-                Pass = ($result.Output -match "enabled"); Output = $result.Output
-            })
+            $Worker.Test("6.11.2", "Cockpit socket enabled", "systemctl is-enabled cockpit.socket", "enabled")
         }
         "cockpit-machines installed" = {
             param($Worker)
-            $result = $Worker.Exec("dpkg -l cockpit-machines")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.11.3"; Name = "cockpit-machines installed"
-                Pass = ($result.Output -match "ii.*cockpit-machines"); Output = "Package installed"
-            })
+            $Worker.Test("6.11.3", "cockpit-machines installed", "dpkg -l cockpit-machines", "ii.*cockpit-machines")
         }
         "Cockpit listening on port" = {
             param($Worker)
