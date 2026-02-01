@@ -549,6 +549,7 @@ New-Module -Name SDK.Vbox -ScriptBlock {
                     "MemoryGB" { $s["memory"] = $Settings[$key] * 1024 }
                     "StartupBytes" { $s["memory"] = [math]::Floor($Settings[$key] / 1MB) }
                     { $_ -in @("memory") } { $s[$key] = $Settings[$key] }
+                    "DynamicMemoryEnabled" {} # HyperV only
                 }
             }
             return $this.Configure($VMName, $s)
@@ -559,6 +560,7 @@ New-Module -Name SDK.Vbox -ScriptBlock {
             foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) {
                 switch ($key) {
                     { $_ -in @("nic1","bridgeadapter1") } { $s[$key] = $Settings[$key] }
+                    "MacAddressSpoofing" {} # HyperV only
                 }
             }
             return $this.Configure($VMName, $s)
@@ -570,6 +572,7 @@ New-Module -Name SDK.Vbox -ScriptBlock {
                 switch ($key) {
                     "Firmware" { $s["firmware"] = $Settings[$key] }
                     { $_ -in @("firmware") } { $s[$key] = $Settings[$key] }
+                    { $_ -in @("EnableSecureBoot","SecureBootTemplate") } {} # HyperV only
                 }
             }
             return $this.Configure($VMName, $s)
