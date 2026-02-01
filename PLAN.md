@@ -2794,7 +2794,7 @@ Consolidate 5 Add-ScriptMethods calls into 1
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 79: `book-0-builder/host-sdk/modules/Vbox.ps1` - Add SetProcessor and SetMemory methods
+### Commit 79: `book-0-builder/host-sdk/modules/Vbox.ps1` - Add SetProcessor and SetMemory methods [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Vbox.vbox-set-processor-memory
 
@@ -2831,7 +2831,7 @@ Add SetProcessor and SetMemory methods
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 80: `book-0-builder/host-sdk/modules/Vbox.ps1` - Add SetNetworkAdapter and SetFirmware methods
+### Commit 80: `book-0-builder/host-sdk/modules/Vbox.ps1` - Add SetNetworkAdapter and SetFirmware methods [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Vbox.vbox-set-network-firmware
 
@@ -2868,7 +2868,7 @@ Add SetNetworkAdapter and SetFirmware methods
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 81: `book-0-builder/host-sdk/modules/Vbox.ps1` - Refactor Optimize and Hypervisor to use Set* methods
+### Commit 81: `book-0-builder/host-sdk/modules/Vbox.ps1` - Refactor Optimize and Hypervisor to use Set* methods [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Vbox.vbox-refactor-optimize-hypervisor
 
@@ -2903,7 +2903,7 @@ Refactor Optimize and Hypervisor to use Set* methods
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 82: `book-0-builder/host-sdk/modules/HyperV.ps1` - Module shell with param, New-Module, Import-Module Hyper-V, empty object, Extend
+### Commit 82: `book-0-builder/host-sdk/modules/HyperV.ps1` - Module shell with param, New-Module, Import-Module Hyper-V, empty object, Extend [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.HyperV.hyperv-module-shell
 
@@ -2943,7 +2943,7 @@ Module shell with param, New-Module, Import-Module Hyper-V, empty object, Extend
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 83: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Configurator defaults
+### Commit 83: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Configurator defaults [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.HyperV.hyperv-configurator
 
@@ -2983,7 +2983,7 @@ Add Configurator defaults
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 84a: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Worker Properties shell with Rendered config merge
+### Commit 84a: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Worker Properties shell with Rendered config merge [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.HyperV.hyperv-worker-props-shell
 
@@ -3023,7 +3023,7 @@ Add Worker Properties shell with Rendered config merge
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 84b: `book-0-builder/host-sdk/modules/HyperV.ps1` - Fill Rendered SSH derivation, MediumPath, and caching
+### Commit 84b: `book-0-builder/host-sdk/modules/HyperV.ps1` - Fill Rendered SSH derivation, MediumPath, and caching [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.HyperV.hyperv-worker-rendered-ssh
 
@@ -3066,7 +3066,7 @@ Fill Rendered SSH derivation, MediumPath, and caching
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 85: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Worker Property accessors (Name, CPUs, MemoryMB, DiskGB, etc.)
+### Commit 85: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Worker Property accessors (Name, CPUs, MemoryMB, DiskGB, etc.) [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.HyperV.hyperv-worker-accessors
 
@@ -3103,7 +3103,7 @@ Add Worker Property accessors (Name, CPUs, MemoryMB, DiskGB, etc.)
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 86: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Worker Methods (lifecycle: Exists through Destroy)
+### Commit 86: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Worker Methods (lifecycle: Exists through Destroy) [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.HyperV.hyperv-worker-methods
 
@@ -3144,7 +3144,7 @@ Add Worker Methods (lifecycle: Exists through Destroy)
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 87: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Worker Methods — Create delegation
+### Commit 87: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Worker Methods — Create delegation [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.HyperV.hyperv-worker-create
 
@@ -3183,7 +3183,7 @@ Add Worker Methods — Create delegation
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 88: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Worker factory method
+### Commit 88: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Worker factory method [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.HyperV.hyperv-worker-factory
 
@@ -3226,7 +3226,7 @@ Add Worker factory method
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 89: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add GetSwitch method
+### Commit 89: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add GetSwitch method [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.HyperV.hyperv-getswitch
 
@@ -3264,7 +3264,7 @@ Add GetSwitch method
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 90: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Drives method (Get-VMHardDiskDrive + Get-VMDvdDrive)
+### Commit 90: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Drives method (Get-VMHardDiskDrive + Get-VMDvdDrive) [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.HyperV.hyperv-drives
 
@@ -3304,7 +3304,7 @@ Add Drives method (Get-VMHardDiskDrive + Get-VMDvdDrive)
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 91: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Attach and Delete methods
+### Commit 91: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Attach and Delete methods [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.HyperV.hyperv-attach-delete
 
@@ -3344,7 +3344,7 @@ Add Attach and Delete methods
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 92: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Give method (New-VHD + Attach)
+### Commit 92: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Give method (New-VHD + Attach) [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.HyperV.hyperv-give
 
@@ -3383,7 +3383,7 @@ Add Give method (New-VHD + Attach)
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 93: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Eject and Insert methods
+### Commit 93: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Eject and Insert methods [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.HyperV.hyperv-eject-insert
 
@@ -3426,7 +3426,7 @@ Add Eject and Insert methods
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 94: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Exists and Running methods
+### Commit 94: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Exists and Running methods [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.HyperV.hyperv-exists-running
 
@@ -3462,7 +3462,7 @@ Add Exists and Running methods
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 95: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Pause, Resume, and Bump methods
+### Commit 95: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Pause, Resume, and Bump methods [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.HyperV.hyperv-pause-resume-bump
 
@@ -3506,7 +3506,7 @@ Add Pause, Resume, and Bump methods
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 96: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Start and Shutdown methods
+### Commit 96: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Start and Shutdown methods [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.HyperV.hyperv-start-shutdown
 
@@ -3546,7 +3546,7 @@ Add Start and Shutdown methods
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 97: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add UntilShutdown method with Job timeout
+### Commit 97: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add UntilShutdown method with Job timeout [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.HyperV.hyperv-untilshutdown
 
@@ -3584,7 +3584,7 @@ Add UntilShutdown method with Job timeout
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 98: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add SetProcessor and SetMemory methods
+### Commit 98: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add SetProcessor and SetMemory methods [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.HyperV.hyperv-set-processor-memory
 
@@ -3621,7 +3621,7 @@ Add SetProcessor and SetMemory methods
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 99: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add SetNetworkAdapter and SetFirmware methods
+### Commit 99: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add SetNetworkAdapter and SetFirmware methods [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.HyperV.hyperv-set-network-firmware
 
@@ -3658,7 +3658,7 @@ Add SetNetworkAdapter and SetFirmware methods
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 100: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Optimize and Hypervisor methods composing Set* methods
+### Commit 100: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Optimize and Hypervisor methods composing Set* methods [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.HyperV.hyperv-optimize-hypervisor
 
@@ -3701,7 +3701,7 @@ Add Optimize and Hypervisor methods composing Set* methods
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 101: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Destroy method
+### Commit 101: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Destroy method [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.HyperV.hyperv-destroy
 
@@ -3742,7 +3742,7 @@ Add Destroy method
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 102: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Create method — outer shape with WIP body
+### Commit 102: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Create method — outer shape with WIP body [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.HyperV.hyperv-create-shape
 
@@ -3784,7 +3784,7 @@ Add Create method — outer shape with WIP body
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 103: `book-0-builder/host-sdk/modules/HyperV.ps1` - Fill Create — New-VM + processor + switch
+### Commit 103: `book-0-builder/host-sdk/modules/HyperV.ps1` - Fill Create — New-VM + processor + switch [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.HyperV.hyperv-create-impl-1
 
@@ -3822,7 +3822,7 @@ Fill Create — New-VM + processor + switch
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 104: `book-0-builder/host-sdk/modules/HyperV.ps1` - Fill Create — optimize, hypervisor, DVD insertion
+### Commit 104: `book-0-builder/host-sdk/modules/HyperV.ps1` - Fill Create — optimize, hypervisor, DVD insertion [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.HyperV.hyperv-create-impl-2
 
@@ -3855,7 +3855,7 @@ Fill Create — optimize, hypervisor, DVD insertion
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 105: `book-0-builder/host-sdk/SDK.ps1` - Load HyperV.ps1 in SDK module loading sequence
+### Commit 105: `book-0-builder/host-sdk/SDK.ps1` - Load HyperV.ps1 in SDK module loading sequence [COMPLETE]
 
 ### book-0-builder.host-sdk.SDK.sdk-load-hyperv
 
