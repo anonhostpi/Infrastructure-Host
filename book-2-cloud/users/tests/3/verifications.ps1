@@ -22,19 +22,11 @@ return (New-Module -Name "Verify.Users" -ScriptBlock {
         }
         "Sudoers file exists" = {
             param($Worker)
-            $result = $Worker.Exec("sudo test -f /etc/sudoers.d/$username")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.3.3"; Name = "Sudoers file exists"
-                Pass = $result.Success; Output = "/etc/sudoers.d/$username"
-            })
+            $Worker.Test("6.3.3", "Sudoers file exists", "sudo test -f /etc/sudoers.d/$username", { $true })
         }
         "Root account locked" = {
             param($Worker)
-            $result = $Worker.Exec("sudo passwd -S root")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.3.4"; Name = "Root account locked"
-                Pass = ($result.Output -match "root L" -or $result.Output -match "root LK"); Output = $result.Output
-            })
+            $Worker.Test("6.3.4", "Root account locked", "sudo passwd -S root", "root L")
         }
     }
 
