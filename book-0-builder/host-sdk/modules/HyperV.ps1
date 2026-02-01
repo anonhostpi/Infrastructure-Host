@@ -71,11 +71,12 @@ New-Module -Name SDK.HyperV -ScriptBlock {
                 return $mod.SDK.HyperV.Create(
                     $this.Name,
                     $this.MediumPath,
-                    $null,
+                    $this.IsoPath,
                     $this.Network,
                     $this.Generation,
-                    $this.DiskGB,
-                    $this.MemoryMB,
+                    @{},
+                    $this.Disk,
+                    $this.Memory,
                     $this.CPUs
                 )
             }
