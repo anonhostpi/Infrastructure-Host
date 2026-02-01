@@ -5,11 +5,11 @@ New-Module -Name "Verify.Virtualization" -ScriptBlock {
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\..\..\..\book-0-builder\host-sdk\helpers\PowerShell.ps1"
 
-    $SDK.Testing.Verifications.Register("virtualization", 10, [ordered]@{
+    $mod.SDK.Testing.Verifications.Register("virtualization", 10, [ordered]@{
         "libvirt installed" = {
             param($Worker)
             $result = $Worker.Exec("which virsh")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.10.1"; Name = "libvirt installed"
                 Pass = ($result.Success -and $result.Output -match "virsh"); Output = $result.Output
             })
@@ -17,7 +17,7 @@ New-Module -Name "Verify.Virtualization" -ScriptBlock {
         "libvirtd service active" = {
             param($Worker)
             $result = $Worker.Exec("systemctl is-active libvirtd")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.10.2"; Name = "libvirtd service active"
                 Pass = ($result.Output -match "^active$"); Output = $result.Output
             })
@@ -25,7 +25,7 @@ New-Module -Name "Verify.Virtualization" -ScriptBlock {
         "QEMU installed" = {
             param($Worker)
             $result = $Worker.Exec("which qemu-system-x86_64")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.10.3"; Name = "QEMU installed"
                 Pass = ($result.Success -and $result.Output -match "qemu"); Output = $result.Output
             })
@@ -33,7 +33,7 @@ New-Module -Name "Verify.Virtualization" -ScriptBlock {
         "libvirt default network" = {
             param($Worker)
             $result = $Worker.Exec("sudo virsh net-list --all")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.10.4"; Name = "libvirt default network"
                 Pass = ($result.Output -match "default"); Output = $result.Output
             })
@@ -41,7 +41,7 @@ New-Module -Name "Verify.Virtualization" -ScriptBlock {
         "multipass installed" = {
             param($Worker)
             $result = $Worker.Exec("which multipass")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.10.5"; Name = "multipass installed"
                 Pass = ($result.Success -and $result.Output -match "multipass"); Output = $result.Output
             })
