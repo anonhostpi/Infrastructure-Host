@@ -22,17 +22,10 @@ return (New-Module -Name "Verify.CopilotCLI" -ScriptBlock {
         }
         "Copilot CLI auth configured" = {
             param($Worker)
-            $hasAuth = $false; $authOutput = "No auth found"
-            $tokens = $Worker.Exec("sudo grep -q 'copilot_tokens' /home/$username/.copilot/config.json 2>/dev/null && echo configured")
-            if ($tokens.Output -match "configured") {
-                $hasAuth = $true; $authOutput = "OAuth tokens in config.json"
-            } else {
-                $env = $Worker.Exec("grep -q 'GH_TOKEN' /etc/environment && echo configured")
-                if ($env.Output -match "configured") { $hasAuth = $true; $authOutput = "GH_TOKEN configured" }
-            }
-            $mod.SDK.Testing.Record(@{
-                Test = "6.13.4"; Name = "Copilot CLI auth configured"
-                Pass = $hasAuth; Output = $authOutput
+            $Worker.Test("6.13.4", "Copilot CLI auth configured", "sudo grep -q 'copilot_tokens' /home/$username/.copilot/config.json 2>/dev/null && echo configured", { param($out)
+            if ($out -match "configured") { return $true }
+            $env = $Worker.Exec("grep -q 'GH_TOKEN' /etc/environment && echo configured")
+            $env.Output -match "configured"
             })
         }
         "Copilot CLI AI response" = {
