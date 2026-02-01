@@ -34,17 +34,11 @@ New-Module -Name SDK.CloudInit -ScriptBlock {
             foreach ($k in ($Overrides.Keys | ForEach-Object { $_ })) { $config[$k] = $Overrides[$k] }
             return $mod.SDK.Multipass.Worker(@{ Config = $config })
         }
-    }
-
-    Add-ScriptMethods $CloudInit @{
         Cleanup = {
             param([string]$Name)
             if (-not $Name) { $Name = $mod.SDK.Settings.Virtualization.Runner.Name }
             if ($mod.SDK.Multipass.Exists($Name)) { $mod.SDK.Multipass.Destroy($Name) }
         }
-    }
-
-    Add-ScriptMethods $CloudInit @{
         Clean = {
             return $mod.SDK.Builder.Clean()
         }
