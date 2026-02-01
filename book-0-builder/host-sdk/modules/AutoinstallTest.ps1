@@ -18,9 +18,8 @@ New-Module -Name SDK.Autoinstall.Test -ScriptBlock {
             foreach ($hypervisor in $Hypervisors) {
                 $config = $mod.SDK.Settings.Virtualization."$hypervisor"
                 if (-not $config) { continue }
-                $worker = $mod.SDK."$hypervisor".Worker(@{ Config = $config })
-                $worker.Ensure(); $worker.Start()
-                $mod.SDK.Network.WaitForSSH($worker.SSHHost, $worker.SSHPort, 600)
+                $worker = $mod.SDK.Builder.Runner($config, $hypervisor)
+                $worker.Setup($true)
                 $mod.SDK.Testing.Verifications.Run($worker, $Layer, 1)
             }
         }
