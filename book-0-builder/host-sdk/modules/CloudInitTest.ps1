@@ -9,18 +9,16 @@ New-Module -Name SDK.CloudInit.Test -ScriptBlock {
 
     Add-ScriptMethods $CloudInitTest @{
         Run = {
-            param([int]$Layer, [hashtable]$Overrides = @{})
-            $worker = $mod.SDK.CloudInit.Worker($Layer, $Overrides)
-            $mod.SDK.Log.Info("Setting up cloud-init test worker: $($worker.Name)")
-            $worker.Setup($true)
-            $mod.SDK.Testing.Reset()
-            foreach ($l in 1..$Layer) {
-                foreach ($f in $mod.SDK.Fragments.At($l)) {
-                    $worker.Test($f.Name, "Test $($f.Name)", $f.TestCommand, $f.ExpectedPattern)
-                }
+            param([int]$Layer, [hashtable]$Overrides = @{}, $Runner = $null)
+            if (-not $Runner) {
+                $Runner = $mod.SDK.CloudInit.Worker($Layer, $Overrides)
+                $mod.SDK.Log.Info("Setting up cloud-init test worker: $($Runner.Name)")
+                $Runner.Setup($true)
             }
+            $mod.SDK.Testing.Reset()
+            $mod.SDK.Testing.Verifications.Run($Runner, $Layer, 2)
             $mod.SDK.Testing.Summary()
-            return @{ Success = ($mod.SDK.Testing.FailCount -eq 0); Results = $mod.SDK.Testing.Results; Worker = $worker }
+            return @{ Success = ($mod.SDK.Testing.FailCount -eq 0); Results = $mod.SDK.Testing.Results; Worker = $Runner }
         }
     }
 
