@@ -24,9 +24,6 @@ New-Module -Name SDK.Testing -ScriptBlock {
             $this.Results += $Result
             if ($Result.Pass) { $this.PassCount++ } else { $this.FailCount++ }
         }
-    }
-
-    Add-ScriptMethods $Testing @{
         Summary = {
             $mod.SDK.Log.Write("")
             $mod.SDK.Log.Write("========================================", "Cyan")
@@ -37,23 +34,14 @@ New-Module -Name SDK.Testing -ScriptBlock {
             $failColor = if ($this.FailCount -gt 0) { "Red" } else { "Green" }
             $mod.SDK.Log.Write("  Failed: $($this.FailCount)", $failColor)
         }
-    }
-
-    Add-ScriptMethods $Testing @{
         Fragments = {
             param([int]$Layer)
             return $mod.SDK.Fragments.UpTo($Layer) | ForEach-Object { $_.Name }
         }
-    }
-
-    Add-ScriptMethods $Testing @{
         LevelName = {
             param([int]$Layer)
             return $mod.SDK.Fragments.LayerName($Layer)
         }
-    }
-
-    Add-ScriptMethods $Testing @{
         LevelFragments = {
             param([int]$Layer)
             return $mod.SDK.Fragments.UpTo($Layer) | ForEach-Object { $_.Name }
