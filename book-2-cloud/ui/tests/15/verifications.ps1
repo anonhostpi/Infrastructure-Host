@@ -8,19 +8,11 @@ return (New-Module -Name "Verify.UITouches" -ScriptBlock {
     $mod.Tests = [ordered]@{
         "MOTD directory exists" = {
             param($Worker)
-            $result = $Worker.Exec("test -d /etc/update-motd.d")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.15.1"; Name = "MOTD directory exists"
-                Pass = $result.Success; Output = "/etc/update-motd.d"
-            })
+            $Worker.Test("6.15.1", "MOTD directory exists", "test -d /etc/update-motd.d", { $true })
         }
         "MOTD scripts present" = {
             param($Worker)
-            $result = $Worker.Exec("ls /etc/update-motd.d/ | wc -l")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.15.2"; Name = "MOTD scripts present"
-                Pass = ([int]$result.Output -gt 0); Output = "$($result.Output) scripts"
-            })
+            $Worker.Test("6.15.2", "MOTD scripts present", "ls /etc/update-motd.d/ | wc -l", { param($out) [int]$out -gt 0 })
         }
     }
 
