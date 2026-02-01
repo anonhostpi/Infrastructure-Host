@@ -40,15 +40,18 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
             $mod.Tests[$Layer][$Book][$order] = $tests
         }
         Run = {
-            param($Worker, [int]$Layer)
+            param($Runner, [int]$Layer, $Book = $null)
             $this.Discover($Layer)
-            foreach ($l in 1..$Layer) {
-                $layerName = $mod.SDK.Fragments.LayerName($l)
-                foreach ($frag in ($mod.Tests.Keys | ForEach-Object { $_ })) {
-                    if (-not $mod.Tests[$frag][$l]) { continue }
-                    $mod.SDK.Log.Write("`n--- $layerName - $frag ---", "Cyan")
-                    foreach ($name in ($mod.Tests[$frag][$l].Keys | ForEach-Object { $_ })) {
-                        $this.Test($frag, $l, $name, $Worker)
+            $bookOrder = if ($null -ne $Book) { @($Book) } else { @(2, 1) }
+            foreach ($l in 0..$Layer) {
+                if (-not $mod.Tests[$l]) { continue }
+                foreach ($b in $bookOrder) {
+                    if (-not $mod.Tests[$l][$b]) { continue }
+                    foreach ($order in ($mod.Tests[$l][$b].Keys | ForEach-Object { $_ } | Sort-Object)) {
+                        $tests = $mod.Tests[$l][$b][$order]
+                        foreach ($name in ($tests.Keys | ForEach-Object { $_ })) {
+                            & $tests[$name] $Runner
+                        }
                     }
                 }
             }
