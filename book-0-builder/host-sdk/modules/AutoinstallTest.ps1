@@ -18,8 +18,7 @@ New-Module -Name SDK.Autoinstall.Test -ScriptBlock {
             foreach ($hypervisor in $Hypervisors) {
                 $config = $mod.SDK.Settings.Virtualization."$hypervisor"
                 if (-not $config) { continue }
-                $worker = $mod.SDK.Builder.Runner($config, $hypervisor)
-                $worker.Setup($true)
+                $worker = $mod.SDK.Builder.Runner($config, $hypervisor, $Layer)
                 $mod.SDK.Testing.Verifications.Run($worker, $Layer, 1)
             }
         }
