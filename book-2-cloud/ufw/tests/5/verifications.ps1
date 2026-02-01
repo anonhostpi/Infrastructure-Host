@@ -8,27 +8,15 @@ return (New-Module -Name "Verify.UFWFirewall" -ScriptBlock {
     $mod.Tests = [ordered]@{
         "UFW is active" = {
             param($Worker)
-            $result = $Worker.Exec("sudo ufw status")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.5.1"; Name = "UFW is active"
-                Pass = ($result.Output -match "Status: active"); Output = $result.Output | Select-Object -First 1
-            })
+            $Worker.Test("6.5.1", "UFW is active", "sudo ufw status", "Status: active")
         }
         "SSH allowed in UFW" = {
             param($Worker)
-            $result = $Worker.Exec("sudo ufw status")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.5.2"; Name = "SSH allowed in UFW"
-                Pass = ($result.Output -match "22.*ALLOW"); Output = "Port 22 rule checked"
-            })
+            $Worker.Test("6.5.2", "SSH allowed in UFW", "sudo ufw status", "22.*ALLOW")
         }
         "Default deny incoming" = {
             param($Worker)
-            $verbose = $Worker.Exec("sudo ufw status verbose")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.5.3"; Name = "Default deny incoming"
-                Pass = ($verbose.Output -match "deny \(incoming\)"); Output = "Default incoming policy"
-            })
+            $Worker.Test("6.5.3", "Default deny incoming", "sudo ufw status verbose", "deny \(incoming\)")
         }
     }
 
