@@ -572,7 +572,12 @@ New-Module -Name SDK.Vbox -ScriptBlock {
                 switch ($key) {
                     "Firmware" { $s["firmware"] = $Settings[$key] }
                     { $_ -in @("firmware") } { $s[$key] = $Settings[$key] }
-                    { $_ -in @("EnableSecureBoot","SecureBootTemplate") } {} # HyperV only
+                    "EnableSecureBoot" {
+                        if ($Settings[$key] -eq "On" -or $Settings[$key] -eq $true) {
+                            $s["firmware"] = "efi"
+                        }
+                    }
+                    "SecureBootTemplate" {} # No VBox equivalent
                 }
             }
             return $this.Configure($VMName, $s)
