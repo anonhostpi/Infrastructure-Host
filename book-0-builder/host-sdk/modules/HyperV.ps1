@@ -233,6 +233,7 @@ New-Module -Name SDK.HyperV -ScriptBlock {
                     { $_ -in @("Count","ExposeVirtualizationExtensions") } {
                         $s[$key] = $Settings[$key]
                     }
+                    { $_ -in @("pae","nestedpaging","hwvirtex","largepages","graphicscontroller","vram") } {} # VBox only
                 }
             }
             try { Set-VMProcessor @s -ErrorAction Stop; return $true } catch { return $false }
@@ -256,6 +257,7 @@ New-Module -Name SDK.HyperV -ScriptBlock {
             foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) {
                 switch ($key) {
                     { $_ -in @("MacAddressSpoofing") } { $s[$key] = $Settings[$key] }
+                    { $_ -in @("nic1","bridgeadapter1") } {} # VBox only
                 }
             }
             try { Set-VMNetworkAdapter @s -ErrorAction Stop; return $true } catch { return $false }
@@ -266,6 +268,7 @@ New-Module -Name SDK.HyperV -ScriptBlock {
             foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) {
                 switch ($key) {
                     { $_ -in @("EnableSecureBoot","SecureBootTemplate") } { $s[$key] = $Settings[$key] }
+                    { $_ -in @("Firmware","firmware") } {} # VBox only
                 }
             }
             try { Set-VMFirmware @s -ErrorAction Stop; return $true } catch { return $false }
