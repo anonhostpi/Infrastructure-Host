@@ -16,15 +16,14 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
         }
         Discover = {
             param([int]$Layer)
-            $results = @()
-            foreach ($book in @("book-1-foundation", "book-2-cloud")) {
-                $pattern = Join-Path $book "*/tests/$Layer/verifications.ps1"
-                Get-ChildItem -Path $pattern -ErrorAction SilentlyContinue | ForEach-Object {
-                    $fragDir = $_.Directory.Parent.Parent
-                    $results += @{ Fragment = $fragDir.Name; Path = $_.FullName; Layer = $Layer }
+            foreach ($l in 1..$Layer) {
+                foreach ($book in @("book-1-foundation", "book-2-cloud")) {
+                    $pattern = Join-Path $book "*/tests/$l/verifications.ps1"
+                    Get-ChildItem -Path $pattern -ErrorAction SilentlyContinue | ForEach-Object {
+                        $this.Load($_.FullName)
+                    }
                 }
             }
-            return $results
         }
         Register = {
             param([string]$Fragment, [int]$Layer, [System.Collections.Specialized.OrderedDictionary]$Tests)
