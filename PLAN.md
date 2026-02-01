@@ -4477,7 +4477,7 @@ Update Worker Create delegation for renamed params
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 122: `book-0-builder/host-sdk/modules/HyperV.ps1` - Change Create Firmware from hashtable to string
+### Commit 122: `book-0-builder/host-sdk/modules/HyperV.ps1` - Change Create Firmware from hashtable to string [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.HyperV.hyperv-create-firmware-string
 
@@ -4511,7 +4511,7 @@ Change Create Firmware from hashtable to string
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 123: `book-0-builder/host-sdk/modules/HyperV.ps1` - Update Worker Create delegation to pass firmware string
+### Commit 123: `book-0-builder/host-sdk/modules/HyperV.ps1` - Update Worker Create delegation to pass firmware string [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.HyperV.hyperv-worker-create-firmware-string
 
@@ -4540,7 +4540,7 @@ Update Worker Create delegation to pass firmware string
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 124: `book-0-builder/host-sdk/modules/Vbox.ps1` - Add unified key map to SetProcessor
+### Commit 124: `book-0-builder/host-sdk/modules/Vbox.ps1` - Add unified key map to SetProcessor [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Vbox.vbox-set-processor-unified
 
@@ -4583,7 +4583,7 @@ Add unified key map to SetProcessor
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 125: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add unified key map to SetProcessor
+### Commit 125: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add unified key map to SetProcessor [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.HyperV.hyperv-set-processor-unified
 
@@ -4627,7 +4627,7 @@ Add unified key map to SetProcessor
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 126: `book-0-builder/host-sdk/modules/Vbox.ps1` - Add unified key map to SetMemory
+### Commit 126: `book-0-builder/host-sdk/modules/Vbox.ps1` - Add unified key map to SetMemory [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Vbox.vbox-set-memory-unified
 
@@ -4667,7 +4667,7 @@ Add unified key map to SetMemory
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 127: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add unified key map to SetMemory
+### Commit 127: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add unified key map to SetMemory [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.HyperV.hyperv-set-memory-unified
 
@@ -4707,7 +4707,7 @@ Add unified key map to SetMemory
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 128: `book-0-builder/host-sdk/modules/Vbox.ps1` - Add key filtering to SetNetworkAdapter and SetFirmware
+### Commit 128: `book-0-builder/host-sdk/modules/Vbox.ps1` - Add key filtering to SetNetworkAdapter and SetFirmware [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Vbox.vbox-set-net-firmware-filter
 
@@ -4756,7 +4756,7 @@ Add key filtering to SetNetworkAdapter and SetFirmware
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 129: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add key filtering to SetNetworkAdapter and SetFirmware
+### Commit 129: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add key filtering to SetNetworkAdapter and SetFirmware [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.HyperV.hyperv-set-net-firmware-filter
 
