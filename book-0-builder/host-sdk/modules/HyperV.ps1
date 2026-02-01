@@ -26,7 +26,19 @@ New-Module -Name SDK.HyperV -ScriptBlock {
                 $rendered = @{}
                 foreach ($key in ($defaults.Keys | ForEach-Object { $_ })) { $rendered[$key] = $defaults[$key] }
                 foreach ($key in ($config.Keys | ForEach-Object { $_ })) { $rendered[$key] = $config[$key] }
-                # WIP: SSH derivation, MediumPath, caching
+                if (-not $rendered.SSHUser -or -not $rendered.SSHHost) {
+                    $identity = $mod.SDK.Settings.Load("book-2-cloud/users/config/identity.config.yaml")
+                    $network = $mod.SDK.Settings.Load("book-2-cloud/network/config/network.config.yaml")
+                    if (-not $rendered.SSHUser) { $rendered.SSHUser = $identity.identity.username }
+                    if (-not $rendered.SSHHost) {
+                        $ip = $network.network.ip_address -replace '/\d+$', ''
+                        $rendered.SSHHost = $ip
+                    }
+                }
+                if (-not $rendered.MediumPath) {
+                    $rendered.MediumPath = "$env:TEMP\$($rendered.Name).vhdx"
+                }
+                $this | Add-Member -MemberType NoteProperty -Name Rendered -Value $rendered -Force
                 return $rendered
             }
         }
