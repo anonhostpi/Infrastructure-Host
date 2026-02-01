@@ -5,13 +5,13 @@ New-Module -Name "Verify.CopilotCLI" -ScriptBlock {
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\..\..\..\book-0-builder\host-sdk\helpers\PowerShell.ps1"
 
-    $username = $SDK.Settings.Identity.username
+    $username = $mod.SDK.Settings.Identity.username
 
-    $SDK.Testing.Verifications.Register("copilot-cli", 13, [ordered]@{
+    $mod.SDK.Testing.Verifications.Register("copilot-cli", 13, [ordered]@{
         "Copilot CLI installed" = {
             param($Worker)
             $result = $Worker.Exec("which copilot")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.13.1"; Name = "Copilot CLI installed"
                 Pass = ($result.Success -and $result.Output -match "copilot"); Output = $result.Output
             })
@@ -19,7 +19,7 @@ New-Module -Name "Verify.CopilotCLI" -ScriptBlock {
         "Copilot CLI config directory" = {
             param($Worker)
             $result = $Worker.Exec("sudo test -d /home/$username/.copilot && echo exists")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.13.2"; Name = "Copilot CLI config directory"
                 Pass = ($result.Output -match "exists"); Output = "/home/$username/.copilot"
             })
@@ -27,7 +27,7 @@ New-Module -Name "Verify.CopilotCLI" -ScriptBlock {
         "Copilot CLI config file" = {
             param($Worker)
             $result = $Worker.Exec("sudo test -f /home/$username/.copilot/config.json && echo exists")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.13.3"; Name = "Copilot CLI config file"
                 Pass = ($result.Output -match "exists"); Output = "/home/$username/.copilot/config.json"
             })
@@ -42,7 +42,7 @@ New-Module -Name "Verify.CopilotCLI" -ScriptBlock {
                 $env = $Worker.Exec("grep -q 'GH_TOKEN' /etc/environment && echo configured")
                 if ($env.Output -match "configured") { $hasAuth = $true; $authOutput = "GH_TOKEN configured" }
             }
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.13.4"; Name = "Copilot CLI auth configured"
                 Pass = $hasAuth; Output = $authOutput
             })
@@ -52,11 +52,11 @@ New-Module -Name "Verify.CopilotCLI" -ScriptBlock {
             $tokens = $Worker.Exec("sudo grep -q 'copilot_tokens' /home/$username/.copilot/config.json 2>/dev/null && echo configured")
             $env = $Worker.Exec("grep -q 'GH_TOKEN' /etc/environment && echo configured")
             $hasAuth = ($tokens.Output -match "configured") -or ($env.Output -match "configured")
-            if (-not $hasAuth) { $SDK.Testing.Verifications.Fork("6.13.5", "SKIP", "No auth configured"); return }
+            if (-not $hasAuth) { $mod.SDK.Testing.Verifications.Fork("6.13.5", "SKIP", "No auth configured"); return }
             $result = $Worker.Exec("sudo -u $username env HOME=/home/$username timeout 30 copilot --model gpt-4.1 -p test 2>&1")
             $clean = $result.Output -replace '\x1b\[[0-9;]*[a-zA-Z]', ''
             $hasResponse = ($clean -and $clean.Length -gt 0 -and $clean -notmatch "^error|failed|timeout")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.13.5"; Name = "Copilot CLI AI response"
                 Pass = $hasResponse
                 Output = if ($hasResponse) { "Response received" } else { "Failed: $clean" }
