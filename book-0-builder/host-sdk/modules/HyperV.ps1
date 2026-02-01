@@ -134,6 +134,18 @@ New-Module -Name SDK.HyperV -ScriptBlock {
             if ($drive) { Remove-VMHardDiskDrive -VMHardDiskDrive $drive }
             if (Test-Path $Path) { Remove-Item $Path -Force }
         }
+        Give = {
+            param([string]$VMName, [string]$Path, [int]$SizeGB, [string]$ControllerType = "SCSI")
+            try {
+                New-VHD -Path $Path -SizeBytes ($SizeGB * 1GB) -Dynamic -ErrorAction Stop | Out-Null
+            } catch {
+                throw "Failed to create VHD at '$Path': $_"
+            }
+            $attached = $this.Attach($VMName, $Path, $ControllerType)
+            if (-not $attached) {
+                throw "Failed to attach VHD '$Path' to VM: $VMName"
+            }
+        }
     }
 
     $SDK.Extend("HyperV", $HyperV)
