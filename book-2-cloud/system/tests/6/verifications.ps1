@@ -8,27 +8,15 @@ return (New-Module -Name "Verify.SystemSettings" -ScriptBlock {
     $mod.Tests = [ordered]@{
         "Timezone configured" = {
             param($Worker)
-            $result = $Worker.Exec("timedatectl show --property=Timezone --value")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.6.1"; Name = "Timezone configured"
-                Pass = ($result.Success -and $result.Output); Output = $result.Output
-            })
+            $Worker.Test("6.6.1", "Timezone configured", "timedatectl show --property=Timezone --value", ".")
         }
         "Locale set" = {
             param($Worker)
-            $result = $Worker.Exec("locale")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.6.2"; Name = "Locale set"
-                Pass = ($result.Output -match "LANG="); Output = ($result.Output | Select-Object -First 1)
-            })
+            $Worker.Test("6.6.2", "Locale set", "locale", "LANG=")
         }
         "NTP enabled" = {
             param($Worker)
-            $result = $Worker.Exec("timedatectl show --property=NTP --value")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.6.3"; Name = "NTP enabled"
-                Pass = ($result.Output -match "yes"); Output = "NTP=$($result.Output)"
-            })
+            $Worker.Test("6.6.3", "NTP enabled", "timedatectl show --property=NTP --value", "yes")
         }
     }
 
