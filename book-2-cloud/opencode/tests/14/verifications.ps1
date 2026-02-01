@@ -22,19 +22,11 @@ return (New-Module -Name "Verify.OpenCode" -ScriptBlock {
         }
         "OpenCode config directory" = {
             param($Worker)
-            $result = $Worker.Exec("sudo test -d /home/$username/.config/opencode && echo exists")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.14.4"; Name = "OpenCode config directory"
-                Pass = ($result.Output -match "exists"); Output = "/home/$username/.config/opencode"
-            })
+            $Worker.Test("6.14.4", "OpenCode config directory", "sudo test -d /home/$username/.config/opencode && echo exists", "exists")
         }
         "OpenCode auth file" = {
             param($Worker)
-            $result = $Worker.Exec("sudo test -f /home/$username/.local/share/opencode/auth.json && echo exists")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.14.5"; Name = "OpenCode auth file"
-                Pass = ($result.Output -match "exists"); Output = "/home/$username/.local/share/opencode/auth.json"
-            })
+            $Worker.Test("6.14.5", "OpenCode auth file", "sudo test -f /home/$username/.local/share/opencode/auth.json && echo exists", "exists")
         }
         "OpenCode AI response" = {
             param($Worker)
