@@ -537,15 +537,21 @@ New-Module -Name SDK.Vbox -ScriptBlock {
         }
         SetMemory = {
             param([string]$VMName, [hashtable]$Settings)
-            return $this.Configure($VMName, $Settings)
+            $s = @{}
+            foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) { $s[$key] = $Settings[$key] }
+            return $this.Configure($VMName, $s)
         }
         SetNetworkAdapter = {
             param([string]$VMName, [hashtable]$Settings)
-            return $this.Configure($VMName, $Settings)
+            $s = @{}
+            foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) { $s[$key] = $Settings[$key] }
+            return $this.Configure($VMName, $s)
         }
         SetFirmware = {
             param([string]$VMName, [hashtable]$Settings)
-            return $this.Configure($VMName, $Settings)
+            $s = @{}
+            foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) { $s[$key] = $Settings[$key] }
+            return $this.Configure($VMName, $s)
         }
     }
 
