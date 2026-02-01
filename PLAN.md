@@ -5876,7 +5876,7 @@ Add root filesystem ext4 and default user verification tests
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 151c: `book-1-foundation/base/tests/0/verifications.ps1` - Add hostname set and SSH service active verification tests
+### Commit 151c: `book-1-foundation/base/tests/0/verifications.ps1` - Add hostname set and SSH service active verification tests [COMPLETE]
 
 ### book-1-foundation.base.tests.0.verifications.book1-verif-hostname-ssh
 
