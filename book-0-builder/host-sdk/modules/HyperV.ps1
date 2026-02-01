@@ -44,8 +44,9 @@ New-Module -Name SDK.HyperV -ScriptBlock {
             }
             Name = { return $this.Rendered.Name }
             CPUs = { return $this.Rendered.CPUs }
-            MemoryMB = { return $this.Rendered.MemoryMB }
-            DiskGB = { return $this.Rendered.DiskGB }
+            Memory = { return $this.Rendered.Memory }
+            Disk = { return $this.Rendered.Disk }
+            IsoPath = { return $this.Rendered.IsoPath }
             Network = { return $this.Rendered.Network }
             MediumPath = { return $this.Rendered.MediumPath }
             SSHUser = { return $this.Rendered.SSHUser }
