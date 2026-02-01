@@ -5829,7 +5829,7 @@ Add verification tests shape with SSH reachable and OS version tests
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 151b: `book-1-foundation/base/tests/0/verifications.ps1` - Add root filesystem ext4 and default user verification tests
+### Commit 151b: `book-1-foundation/base/tests/0/verifications.ps1` - Add root filesystem ext4 and default user verification tests [COMPLETE]
 
 ### book-1-foundation.base.tests.0.verifications.book1-verif-storage
 
