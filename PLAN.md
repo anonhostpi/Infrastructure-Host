@@ -1954,7 +1954,7 @@ Fix .Keys pipeline bug in Register method
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 52: `book-0-builder/host-sdk/modules/Logger.ps1` - Add $mod declaration to Logger.ps1 and fix $SDK. to $mod.SDK. in base/0, kernel/2, pkg-sec/18
+### Commit 52: `book-0-builder/host-sdk/modules/Logger.ps1` - Add $mod declaration to Logger.ps1 and fix $SDK. to $mod.SDK. in base/0, kernel/2, pkg-sec/18 [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Logger.add-logger-mod
 
@@ -1985,7 +1985,7 @@ Add $mod declaration to Logger.ps1 and fix $SDK. to $mod.SDK. in base/0, kernel/
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 53: `book-2-cloud/ufw/tests/5/verifications.ps1` - Replace $SDK. with $mod.SDK. in ufw/5 and system/6 verification files
+### Commit 53: `book-2-cloud/ufw/tests/5/verifications.ps1` - Replace $SDK. with $mod.SDK. in ufw/5 and system/6 verification files [COMPLETE]
 
 ### book-2-cloud.ufw.tests.5.verifications.fix-sdk-ufw-system
 
@@ -2014,7 +2014,7 @@ Replace $SDK. with $mod.SDK. in ufw/5 and system/6 verification files
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 54: `book-2-cloud/security-mon/tests/9/verifications.ps1` - Replace $SDK. with $mod.SDK. in security-mon/9 and ui/15 verification files
+### Commit 54: `book-2-cloud/security-mon/tests/9/verifications.ps1` - Replace $SDK. with $mod.SDK. in security-mon/9 and ui/15 verification files [COMPLETE]
 
 ### book-2-cloud.security-mon.tests.9.verifications.fix-sdk-secmon-ui
 
@@ -2043,7 +2043,7 @@ Replace $SDK. with $mod.SDK. in security-mon/9 and ui/15 verification files
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 55: `book-2-cloud/users/tests/3/verifications.ps1` - Replace $SDK. with $mod.SDK. in users/3 verification file
+### Commit 55: `book-2-cloud/users/tests/3/verifications.ps1` - Replace $SDK. with $mod.SDK. in users/3 verification file [COMPLETE]
 
 ### book-2-cloud.users.tests.3.verifications.fix-sdk-users
 
@@ -2072,7 +2072,7 @@ Replace $SDK. with $mod.SDK. in users/3 verification file
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 56: `book-2-cloud/ssh/tests/4/verifications.ps1` - Replace $SDK. with $mod.SDK. in ssh/4 verification file
+### Commit 56: `book-2-cloud/ssh/tests/4/verifications.ps1` - Replace $SDK. with $mod.SDK. in ssh/4 verification file [COMPLETE]
 
 ### book-2-cloud.ssh.tests.4.verifications.fix-sdk-ssh
 
@@ -2101,7 +2101,7 @@ Replace $SDK. with $mod.SDK. in ssh/4 verification file
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 57: `book-2-cloud/pkg-security/tests/17/verifications.ps1` - Replace $SDK. with $mod.SDK. in pkg-security/17 verification file
+### Commit 57: `book-2-cloud/pkg-security/tests/17/verifications.ps1` - Replace $SDK. with $mod.SDK. in pkg-security/17 verification file [COMPLETE]
 
 ### book-2-cloud.pkg-security.tests.17.verifications.fix-sdk-pkgsec17
 
@@ -2130,7 +2130,7 @@ Replace $SDK. with $mod.SDK. in pkg-security/17 verification file
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 58: `book-2-cloud/network/tests/1/verifications.ps1` - Replace $SDK. with $mod.SDK. in network/1 verification file (10 replacements)
+### Commit 58: `book-2-cloud/network/tests/1/verifications.ps1` - Replace $SDK. with $mod.SDK. in network/1 verification file (10 replacements) [COMPLETE]
 
 ### book-2-cloud.network.tests.1.verifications.fix-sdk-network
 
@@ -2159,7 +2159,7 @@ Replace $SDK. with $mod.SDK. in network/1 verification file (10 replacements)
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 59: `book-2-cloud/cockpit/tests/11/verifications.ps1` - Replace \. with \.SDK. in cockpit/11 verification file
+### Commit 59: `book-2-cloud/cockpit/tests/11/verifications.ps1` - Replace \. with \.SDK. in cockpit/11 verification file [COMPLETE]
 
 ### book-2-cloud.cockpit.tests.11.verifications.fix-sdk-cockpit
 
@@ -2188,7 +2188,7 @@ Replace . with .SDK. in cockpit/11 verification file
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 60: `book-2-cloud/claude-code/tests/12/verifications.ps1` - Replace \. with \.SDK. in claude-code/12 verification file
+### Commit 60: `book-2-cloud/claude-code/tests/12/verifications.ps1` - Replace \. with \.SDK. in claude-code/12 verification file [COMPLETE]
 
 ### book-2-cloud.claude-code.tests.12.verifications.fix-sdk-claude
 
@@ -2217,7 +2217,7 @@ Replace . with .SDK. in claude-code/12 verification file
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 61: `book-2-cloud/copilot-cli/tests/13/verifications.ps1` - Replace \. with \.SDK. in copilot-cli/13 verification file
+### Commit 61: `book-2-cloud/copilot-cli/tests/13/verifications.ps1` - Replace \. with \.SDK. in copilot-cli/13 verification file [COMPLETE]
 
 ### book-2-cloud.copilot-cli.tests.13.verifications.fix-sdk-copilot
 
@@ -2246,7 +2246,7 @@ Replace . with .SDK. in copilot-cli/13 verification file
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 62: `book-2-cloud/virtualization/tests/10/verifications.ps1` - Replace $SDK. with $mod.SDK. in virtualization/10 tests 1-5 (first half)
+### Commit 62: `book-2-cloud/virtualization/tests/10/verifications.ps1` - Replace $SDK. with $mod.SDK. in virtualization/10 tests 1-5 (first half) [COMPLETE]
 
 ### book-2-cloud.virtualization.tests.10.verifications.fix-sdk-virt-p1
 
@@ -2275,7 +2275,7 @@ Replace $SDK. with $mod.SDK. in virtualization/10 tests 1-5 (first half)
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 63: `book-2-cloud/virtualization/tests/10/verifications.ps1` - Replace $SDK. with $mod.SDK. in virtualization/10 tests 6-9 (second half)
+### Commit 63: `book-2-cloud/virtualization/tests/10/verifications.ps1` - Replace $SDK. with $mod.SDK. in virtualization/10 tests 6-9 (second half) [COMPLETE]
 
 ### book-2-cloud.virtualization.tests.10.verifications.fix-sdk-virt-p2
 
@@ -2304,7 +2304,7 @@ Replace $SDK. with $mod.SDK. in virtualization/10 tests 6-9 (second half)
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 64: `book-2-cloud/opencode/tests/14/verifications.ps1` - Replace \. with \.SDK. in opencode/14 tests 1-4 (first half)
+### Commit 64: `book-2-cloud/opencode/tests/14/verifications.ps1` - Replace \. with \.SDK. in opencode/14 tests 1-4 (first half) [COMPLETE]
 
 ### book-2-cloud.opencode.tests.14.verifications.fix-sdk-opencode-p1
 
@@ -2333,7 +2333,7 @@ Replace . with .SDK. in opencode/14 tests 1-4 (first half)
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 65: `book-2-cloud/opencode/tests/14/verifications.ps1` - Replace \. with \.SDK. in opencode/14 tests 5-7 (second half)
+### Commit 65: `book-2-cloud/opencode/tests/14/verifications.ps1` - Replace \. with \.SDK. in opencode/14 tests 5-7 (second half) [COMPLETE]
 
 ### book-2-cloud.opencode.tests.14.verifications.fix-sdk-opencode-p2
 
@@ -2362,7 +2362,7 @@ Replace . with .SDK. in opencode/14 tests 5-7 (second half)
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 66: `book-2-cloud/pkg-security/tests/8/verifications.ps1` - Replace \. with \.SDK. in pkg-security/8 tests 1-9 (first half)
+### Commit 66: `book-2-cloud/pkg-security/tests/8/verifications.ps1` - Replace \. with \.SDK. in pkg-security/8 tests 1-9 (first half) [COMPLETE]
 
 ### book-2-cloud.pkg-security.tests.8.verifications.fix-sdk-pkgsec8-p1
 
@@ -2391,7 +2391,7 @@ Replace . with .SDK. in pkg-security/8 tests 1-9 (first half)
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 67: `book-2-cloud/pkg-security/tests/8/verifications.ps1` - Replace \. with \.SDK. in pkg-security/8 tests 10-18 (second half)
+### Commit 67: `book-2-cloud/pkg-security/tests/8/verifications.ps1` - Replace \. with \.SDK. in pkg-security/8 tests 10-18 (second half) [COMPLETE]
 
 ### book-2-cloud.pkg-security.tests.8.verifications.fix-sdk-pkgsec8-p2
 
@@ -2420,7 +2420,7 @@ Replace . with .SDK. in pkg-security/8 tests 10-18 (second half)
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 68: `book-2-cloud/pkg-security/tests/16/verifications.ps1` - Replace \. with \.SDK. in pkg-security/16 tests 1-3 (first half)
+### Commit 68: `book-2-cloud/pkg-security/tests/16/verifications.ps1` - Replace \. with \.SDK. in pkg-security/16 tests 1-3 (first half) [COMPLETE]
 
 ### book-2-cloud.pkg-security.tests.16.verifications.fix-sdk-pkgsec16-p1
 
@@ -2449,7 +2449,7 @@ Replace . with .SDK. in pkg-security/16 tests 1-3 (first half)
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 69: `book-2-cloud/pkg-security/tests/16/verifications.ps1` - Replace \. with \.SDK. in pkg-security/16 tests 4-6 (second half)
+### Commit 69: `book-2-cloud/pkg-security/tests/16/verifications.ps1` - Replace \. with \.SDK. in pkg-security/16 tests 4-6 (second half) [COMPLETE]
 
 ### book-2-cloud.pkg-security.tests.16.verifications.fix-sdk-pkgsec16-p2
 
@@ -2478,7 +2478,7 @@ Replace . with .SDK. in pkg-security/16 tests 4-6 (second half)
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 70: `book-2-cloud/msmtp/tests/7/verifications.ps1` - Replace \. with \.SDK. in msmtp/7 tests 1-5 (first third)
+### Commit 70: `book-2-cloud/msmtp/tests/7/verifications.ps1` - Replace \. with \.SDK. in msmtp/7 tests 1-5 (first third) [COMPLETE]
 
 ### book-2-cloud.msmtp.tests.7.verifications.fix-sdk-msmtp-p1
 
@@ -2507,7 +2507,7 @@ Replace . with .SDK. in msmtp/7 tests 1-5 (first third)
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 71: `book-2-cloud/msmtp/tests/7/verifications.ps1` - Replace \. with \.SDK. in msmtp/7 tests 6-10 (second third)
+### Commit 71: `book-2-cloud/msmtp/tests/7/verifications.ps1` - Replace \. with \.SDK. in msmtp/7 tests 6-10 (second third) [COMPLETE]
 
 ### book-2-cloud.msmtp.tests.7.verifications.fix-sdk-msmtp-p2
 
@@ -2536,7 +2536,7 @@ Replace . with .SDK. in msmtp/7 tests 6-10 (second third)
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 72: `book-2-cloud/msmtp/tests/7/verifications.ps1` - Replace \. with \.SDK. in msmtp/7 tests 11-14 (final third)
+### Commit 72: `book-2-cloud/msmtp/tests/7/verifications.ps1` - Replace \. with \.SDK. in msmtp/7 tests 11-14 (final third) [COMPLETE]
 
 ### book-2-cloud.msmtp.tests.7.verifications.fix-sdk-msmtp-p3
 
@@ -2562,5 +2562,234 @@ Replace . with .SDK. in msmtp/7 tests 11-14 (final third)
 | Rule | Check | Status |
 |------|-------|--------|
 | **Rule 3: Lines** | 2 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 73: `book-0-builder/host-sdk/modules/Logger.ps1` - Consolidate 2 Add-ScriptMethods calls into 1
+
+### book-0-builder.host-sdk.modules.Logger.consolidate-logger
+
+> **File**: `book-0-builder/host-sdk/modules/Logger.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Consolidate 2 Add-ScriptMethods calls into 1
+
+#### Diff
+
+```diff
+         Step  = { param([string]$Message, [int]$Current, [int]$Total) $this.Write("[$Current/$Total] $Message", "Cyan") }
+-    }
+-
+-    Add-ScriptMethods $Logger @{
+         Start = {
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 3 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 74: `book-0-builder/host-sdk/modules/Fragments.ps1` - Consolidate 2 Add-ScriptMethods calls into 1
+
+### book-0-builder.host-sdk.modules.Fragments.consolidate-fragments
+
+> **File**: `book-0-builder/host-sdk/modules/Fragments.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Consolidate 2 Add-ScriptMethods calls into 1
+
+#### Diff
+
+```diff
+         }
+-    }
+-
+-    Add-ScriptMethods $Fragments @{
+         LayerName = {
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 3 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 75: `book-0-builder/host-sdk/modules/Builder.ps1` - Consolidate 2 Add-ScriptMethods calls into 1, rename RegisterRunner to Register
+
+### book-0-builder.host-sdk.modules.Builder.consolidate-builder
+
+> **File**: `book-0-builder/host-sdk/modules/Builder.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Consolidate 2 Add-ScriptMethods calls into 1, rename RegisterRunner to Register
+
+#### Diff
+
+```diff
+         }
+-    }
+-
+-    Add-ScriptMethods $Builder @{
+-        RegisterRunner = {
++        Register = {
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 5 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 76: `book-0-builder/host-sdk/modules/CloudInit.ps1` - Consolidate 3 Add-ScriptMethods calls into 1
+
+### book-0-builder.host-sdk.modules.CloudInit.consolidate-cloudinit
+
+> **File**: `book-0-builder/host-sdk/modules/CloudInit.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Consolidate 3 Add-ScriptMethods calls into 1
+
+#### Diff
+
+```diff
+         }
+-    }
+-
+-    Add-ScriptMethods $CloudInit @{
+         Cleanup = {
+             ...
+         }
+-    }
+-
+-    Add-ScriptMethods $CloudInit @{
+         Clean = {
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 6 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 77: `book-0-builder/host-sdk/modules/Autoinstall.ps1` - Consolidate 4 Add-ScriptMethods calls into 1
+
+### book-0-builder.host-sdk.modules.Autoinstall.consolidate-autoinstall
+
+> **File**: `book-0-builder/host-sdk/modules/Autoinstall.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Consolidate 4 Add-ScriptMethods calls into 1
+
+#### Diff
+
+```diff
+         }
+-    }
+-
+-    Add-ScriptMethods $Autoinstall @{
+         Build = {
+             ...
+         }
+-    }
+-
+-    Add-ScriptMethods $Autoinstall @{
+         Cleanup = {
+             ...
+         }
+-    }
+-
+-    Add-ScriptMethods $Autoinstall @{
+         Clean = {
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 9 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 78: `book-0-builder/host-sdk/modules/Testing.ps1` - Consolidate 5 Add-ScriptMethods calls into 1
+
+### book-0-builder.host-sdk.modules.Testing.consolidate-testing
+
+> **File**: `book-0-builder/host-sdk/modules/Testing.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Consolidate 5 Add-ScriptMethods calls into 1
+
+#### Diff
+
+```diff
+         }
+-    }
+-
+-    Add-ScriptMethods $Testing @{
+         Summary = {
+             ...
+         }
+-    }
+-
+-    Add-ScriptMethods $Testing @{
+         Fragments = {
+             ...
+         }
+-    }
+-
+-    Add-ScriptMethods $Testing @{
+         LevelName = {
+             ...
+         }
+-    }
+-
+-    Add-ScriptMethods $Testing @{
+         LevelFragments = {
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 12 lines | PASS |
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
