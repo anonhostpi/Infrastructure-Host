@@ -34,20 +34,12 @@ return (New-Module -Name "Verify.MSMTPMail" -ScriptBlock {
         "SMTP from matches" = {
             param($Worker)
             if (-not $smtpConfigured) { $mod.SDK.Testing.Verifications.Fork("6.7.4", "SKIP", "No SMTP configured"); return }
-            $msmtprc = $Worker.Exec("sudo cat /etc/msmtprc").Output
-            $mod.SDK.Testing.Record(@{
-                Test = "6.7.4"; Name = "SMTP from matches"
-                Pass = ($msmtprc -match "from\s+$([regex]::Escape($smtp.from_email))"); Output = "Expected: $($smtp.from_email)"
-            })
+            $Worker.Test("6.7.4", "SMTP from matches", "sudo cat /etc/msmtprc", "from\s+$([regex]::Escape($smtp.from_email))")
         }
         "SMTP user matches" = {
             param($Worker)
             if (-not $smtpConfigured) { $mod.SDK.Testing.Verifications.Fork("6.7.4", "SKIP", "No SMTP configured"); return }
-            $msmtprc = $Worker.Exec("sudo cat /etc/msmtprc").Output
-            $mod.SDK.Testing.Record(@{
-                Test = "6.7.4"; Name = "SMTP user matches"
-                Pass = ($msmtprc -match "user\s+$([regex]::Escape($smtp.user))"); Output = "Expected: $($smtp.user)"
-            })
+            $Worker.Test("6.7.4", "SMTP user matches", "sudo cat /etc/msmtprc", "user\s+$([regex]::Escape($smtp.user))")
         }
         "Provider config valid" = {
             param($Worker)
