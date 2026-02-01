@@ -16,11 +16,12 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
         }
         Discover = {
             param([int]$Layer)
-            foreach ($l in 1..$Layer) {
-                foreach ($book in @("book-1-foundation", "book-2-cloud")) {
-                    $pattern = Join-Path $book "*/tests/$l/verifications.ps1"
+            foreach ($l in 0..$Layer) {
+                foreach ($bookDir in @("book-1-foundation", "book-2-cloud")) {
+                    $bookNum = if ($bookDir -match 'book-(\d+)') { [int]$matches[1] } else { 0 }
+                    $pattern = Join-Path $bookDir "*/tests/$l/verifications.ps1"
                     Get-ChildItem -Path $pattern -ErrorAction SilentlyContinue | ForEach-Object {
-                        $this.Load($_.FullName)
+                        $this.Load($_.FullName, $l, $bookNum)
                     }
                 }
             }
