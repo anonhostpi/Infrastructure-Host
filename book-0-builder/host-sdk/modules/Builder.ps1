@@ -46,7 +46,7 @@ New-Module -Name SDK.Builder -ScriptBlock {
             return $this.Exec($make).Success
         }
         Flush = {
-            foreach ($name in $mod.Runners.Keys) {
+            foreach ($name in ($mod.Runners.Keys | ForEach-Object { $_ })) {
                 $runner = $mod.Runners[$name]
                 if ($runner -and $runner.Exists()) {
                     $runner.Destroy()

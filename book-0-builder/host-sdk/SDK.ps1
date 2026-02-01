@@ -46,7 +46,7 @@ New-Module -Name SDK -ScriptBlock {
                     [string] $SDKPath
                 )
 
-                foreach( $name in $EnvVars.Keys ){
+                foreach( $name in ($EnvVars.Keys | ForEach-Object { $_ }) ){
                     Set-Variable -Name $name -Value $EnvVars[$name] -Scope Global
                 }
 
