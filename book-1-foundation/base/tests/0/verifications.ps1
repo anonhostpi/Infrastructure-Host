@@ -5,5 +5,5 @@ New-Module -Name "Verify.Base" -ScriptBlock {
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\..\..\..\book-0-builder\host-sdk\helpers\PowerShell.ps1"
 
-    $SDK.Testing.Verifications.Register("base", 0, [ordered]@{})
+    $mod.SDK.Testing.Verifications.Register("base", 0, [ordered]@{})
 } -ArgumentList $SDK

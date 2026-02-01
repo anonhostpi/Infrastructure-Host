@@ -2,6 +2,7 @@ param([Parameter(Mandatory = $true)] $SDK)
 
 New-Module -Name SDK.Logger -ScriptBlock {
     param([Parameter(Mandatory = $true)] $SDK)
+    $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\helpers\PowerShell.ps1"
 
     $Logger = New-Object PSObject -Property @{ Level = "Info"; Path = $null }
