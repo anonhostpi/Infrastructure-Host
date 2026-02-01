@@ -18,6 +18,20 @@ New-Module -Name SDK.HyperV -ScriptBlock {
         }
     }
 
+    $mod.Worker = @{
+        Properties = @{
+            Rendered = {
+                $config = $this.Config
+                $defaults = if ($this.Defaults) { $this.Defaults } else { $mod.Configurator.Defaults }
+                $rendered = @{}
+                foreach ($key in ($defaults.Keys | ForEach-Object { $_ })) { $rendered[$key] = $defaults[$key] }
+                foreach ($key in ($config.Keys | ForEach-Object { $_ })) { $rendered[$key] = $config[$key] }
+                # WIP: SSH derivation, MediumPath, caching
+                return $rendered
+            }
+        }
+    }
+
     $HyperV = New-Object PSObject
 
     $SDK.Extend("HyperV", $HyperV)
