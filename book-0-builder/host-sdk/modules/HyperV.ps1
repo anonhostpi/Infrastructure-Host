@@ -187,6 +187,19 @@ New-Module -Name SDK.HyperV -ScriptBlock {
             if (-not $resumed) { throw "Failed to resume VM '$VMName' after bump." }
             return $true
         }
+        Start = {
+            param([string]$VMName)
+            try { Start-VM -Name $VMName -ErrorAction Stop; return $true } catch { return $false }
+        }
+        Shutdown = {
+            param([string]$VMName, [bool]$Force)
+            if (-not $this.Running($VMName)) { return $true }
+            try {
+                if ($Force) { Stop-VM -Name $VMName -TurnOff -Force -ErrorAction Stop }
+                else { Stop-VM -Name $VMName -Force -ErrorAction Stop }
+                return $true
+            } catch { return $false }
+        }
     }
 
     $SDK.Extend("HyperV", $HyperV)
