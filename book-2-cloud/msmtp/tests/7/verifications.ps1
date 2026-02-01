@@ -44,7 +44,7 @@ return (New-Module -Name "Verify.MSMTPMail" -ScriptBlock {
         "Provider config valid" = {
             param($Worker)
             if (-not $smtpConfigured) { $mod.SDK.Testing.Verifications.Fork("6.7.5", "SKIP", "No SMTP configured"); return }
-            $msmtprc = $Worker.Exec("sudo cat /etc/msmtprc").Output
+            $Worker.Test("6.7.5", "Provider config valid", "sudo cat /etc/msmtprc", { param($out)
             $providerName = switch -Regex ($smtp.host) {
                 'smtp\.sendgrid\.net' { 'SendGrid'; break }
                 'email-smtp\..+\.amazonaws\.com' { 'AWS SES'; break }
@@ -53,17 +53,14 @@ return (New-Module -Name "Verify.MSMTPMail" -ScriptBlock {
                 'smtp\.office365\.com' { 'M365'; break }
                 default { 'Generic' }
             }
-            $providerPass = switch ($providerName) {
-                'SendGrid' { $msmtprc -match 'user\s+apikey' }
+            switch ($providerName) {
+                'SendGrid' { $out -match 'user\s+apikey' }
                 'AWS SES' { $smtp.port -in @(587, 465) }
-                'Gmail' { $msmtprc -match 'passwordeval' }
-                'Proton Bridge' { $msmtprc -match 'tls_certcheck\s+off' }
+                'Gmail' { $out -match 'passwordeval' }
+                'Proton Bridge' { $out -match 'tls_certcheck\s+off' }
                 'M365' { $smtp.port -eq 587 }
                 default { $true }
             }
-            $mod.SDK.Testing.Record(@{
-                Test = "6.7.5"; Name = "Provider config valid ($providerName)"
-                Pass = $providerPass; Output = "Provider: $providerName"
             })
         }
         "Auth method valid" = {
