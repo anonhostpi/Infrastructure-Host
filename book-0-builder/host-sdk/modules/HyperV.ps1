@@ -144,9 +144,9 @@ New-Module -Name SDK.HyperV -ScriptBlock {
             if (Test-Path $Path) { Remove-Item $Path -Force }
         }
         Give = {
-            param([string]$VMName, [string]$Path, [int]$SizeGB, [string]$ControllerType = "SCSI")
+            param([string]$VMName, [string]$Path, [int]$Size, [string]$ControllerType = "SCSI")
             try {
-                New-VHD -Path $Path -SizeBytes ($SizeGB * 1GB) -Dynamic -ErrorAction Stop | Out-Null
+                New-VHD -Path $Path -SizeBytes ($Size * 1MB) -Dynamic -ErrorAction Stop | Out-Null
             } catch {
                 throw "Failed to create VHD at '$Path': $_"
             }
