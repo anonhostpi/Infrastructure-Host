@@ -200,6 +200,17 @@ New-Module -Name SDK.HyperV -ScriptBlock {
                 return $true
             } catch { return $false }
         }
+        UntilShutdown = {
+            param([string]$VMName, [int]$TimeoutSeconds)
+            if (-not $this.Running($VMName)) { return $false }
+            return $mod.SDK.Job({
+                while ($SDK.HyperV.Running($VMName)) {
+                    Start-Sleep -Seconds 1
+                }
+            }, $TimeoutSeconds, @{
+                VMName = $VMName
+            })
+        }
     }
 
     $SDK.Extend("HyperV", $HyperV)
