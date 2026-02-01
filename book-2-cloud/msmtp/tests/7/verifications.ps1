@@ -53,25 +53,25 @@ New-Module -Name "Verify.MSMTPMail" -ScriptBlock {
         }
         "SMTP from matches" = {
             param($Worker)
-            if (-not $smtpConfigured) { $SDK.Testing.Verifications.Fork("6.7.4", "SKIP", "No SMTP configured"); return }
+            if (-not $smtpConfigured) { $mod.SDK.Testing.Verifications.Fork("6.7.4", "SKIP", "No SMTP configured"); return }
             $msmtprc = $Worker.Exec("sudo cat /etc/msmtprc").Output
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.7.4"; Name = "SMTP from matches"
                 Pass = ($msmtprc -match "from\s+$([regex]::Escape($smtp.from_email))"); Output = "Expected: $($smtp.from_email)"
             })
         }
         "SMTP user matches" = {
             param($Worker)
-            if (-not $smtpConfigured) { $SDK.Testing.Verifications.Fork("6.7.4", "SKIP", "No SMTP configured"); return }
+            if (-not $smtpConfigured) { $mod.SDK.Testing.Verifications.Fork("6.7.4", "SKIP", "No SMTP configured"); return }
             $msmtprc = $Worker.Exec("sudo cat /etc/msmtprc").Output
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.7.4"; Name = "SMTP user matches"
                 Pass = ($msmtprc -match "user\s+$([regex]::Escape($smtp.user))"); Output = "Expected: $($smtp.user)"
             })
         }
         "Provider config valid" = {
             param($Worker)
-            if (-not $smtpConfigured) { $SDK.Testing.Verifications.Fork("6.7.5", "SKIP", "No SMTP configured"); return }
+            if (-not $smtpConfigured) { $mod.SDK.Testing.Verifications.Fork("6.7.5", "SKIP", "No SMTP configured"); return }
             $msmtprc = $Worker.Exec("sudo cat /etc/msmtprc").Output
             $providerName = switch -Regex ($smtp.host) {
                 'smtp\.sendgrid\.net' { 'SendGrid'; break }
@@ -89,31 +89,31 @@ New-Module -Name "Verify.MSMTPMail" -ScriptBlock {
                 'M365' { $smtp.port -eq 587 }
                 default { $true }
             }
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.7.5"; Name = "Provider config valid ($providerName)"
                 Pass = $providerPass; Output = "Provider: $providerName"
             })
         }
         "Auth method valid" = {
             param($Worker)
-            if (-not $smtpConfigured) { $SDK.Testing.Verifications.Fork("6.7.6", "SKIP", "No SMTP configured"); return }
+            if (-not $smtpConfigured) { $mod.SDK.Testing.Verifications.Fork("6.7.6", "SKIP", "No SMTP configured"); return }
             $msmtprc = $Worker.Exec("sudo cat /etc/msmtprc").Output
             $authMethod = if ($msmtprc -match 'auth\s+(\S+)') { $matches[1] } else { 'on' }
             $validAuth = @('on', 'plain', 'login', 'xoauth2', 'oauthbearer', 'external')
             $authPass = $authMethod -in $validAuth
             if ($authMethod -in @('xoauth2', 'oauthbearer')) { $authPass = $authPass -and ($msmtprc -match 'passwordeval') }
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.7.6"; Name = "Auth method valid"
                 Pass = $authPass; Output = "auth=$authMethod"
             })
         }
         "TLS settings valid" = {
             param($Worker)
-            if (-not $smtpConfigured) { $SDK.Testing.Verifications.Fork("6.7.7", "SKIP", "No SMTP configured"); return }
+            if (-not $smtpConfigured) { $mod.SDK.Testing.Verifications.Fork("6.7.7", "SKIP", "No SMTP configured"); return }
             $msmtprc = $Worker.Exec("sudo cat /etc/msmtprc").Output
             $tlsOn = ($msmtprc -match 'tls\s+on')
             $implicitTls = ($smtp.port -eq 465 -and ($msmtprc -match 'tls_starttls\s+off'))
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.7.7"; Name = "TLS settings valid"
                 Pass = ($tlsOn -or $implicitTls); Output = "tls=on, implicit=$implicitTls"
             })
