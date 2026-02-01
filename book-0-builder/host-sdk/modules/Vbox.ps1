@@ -527,10 +527,15 @@ New-Module -Name SDK.Vbox -ScriptBlock {
         SetProcessor = {
             param([string]$VMName, [hashtable]$Settings)
             $s = @{}
-            foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) {
+            foreach ($key in $Settings.Keys) {
                 switch ($key) {
                     "Count" { $s["cpus"] = $Settings[$key] }
-                    default { $s[$key] = $Settings[$key] }
+                    "ExposeVirtualizationExtensions" {
+                        $s["nested-hw-virt"] = if ($Settings[$key]) { "on" } else { "off" }
+                    }
+                    { $_ -in @("cpus","pae","nestedpaging","hwvirtex","largepages","nested-hw-virt","graphicscontroller","vram") } {
+                        $s[$key] = $Settings[$key]
+                    }
                 }
             }
             return $this.Configure($VMName, $s)
