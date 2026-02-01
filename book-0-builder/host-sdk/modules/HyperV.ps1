@@ -277,7 +277,11 @@ New-Module -Name SDK.HyperV -ScriptBlock {
                 if ($switch) {
                     Connect-VMNetworkAdapter -VMName $VMName -SwitchName $switch
                 }
-                # WIP: optimize, hypervisor, DVD
+                if ($Optimize) { $this.Optimize($VMName) }
+                if ($Hypervisor) { $this.Hypervisor($VMName) }
+                if ($DVDPath -and (Test-Path $DVDPath)) {
+                    Add-VMDvdDrive -VMName $VMName -Path $DVDPath
+                }
             } catch {
                 Write-Error "Error creating VM '$VMName': $_"
                 return $false
