@@ -10,27 +10,15 @@ return (New-Module -Name "Verify.Users" -ScriptBlock {
     $mod.Tests = [ordered]@{
         "user exists" = {
             param($Worker)
-            $result = $Worker.Exec("id $username")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.3.1"; Name = "$username user exists"
-                Pass = ($result.Success -and $result.Output -match "uid="); Output = $result.Output
-            })
+            $Worker.Test("6.3.1", "$username user exists", "id $username", "uid=")
         }
         "user shell is bash" = {
             param($Worker)
-            $result = $Worker.Exec("getent passwd $username | cut -d: -f7")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.3.1"; Name = "$username shell is bash"
-                Pass = ($result.Output -match "/bin/bash"); Output = $result.Output
-            })
+            $Worker.Test("6.3.1", "$username shell is bash", "getent passwd $username | cut -d: -f7", "/bin/bash")
         }
         "user in sudo group" = {
             param($Worker)
-            $result = $Worker.Exec("groups $username")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.3.2"; Name = "$username in sudo group"
-                Pass = ($result.Output -match "\bsudo\b"); Output = $result.Output
-            })
+            $Worker.Test("6.3.2", "$username in sudo group", "groups $username", "\bsudo\b")
         }
         "Sudoers file exists" = {
             param($Worker)
