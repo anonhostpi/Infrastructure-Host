@@ -524,6 +524,14 @@ New-Module -Name SDK.Vbox -ScriptBlock {
                 "nested-hw-virt" = "on"
             })
         }
+        SetProcessor = {
+            param([string]$VMName, [hashtable]$Settings)
+            return $this.Configure($VMName, $Settings)
+        }
+        SetMemory = {
+            param([string]$VMName, [hashtable]$Settings)
+            return $this.Configure($VMName, $Settings)
+        }
     }
 
     #region: VM destruction and creation methods
