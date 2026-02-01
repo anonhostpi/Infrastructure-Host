@@ -233,13 +233,15 @@ New-Module -Name SDK.HyperV -ScriptBlock {
         }
         SetMemory = {
             param([string]$VMName, [hashtable]$Settings)
-            $Settings.VMName = $VMName
-            try { Set-VMMemory @Settings -ErrorAction Stop; return $true } catch { return $false }
+            $s = @{ VMName = $VMName }
+            foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) { $s[$key] = $Settings[$key] }
+            try { Set-VMMemory @s -ErrorAction Stop; return $true } catch { return $false }
         }
         SetNetworkAdapter = {
             param([string]$VMName, [hashtable]$Settings)
-            $Settings.VMName = $VMName
-            try { Set-VMNetworkAdapter @Settings -ErrorAction Stop; return $true } catch { return $false }
+            $s = @{ VMName = $VMName }
+            foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) { $s[$key] = $Settings[$key] }
+            try { Set-VMNetworkAdapter @s -ErrorAction Stop; return $true } catch { return $false }
         }
         SetFirmware = {
             param([string]$VMName, [hashtable]$Settings)
