@@ -5,13 +5,13 @@ New-Module -Name "Verify.ClaudeCode" -ScriptBlock {
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\..\..\..\book-0-builder\host-sdk\helpers\PowerShell.ps1"
 
-    $username = $SDK.Settings.Identity.username
+    $username = $mod.SDK.Settings.Identity.username
 
-    $SDK.Testing.Verifications.Register("claude-code", 12, [ordered]@{
+    $mod.SDK.Testing.Verifications.Register("claude-code", 12, [ordered]@{
         "Claude Code installed" = {
             param($Worker)
             $result = $Worker.Exec("which claude")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.12.1"; Name = "Claude Code installed"
                 Pass = ($result.Success -and $result.Output -match "claude"); Output = $result.Output
             })
@@ -19,7 +19,7 @@ New-Module -Name "Verify.ClaudeCode" -ScriptBlock {
         "Claude Code config directory" = {
             param($Worker)
             $result = $Worker.Exec("sudo test -d /home/$username/.claude && echo exists")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.12.2"; Name = "Claude Code config directory"
                 Pass = ($result.Output -match "exists"); Output = "/home/$username/.claude"
             })
@@ -27,7 +27,7 @@ New-Module -Name "Verify.ClaudeCode" -ScriptBlock {
         "Claude Code settings file" = {
             param($Worker)
             $result = $Worker.Exec("sudo test -f /home/$username/.claude/settings.json && echo exists")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.12.3"; Name = "Claude Code settings file"
                 Pass = ($result.Output -match "exists"); Output = "/home/$username/.claude/settings.json"
             })
@@ -43,7 +43,7 @@ New-Module -Name "Verify.ClaudeCode" -ScriptBlock {
                 $env = $Worker.Exec("grep -q 'ANTHROPIC_API_KEY' /etc/environment && echo configured")
                 if ($env.Output -match "configured") { $hasAuth = $true; $authOutput = "API Key configured" }
             }
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.12.4"; Name = "Claude Code auth configured"
                 Pass = $hasAuth; Output = $authOutput
             })
@@ -54,11 +54,11 @@ New-Module -Name "Verify.ClaudeCode" -ScriptBlock {
             $state = $Worker.Exec("sudo grep -q 'hasCompletedOnboarding' /home/$username/.claude.json 2>/dev/null && echo exists")
             $env = $Worker.Exec("grep -q 'ANTHROPIC_API_KEY' /etc/environment && echo configured")
             $hasAuth = ($cred.Output -match "exists" -and $state.Output -match "exists") -or ($env.Output -match "configured")
-            if (-not $hasAuth) { $SDK.Testing.Verifications.Fork("6.12.5", "SKIP", "No auth configured"); return }
+            if (-not $hasAuth) { $mod.SDK.Testing.Verifications.Fork("6.12.5", "SKIP", "No auth configured"); return }
             $result = $Worker.Exec("sudo -u $username env HOME=/home/$username timeout 30 claude -p test 2>&1")
             $clean = $result.Output -replace '\x1b\[[0-9;]*[a-zA-Z]', ''
             $hasResponse = ($clean -and $clean.Length -gt 0 -and $clean -notmatch "^error|failed|timeout")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.12.5"; Name = "Claude Code AI response"
                 Pass = $hasResponse
                 Output = if ($hasResponse) { "Response received" } else { "Failed: $clean" }
