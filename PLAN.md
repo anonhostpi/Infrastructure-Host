@@ -2793,3 +2793,1094 @@ Consolidate 5 Add-ScriptMethods calls into 1
 | **Rule 3: Lines** | 12 lines | PASS |
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 79: `book-0-builder/host-sdk/modules/Vbox.ps1` - Add SetProcessor and SetMemory methods
+
+### book-0-builder.host-sdk.modules.Vbox.vbox-set-processor-memory
+
+> **File**: `book-0-builder/host-sdk/modules/Vbox.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add SetProcessor and SetMemory methods
+
+#### Diff
+
+```diff
+         })
++        SetProcessor = {
++            param([string]$VMName, [hashtable]$Settings)
++            return $this.Configure($VMName, $Settings)
++        }
++        SetMemory = {
++            param([string]$VMName, [hashtable]$Settings)
++            return $this.Configure($VMName, $Settings)
++        }
+     }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 8 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 80: `book-0-builder/host-sdk/modules/Vbox.ps1` - Add SetNetworkAdapter and SetFirmware methods
+
+### book-0-builder.host-sdk.modules.Vbox.vbox-set-network-firmware
+
+> **File**: `book-0-builder/host-sdk/modules/Vbox.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add SetNetworkAdapter and SetFirmware methods
+
+#### Diff
+
+```diff
+         }
++        SetNetworkAdapter = {
++            param([string]$VMName, [hashtable]$Settings)
++            return $this.Configure($VMName, $Settings)
++        }
++        SetFirmware = {
++            param([string]$VMName, [hashtable]$Settings)
++            return $this.Configure($VMName, $Settings)
++        }
+     }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 8 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 81: `book-0-builder/host-sdk/modules/Vbox.ps1` - Refactor Optimize and Hypervisor to use Set* methods
+
+### book-0-builder.host-sdk.modules.Vbox.vbox-refactor-optimize-hypervisor
+
+> **File**: `book-0-builder/host-sdk/modules/Vbox.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Refactor Optimize and Hypervisor to use Set* methods
+
+#### Diff
+
+```diff
+-            return $this.Configure($VMName, @{
++            return $this.SetProcessor($VMName, @{
+                 "pae" = "on"
+-            }) -and $this.Configure($VMName, @{
++            }) -and $this.SetProcessor($VMName, @{
+-            return $this.Configure($VMName, @{
++            return $this.SetProcessor($VMName, @{
+                 "nested-hw-virt" = "on"
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 6 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 82: `book-0-builder/host-sdk/modules/HyperV.ps1` - Module shell with param, New-Module, Import-Module Hyper-V, empty object, Extend
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-module-shell
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: NEW
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Module shell with param, New-Module, Import-Module Hyper-V, empty object, Extend
+
+#### Diff
+
+```diff
++param([Parameter(Mandatory = $true)] $SDK)
++
++New-Module -Name SDK.HyperV -ScriptBlock {
++    param([Parameter(Mandatory = $true)] $SDK)
++    $mod = @{ SDK = $SDK }
++    . "$PSScriptRoot..helpersPowerShell.ps1"
++    Import-Module Hyper-V
++
++    $HyperV = New-Object PSObject
++
++    $SDK.Extend("HyperV", $HyperV)
++    Export-ModuleMember -Function @()
++} -ArgumentList $SDK | Import-Module -Force
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 13 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 83: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Configurator defaults
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-configurator
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add Configurator defaults
+
+#### Diff
+
+```diff
+     Import-Module Hyper-V
++
++    $mod.Configurator = @{
++        Defaults = @{
++            CPUs = 2
++            MemoryMB = 4096
++            DiskGB = 40
++            SSHUser = $null
++            SSHHost = $null
++            SSHPort = 22
++            Generation = 2
++        }
++    }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 12 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 84a: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Worker Properties shell with Rendered config merge
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-worker-props-shell
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 0 for this file
+
+#### Description
+
+Add Worker Properties shell with Rendered config merge
+
+#### Diff
+
+```diff
++    $mod.Worker = @{
++        Properties = @{
++            Rendered = {
++                $config = $this.Config
++                $defaults = if ($this.Defaults) { $this.Defaults } else { $mod.Configurator.Defaults }
++                $rendered = @{}
++                foreach ($key in ($defaults.Keys | ForEach-Object { $_ })) { $rendered[$key] = $defaults[$key] }
++                foreach ($key in ($config.Keys | ForEach-Object { $_ })) { $rendered[$key] = $config[$key] }
++                # WIP: SSH derivation, MediumPath, caching
++                return $rendered
++            }
++        }
++    }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 13 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 84b: `book-0-builder/host-sdk/modules/HyperV.ps1` - Fill Rendered SSH derivation, MediumPath, and caching
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-worker-rendered-ssh
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Fill Rendered SSH derivation, MediumPath, and caching
+
+#### Diff
+
+```diff
+-                # WIP: SSH derivation, MediumPath, caching
+-                return $rendered
++                if (-not $rendered.SSHUser -or -not $rendered.SSHHost) {
++                    $identity = $mod.SDK.Settings.Load("book-2-cloud/users/config/identity.config.yaml")
++                    $network = $mod.SDK.Settings.Load("book-2-cloud/network/config/network.config.yaml")
++                    if (-not $rendered.SSHUser) { $rendered.SSHUser = $identity.identity.username }
++                    if (-not $rendered.SSHHost) {
++                        $ip = $network.network.ip_address -replace '/d+$', ''
++                        $rendered.SSHHost = $ip
++                    }
++                }
++                if (-not $rendered.MediumPath) {
++                    $rendered.MediumPath = "$env:TEMP$($rendered.Name).vhdx"
++                }
++                $this | Add-Member -MemberType NoteProperty -Name Rendered -Value $rendered -Force
++                return $rendered
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 16 lines | BORDERLINE |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 85: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Worker Property accessors (Name, CPUs, MemoryMB, DiskGB, etc.)
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-worker-accessors
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add Worker Property accessors (Name, CPUs, MemoryMB, DiskGB, etc.)
+
+#### Diff
+
+```diff
++            Name = { return $this.Rendered.Name }
++            CPUs = { return $this.Rendered.CPUs }
++            MemoryMB = { return $this.Rendered.MemoryMB }
++            DiskGB = { return $this.Rendered.DiskGB }
++            Network = { return $this.Rendered.Network }
++            MediumPath = { return $this.Rendered.MediumPath }
++            SSHUser = { return $this.Rendered.SSHUser }
++            SSHHost = { return $this.Rendered.SSHHost }
++            SSHPort = { return $this.Rendered.SSHPort }
++            Generation = { return $this.Rendered.Generation }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 10 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 86: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Worker Methods (lifecycle: Exists through Destroy)
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-worker-methods
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add Worker Methods (lifecycle: Exists through Destroy)
+
+#### Diff
+
+```diff
++        Methods = @{
++            Exists = { return $mod.SDK.HyperV.Exists($this.Name) }
++            Running = { return $mod.SDK.HyperV.Running($this.Name) }
++            Start = { return $mod.SDK.HyperV.Start($this.Name) }
++            Shutdown = {
++                param([bool]$Force)
++                return $mod.SDK.HyperV.Shutdown($this.Name, $Force)
++            }
++            UntilShutdown = {
++                param([int]$TimeoutSeconds)
++                return $mod.SDK.HyperV.UntilShutdown($this.Name, $TimeoutSeconds)
++            }
++            Destroy = { return $mod.SDK.HyperV.Destroy($this.Name) }
++        }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 14 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 87: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Worker Methods — Create delegation
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-worker-create
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add Worker Methods — Create delegation
+
+#### Diff
+
+```diff
++            Create = {
++                return $mod.SDK.HyperV.Create(
++                    $this.Name,
++                    $this.MediumPath,
++                    $null,
++                    $this.Network,
++                    $this.Generation,
++                    $this.DiskGB,
++                    $this.MemoryMB,
++                    $this.CPUs
++                )
++            }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 12 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 88: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Worker factory method
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-worker-factory
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add Worker factory method
+
+#### Diff
+
+```diff
++    Add-ScriptMethods $HyperV @{
++        Worker = {
++            param(
++                [Parameter(Mandatory = $true)]
++                [ValidateScript({ $null -ne $_.Config })]
++                $Base
++            )
++            $worker = If ($Base -is [System.Collections.IDictionary]) {
++                New-Object PSObject -Property $Base
++            } Else { $Base }
++            Add-ScriptProperties $worker $mod.Worker.Properties
++            Add-ScriptMethods $worker $mod.Worker.Methods
++            $mod.SDK.Worker.Methods($worker)
++            return $worker
++        }
++    }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 16 lines | BORDERLINE |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 89: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add GetSwitch method
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-getswitch
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add GetSwitch method
+
+#### Diff
+
+```diff
++    Add-ScriptMethods $HyperV @{
++        GetSwitch = {
++            param([string]$SwitchName)
++            if ($SwitchName) {
++                $sw = Get-VMSwitch -Name $SwitchName -ErrorAction SilentlyContinue
++                if ($sw) { return $sw.Name }
++            }
++            $ext = Get-VMSwitch -SwitchType External -ErrorAction SilentlyContinue | Select-Object -First 1
++            if ($ext) { return $ext.Name }
++            return $null
++        }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 11 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 90: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Drives method (Get-VMHardDiskDrive + Get-VMDvdDrive)
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-drives
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add Drives method (Get-VMHardDiskDrive + Get-VMDvdDrive)
+
+#### Diff
+
+```diff
++        Drives = {
++            param([string]$VMName)
++            $hdds = Get-VMHardDiskDrive -VMName $VMName
++            $dvds = Get-VMDvdDrive -VMName $VMName
++            $all = @()
++            foreach ($d in $hdds) {
++                $all += @{ Controller = $d.ControllerType; Port = $d.ControllerNumber; Path = $d.Path; IsDVD = $false }
++            }
++            foreach ($d in $dvds) {
++                $all += @{ Controller = $d.ControllerType; Port = $d.ControllerNumber; Path = $d.Path; IsDVD = $true }
++            }
++            return $all
++        }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 13 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 91: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Attach and Delete methods
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-attach-delete
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add Attach and Delete methods
+
+#### Diff
+
+```diff
++        Attach = {
++            param([string]$VMName, [string]$Path, [string]$ControllerType = "SCSI")
++            try {
++                Add-VMHardDiskDrive -VMName $VMName -Path $Path -ControllerType $ControllerType -ErrorAction Stop
++                return $true
++            } catch { return $false }
++        }
++        Delete = {
++            param([string]$VMName, [string]$Path)
++            $drive = Get-VMHardDiskDrive -VMName $VMName | Where-Object { $_.Path -eq $Path }
++            if ($drive) { Remove-VMHardDiskDrive -VMHardDiskDrive $drive }
++            if (Test-Path $Path) { Remove-Item $Path -Force }
++        }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 13 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 92: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Give method (New-VHD + Attach)
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-give
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add Give method (New-VHD + Attach)
+
+#### Diff
+
+```diff
++        Give = {
++            param([string]$VMName, [string]$Path, [int]$SizeGB, [string]$ControllerType = "SCSI")
++            try {
++                New-VHD -Path $Path -SizeBytes ($SizeGB * 1GB) -Dynamic -ErrorAction Stop | Out-Null
++            } catch {
++                throw "Failed to create VHD at '$Path': $_"
++            }
++            $attached = $this.Attach($VMName, $Path, $ControllerType)
++            if (-not $attached) {
++                throw "Failed to attach VHD '$Path' to VM: $VMName"
++            }
++        }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 12 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 93: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Eject and Insert methods
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-eject-insert
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add Eject and Insert methods
+
+#### Diff
+
+```diff
++        Eject = {
++            param([string]$VMName)
++            $dvds = Get-VMDvdDrive -VMName $VMName
++            foreach ($dvd in $dvds) {
++                Set-VMDvdDrive -VMDvdDrive $dvd -Path $null
++            }
++        }
++        Insert = {
++            param([string]$VMName, [string]$ISOPath)
++            $dvds = Get-VMDvdDrive -VMName $VMName
++            if ($dvds.Count -eq 0) {
++                Add-VMDvdDrive -VMName $VMName -Path $ISOPath
++            } else {
++                Set-VMDvdDrive -VMDvdDrive ($dvds | Select-Object -First 1) -Path $ISOPath
++            }
++        }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 16 lines | BORDERLINE |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 94: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Exists and Running methods
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-exists-running
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add Exists and Running methods
+
+#### Diff
+
+```diff
++        Exists = {
++            param([string]$VMName)
++            return $null -ne (Get-VM -Name $VMName -ErrorAction SilentlyContinue)
++        }
++        Running = {
++            param([string]$VMName)
++            if (-not $this.Exists($VMName)) { return $false }
++            return (Get-VM -Name $VMName).State -eq 'Running'
++        }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 9 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 95: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Pause, Resume, and Bump methods
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-pause-resume-bump
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add Pause, Resume, and Bump methods
+
+#### Diff
+
+```diff
++        Pause = {
++            param([string]$VMName)
++            try { Suspend-VM -Name $VMName -ErrorAction Stop; return $true } catch { return $false }
++        }
++        Resume = {
++            param([string]$VMName)
++            try { Resume-VM -Name $VMName -ErrorAction Stop; return $true } catch { return $false }
++        }
++        Bump = {
++            param([string]$VMName)
++            $paused = $this.Pause($VMName)
++            if (-not $paused) { throw "Failed to pause VM '$VMName' for bump." }
++            Start-Sleep -Seconds 5
++            $resumed = $this.Resume($VMName)
++            if (-not $resumed) { throw "Failed to resume VM '$VMName' after bump." }
++            return $true
++        }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 17 lines | BORDERLINE |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 96: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Start and Shutdown methods
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-start-shutdown
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add Start and Shutdown methods
+
+#### Diff
+
+```diff
++        Start = {
++            param([string]$VMName)
++            try { Start-VM -Name $VMName -ErrorAction Stop; return $true } catch { return $false }
++        }
++        Shutdown = {
++            param([string]$VMName, [bool]$Force)
++            if (-not $this.Running($VMName)) { return $true }
++            try {
++                if ($Force) { Stop-VM -Name $VMName -TurnOff -Force -ErrorAction Stop }
++                else { Stop-VM -Name $VMName -Force -ErrorAction Stop }
++                return $true
++            } catch { return $false }
++        }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 13 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 97: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add UntilShutdown method with Job timeout
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-untilshutdown
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add UntilShutdown method with Job timeout
+
+#### Diff
+
+```diff
++        UntilShutdown = {
++            param([string]$VMName, [int]$TimeoutSeconds)
++            if (-not $this.Running($VMName)) { return $false }
++            return $mod.SDK.Job({
++                while ($SDK.HyperV.Running($VMName)) {
++                    Start-Sleep -Seconds 1
++                }
++            }, $TimeoutSeconds, @{
++                VMName = $VMName
++            })
++        }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 11 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 98: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add SetProcessor and SetMemory methods
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-set-processor-memory
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add SetProcessor and SetMemory methods
+
+#### Diff
+
+```diff
++        SetProcessor = {
++            param([string]$VMName, [hashtable]$Settings)
++            $Settings.VMName = $VMName
++            try { Set-VMProcessor @Settings -ErrorAction Stop; return $true } catch { return $false }
++        }
++        SetMemory = {
++            param([string]$VMName, [hashtable]$Settings)
++            $Settings.VMName = $VMName
++            try { Set-VMMemory @Settings -ErrorAction Stop; return $true } catch { return $false }
++        }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 10 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 99: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add SetNetworkAdapter and SetFirmware methods
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-set-network-firmware
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add SetNetworkAdapter and SetFirmware methods
+
+#### Diff
+
+```diff
++        SetNetworkAdapter = {
++            param([string]$VMName, [hashtable]$Settings)
++            $Settings.VMName = $VMName
++            try { Set-VMNetworkAdapter @Settings -ErrorAction Stop; return $true } catch { return $false }
++        }
++        SetFirmware = {
++            param([string]$VMName, [hashtable]$Settings)
++            $Settings.VMName = $VMName
++            try { Set-VMFirmware @Settings -ErrorAction Stop; return $true } catch { return $false }
++        }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 10 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 100: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Optimize and Hypervisor methods composing Set* methods
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-optimize-hypervisor
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add Optimize and Hypervisor methods composing Set* methods
+
+#### Diff
+
+```diff
++        Optimize = {
++            param([string]$VMName)
++            return $this.SetProcessor($VMName, @{
++                ExposeVirtualizationExtensions = $false
++            })
++        }
++        Hypervisor = {
++            param([string]$VMName)
++            return $this.SetProcessor($VMName, @{
++                ExposeVirtualizationExtensions = $true
++            }) -and $this.SetMemory($VMName, @{
++                DynamicMemoryEnabled = $false
++            }) -and $this.SetNetworkAdapter($VMName, @{
++                MacAddressSpoofing = "On"
++            })
++        }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 16 lines | BORDERLINE |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 101: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Destroy method
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-destroy
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add Destroy method
+
+#### Diff
+
+```diff
++        Destroy = {
++            param([string]$VMName)
++            if ($this.Running($VMName)) {
++                $this.Shutdown($VMName, $true) | Out-Null
++                $this.UntilShutdown($VMName, 60) | Out-Null
++            }
++            if ($this.Exists($VMName)) {
++                $drives = $this.Drives($VMName)
++                Remove-VM -Name $VMName -Force
++                foreach ($d in $drives) {
++                    if ($d.Path -and (Test-Path $d.Path)) { Remove-Item $d.Path -Force }
++                }
++            }
++        }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 14 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 102: `book-0-builder/host-sdk/modules/HyperV.ps1` - Add Create method — outer shape with WIP body
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-create-shape
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add Create method — outer shape with WIP body
+
+#### Diff
+
+```diff
++        Create = {
++            param(
++                [string]$VMName, [string]$MediumPath, [string]$DVDPath,
++                [string]$SwitchName, [int]$Generation = 2,
++                [int]$DiskGB = 40, [int]$MemoryMB = 4096, [int]$CPUs = 2,
++                [bool]$Optimize = $true, [bool]$Hypervisor = $true
++            )
++            try {
++                # WIP: VM creation, storage, network, optimization
++                pass
++            } catch {
++                Write-Error "Error creating VM '$VMName': $_"
++                return $false
++            }
++        }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 15 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 103: `book-0-builder/host-sdk/modules/HyperV.ps1` - Fill Create — New-VM + processor + switch
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-create-impl-1
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Fill Create — New-VM + processor + switch
+
+#### Diff
+
+```diff
+-                # WIP: VM creation, storage, network, optimization
+-                pass
++                $memBytes = $MemoryMB * 1MB
++                $diskBytes = $DiskGB * 1GB
++                New-VM -Name $VMName -MemoryStartupBytes $memBytes -Generation $Generation -NewVHDPath $MediumPath -NewVHDSizeBytes $diskBytes -ErrorAction Stop | Out-Null
++                $this.SetProcessor($VMName, @{ Count = $CPUs })
++                $switch = $this.GetSwitch($SwitchName)
++                if ($switch) {
++                    Connect-VMNetworkAdapter -VMName $VMName -SwitchName $switch
++                }
++                # WIP: optimize, hypervisor, DVD
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 11 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 104: `book-0-builder/host-sdk/modules/HyperV.ps1` - Fill Create — optimize, hypervisor, DVD insertion
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-create-impl-2
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Fill Create — optimize, hypervisor, DVD insertion
+
+#### Diff
+
+```diff
+-                # WIP: optimize, hypervisor, DVD
++                if ($Optimize) { $this.Optimize($VMName) }
++                if ($Hypervisor) { $this.Hypervisor($VMName) }
++                if ($DVDPath -and (Test-Path $DVDPath)) {
++                    Add-VMDvdDrive -VMName $VMName -Path $DVDPath
++                }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 6 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 105: `book-0-builder/host-sdk/SDK.ps1` - Load HyperV.ps1 in SDK module loading sequence
+
+### book-0-builder.host-sdk.SDK.sdk-load-hyperv
+
+> **File**: `book-0-builder/host-sdk/SDK.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Load HyperV.ps1 in SDK module loading sequence
+
+#### Diff
+
+```diff
+     & "$PSScriptRoot/modules/Vbox.ps1" -SDK $SDK
++    & "$PSScriptRoot/modules/HyperV.ps1" -SDK $SDK
+     & "$PSScriptRoot/modules/Multipass.ps1" -SDK $SDK
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 1 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
