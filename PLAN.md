@@ -1694,7 +1694,7 @@ Add UpdateSummary Register shape (3 tests: report, content, AI model)
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 45: `book-0-builder/host-sdk/helpers/Config.ps1` - Fix .Keys pipeline bug in Config.ps1
+### Commit 45: `book-0-builder/host-sdk/helpers/Config.ps1` - Fix .Keys pipeline bug in Config.ps1 [COMPLETE]
 
 ### book-0-builder.host-sdk.helpers.Config.fix-keys-config
 
@@ -1729,7 +1729,7 @@ Fix .Keys pipeline bug in Config.ps1
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 46: `book-0-builder/host-sdk/helpers/PowerShell.ps1` - Fix .Keys pipeline bug in PowerShell.ps1 and SDK.ps1 and Builder.ps1
+### Commit 46: `book-0-builder/host-sdk/helpers/PowerShell.ps1` - Fix .Keys pipeline bug in PowerShell.ps1 and SDK.ps1 and Builder.ps1 [COMPLETE]
 
 ### book-0-builder.host-sdk.helpers.PowerShell.fix-keys-helpers
 
@@ -1764,7 +1764,7 @@ Fix .Keys pipeline bug in PowerShell.ps1 and SDK.ps1 and Builder.ps1
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 47: `book-0-builder/host-sdk/modules/Autoinstall.ps1` - Fix .Keys pipeline bug in Autoinstall.ps1 and CloudInit.ps1
+### Commit 47: `book-0-builder/host-sdk/modules/Autoinstall.ps1` - Fix .Keys pipeline bug in Autoinstall.ps1 and CloudInit.ps1 [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Autoinstall.fix-keys-cloud-init
 
@@ -1796,7 +1796,7 @@ Fix .Keys pipeline bug in Autoinstall.ps1 and CloudInit.ps1
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 48: `book-0-builder/host-sdk/modules/Vbox.ps1` - Fix .Keys pipeline bug in Vbox.ps1
+### Commit 48: `book-0-builder/host-sdk/modules/Vbox.ps1` - Fix .Keys pipeline bug in Vbox.ps1 [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Vbox.fix-keys-vbox
 
@@ -1831,7 +1831,7 @@ Fix .Keys pipeline bug in Vbox.ps1
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 49: `book-0-builder/host-sdk/modules/Verifications.ps1` - Refactor Discover to loop 1..Layer and load files
+### Commit 49: `book-0-builder/host-sdk/modules/Verifications.ps1` - Refactor Discover to loop 1..Layer and load files [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.refactor-discover
 
@@ -1876,7 +1876,7 @@ Refactor Discover to loop 1..Layer and load files
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 50: `book-0-builder/host-sdk/modules/Verifications.ps1` - Simplify Run to iterate registered tests and fix .Keys
+### Commit 50: `book-0-builder/host-sdk/modules/Verifications.ps1` - Simplify Run to iterate registered tests and fix .Keys [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.simplify-run
 
@@ -1925,7 +1925,7 @@ Simplify Run to iterate registered tests and fix .Keys
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 51: `book-0-builder/host-sdk/modules/Verifications.ps1` - Fix .Keys pipeline bug in Register method
+### Commit 51: `book-0-builder/host-sdk/modules/Verifications.ps1` - Fix .Keys pipeline bug in Register method [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Verifications.fix-keys-register
 
@@ -1942,6 +1942,617 @@ Fix .Keys pipeline bug in Register method
 ```diff
 -            foreach ($key in $Tests.Keys) {
 +            foreach ($key in ($Tests.Keys | ForEach-Object { $_ })) {
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 2 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 52: `book-0-builder/host-sdk/modules/Logger.ps1` - Add $mod declaration to Logger.ps1 and fix $SDK. to $mod.SDK. in base/0, kernel/2, pkg-sec/18
+
+### book-0-builder.host-sdk.modules.Logger.add-logger-mod
+
+> **File**: `book-0-builder/host-sdk/modules/Logger.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Add $mod declaration to Logger.ps1 and fix $SDK. to $mod.SDK. in base/0, kernel/2, pkg-sec/18
+
+#### Diff
+
+```diff
+ New-Module -Name SDK.Logger -ScriptBlock {
+     param([Parameter(Mandatory = $true)] $SDK)
++    $mod = @{ SDK = $SDK }
+     . "$PSScriptRoot..helpersPowerShell.ps1"
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 1 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 53: `book-2-cloud/ufw/tests/5/verifications.ps1` - Replace $SDK. with $mod.SDK. in ufw/5 and system/6 verification files
+
+### book-2-cloud.ufw.tests.5.verifications.fix-sdk-ufw-system
+
+> **File**: `book-2-cloud/ufw/tests/5/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Replace $SDK. with $mod.SDK. in ufw/5 and system/6 verification files
+
+#### Diff
+
+```diff
+-    $SDK.Testing.Verifications.Register("ufw", 5, [ordered]@{
++    $mod.SDK.Testing.Verifications.Register("ufw", 5, [ordered]@{
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 2 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 54: `book-2-cloud/security-mon/tests/9/verifications.ps1` - Replace $SDK. with $mod.SDK. in security-mon/9 and ui/15 verification files
+
+### book-2-cloud.security-mon.tests.9.verifications.fix-sdk-secmon-ui
+
+> **File**: `book-2-cloud/security-mon/tests/9/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Replace $SDK. with $mod.SDK. in security-mon/9 and ui/15 verification files
+
+#### Diff
+
+```diff
+-            $SDK.Testing.Record(@{
++            $mod.SDK.Testing.Record(@{
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 2 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 55: `book-2-cloud/users/tests/3/verifications.ps1` - Replace $SDK. with $mod.SDK. in users/3 verification file
+
+### book-2-cloud.users.tests.3.verifications.fix-sdk-users
+
+> **File**: `book-2-cloud/users/tests/3/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Replace $SDK. with $mod.SDK. in users/3 verification file
+
+#### Diff
+
+```diff
+-    $username = $SDK.Settings.Identity.username
++    $username = $mod.SDK.Settings.Identity.username
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 2 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 56: `book-2-cloud/ssh/tests/4/verifications.ps1` - Replace $SDK. with $mod.SDK. in ssh/4 verification file
+
+### book-2-cloud.ssh.tests.4.verifications.fix-sdk-ssh
+
+> **File**: `book-2-cloud/ssh/tests/4/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Replace $SDK. with $mod.SDK. in ssh/4 verification file
+
+#### Diff
+
+```diff
+-    $username = $SDK.Settings.Identity.username
++    $username = $mod.SDK.Settings.Identity.username
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 2 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 57: `book-2-cloud/pkg-security/tests/17/verifications.ps1` - Replace $SDK. with $mod.SDK. in pkg-security/17 verification file
+
+### book-2-cloud.pkg-security.tests.17.verifications.fix-sdk-pkgsec17
+
+> **File**: `book-2-cloud/pkg-security/tests/17/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Replace $SDK. with $mod.SDK. in pkg-security/17 verification file
+
+#### Diff
+
+```diff
+-            $SDK.Testing.Record(@{
++            $mod.SDK.Testing.Record(@{
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 2 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 58: `book-2-cloud/network/tests/1/verifications.ps1` - Replace $SDK. with $mod.SDK. in network/1 verification file (10 replacements)
+
+### book-2-cloud.network.tests.1.verifications.fix-sdk-network
+
+> **File**: `book-2-cloud/network/tests/1/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Replace $SDK. with $mod.SDK. in network/1 verification file (10 replacements)
+
+#### Diff
+
+```diff
+-    $SDK.Testing.Verifications.Register("network", 1, [ordered]@{
++    $mod.SDK.Testing.Verifications.Register("network", 1, [ordered]@{
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 2 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 59: `book-2-cloud/cockpit/tests/11/verifications.ps1` - Replace \. with \.SDK. in cockpit/11 verification file
+
+### book-2-cloud.cockpit.tests.11.verifications.fix-sdk-cockpit
+
+> **File**: `book-2-cloud/cockpit/tests/11/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Replace . with .SDK. in cockpit/11 verification file
+
+#### Diff
+
+```diff
+-    .Testing.Record(@{
++    .SDK.Testing.Record(@{
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 2 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 60: `book-2-cloud/claude-code/tests/12/verifications.ps1` - Replace \. with \.SDK. in claude-code/12 verification file
+
+### book-2-cloud.claude-code.tests.12.verifications.fix-sdk-claude
+
+> **File**: `book-2-cloud/claude-code/tests/12/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Replace . with .SDK. in claude-code/12 verification file
+
+#### Diff
+
+```diff
+-    .Testing.Record(@{
++    .SDK.Testing.Record(@{
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 2 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 61: `book-2-cloud/copilot-cli/tests/13/verifications.ps1` - Replace \. with \.SDK. in copilot-cli/13 verification file
+
+### book-2-cloud.copilot-cli.tests.13.verifications.fix-sdk-copilot
+
+> **File**: `book-2-cloud/copilot-cli/tests/13/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Replace . with .SDK. in copilot-cli/13 verification file
+
+#### Diff
+
+```diff
+-    .Testing.Record(@{
++    .SDK.Testing.Record(@{
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 2 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 62: `book-2-cloud/virtualization/tests/10/verifications.ps1` - Replace $SDK. with $mod.SDK. in virtualization/10 tests 1-5 (first half)
+
+### book-2-cloud.virtualization.tests.10.verifications.fix-sdk-virt-p1
+
+> **File**: `book-2-cloud/virtualization/tests/10/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Replace $SDK. with $mod.SDK. in virtualization/10 tests 1-5 (first half)
+
+#### Diff
+
+```diff
+-    $SDK.Testing.Verifications.Register("virtualization", 10, [ordered]@{
++    $mod.SDK.Testing.Verifications.Register("virtualization", 10, [ordered]@{
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 2 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 63: `book-2-cloud/virtualization/tests/10/verifications.ps1` - Replace $SDK. with $mod.SDK. in virtualization/10 tests 6-9 (second half)
+
+### book-2-cloud.virtualization.tests.10.verifications.fix-sdk-virt-p2
+
+> **File**: `book-2-cloud/virtualization/tests/10/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Replace $SDK. with $mod.SDK. in virtualization/10 tests 6-9 (second half)
+
+#### Diff
+
+```diff
+-            $SDK.Testing.Record(@{
++            $mod.SDK.Testing.Record(@{
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 2 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 64: `book-2-cloud/opencode/tests/14/verifications.ps1` - Replace \. with \.SDK. in opencode/14 tests 1-4 (first half)
+
+### book-2-cloud.opencode.tests.14.verifications.fix-sdk-opencode-p1
+
+> **File**: `book-2-cloud/opencode/tests/14/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Replace . with .SDK. in opencode/14 tests 1-4 (first half)
+
+#### Diff
+
+```diff
+-    .Testing.Record(@{
++    .SDK.Testing.Record(@{
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 2 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 65: `book-2-cloud/opencode/tests/14/verifications.ps1` - Replace \. with \.SDK. in opencode/14 tests 5-7 (second half)
+
+### book-2-cloud.opencode.tests.14.verifications.fix-sdk-opencode-p2
+
+> **File**: `book-2-cloud/opencode/tests/14/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Replace . with .SDK. in opencode/14 tests 5-7 (second half)
+
+#### Diff
+
+```diff
+-    .Testing.Record(@{
++    .SDK.Testing.Record(@{
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 2 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 66: `book-2-cloud/pkg-security/tests/8/verifications.ps1` - Replace \. with \.SDK. in pkg-security/8 tests 1-9 (first half)
+
+### book-2-cloud.pkg-security.tests.8.verifications.fix-sdk-pkgsec8-p1
+
+> **File**: `book-2-cloud/pkg-security/tests/8/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Replace . with .SDK. in pkg-security/8 tests 1-9 (first half)
+
+#### Diff
+
+```diff
+-    .Testing.Record(@{
++    .SDK.Testing.Record(@{
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 2 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 67: `book-2-cloud/pkg-security/tests/8/verifications.ps1` - Replace \. with \.SDK. in pkg-security/8 tests 10-18 (second half)
+
+### book-2-cloud.pkg-security.tests.8.verifications.fix-sdk-pkgsec8-p2
+
+> **File**: `book-2-cloud/pkg-security/tests/8/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Replace . with .SDK. in pkg-security/8 tests 10-18 (second half)
+
+#### Diff
+
+```diff
+-    .Testing.Record(@{
++    .SDK.Testing.Record(@{
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 2 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 68: `book-2-cloud/pkg-security/tests/16/verifications.ps1` - Replace \. with \.SDK. in pkg-security/16 tests 1-3 (first half)
+
+### book-2-cloud.pkg-security.tests.16.verifications.fix-sdk-pkgsec16-p1
+
+> **File**: `book-2-cloud/pkg-security/tests/16/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Replace . with .SDK. in pkg-security/16 tests 1-3 (first half)
+
+#### Diff
+
+```diff
+-    .Testing.Record(@{
++    .SDK.Testing.Record(@{
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 2 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 69: `book-2-cloud/pkg-security/tests/16/verifications.ps1` - Replace \. with \.SDK. in pkg-security/16 tests 4-6 (second half)
+
+### book-2-cloud.pkg-security.tests.16.verifications.fix-sdk-pkgsec16-p2
+
+> **File**: `book-2-cloud/pkg-security/tests/16/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Replace . with .SDK. in pkg-security/16 tests 4-6 (second half)
+
+#### Diff
+
+```diff
+-    .Testing.Record(@{
++    .SDK.Testing.Record(@{
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 2 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 70: `book-2-cloud/msmtp/tests/7/verifications.ps1` - Replace \. with \.SDK. in msmtp/7 tests 1-5 (first third)
+
+### book-2-cloud.msmtp.tests.7.verifications.fix-sdk-msmtp-p1
+
+> **File**: `book-2-cloud/msmtp/tests/7/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Replace . with .SDK. in msmtp/7 tests 1-5 (first third)
+
+#### Diff
+
+```diff
+-    .Testing.Record(@{
++    .SDK.Testing.Record(@{
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 2 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 71: `book-2-cloud/msmtp/tests/7/verifications.ps1` - Replace \. with \.SDK. in msmtp/7 tests 6-10 (second third)
+
+### book-2-cloud.msmtp.tests.7.verifications.fix-sdk-msmtp-p2
+
+> **File**: `book-2-cloud/msmtp/tests/7/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Replace . with .SDK. in msmtp/7 tests 6-10 (second third)
+
+#### Diff
+
+```diff
+-    .Testing.Record(@{
++    .SDK.Testing.Record(@{
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 2 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 72: `book-2-cloud/msmtp/tests/7/verifications.ps1` - Replace \. with \.SDK. in msmtp/7 tests 11-14 (final third)
+
+### book-2-cloud.msmtp.tests.7.verifications.fix-sdk-msmtp-p3
+
+> **File**: `book-2-cloud/msmtp/tests/7/verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Replace . with .SDK. in msmtp/7 tests 11-14 (final third)
+
+#### Diff
+
+```diff
+-    .Testing.Record(@{
++    .SDK.Testing.Record(@{
 ```
 
 #### Rule Compliance
