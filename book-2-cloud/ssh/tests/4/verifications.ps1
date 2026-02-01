@@ -10,27 +10,15 @@ return (New-Module -Name "Verify.SSHHardening" -ScriptBlock {
     $mod.Tests = [ordered]@{
         "SSH hardening config exists" = {
             param($Worker)
-            $result = $Worker.Exec("test -f /etc/ssh/sshd_config.d/99-hardening.conf")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.4.1"; Name = "SSH hardening config exists"
-                Pass = $result.Success; Output = "/etc/ssh/sshd_config.d/99-hardening.conf"
-            })
+            $Worker.Test("6.4.1", "SSH hardening config exists", "test -f /etc/ssh/sshd_config.d/99-hardening.conf", { $true })
         }
         "PermitRootLogin no" = {
             param($Worker)
-            $result = $Worker.Exec("sudo grep -r 'PermitRootLogin' /etc/ssh/sshd_config.d/")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.4.2"; Name = "PermitRootLogin no"
-                Pass = ($result.Output -match "PermitRootLogin no"); Output = $result.Output
-            })
+            $Worker.Test("6.4.2", "PermitRootLogin no", "sudo grep -r 'PermitRootLogin' /etc/ssh/sshd_config.d/", "PermitRootLogin no")
         }
         "MaxAuthTries set" = {
             param($Worker)
-            $result = $Worker.Exec("sudo grep -r 'MaxAuthTries' /etc/ssh/sshd_config.d/")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.4.2"; Name = "MaxAuthTries set"
-                Pass = ($result.Output -match "MaxAuthTries"); Output = $result.Output
-            })
+            $Worker.Test("6.4.2", "MaxAuthTries set", "sudo grep -r 'MaxAuthTries' /etc/ssh/sshd_config.d/", "MaxAuthTries")
         }
         "SSH service active" = {
             param($Worker)
