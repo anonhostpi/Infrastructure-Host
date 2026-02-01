@@ -8,27 +8,15 @@ return (New-Module -Name "Verify.PackageSecurity" -ScriptBlock {
     $mod.Tests = [ordered]@{
         "unattended-upgrades installed" = {
             param($Worker)
-            $result = $Worker.Exec("dpkg -l unattended-upgrades")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.8.1"; Name = "unattended-upgrades installed"
-                Pass = ($result.Output -match "ii.*unattended-upgrades"); Output = "Package installed"
-            })
+            $Worker.Test("6.8.1", "unattended-upgrades installed", "dpkg -l unattended-upgrades", "ii.*unattended-upgrades")
         }
         "Unattended upgrades config" = {
             param($Worker)
-            $result = $Worker.Exec("test -f /etc/apt/apt.conf.d/50unattended-upgrades")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.8.2"; Name = "Unattended upgrades config"
-                Pass = $result.Success; Output = "/etc/apt/apt.conf.d/50unattended-upgrades"
-            })
+            $Worker.Test("6.8.2", "Unattended upgrades config", "test -f /etc/apt/apt.conf.d/50unattended-upgrades", { $true })
         }
         "Auto-upgrades configured" = {
             param($Worker)
-            $result = $Worker.Exec("cat /etc/apt/apt.conf.d/20auto-upgrades")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.8.3"; Name = "Auto-upgrades configured"
-                Pass = ($result.Output -match 'Unattended-Upgrade.*"1"'); Output = "Auto-upgrade enabled"
-            })
+            $Worker.Test("6.8.3", "Auto-upgrades configured", "cat /etc/apt/apt.conf.d/20auto-upgrades", 'Unattended-Upgrade.*"1"')
         }
         "Service enabled" = {
             param($Worker)
