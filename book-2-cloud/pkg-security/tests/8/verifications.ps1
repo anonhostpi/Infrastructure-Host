@@ -83,7 +83,7 @@ New-Module -Name "Verify.PackageSecurity" -ScriptBlock {
         "snap-update script" = {
             param($Worker)
             $result = $Worker.Exec("test -x /usr/local/bin/snap-update && echo exists")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.8.10"; Name = "snap-update script"
                 Pass = ($result.Output -match "exists"); Output = "/usr/local/bin/snap-update"
             })
@@ -91,7 +91,7 @@ New-Module -Name "Verify.PackageSecurity" -ScriptBlock {
         "snap refresh.hold configured" = {
             param($Worker)
             $result = $Worker.Exec("sudo snap get system refresh.hold 2>/dev/null || echo not-set")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.8.11"; Name = "snap refresh.hold configured"
                 Pass = ($result.Output -match "forever" -or $result.Output -match "20[0-9]{2}")
                 Output = "refresh.hold=$($result.Output)"
@@ -100,7 +100,7 @@ New-Module -Name "Verify.PackageSecurity" -ScriptBlock {
         "brew-update script" = {
             param($Worker)
             $result = $Worker.Exec("test -x /usr/local/bin/brew-update && echo exists")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.8.12"; Name = "brew-update script"
                 Pass = ($result.Output -match "exists"); Output = "/usr/local/bin/brew-update"
             })
@@ -108,7 +108,7 @@ New-Module -Name "Verify.PackageSecurity" -ScriptBlock {
         "pip-global-update script" = {
             param($Worker)
             $result = $Worker.Exec("test -x /usr/local/bin/pip-global-update && echo exists")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.8.13"; Name = "pip-global-update script"
                 Pass = ($result.Output -match "exists"); Output = "/usr/local/bin/pip-global-update"
             })
@@ -116,7 +116,7 @@ New-Module -Name "Verify.PackageSecurity" -ScriptBlock {
         "npm-global-update script" = {
             param($Worker)
             $result = $Worker.Exec("test -x /usr/local/bin/npm-global-update && echo exists")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.8.14"; Name = "npm-global-update script"
                 Pass = ($result.Output -match "exists"); Output = "/usr/local/bin/npm-global-update"
             })
@@ -124,7 +124,7 @@ New-Module -Name "Verify.PackageSecurity" -ScriptBlock {
         "deno-update script" = {
             param($Worker)
             $result = $Worker.Exec("test -x /usr/local/bin/deno-update && echo exists")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.8.15"; Name = "deno-update script"
                 Pass = ($result.Output -match "exists"); Output = "/usr/local/bin/deno-update"
             })
@@ -133,7 +133,7 @@ New-Module -Name "Verify.PackageSecurity" -ScriptBlock {
             param($Worker)
             $enabled = $Worker.Exec("systemctl is-enabled pkg-managers-update.timer 2>/dev/null")
             $active = $Worker.Exec("systemctl is-active pkg-managers-update.timer 2>/dev/null")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.8.16"; Name = "pkg-managers-update timer"
                 Pass = ($enabled.Output -match "enabled") -and ($active.Output -match "active")
                 Output = "enabled=$($enabled.Output), active=$($active.Output)"
@@ -142,7 +142,7 @@ New-Module -Name "Verify.PackageSecurity" -ScriptBlock {
         "apt-notify common library" = {
             param($Worker)
             $result = $Worker.Exec("test -f /usr/local/lib/apt-notify/common.sh && echo exists")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.8.17"; Name = "apt-notify common library"
                 Pass = ($result.Output -match "exists"); Output = "/usr/local/lib/apt-notify/common.sh"
             })
@@ -150,7 +150,7 @@ New-Module -Name "Verify.PackageSecurity" -ScriptBlock {
         "apt-notify-flush script" = {
             param($Worker)
             $result = $Worker.Exec("test -x /usr/local/bin/apt-notify-flush && echo exists")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.8.18"; Name = "apt-notify-flush script"
                 Pass = ($result.Output -match "exists"); Output = "/usr/local/bin/apt-notify-flush"
             })
