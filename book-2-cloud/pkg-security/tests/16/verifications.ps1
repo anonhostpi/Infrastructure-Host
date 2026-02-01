@@ -55,16 +55,16 @@ New-Module -Name "Verify.PackageManagerUpdates" -ScriptBlock {
         "pip-global-update" = {
             param($Worker)
             $tm = $Worker.Exec("source /usr/local/lib/apt-notify/common.sh && echo `$TESTING_MODE").Output
-            if ($tm -notmatch "true") { $SDK.Testing.Verifications.Fork("6.8.22", "SKIP", "Testing mode disabled"); return }
+            if ($tm -notmatch "true") { $mod.SDK.Testing.Verifications.Fork("6.8.22", "SKIP", "Testing mode disabled"); return }
             if (-not ($Worker.Exec("which pip3")).Success) {
-                $SDK.Testing.Record(@{ Test = "6.8.22"; Name = "pip-global-update"; Pass = $true; Output = "Skipped - pip not installed" }); return
+                $mod.SDK.Testing.Record(@{ Test = "6.8.22"; Name = "pip-global-update"; Pass = $true; Output = "Skipped - pip not installed" }); return
             }
             $Worker.Exec("sudo pip3 install six==1.15.0 2>/dev/null") | Out-Null
             $Worker.Exec("sudo rm -f /var/lib/apt-notify/queue") | Out-Null
             $result = $Worker.Exec("sudo /usr/local/bin/pip-global-update 2>&1; echo exit_code:`$?")
             $queue = $Worker.Exec("cat /var/lib/apt-notify/queue 2>/dev/null").Output
             $pipDetected = ($queue -match "PIP_UPGRADED")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.8.22"; Name = "pip-global-update script"
                 Pass = ($result.Output -match "exit_code:0" -and $pipDetected)
                 Output = if ($pipDetected) { "Detected pip update" } else { "No PIP_UPGRADED in queue" }
@@ -73,12 +73,12 @@ New-Module -Name "Verify.PackageManagerUpdates" -ScriptBlock {
         "brew-update" = {
             param($Worker)
             $tm = $Worker.Exec("source /usr/local/lib/apt-notify/common.sh && echo `$TESTING_MODE").Output
-            if ($tm -notmatch "true") { $SDK.Testing.Verifications.Fork("6.8.23", "SKIP", "Testing mode disabled"); return }
+            if ($tm -notmatch "true") { $mod.SDK.Testing.Verifications.Fork("6.8.23", "SKIP", "Testing mode disabled"); return }
             if (-not ($Worker.Exec("command -v brew || test -x /home/linuxbrew/.linuxbrew/bin/brew")).Success) {
-                $SDK.Testing.Record(@{ Test = "6.8.23"; Name = "brew-update"; Pass = $true; Output = "Skipped - brew not installed" }); return
+                $mod.SDK.Testing.Record(@{ Test = "6.8.23"; Name = "brew-update"; Pass = $true; Output = "Skipped - brew not installed" }); return
             }
             $result = $Worker.Exec("sudo /usr/local/bin/brew-update 2>&1; echo exit_code:`$?")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.8.23"; Name = "brew-update script"
                 Pass = ($result.Output -match "exit_code:0")
                 Output = if ($result.Output -match "exit_code:0") { "Ran successfully" } else { $result.Output }
@@ -87,12 +87,12 @@ New-Module -Name "Verify.PackageManagerUpdates" -ScriptBlock {
         "deno-update" = {
             param($Worker)
             $tm = $Worker.Exec("source /usr/local/lib/apt-notify/common.sh && echo `$TESTING_MODE").Output
-            if ($tm -notmatch "true") { $SDK.Testing.Verifications.Fork("6.8.24", "SKIP", "Testing mode disabled"); return }
+            if ($tm -notmatch "true") { $mod.SDK.Testing.Verifications.Fork("6.8.24", "SKIP", "Testing mode disabled"); return }
             if (-not ($Worker.Exec("which deno")).Success) {
-                $SDK.Testing.Record(@{ Test = "6.8.24"; Name = "deno-update"; Pass = $true; Output = "Skipped - deno not installed" }); return
+                $mod.SDK.Testing.Record(@{ Test = "6.8.24"; Name = "deno-update"; Pass = $true; Output = "Skipped - deno not installed" }); return
             }
             $result = $Worker.Exec("sudo /usr/local/bin/deno-update 2>&1; echo exit_code:`$?")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.8.24"; Name = "deno-update script"
                 Pass = ($result.Output -match "exit_code:0")
                 Output = if ($result.Output -match "exit_code:0") { "Ran successfully" } else { $result.Output }
