@@ -384,7 +384,8 @@ New-Module -Name SDK.Multipass -ScriptBlock {
                 [int]$CPUs = 2,
                 [string]$Memory = "4G",
                 [string]$Disk = "40G",
-                [string]$Image = ""  # Empty uses default Ubuntu LTS
+                [string]$Image = "",  # Empty uses default Ubuntu LTS
+                [bool]$Hypervisor = $true
             )
 
             $launchArgs = @("launch", "--name", $VMName, "--cpus", $CPUs, "--memory", $Memory, "--disk", $Disk)
@@ -402,6 +403,9 @@ New-Module -Name SDK.Multipass -ScriptBlock {
             }
 
             $result = $this.Invoke($launchArgs)
+            if ($result.Success -and $Hypervisor) {
+                $this.Hypervisor($VMName)
+            }
             return $result.Success
         }
         Destroy = {
