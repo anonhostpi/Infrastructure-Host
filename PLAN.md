@@ -3885,7 +3885,7 @@ Load HyperV.ps1 in SDK module loading sequence
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 106: `book-0-builder/host-sdk/modules/Vbox.ps1` - Fix Out-Null blocking throws in Create
+### Commit 106: `book-0-builder/host-sdk/modules/Vbox.ps1` - Fix Out-Null blocking throws in Create [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Vbox.vbox-fix-out-null-create
 
@@ -3914,7 +3914,7 @@ Fix Out-Null blocking throws in Create
 | **Rule 4: Atomic** | Single logical unit | YES |
 
 
-### Commit 107: `book-0-builder/host-sdk/modules/Vbox.ps1` - Rewrite SetProcessor with key translation
+### Commit 107: `book-0-builder/host-sdk/modules/Vbox.ps1` - Rewrite SetProcessor with key translation [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Vbox.vbox-set-processor
 
@@ -3954,7 +3954,7 @@ Rewrite SetProcessor with key translation
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 108: `book-0-builder/host-sdk/modules/Vbox.ps1` - Rewrite SetMemory, SetNetworkAdapter, SetFirmware
+### Commit 108: `book-0-builder/host-sdk/modules/Vbox.ps1` - Rewrite SetMemory, SetNetworkAdapter, SetFirmware [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.Vbox.vbox-set-memory-net-firmware
 
@@ -4005,7 +4005,7 @@ Rewrite SetMemory, SetNetworkAdapter, SetFirmware
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 109: `book-0-builder/host-sdk/modules/HyperV.ps1` - Rename MemoryMB/DiskGB to Memory/Disk, add IsoPath
+### Commit 109: `book-0-builder/host-sdk/modules/HyperV.ps1` - Rename MemoryMB/DiskGB to Memory/Disk, add IsoPath [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.HyperV.hyperv-defaults-rename
 
@@ -4037,7 +4037,7 @@ Rename MemoryMB/DiskGB to Memory/Disk, add IsoPath
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 110: `book-0-builder/host-sdk/modules/HyperV.ps1` - Rename Worker Property accessors, add IsoPath
+### Commit 110: `book-0-builder/host-sdk/modules/HyperV.ps1` - Rename Worker Property accessors, add IsoPath [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.HyperV.hyperv-worker-props-rename
 
@@ -4069,7 +4069,7 @@ Rename Worker Property accessors, add IsoPath
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 112: `book-0-builder/host-sdk/modules/HyperV.ps1` - Replace GetSwitch with GetGuestAdapter shape
+### Commit 112: `book-0-builder/host-sdk/modules/HyperV.ps1` - Replace GetSwitch with GetGuestAdapter shape [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.HyperV.hyperv-get-guest-adapter-shape
 
@@ -4111,7 +4111,7 @@ Replace GetSwitch with GetGuestAdapter shape
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 113: `book-0-builder/host-sdk/modules/HyperV.ps1` - Fill GetGuestAdapter VMSwitch lookup
+### Commit 113: `book-0-builder/host-sdk/modules/HyperV.ps1` - Fill GetGuestAdapter VMSwitch lookup [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.HyperV.hyperv-get-guest-adapter-impl
 
@@ -4153,7 +4153,7 @@ Fill GetGuestAdapter VMSwitch lookup
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 114: `book-0-builder/host-sdk/modules/HyperV.ps1` - Rename Give SizeGB to Size in MB
+### Commit 114: `book-0-builder/host-sdk/modules/HyperV.ps1` - Rename Give SizeGB to Size in MB [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.HyperV.hyperv-give-size-rename
 
@@ -4187,7 +4187,7 @@ Rename Give SizeGB to Size in MB
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 115: `book-0-builder/host-sdk/modules/HyperV.ps1` - Rewrite SetProcessor with key copy and Count handling
+### Commit 115: `book-0-builder/host-sdk/modules/HyperV.ps1` - Rewrite SetProcessor with key copy and Count handling [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.HyperV.hyperv-set-processor
 
@@ -4229,7 +4229,7 @@ Rewrite SetProcessor with key copy and Count handling
 | **Rule 4: Atomic** | Single logical unit | YES |
 
 
-### Commit 116: `book-0-builder/host-sdk/modules/HyperV.ps1` - Rewrite SetMemory and SetNetworkAdapter with key copy
+### Commit 116: `book-0-builder/host-sdk/modules/HyperV.ps1` - Rewrite SetMemory and SetNetworkAdapter with key copy [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.HyperV.hyperv-set-memory-net
 
@@ -4274,7 +4274,7 @@ Rewrite SetMemory and SetNetworkAdapter with key copy
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 117: `book-0-builder/host-sdk/modules/HyperV.ps1` - Rewrite SetFirmware with key copy
+### Commit 117: `book-0-builder/host-sdk/modules/HyperV.ps1` - Rewrite SetFirmware with key copy [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.HyperV.hyperv-set-firmware
 
@@ -4310,7 +4310,7 @@ Rewrite SetFirmware with key copy
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 118: `book-0-builder/host-sdk/modules/HyperV.ps1` - Rename Create params to match Vbox, add Firmware
+### Commit 118: `book-0-builder/host-sdk/modules/HyperV.ps1` - Rename Create params to match Vbox, add Firmware [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.HyperV.hyperv-create-params
 
@@ -4349,7 +4349,7 @@ Rename Create params to match Vbox, add Firmware
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 119: `book-0-builder/host-sdk/modules/HyperV.ps1` - Rewrite Create core: VM creation, processor, firmware
+### Commit 119: `book-0-builder/host-sdk/modules/HyperV.ps1` - Rewrite Create core: VM creation, processor, firmware [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.HyperV.hyperv-create-core
 
@@ -4393,7 +4393,7 @@ Rewrite Create core: VM creation, processor, firmware
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 120: `book-0-builder/host-sdk/modules/HyperV.ps1` - Fill Create network, optimize, hypervisor with throws
+### Commit 120: `book-0-builder/host-sdk/modules/HyperV.ps1` - Fill Create network, optimize, hypervisor with throws [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.HyperV.hyperv-create-network-opts
 
@@ -4435,7 +4435,7 @@ Fill Create network, optimize, hypervisor with throws
 | **Rule 4: Atomic** | Single logical unit | YES |
 
 
-### Commit 121: `book-0-builder/host-sdk/modules/HyperV.ps1` - Update Worker Create delegation for renamed params
+### Commit 121: `book-0-builder/host-sdk/modules/HyperV.ps1` - Update Worker Create delegation for renamed params [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.HyperV.hyperv-worker-create-delegation
 
