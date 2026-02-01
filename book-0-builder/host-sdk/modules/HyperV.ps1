@@ -106,7 +106,18 @@ New-Module -Name SDK.HyperV -ScriptBlock {
             param([Parameter(Mandatory = $true)] [string]$AdapterName)
             $adapter = $mod.SDK.Network.GetGuestAdapter($AdapterName)
             if (-not $adapter) { return $null }
-            return $null # WIP
+            $physical = Get-NetAdapter -Name $AdapterName -ErrorAction SilentlyContinue
+            $description = if ($physical) { $physical.InterfaceDescription } else { $adapter.InterfaceDescription }
+            $switches = Get-VMSwitch -SwitchType External -ErrorAction SilentlyContinue
+            $match = $switches | Where-Object {
+                $_.NetAdapterInterfaceDescription -eq $description -or
+                $_.NetAdapterInterfaceDescription -match "^$([regex]::Escape($description))(\s+#\d+)?$"
+            } | Select-Object -First 1
+            if (-not $match) {
+                Write-Warning "VMSwitch for adapter '$AdapterName' not found."
+                return $null
+            }
+            return $match.Name
         }
         Drives = {
             param([string]$VMName)
