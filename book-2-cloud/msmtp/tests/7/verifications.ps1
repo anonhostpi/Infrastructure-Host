@@ -66,14 +66,12 @@ return (New-Module -Name "Verify.MSMTPMail" -ScriptBlock {
         "Auth method valid" = {
             param($Worker)
             if (-not $smtpConfigured) { $mod.SDK.Testing.Verifications.Fork("6.7.6", "SKIP", "No SMTP configured"); return }
-            $msmtprc = $Worker.Exec("sudo cat /etc/msmtprc").Output
-            $authMethod = if ($msmtprc -match 'auth\s+(\S+)') { $matches[1] } else { 'on' }
+            $Worker.Test("6.7.6", "Auth method valid", "sudo cat /etc/msmtprc", { param($out)
+            $authMethod = if ($out -match 'auth\s+(\S+)') { $matches[1] } else { 'on' }
             $validAuth = @('on', 'plain', 'login', 'xoauth2', 'oauthbearer', 'external')
             $authPass = $authMethod -in $validAuth
-            if ($authMethod -in @('xoauth2', 'oauthbearer')) { $authPass = $authPass -and ($msmtprc -match 'passwordeval') }
-            $mod.SDK.Testing.Record(@{
-                Test = "6.7.6"; Name = "Auth method valid"
-                Pass = $authPass; Output = "auth=$authMethod"
+            if ($authMethod -in @('xoauth2', 'oauthbearer')) { $authPass = $authPass -and ($out -match 'passwordeval') }
+            $authPass
             })
         }
         "TLS settings valid" = {
