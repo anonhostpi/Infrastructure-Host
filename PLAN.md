@@ -5740,7 +5740,7 @@ Replace AutoinstallTest.Run signature and remove old body, add placeholder
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 150b: `book-0-builder/host-sdk/modules/AutoinstallTest.ps1` - Implement AutoinstallTest.Run body: CloudInitTest for book 2, then loop hypervisors for book 1
+### Commit 150b: `book-0-builder/host-sdk/modules/AutoinstallTest.ps1` - Implement AutoinstallTest.Run body: CloudInitTest for book 2, then loop hypervisors for book 1 [COMPLETE]
 
 ### book-0-builder.host-sdk.modules.AutoinstallTest.autoinstalltest-impl-body
 
