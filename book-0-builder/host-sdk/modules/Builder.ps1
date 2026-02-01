@@ -122,19 +122,14 @@ New-Module -Name SDK.Builder -ScriptBlock {
                     throw "No $artifactKey artifact found after build"
                 }
             }
-            if ($Backend -eq "Multipass") {
-                $remote = $artifacts.cloud_init
-                $local = Join-Path $mod.SDK.Root() "output" (Split-Path $remote -Leaf)
-                $this.Pull($remote, $local)
-                $config.CloudInit = $local
-            } else {
-                $remote = $artifacts.iso
-                $local = Join-Path $mod.SDK.Root() "output" (Split-Path $remote -Leaf)
-                $this.Pull($remote, $local)
-                $config.IsoPath = $local
-            }
+            $configKey = if ($Backend -eq "Multipass") { "CloudInit" } else { "IsoPath" }
+            $remote = $artifacts.$artifactKey
+            $local = Join-Path $mod.SDK.Root() "output" (Split-Path $remote -Leaf)
+            $this.Pull($remote, $local)
+            $config.$configKey = $local
             $worker = $mod.SDK."$Backend".Worker(@{ Config = $config })
             $this.Register($config.Name, $worker)
+            $worker.Setup($true)
             return $worker
         }
     }
