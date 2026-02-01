@@ -651,13 +651,13 @@ New-Module -Name SDK.Vbox -ScriptBlock {
                 )
 
                 if ($Optimize) {
-                    $configured = $this.Optimize($VMName) | Out-Null
+                    $configured = $this.Optimize($VMName)
                     if (-not $configured) {
                         throw "Failed to optimize VM '$VMName' after creation."
                     }
                 }
                 if ($Hypervisor) {
-                    $configured = $this.Hypervisor($VMName) | Out-Null
+                    $configured = $this.Hypervisor($VMName)
                     if (-not $configured) {
                         throw "Failed to enable nested virtualization for VM '$VMName' after creation."
                     }
