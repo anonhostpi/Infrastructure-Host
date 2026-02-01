@@ -110,10 +110,18 @@ New-Module -Name SDK.Builder -ScriptBlock {
             return $Worker
         }
         Runner = {
-            param([hashtable]$Config, [string]$Backend = "Multipass")
+            param([hashtable]$Config, [string]$Backend = "Multipass", [int]$Layer = 0)
             $config = @{}
             foreach ($k in ($Config.Keys | ForEach-Object { $_ })) { $config[$k] = $Config[$k] }
             $artifacts = $this.Artifacts
+            $artifactKey = if ($Backend -eq "Multipass") { "cloud_init" } else { "iso" }
+            if (-not $artifacts -or -not $artifacts.$artifactKey) {
+                $this.Build($Layer)
+                $artifacts = $this.Artifacts
+                if (-not $artifacts -or -not $artifacts.$artifactKey) {
+                    throw "No $artifactKey artifact found after build"
+                }
+            }
             if ($Backend -eq "Multipass") {
                 $remote = $artifacts.cloud_init
                 $local = Join-Path $mod.SDK.Root() "output" (Split-Path $remote -Leaf)
