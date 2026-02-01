@@ -5,14 +5,14 @@ New-Module -Name "Verify.MSMTPMail" -ScriptBlock {
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\..\..\..\book-0-builder\host-sdk\helpers\PowerShell.ps1"
 
-    $smtp = $SDK.Settings.SMTP
+    $smtp = $mod.SDK.Settings.SMTP
     $smtpConfigured = ($smtp -and $smtp.host)
 
-    $SDK.Testing.Verifications.Register("msmtp", 7, [ordered]@{
+    $mod.SDK.Testing.Verifications.Register("msmtp", 7, [ordered]@{
         "msmtp installed" = {
             param($Worker)
             $result = $Worker.Exec("which msmtp")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.7.1"; Name = "msmtp installed"
                 Pass = ($result.Success -and $result.Output -match "msmtp"); Output = $result.Output
             })
@@ -20,7 +20,7 @@ New-Module -Name "Verify.MSMTPMail" -ScriptBlock {
         "msmtp config exists" = {
             param($Worker)
             $result = $Worker.Exec("test -f /etc/msmtprc")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.7.2"; Name = "msmtp config exists"
                 Pass = $result.Success; Output = "/etc/msmtprc"
             })
@@ -28,25 +28,25 @@ New-Module -Name "Verify.MSMTPMail" -ScriptBlock {
         "sendmail alias exists" = {
             param($Worker)
             $result = $Worker.Exec("test -L /usr/sbin/sendmail")
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.7.3"; Name = "sendmail alias exists"
                 Pass = $result.Success; Output = "/usr/sbin/sendmail"
             })
         }
         "SMTP host matches" = {
             param($Worker)
-            if (-not $smtpConfigured) { $SDK.Testing.Verifications.Fork("6.7.4", "SKIP", "No SMTP configured"); return }
+            if (-not $smtpConfigured) { $mod.SDK.Testing.Verifications.Fork("6.7.4", "SKIP", "No SMTP configured"); return }
             $msmtprc = $Worker.Exec("sudo cat /etc/msmtprc").Output
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.7.4"; Name = "SMTP host matches"
                 Pass = ($msmtprc -match "host\s+$([regex]::Escape($smtp.host))"); Output = "Expected: $($smtp.host)"
             })
         }
         "SMTP port matches" = {
             param($Worker)
-            if (-not $smtpConfigured) { $SDK.Testing.Verifications.Fork("6.7.4", "SKIP", "No SMTP configured"); return }
+            if (-not $smtpConfigured) { $mod.SDK.Testing.Verifications.Fork("6.7.4", "SKIP", "No SMTP configured"); return }
             $msmtprc = $Worker.Exec("sudo cat /etc/msmtprc").Output
-            $SDK.Testing.Record(@{
+            $mod.SDK.Testing.Record(@{
                 Test = "6.7.4"; Name = "SMTP port matches"
                 Pass = ($msmtprc -match "port\s+$($smtp.port)"); Output = "Expected: $($smtp.port)"
             })
