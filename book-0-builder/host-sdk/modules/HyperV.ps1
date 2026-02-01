@@ -288,13 +288,14 @@ New-Module -Name SDK.HyperV -ScriptBlock {
                 [bool]$Optimize = $true, [bool]$Hypervisor = $true
             )
             try {
-                $memBytes = $MemoryMB * 1MB
-                $diskBytes = $DiskGB * 1GB
+                $memBytes = $RAM * 1MB
+                $diskBytes = $Size * 1MB
                 New-VM -Name $VMName -MemoryStartupBytes $memBytes -Generation $Generation -NewVHDPath $MediumPath -NewVHDSizeBytes $diskBytes -ErrorAction Stop | Out-Null
-                $this.SetProcessor($VMName, @{ Count = $CPUs })
-                $switch = $this.GetSwitch($SwitchName)
-                if ($switch) {
-                    Connect-VMNetworkAdapter -VMName $VMName -SwitchName $switch
+                $configured = $this.SetProcessor($VMName, @{ Count = $CPU })
+                if (-not $configured) { throw "Failed to configure processor for VM '$VMName'." }
+                if ($Firmware.Count -gt 0) {
+                    $configured = $this.SetFirmware($VMName, $Firmware)
+                    if (-not $configured) { throw "Failed to configure firmware for VM '$VMName'." }
                 }
                 if ($Optimize) { $this.Optimize($VMName) }
                 if ($Hypervisor) { $this.Hypervisor($VMName) }
