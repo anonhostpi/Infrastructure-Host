@@ -35,21 +35,11 @@ return (New-Module -Name "Verify.Cockpit" -ScriptBlock {
             param($Worker)
             $portConf = $Worker.Exec("cat /etc/systemd/system/cockpit.socket.d/listen.conf 2>/dev/null").Output
             $port = if ($portConf -match 'ListenStream=(\d+)') { $matches[1] } else { "9090" }
-            $result = $Worker.Exec("curl -sk https://localhost:$port/ | grep -E 'login.js|login.css'")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.11.6"; Name = "Cockpit login page"
-                Pass = ($result.Success -and $result.Output); Output = "Login page served"
-            })
+            $Worker.Test("6.11.6", "Cockpit login page", "curl -sk https://localhost:$port/ | grep -E 'login.js|login.css'", ".")
         }
         "Cockpit restricted to localhost" = {
             param($Worker)
-            $portConf = $Worker.Exec("cat /etc/systemd/system/cockpit.socket.d/listen.conf 2>/dev/null").Output
-            $restricted = ($portConf -match "127\.0\.0\.1" -or $portConf -match "::1" -or $portConf -match "localhost")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.11.7"; Name = "Cockpit restricted to localhost"
-                Pass = $restricted
-                Output = if ($restricted) { "Listen restricted" } else { "Warning: may be externally accessible" }
-            })
+            $Worker.Test("6.11.7", "Cockpit restricted to localhost", "cat /etc/systemd/system/cockpit.socket.d/listen.conf 2>/dev/null", "127\.0\.0\.1|::1|localhost")
         }
     }
 
