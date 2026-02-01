@@ -240,7 +240,14 @@ New-Module -Name SDK.HyperV -ScriptBlock {
         SetMemory = {
             param([string]$VMName, [hashtable]$Settings)
             $s = @{ VMName = $VMName }
-            foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) { $s[$key] = $Settings[$key] }
+            foreach ($key in $Settings.Keys) {
+                switch ($key) {
+                    "MemoryMB" { $s.StartupBytes = $Settings[$key] * 1MB }
+                    "MemoryGB" { $s.StartupBytes = $Settings[$key] * 1GB }
+                    "memory" { $s.StartupBytes = $Settings[$key] * 1MB }
+                    { $_ -in @("DynamicMemoryEnabled","StartupBytes") } { $s[$key] = $Settings[$key] }
+                }
+            }
             try { Set-VMMemory @s -ErrorAction Stop; return $true } catch { return $false }
         }
         SetNetworkAdapter = {
