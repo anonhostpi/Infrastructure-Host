@@ -3884,3 +3884,595 @@ Load HyperV.ps1 in SDK module loading sequence
 | **Rule 3: Lines** | 1 lines | PASS |
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 106: `book-0-builder/host-sdk/modules/Vbox.ps1` - Fix Out-Null blocking throws in Create
+
+### book-0-builder.host-sdk.modules.Vbox.vbox-fix-out-null-create
+
+> **File**: `book-0-builder/host-sdk/modules/Vbox.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Fix Out-Null blocking throws in Create
+
+#### Diff
+
+```diff
+
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 0 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+
+### Commit 107: `book-0-builder/host-sdk/modules/Vbox.ps1` - Rewrite SetProcessor with key translation
+
+### book-0-builder.host-sdk.modules.Vbox.vbox-set-processor
+
+> **File**: `book-0-builder/host-sdk/modules/Vbox.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Rewrite SetProcessor with key translation
+
+#### Diff
+
+```diff
+ SetProcessor = {
+-    param([string]$VMName, [hashtable]$Settings)
+-    return $this.Configure($VMName, $Settings)
++    param([string]$VMName, [hashtable]$Settings)
++    $s = @{}
++    foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) {
++        switch ($key) {
++            "Count" { $s["cpus"] = $Settings[$key] }
++            default { $s[$key] = $Settings[$key] }
++        }
++    }
++    return $this.Configure($VMName, $s)
+ }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 11 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 108: `book-0-builder/host-sdk/modules/Vbox.ps1` - Rewrite SetMemory, SetNetworkAdapter, SetFirmware
+
+### book-0-builder.host-sdk.modules.Vbox.vbox-set-memory-net-firmware
+
+> **File**: `book-0-builder/host-sdk/modules/Vbox.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Rewrite SetMemory, SetNetworkAdapter, SetFirmware
+
+#### Diff
+
+```diff
+ SetMemory = {
+-    param([string]$VMName, [hashtable]$Settings)
+-    return $this.Configure($VMName, $Settings)
++    param([string]$VMName, [hashtable]$Settings)
++    $s = @{}
++    foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) { $s[$key] = $Settings[$key] }
++    return $this.Configure($VMName, $s)
+ }
+ SetNetworkAdapter = {
+-    param([string]$VMName, [hashtable]$Settings)
+-    return $this.Configure($VMName, $Settings)
++    param([string]$VMName, [hashtable]$Settings)
++    $s = @{}
++    foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) { $s[$key] = $Settings[$key] }
++    return $this.Configure($VMName, $s)
+ }
+ SetFirmware = {
+-    param([string]$VMName, [hashtable]$Settings)
+-    return $this.Configure($VMName, $Settings)
++    param([string]$VMName, [hashtable]$Settings)
++    $s = @{}
++    foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) { $s[$key] = $Settings[$key] }
++    return $this.Configure($VMName, $s)
+ }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 18 lines | BORDERLINE |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 109: `book-0-builder/host-sdk/modules/HyperV.ps1` - Rename MemoryMB/DiskGB to Memory/Disk, add IsoPath
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-defaults-rename
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Rename MemoryMB/DiskGB to Memory/Disk, add IsoPath
+
+#### Diff
+
+```diff
+-    MemoryMB = 4096
+-    DiskGB = 40
++    Memory = 4096
++    Disk = 40960
++    IsoPath = $null
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 5 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 110: `book-0-builder/host-sdk/modules/HyperV.ps1` - Rename Worker Property accessors, add IsoPath
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-worker-props-rename
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Rename Worker Property accessors, add IsoPath
+
+#### Diff
+
+```diff
+-            MemoryMB = { return $this.Rendered.MemoryMB }
+-            DiskGB = { return $this.Rendered.DiskGB }
++            Memory = { return $this.Rendered.Memory }
++            Disk = { return $this.Rendered.Disk }
++            IsoPath = { return $this.Rendered.IsoPath }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 5 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 112: `book-0-builder/host-sdk/modules/HyperV.ps1` - Replace GetSwitch with GetGuestAdapter shape
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-get-guest-adapter-shape
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Replace GetSwitch with GetGuestAdapter shape
+
+#### Diff
+
+```diff
+-        GetSwitch = {
+-            param([string]$SwitchName)
+-            if ($SwitchName) {
+-                $sw = Get-VMSwitch -Name $SwitchName -ErrorAction SilentlyContinue
+-                if ($sw) { return $sw.Name }
+-            }
+-            $ext = Get-VMSwitch -SwitchType External -ErrorAction SilentlyContinue | Select-Object -First 1
+-            if ($ext) { return $ext.Name }
+-            return $null
++        GetGuestAdapter = {
++            param([Parameter(Mandatory = $true)] [string]$AdapterName)
++            $adapter = $mod.SDK.Network.GetGuestAdapter($AdapterName)
++            if (-not $adapter) { return $null }
++            return $null # WIP
+         }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 14 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 113: `book-0-builder/host-sdk/modules/HyperV.ps1` - Fill GetGuestAdapter VMSwitch lookup
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-get-guest-adapter-impl
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Fill GetGuestAdapter VMSwitch lookup
+
+#### Diff
+
+```diff
+-            if (-not $adapter) { return $null }
+-            return $null # WIP
++            if (-not $adapter) { return $null }
++            $physical = Get-NetAdapter -Name $AdapterName -ErrorAction SilentlyContinue
++            $description = if ($physical) { $physical.InterfaceDescription } else { $adapter.InterfaceDescription }
++            $switches = Get-VMSwitch -SwitchType External -ErrorAction SilentlyContinue
++            $match = $switches | Where-Object {
++                $_.NetAdapterInterfaceDescription -eq $description -or
++                $_.NetAdapterInterfaceDescription -match "^$([regex]::Escape($description))(s+#d+)?$"
++            } | Select-Object -First 1
++            if (-not $match) {
++                Write-Warning "VMSwitch for adapter '$AdapterName' not found."
++                return $null
++            }
++            return $match.Name
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 15 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 114: `book-0-builder/host-sdk/modules/HyperV.ps1` - Rename Give SizeGB to Size in MB
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-give-size-rename
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Rename Give SizeGB to Size in MB
+
+#### Diff
+
+```diff
+-        Give = {
+-            param([string]$VMName, [string]$Path, [int]$SizeGB, [string]$ControllerType = "SCSI")
++        Give = {
++            param([string]$VMName, [string]$Path, [int]$Size, [string]$ControllerType = "SCSI")
+             try {
+-                New-VHD -Path $Path -SizeBytes ($SizeGB * 1GB) -Dynamic -ErrorAction Stop | Out-Null
++                New-VHD -Path $Path -SizeBytes ($Size * 1MB) -Dynamic -ErrorAction Stop | Out-Null
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 6 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 115: `book-0-builder/host-sdk/modules/HyperV.ps1` - Rewrite SetProcessor with key copy and Count handling
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-set-processor
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Rewrite SetProcessor with key copy and Count handling
+
+#### Diff
+
+```diff
+         SetProcessor = {
+-            param([string]$VMName, [hashtable]$Settings)
+-            $Settings.VMName = $VMName
+-            try { Set-VMProcessor @Settings -ErrorAction Stop; return $true } catch { return $false }
++            param([string]$VMName, [hashtable]$Settings)
++            $s = @{ VMName = $VMName }
++            foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) {
++                switch ($key) {
++                    "Count" { $s["Count"] = $Settings[$key] }
++                    default { $s[$key] = $Settings[$key] }
++                }
++            }
++            try { Set-VMProcessor @s -ErrorAction Stop; return $true } catch { return $false }
+         }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 12 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+
+### Commit 116: `book-0-builder/host-sdk/modules/HyperV.ps1` - Rewrite SetMemory and SetNetworkAdapter with key copy
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-set-memory-net
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Rewrite SetMemory and SetNetworkAdapter with key copy
+
+#### Diff
+
+```diff
+         SetMemory = {
+-            param([string]$VMName, [hashtable]$Settings)
+-            $Settings.VMName = $VMName
+-            try { Set-VMMemory @Settings -ErrorAction Stop; return $true } catch { return $false }
++            param([string]$VMName, [hashtable]$Settings)
++            $s = @{ VMName = $VMName }
++            foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) { $s[$key] = $Settings[$key] }
++            try { Set-VMMemory @s -ErrorAction Stop; return $true } catch { return $false }
+         }
+         SetNetworkAdapter = {
+-            param([string]$VMName, [hashtable]$Settings)
+-            $Settings.VMName = $VMName
+-            try { Set-VMNetworkAdapter @Settings -ErrorAction Stop; return $true } catch { return $false }
++            param([string]$VMName, [hashtable]$Settings)
++            $s = @{ VMName = $VMName }
++            foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) { $s[$key] = $Settings[$key] }
++            try { Set-VMNetworkAdapter @s -ErrorAction Stop; return $true } catch { return $false }
+         }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 14 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 117: `book-0-builder/host-sdk/modules/HyperV.ps1` - Rewrite SetFirmware with key copy
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-set-firmware
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Rewrite SetFirmware with key copy
+
+#### Diff
+
+```diff
+         SetFirmware = {
+-            param([string]$VMName, [hashtable]$Settings)
+-            $Settings.VMName = $VMName
+-            try { Set-VMFirmware @Settings -ErrorAction Stop; return $true } catch { return $false }
++            param([string]$VMName, [hashtable]$Settings)
++            $s = @{ VMName = $VMName }
++            foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) { $s[$key] = $Settings[$key] }
++            try { Set-VMFirmware @s -ErrorAction Stop; return $true } catch { return $false }
+         }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 7 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 118: `book-0-builder/host-sdk/modules/HyperV.ps1` - Rename Create params to match Vbox, add Firmware
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-create-params
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Rename Create params to match Vbox, add Firmware
+
+#### Diff
+
+```diff
+         Create = {
+             param(
+-                [string]$VMName, [string]$MediumPath, [string]$DVDPath,
+-                [string]$SwitchName, [int]$Generation = 2,
+-                [int]$DiskGB = 40, [int]$MemoryMB = 4096, [int]$CPUs = 2,
+-                [bool]$Optimize = $true, [bool]$Hypervisor = $true
++                [string]$VMName, [string]$MediumPath, [string]$DVDPath,
++                [string]$AdapterName, [int]$Generation = 2,
++                [hashtable]$Firmware = @{},
++                [int]$Size = 40960, [int]$RAM = 4096, [int]$CPU = 2,
++                [bool]$Optimize = $true, [bool]$Hypervisor = $true
+             )
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 9 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 119: `book-0-builder/host-sdk/modules/HyperV.ps1` - Rewrite Create core: VM creation, processor, firmware
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-create-core
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Rewrite Create core: VM creation, processor, firmware
+
+#### Diff
+
+```diff
+             try {
+-                $memBytes = $MemoryMB * 1MB
+-                $diskBytes = $DiskGB * 1GB
+-                New-VM -Name $VMName -MemoryStartupBytes $memBytes -Generation $Generation -NewVHDPath $MediumPath -NewVHDSizeBytes $diskBytes -ErrorAction Stop | Out-Null
+-                $this.SetProcessor($VMName, @{ Count = $CPUs })
+-                $switch = $this.GetSwitch($SwitchName)
+-                if ($switch) {
+-                    Connect-VMNetworkAdapter -VMName $VMName -SwitchName $switch
++                $memBytes = $RAM * 1MB
++                $diskBytes = $Size * 1MB
++                New-VM -Name $VMName -MemoryStartupBytes $memBytes -Generation $Generation -NewVHDPath $MediumPath -NewVHDSizeBytes $diskBytes -ErrorAction Stop | Out-Null
++                $configured = $this.SetProcessor($VMName, @{ Count = $CPU })
++                if (-not $configured) { throw "Failed to configure processor for VM '$VMName'." }
++                if ($Firmware.Count -gt 0) {
++                    $configured = $this.SetFirmware($VMName, $Firmware)
++                    if (-not $configured) { throw "Failed to configure firmware for VM '$VMName'." }
+                 }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 15 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 120: `book-0-builder/host-sdk/modules/HyperV.ps1` - Fill Create network, optimize, hypervisor with throws
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-create-network-opts
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Fill Create network, optimize, hypervisor with throws
+
+#### Diff
+
+```diff
++                $switch = $this.GetGuestAdapter($AdapterName)
++                if ($switch) {
++                    Connect-VMNetworkAdapter -VMName $VMName -SwitchName $switch
++                }
+                 if ($Optimize) {
+-                    $this.Optimize($VMName)
++                    $configured = $this.Optimize($VMName)
++                    if (-not $configured) { throw "Failed to optimize VM '$VMName'." }
+                 }
+                 if ($Hypervisor) {
+-                    $this.Hypervisor($VMName)
++                    $configured = $this.Hypervisor($VMName)
++                    if (-not $configured) { throw "Failed to enable nested virtualization for VM '$VMName'." }
+                 }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 10 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+
+### Commit 121: `book-0-builder/host-sdk/modules/HyperV.ps1` - Update Worker Create delegation for renamed params
+
+### book-0-builder.host-sdk.modules.HyperV.hyperv-worker-create-delegation
+
+> **File**: `book-0-builder/host-sdk/modules/HyperV.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Update Worker Create delegation for renamed params
+
+#### Diff
+
+```diff
+             Create = {
+                 return $mod.SDK.HyperV.Create(
+                     $this.Name,
+                     $this.MediumPath,
+-                    $null,
++                    $this.IsoPath,
+                     $this.Network,
+                     $this.Generation,
+-                    $this.DiskGB,
+-                    $this.MemoryMB,
++                    @{},
++                    $this.Disk,
++                    $this.Memory,
+                     $this.CPUs
+                 )
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 7 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
