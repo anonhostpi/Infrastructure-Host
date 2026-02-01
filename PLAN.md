@@ -5783,7 +5783,7 @@ Implement AutoinstallTest.Run body: CloudInitTest for book 2, then loop hypervis
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 151a: `book-1-foundation/base/tests/0/verifications.ps1` - Add verification tests shape with SSH reachable and OS version tests
+### Commit 151a: `book-1-foundation/base/tests/0/verifications.ps1` - Add verification tests shape with SSH reachable and OS version tests [COMPLETE]
 
 ### book-1-foundation.base.tests.0.verifications.book1-verif-shape
 
