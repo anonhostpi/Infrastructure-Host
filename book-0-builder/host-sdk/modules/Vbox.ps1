@@ -532,6 +532,14 @@ New-Module -Name SDK.Vbox -ScriptBlock {
             param([string]$VMName, [hashtable]$Settings)
             return $this.Configure($VMName, $Settings)
         }
+        SetNetworkAdapter = {
+            param([string]$VMName, [hashtable]$Settings)
+            return $this.Configure($VMName, $Settings)
+        }
+        SetFirmware = {
+            param([string]$VMName, [hashtable]$Settings)
+            return $this.Configure($VMName, $Settings)
+        }
     }
 
     #region: VM destruction and creation methods
