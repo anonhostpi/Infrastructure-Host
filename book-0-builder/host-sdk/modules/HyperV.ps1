@@ -146,6 +146,21 @@ New-Module -Name SDK.HyperV -ScriptBlock {
                 throw "Failed to attach VHD '$Path' to VM: $VMName"
             }
         }
+        Eject = {
+            param([string]$VMName)
+            foreach ($dvd in (Get-VMDvdDrive -VMName $VMName)) {
+                Set-VMDvdDrive -VMDvdDrive $dvd -Path $null
+            }
+        }
+        Insert = {
+            param([string]$VMName, [string]$ISOPath)
+            $dvds = Get-VMDvdDrive -VMName $VMName
+            if ($dvds.Count -eq 0) {
+                Add-VMDvdDrive -VMName $VMName -Path $ISOPath
+            } else {
+                Set-VMDvdDrive -VMDvdDrive ($dvds | Select-Object -First 1) -Path $ISOPath
+            }
+        }
     }
 
     $SDK.Extend("HyperV", $HyperV)
