@@ -39,7 +39,7 @@ book-2-cloud/ui/
   description: Desktop UI packages (optional GUI environment)
   iso_required: false
   build_order: 90
-  build_layer: 7
+  build_layer: 15
   ```
 
 ### 2.2 Config Restructure (Fragments only - skip for Book 0)

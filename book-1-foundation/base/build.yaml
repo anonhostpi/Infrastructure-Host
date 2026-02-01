@@ -1,0 +1,5 @@
+name: base
+description: Core autoinstall configuration for Ubuntu installation
+iso_required: true
+build_order: 0
+build_layer: 0

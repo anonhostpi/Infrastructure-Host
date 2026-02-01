@@ -1,0 +1,5 @@
+name: kernel
+description: Kernel hardening and sysctl configuration
+iso_required: false
+build_order: 15
+build_layer: 2

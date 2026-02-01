@@ -1,0 +1,5 @@
+name: users
+description: User account creation and sudo configuration
+iso_required: true
+build_order: 20
+build_layer: 3

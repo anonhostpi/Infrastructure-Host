@@ -1,0 +1,5 @@
+name: pkg-upgrade
+description: Final package upgrade (apt upgrade)
+iso_required: false
+build_order: 999
+build_layer: 8

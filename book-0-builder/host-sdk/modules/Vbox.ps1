@@ -11,9 +11,108 @@ New-Module -Name SDK.Vbox -ScriptBlock {
 
     $mod = @{ SDK = $SDK }
 
-    . "$PSScriptRoot\helpers\PowerShell.ps1"
+    . "$PSScriptRoot\..\helpers\PowerShell.ps1"
+
+    $mod.Configurator = @{
+        Defaults = @{
+            CPUs = 2
+            Memory = 4096
+            Disk = 40960
+            SSHUser = $null
+            SSHHost = $null
+            SSHPort = 22
+        }
+    }
+
+    $mod.Worker = @{
+        Properties = @{
+            Rendered = {
+                $config = $this.Config
+                $defaults = if ($this.Defaults) { $this.Defaults } else { $mod.Configurator.Defaults }
+                $rendered = @{}
+                foreach ($key in ($defaults.Keys | ForEach-Object { $_ })) { $rendered[$key] = $defaults[$key] }
+                foreach ($key in ($config.Keys | ForEach-Object { $_ })) { $rendered[$key] = $config[$key] }
+                # Derive SSH settings from config files if not set
+                if (-not $rendered.SSHUser -or -not $rendered.SSHHost) {
+                    $identity = $mod.SDK.Settings.Load("book-2-cloud/users/config/identity.config.yaml")
+                    $network = $mod.SDK.Settings.Load("book-2-cloud/network/config/network.config.yaml")
+                    if (-not $rendered.SSHUser) { $rendered.SSHUser = $identity.identity.username }
+                    if (-not $rendered.SSHHost) {
+                        $ip = $network.network.ip_address -replace '/\d+$', ''
+                        $rendered.SSHHost = $ip
+                    }
+                }
+                if (-not $rendered.MediumPath) {
+                    $rendered.MediumPath = "$env:TEMP\$($rendered.Name).vdi"
+                }
+                $this | Add-Member -MemberType NoteProperty -Name Rendered -Value $rendered -Force
+                return $rendered
+            }
+            Name = { return $this.Rendered.Name }
+            CPUs = { return $this.Rendered.CPUs }
+            Memory = { return $this.Rendered.Memory }
+            Disk = { return $this.Rendered.Disk }
+            Network = { return $this.Rendered.Network }
+            IsoPath = { return $this.Rendered.IsoPath }
+            MediumPath = { return $this.Rendered.MediumPath }
+            SSHUser = { return $this.Rendered.SSHUser }
+            SSHHost = { return $this.Rendered.SSHHost }
+            SSHPort = { return $this.Rendered.SSHPort }
+        }
+        Methods = @{
+            Exists = { return $mod.SDK.Vbox.Exists($this.Name) }
+            Running = { return $mod.SDK.Vbox.Running($this.Name) }
+            Start = {
+                param([string]$Type = "headless")
+                return $mod.SDK.Vbox.Start($this.Name, $Type)
+            }
+            Shutdown = {
+                param([bool]$Force)
+                return $mod.SDK.Vbox.Shutdown($this.Name, $Force)
+            }
+            UntilShutdown = {
+                param([int]$TimeoutSeconds)
+                return $mod.SDK.Vbox.UntilShutdown($this.Name, $TimeoutSeconds)
+            }
+            Destroy = { return $mod.SDK.Vbox.Destroy($this.Name) }
+            Create = {
+                return $mod.SDK.Vbox.Create(
+                    $this.Name,
+                    $this.MediumPath,
+                    $this.IsoPath,
+                    $this.Network,
+                    "Ubuntu_64",
+                    "efi",
+                    "SATA",
+                    $this.Disk,
+                    $this.Memory,
+                    $this.CPUs
+                )
+            }
+        }
+    }
 
     $Vbox = New-Object PSObject
+
+    Add-ScriptMethods $Vbox @{
+        Worker = {
+            param(
+                [Parameter(Mandatory = $true)]
+                [ValidateScript({ $null -ne $_.Config -and $null -ne $_.Config.IsoPath })]
+                $Base
+            )
+            $worker = If ($Base -is [System.Collections.IDictionary]) {
+                New-Object PSObject -Property $Base
+            } Else { $Base }
+
+            Add-ScriptProperties $worker $mod.Worker.Properties
+            Add-ScriptMethods $worker $mod.Worker.Methods
+
+            $mod.SDK.Worker.Methods($worker)
+
+            return $worker
+        }
+    }
 
     #region: Main utilities
     Add-ScriptProperty $Vbox @{
@@ -391,7 +490,7 @@ New-Module -Name SDK.Vbox -ScriptBlock {
 
             $params = @("modifyvm", $VMName)
 
-            foreach( $key in $Settings.Keys ){
+            foreach( $key in ($Settings.Keys | ForEach-Object { $_ }) ){
                 $value = $Settings[$key]
                 $params += "--$key"
                 $params += "$value"

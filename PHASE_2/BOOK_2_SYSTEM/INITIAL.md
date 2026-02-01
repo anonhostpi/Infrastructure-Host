@@ -39,7 +39,7 @@ book-2-cloud/system/
   description: System configuration (timezone, locale, hostname)
   iso_required: false
   build_order: 40
-  build_layer: 5
+  build_layer: 6
   ```
 
 ### 2.2 Config Restructure (Fragments only - skip for Book 0)

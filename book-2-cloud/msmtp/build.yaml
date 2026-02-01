@@ -1,0 +1,5 @@
+name: msmtp
+description: SMTP relay configuration for system mail
+iso_required: false
+build_order: 45
+build_layer: 7

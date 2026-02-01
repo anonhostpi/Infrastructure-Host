@@ -1,0 +1,5 @@
+name: cockpit
+description: Cockpit web-based server management interface
+iso_required: false
+build_order: 70
+build_layer: 11

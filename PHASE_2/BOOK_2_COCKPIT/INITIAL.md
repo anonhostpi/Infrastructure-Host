@@ -43,7 +43,7 @@ book-2-cloud/cockpit/
   description: Cockpit web-based server management interface
   iso_required: false
   build_order: 70
-  build_layer: 7
+  build_layer: 11
   ```
 
 ### 2.2 Config Restructure (Fragments only - skip for Book 0)

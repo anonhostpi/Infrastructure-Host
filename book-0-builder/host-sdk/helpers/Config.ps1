@@ -8,7 +8,7 @@ New-Module -Name Helpers.Config -ScriptBlock {
         )
 
         $result = $Base.Clone()
-        foreach ($key in $Override.Keys) {
+        foreach ($key in ($Override.Keys | ForEach-Object { $_ })) {
             if ($result.ContainsKey($key)) {
                 if ($result[$key] -is [hashtable] -and $Override[$key] -is [hashtable]) {
                     $result[$key] = Merge-DeepHashtable -Base $result[$key] -Override $Override[$key]
@@ -28,7 +28,7 @@ New-Module -Name Helpers.Config -ScriptBlock {
     # Mirrors Python BuildContext: loads all *.config.yaml, auto-unwraps, applies testing overrides
     function Build-TestConfig {
         param(
-            [string]$ConfigDir = "src/config"
+            [string[]]$ConfigDirs = @("book-1-foundation", "book-2-cloud")
         )
 
         Import-Module powershell-yaml -ErrorAction SilentlyContinue
@@ -36,20 +36,25 @@ New-Module -Name Helpers.Config -ScriptBlock {
         $config = @{}
 
         $git_root = git rev-parse --show-toplevel 2>$null
-        $ConfigDir = Join-Path $git_root $ConfigDir
-
-        # Load all *.config.yaml files (mirrors BuildContext.__init__)
-        $configFiles = Get-ChildItem -Path $ConfigDir -Filter "*.config.yaml" -ErrorAction SilentlyContinue
+        $configFiles = @()
+        foreach ($baseDir in $ConfigDirs) {
+            $searchPath = Join-Path $git_root $baseDir
+            $configFiles += Get-ChildItem -Path $searchPath -Recurse -Filter "*.config.yaml" -ErrorAction SilentlyContinue
+        }
         foreach ($file in $configFiles) {
             $key = $file.Name -replace '\.config\.yaml$', ''
             $content = Get-Content $file.FullName -Raw
             $yaml = ConvertFrom-Yaml $content
 
             # Auto-unwrap: if single key matches filename, unwrap it
-            if ($yaml -is [hashtable] -and $yaml.Count -eq 1) {
-                $onlyKey = @($yaml.Keys)[0]
-                if ($onlyKey -eq $key) {
-                    $yaml = $yaml[$onlyKey]
+            # NOTE: OrderedHashtable.Keys doesn't pipeline correctly without ForEach-Object
+            if ($yaml -is [hashtable]) {
+                $keyCount = ($yaml.Keys | ForEach-Object { $_ } | Measure-Object).Count
+                if ($keyCount -eq 1) {
+                    $onlyKey = @(($yaml.Keys | ForEach-Object { $_ }))[0]
+                    if ($onlyKey -eq $key) {
+                        $yaml = $yaml[$onlyKey]
+                    }
                 }
             }
 
@@ -59,7 +64,7 @@ New-Module -Name Helpers.Config -ScriptBlock {
         # Apply testing config overrides (mirrors BuildContext._apply_testing_overrides)
         $testingConfig = $config['testing']
         if ($testingConfig -is [hashtable] -and $testingConfig['testing'] -eq $true) {
-            foreach ($key in $testingConfig.Keys) {
+            foreach ($key in ($testingConfig.Keys | ForEach-Object { $_ })) {
                 if ($key -eq 'testing') { continue }
 
                 if ($config.ContainsKey($key) -and $testingConfig[$key] -is [hashtable]) {

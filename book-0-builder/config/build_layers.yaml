@@ -1,0 +1,24 @@
+# Build layer definitions
+# Shared by build logic (Makefile LAYER=) and testing (layer names)
+# build_layer in build.yaml is single source of truth for fragment ordering
+
+layers:
+  0: Base
+  1: Network
+  2: Kernel Hardening
+  3: Users
+  4: SSH Hardening
+  5: UFW Firewall
+  6: System Settings
+  7: MSMTP Mail
+  8: Package Security
+  9: Security Monitoring
+  10: Virtualization
+  11: Cockpit
+  12: Claude Code
+  13: Copilot CLI
+  14: OpenCode
+  15: UI Touches
+  16: Package Manager Updates
+  17: Update Summary
+  18: Notification Flush

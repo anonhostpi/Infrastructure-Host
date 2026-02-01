@@ -23,7 +23,7 @@ name: virtualization
 description: KVM/QEMU virtualization packages and configuration
 iso_required: false
 build_order: 60
-build_layer: 6
+build_layer: 10
 ```
 
 Reason: Fragment metadata required for SDK discovery.
