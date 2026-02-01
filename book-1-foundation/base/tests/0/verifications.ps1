@@ -38,6 +38,23 @@ return (New-Module -Name "Verify.Base" -ScriptBlock {
                 Pass = ($result.Success -and $result.Output); Output = $result.Output
             })
         }
+        "Hostname set" = {
+            param($Worker)
+            $result = $Worker.Exec("hostname -s")
+            $mod.SDK.Testing.Record(@{
+                Test = "0.5"; Name = "Hostname set"
+                Pass = ($result.Success -and $result.Output -and $result.Output -ne "localhost")
+                Output = $result.Output
+            })
+        }
+        "SSH service active" = {
+            param($Worker)
+            $result = $Worker.Exec("systemctl is-active ssh")
+            $mod.SDK.Testing.Record(@{
+                Test = "0.6"; Name = "SSH service active"
+                Pass = ($result.Output -match "active"); Output = $result.Output
+            })
+        }
     }
 
     Export-ModuleMember -Function @()
