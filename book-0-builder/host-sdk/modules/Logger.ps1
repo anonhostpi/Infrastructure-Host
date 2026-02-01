@@ -19,9 +19,6 @@ New-Module -Name SDK.Logger -ScriptBlock {
         Warn  = { param([string]$Message) $this.Write("[WARN] $Message", "Yellow") }
         Error = { param([string]$Message) $this.Write("[ERROR] $Message", "Red") }
         Step  = { param([string]$Message, [int]$Current, [int]$Total) $this.Write("[$Current/$Total] $Message", "Cyan") }
-    }
-
-    Add-ScriptMethods $Logger @{
         Start = {
             param([string]$Path)
             $this.Path = $Path
