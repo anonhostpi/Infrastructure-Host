@@ -10,27 +10,15 @@ return (New-Module -Name "Verify.ClaudeCode" -ScriptBlock {
     $mod.Tests = [ordered]@{
         "Claude Code installed" = {
             param($Worker)
-            $result = $Worker.Exec("which claude")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.12.1"; Name = "Claude Code installed"
-                Pass = ($result.Success -and $result.Output -match "claude"); Output = $result.Output
-            })
+            $Worker.Test("6.12.1", "Claude Code installed", "which claude", "claude")
         }
         "Claude Code config directory" = {
             param($Worker)
-            $result = $Worker.Exec("sudo test -d /home/$username/.claude && echo exists")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.12.2"; Name = "Claude Code config directory"
-                Pass = ($result.Output -match "exists"); Output = "/home/$username/.claude"
-            })
+            $Worker.Test("6.12.2", "Claude Code config directory", "sudo test -d /home/$username/.claude && echo exists", "exists")
         }
         "Claude Code settings file" = {
             param($Worker)
-            $result = $Worker.Exec("sudo test -f /home/$username/.claude/settings.json && echo exists")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.12.3"; Name = "Claude Code settings file"
-                Pass = ($result.Output -match "exists"); Output = "/home/$username/.claude/settings.json"
-            })
+            $Worker.Test("6.12.3", "Claude Code settings file", "sudo test -f /home/$username/.claude/settings.json && echo exists", "exists")
         }
         "Claude Code auth configured" = {
             param($Worker)
