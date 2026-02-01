@@ -282,8 +282,9 @@ New-Module -Name SDK.HyperV -ScriptBlock {
         Create = {
             param(
                 [string]$VMName, [string]$MediumPath, [string]$DVDPath,
-                [string]$SwitchName, [int]$Generation = 2,
-                [int]$DiskGB = 40, [int]$MemoryMB = 4096, [int]$CPUs = 2,
+                [string]$AdapterName, [int]$Generation = 2,
+                [hashtable]$Firmware = @{},
+                [int]$Size = 40960, [int]$RAM = 4096, [int]$CPU = 2,
                 [bool]$Optimize = $true, [bool]$Hypervisor = $true
             )
             try {
