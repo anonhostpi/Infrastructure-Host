@@ -1,11 +1,11 @@
 param([Parameter(Mandatory = $true)] $SDK)
 
-New-Module -Name "Verify.PackageSecurity" -ScriptBlock {
+return (New-Module -Name "Verify.PackageSecurity" -ScriptBlock {
     param([Parameter(Mandatory = $true)] $SDK)
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\..\..\..\book-0-builder\host-sdk\helpers\PowerShell.ps1"
 
-    $mod.SDK.Testing.Verifications.Register("pkg-security", 8, [ordered]@{
+    $mod.Tests = [ordered]@{
         "unattended-upgrades installed" = {
             param($Worker)
             $result = $Worker.Exec("dpkg -l unattended-upgrades")
@@ -155,5 +155,7 @@ New-Module -Name "Verify.PackageSecurity" -ScriptBlock {
                 Pass = ($result.Output -match "exists"); Output = "/usr/local/bin/apt-notify-flush"
             })
         }
-    })
-} -ArgumentList $SDK
+    }
+
+    Export-ModuleMember -Function @()
+} -ArgumentList $SDK)

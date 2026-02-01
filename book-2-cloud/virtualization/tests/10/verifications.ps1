@@ -1,11 +1,11 @@
 param([Parameter(Mandatory = $true)] $SDK)
 
-New-Module -Name "Verify.Virtualization" -ScriptBlock {
+return (New-Module -Name "Verify.Virtualization" -ScriptBlock {
     param([Parameter(Mandatory = $true)] $SDK)
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\..\..\..\book-0-builder\host-sdk\helpers\PowerShell.ps1"
 
-    $mod.SDK.Testing.Verifications.Register("virtualization", 10, [ordered]@{
+    $mod.Tests = [ordered]@{
         "libvirt installed" = {
             param($Worker)
             $result = $Worker.Exec("which virsh")
@@ -83,5 +83,7 @@ New-Module -Name "Verify.Virtualization" -ScriptBlock {
             })
             $Worker.Exec("multipass delete nested-test-vm --purge") | Out-Null
         }
-    })
-} -ArgumentList $SDK
+    }
+
+    Export-ModuleMember -Function @()
+} -ArgumentList $SDK)

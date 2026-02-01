@@ -1,11 +1,11 @@
 param([Parameter(Mandatory = $true)] $SDK)
 
-New-Module -Name "Verify.SecurityMonitoring" -ScriptBlock {
+return (New-Module -Name "Verify.SecurityMonitoring" -ScriptBlock {
     param([Parameter(Mandatory = $true)] $SDK)
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\..\..\..\book-0-builder\host-sdk\helpers\PowerShell.ps1"
 
-    $mod.SDK.Testing.Verifications.Register("security-mon", 9, [ordered]@{
+    $mod.Tests = [ordered]@{
         "fail2ban installed" = {
             param($Worker)
             $result = $Worker.Exec("which fail2ban-client")
@@ -30,5 +30,7 @@ New-Module -Name "Verify.SecurityMonitoring" -ScriptBlock {
                 Pass = ($result.Output -match "sshd"); Output = "sshd jail"
             })
         }
-    })
-} -ArgumentList $SDK
+    }
+
+    Export-ModuleMember -Function @()
+} -ArgumentList $SDK)

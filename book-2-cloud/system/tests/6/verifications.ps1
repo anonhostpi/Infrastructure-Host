@@ -1,11 +1,11 @@
 param([Parameter(Mandatory = $true)] $SDK)
 
-New-Module -Name "Verify.SystemSettings" -ScriptBlock {
+return (New-Module -Name "Verify.SystemSettings" -ScriptBlock {
     param([Parameter(Mandatory = $true)] $SDK)
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\..\..\..\book-0-builder\host-sdk\helpers\PowerShell.ps1"
 
-    $mod.SDK.Testing.Verifications.Register("system", 6, [ordered]@{
+    $mod.Tests = [ordered]@{
         "Timezone configured" = {
             param($Worker)
             $result = $Worker.Exec("timedatectl show --property=Timezone --value")
@@ -30,5 +30,7 @@ New-Module -Name "Verify.SystemSettings" -ScriptBlock {
                 Pass = ($result.Output -match "yes"); Output = "NTP=$($result.Output)"
             })
         }
-    })
-} -ArgumentList $SDK
+    }
+
+    Export-ModuleMember -Function @()
+} -ArgumentList $SDK)

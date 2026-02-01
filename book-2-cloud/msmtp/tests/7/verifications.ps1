@@ -1,6 +1,6 @@
 param([Parameter(Mandatory = $true)] $SDK)
 
-New-Module -Name "Verify.MSMTPMail" -ScriptBlock {
+return (New-Module -Name "Verify.MSMTPMail" -ScriptBlock {
     param([Parameter(Mandatory = $true)] $SDK)
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\..\..\..\book-0-builder\host-sdk\helpers\PowerShell.ps1"
@@ -8,7 +8,7 @@ New-Module -Name "Verify.MSMTPMail" -ScriptBlock {
     $smtp = $mod.SDK.Settings.SMTP
     $smtpConfigured = ($smtp -and $smtp.host)
 
-    $mod.SDK.Testing.Verifications.Register("msmtp", 7, [ordered]@{
+    $mod.Tests = [ordered]@{
         "msmtp installed" = {
             param($Worker)
             $result = $Worker.Exec("which msmtp")
@@ -166,5 +166,7 @@ New-Module -Name "Verify.MSMTPMail" -ScriptBlock {
                 Output = if ($result.Success) { "Email sent" } else { $result.Output }
             })
         }
-    })
-} -ArgumentList $SDK
+    }
+
+    Export-ModuleMember -Function @()
+} -ArgumentList $SDK)
