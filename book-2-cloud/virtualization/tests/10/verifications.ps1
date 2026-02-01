@@ -32,31 +32,17 @@ return (New-Module -Name "Verify.Virtualization" -ScriptBlock {
         }
         "KVM available for nesting" = {
             param($Worker)
-            $result = $Worker.Exec("test -e /dev/kvm && echo available")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.10.7"; Name = "KVM available for nesting"
-                Pass = ($result.Output -match "available")
-                Output = if ($result.Output -match "available") { "/dev/kvm present" } else { "KVM not available" }
-            })
+            $Worker.Test("6.10.7", "KVM available for nesting", "test -e /dev/kvm && echo available", "available")
         }
         "Launch nested VM" = {
             param($Worker)
             if (-not ($Worker.Exec("test -e /dev/kvm").Success)) { $mod.SDK.Testing.Verifications.Fork("6.10.8", "SKIP", "KVM not available"); return }
-            $launch = $Worker.Exec("multipass launch --name nested-test-vm --cpus 1 --memory 512M --disk 2G 2>&1; echo exit_code:`$?")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.10.8"; Name = "Launch nested VM"
-                Pass = ($launch.Output -match "exit_code:0")
-                Output = if ($launch.Output -match "exit_code:0") { "nested-test-vm launched" } else { $launch.Output }
-            })
+            $Worker.Test("6.10.8", "Launch nested VM", "multipass launch --name nested-test-vm --cpus 1 --memory 512M --disk 2G 2>&1; echo exit_code:`$?", "exit_code:0")
         }
         "Exec in nested VM" = {
             param($Worker)
             if (-not ($Worker.Exec("test -e /dev/kvm").Success)) { $mod.SDK.Testing.Verifications.Fork("6.10.9", "SKIP", "KVM not available"); return }
-            $exec = $Worker.Exec("multipass exec nested-test-vm -- echo nested-ok")
-            $mod.SDK.Testing.Record(@{
-                Test = "6.10.9"; Name = "Exec in nested VM"
-                Pass = ($exec.Output -match "nested-ok"); Output = $exec.Output
-            })
+            $Worker.Test("6.10.9", "Exec in nested VM", "multipass exec nested-test-vm -- echo nested-ok", "nested-ok")
             $Worker.Exec("multipass delete nested-test-vm --purge") | Out-Null
         }
     }
