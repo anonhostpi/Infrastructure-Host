@@ -102,15 +102,11 @@ New-Module -Name SDK.HyperV -ScriptBlock {
     }
 
     Add-ScriptMethods $HyperV @{
-        GetSwitch = {
-            param([string]$SwitchName)
-            if ($SwitchName) {
-                $sw = Get-VMSwitch -Name $SwitchName -ErrorAction SilentlyContinue
-                if ($sw) { return $sw.Name }
-            }
-            $ext = Get-VMSwitch -SwitchType External -ErrorAction SilentlyContinue | Select-Object -First 1
-            if ($ext) { return $ext.Name }
-            return $null
+        GetGuestAdapter = {
+            param([Parameter(Mandatory = $true)] [string]$AdapterName)
+            $adapter = $mod.SDK.Network.GetGuestAdapter($AdapterName)
+            if (-not $adapter) { return $null }
+            return $null # WIP
         }
         Drives = {
             param([string]$VMName)
