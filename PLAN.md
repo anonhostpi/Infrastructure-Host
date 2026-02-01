@@ -1693,3 +1693,263 @@ Add UpdateSummary Register shape (3 tests: report, content, AI model)
 | **Rule 3: Lines** | 6 lines | PASS |
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 45: `book-0-builder/host-sdk/helpers/Config.ps1` - Fix .Keys pipeline bug in Config.ps1
+
+### book-0-builder.host-sdk.helpers.Config.fix-keys-config
+
+> **File**: `book-0-builder/host-sdk/helpers/Config.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Fix .Keys pipeline bug in Config.ps1
+
+#### Diff
+
+```diff
+-foreach ($key in $Override.Keys) {
++foreach ($key in ($Override.Keys | ForEach-Object { $_ })) {
+
+-$onlyKey = @($yaml.Keys)[0]
++$onlyKey = @(($yaml.Keys | ForEach-Object { $_ }))[0]
+
+-foreach ($key in $testingConfig.Keys) {
++foreach ($key in ($testingConfig.Keys | ForEach-Object { $_ })) {
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 6 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 46: `book-0-builder/host-sdk/helpers/PowerShell.ps1` - Fix .Keys pipeline bug in PowerShell.ps1 and SDK.ps1 and Builder.ps1
+
+### book-0-builder.host-sdk.helpers.PowerShell.fix-keys-helpers
+
+> **File**: `book-0-builder/host-sdk/helpers/PowerShell.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Fix .Keys pipeline bug in PowerShell.ps1 and SDK.ps1 and Builder.ps1
+
+#### Diff
+
+```diff
+-foreach ($key in $InputObject.Keys) {
++foreach ($key in ($InputObject.Keys | ForEach-Object { $_ })) {
+
+-foreach( $name in $EnvVars.Keys ){
++foreach( $name in ($EnvVars.Keys | ForEach-Object { $_ }) ){
+
+-foreach ($name in $mod.Runners.Keys) {
++foreach ($name in ($mod.Runners.Keys | ForEach-Object { $_ })) {
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 6 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 47: `book-0-builder/host-sdk/modules/Autoinstall.ps1` - Fix .Keys pipeline bug in Autoinstall.ps1 and CloudInit.ps1
+
+### book-0-builder.host-sdk.modules.Autoinstall.fix-keys-cloud-init
+
+> **File**: `book-0-builder/host-sdk/modules/Autoinstall.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Fix .Keys pipeline bug in Autoinstall.ps1 and CloudInit.ps1
+
+#### Diff
+
+```diff
+-foreach ($k in $baseConfig.Keys) {
++foreach ($k in ($baseConfig.Keys | ForEach-Object { $_ })) {
+
+-foreach ($k in $Overrides.Keys) {
++foreach ($k in ($Overrides.Keys | ForEach-Object { $_ })) {
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 4 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 48: `book-0-builder/host-sdk/modules/Vbox.ps1` - Fix .Keys pipeline bug in Vbox.ps1
+
+### book-0-builder.host-sdk.modules.Vbox.fix-keys-vbox
+
+> **File**: `book-0-builder/host-sdk/modules/Vbox.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Fix .Keys pipeline bug in Vbox.ps1
+
+#### Diff
+
+```diff
+-foreach ($key in $defaults.Keys) {
++foreach ($key in ($defaults.Keys | ForEach-Object { $_ })) {
+
+-foreach ($key in $config.Keys) {
++foreach ($key in ($config.Keys | ForEach-Object { $_ })) {
+
+-foreach( $key in $Settings.Keys ){
++foreach( $key in ($Settings.Keys | ForEach-Object { $_ }) ){
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 6 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 49: `book-0-builder/host-sdk/modules/Verifications.ps1` - Refactor Discover to loop 1..Layer and load files
+
+### book-0-builder.host-sdk.modules.Verifications.refactor-discover
+
+> **File**: `book-0-builder/host-sdk/modules/Verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Refactor Discover to loop 1..Layer and load files
+
+#### Diff
+
+```diff
+         Discover = {
+             param([int]$Layer)
+-            $results = @()
+-            foreach ($book in @("book-1-foundation", "book-2-cloud")) {
+-                $pattern = Join-Path $book "*/tests/$Layer/verifications.ps1"
+-                Get-ChildItem -Path $pattern -ErrorAction SilentlyContinue | ForEach-Object {
+-                    $fragDir = $_.Directory.Parent.Parent
+-                    $results += @{ Fragment = $fragDir.Name; Path = $_.FullName; Layer = $Layer }
++            foreach ($l in 1..$Layer) {
++                foreach ($book in @("book-1-foundation", "book-2-cloud")) {
++                    $pattern = Join-Path $book "*/tests/$l/verifications.ps1"
++                    Get-ChildItem -Path $pattern -ErrorAction SilentlyContinue | ForEach-Object {
++                        $this.Load($_.FullName)
++                    }
+                 }
+             }
+-            return $results
+         }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 13 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 50: `book-0-builder/host-sdk/modules/Verifications.ps1` - Simplify Run to iterate registered tests and fix .Keys
+
+### book-0-builder.host-sdk.modules.Verifications.simplify-run
+
+> **File**: `book-0-builder/host-sdk/modules/Verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Simplify Run to iterate registered tests and fix .Keys
+
+#### Diff
+
+```diff
+         Run = {
+             param($Worker, [int]$Layer)
+             foreach ($l in 1..$Layer) {
+                 $layerName = $mod.SDK.Fragments.LayerName($l)
+-                $testFiles = $this.Discover($l)
+-                foreach ($entry in $testFiles) {
+-                    $mod.SDK.Log.Write("`n--- $layerName - $($entry.Fragment) ---", "Cyan")
+-                    $this.Load($entry.Path)
+-                    $frag = $entry.Fragment
+-                    if ($mod.Tests[$frag] -and $mod.Tests[$frag][$l]) {
+-                        foreach ($name in $mod.Tests[$frag][$l].Keys) {
+-                            $this.Test($frag, $l, $name, $Worker)
+-                        }
++                foreach ($frag in ($mod.Tests.Keys | ForEach-Object { $_ })) {
++                    if (-not $mod.Tests[$frag][$l]) { continue }
++                    $mod.SDK.Log.Write("`n--- $layerName - $frag ---", "Cyan")
++                    foreach ($name in ($mod.Tests[$frag][$l].Keys | ForEach-Object { $_ })) {
++                        $this.Test($frag, $l, $name, $Worker)
+                     }
+                 }
+             }
+         }
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 14 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
+
+### Commit 51: `book-0-builder/host-sdk/modules/Verifications.ps1` - Fix .Keys pipeline bug in Register method
+
+### book-0-builder.host-sdk.modules.Verifications.fix-keys-register
+
+> **File**: `book-0-builder/host-sdk/modules/Verifications.ps1`
+> **Type**: MODIFIED
+> **Commit**: 1 of 1 for this file
+
+#### Description
+
+Fix .Keys pipeline bug in Register method
+
+#### Diff
+
+```diff
+-            foreach ($key in $Tests.Keys) {
++            foreach ($key in ($Tests.Keys | ForEach-Object { $_ })) {
+```
+
+#### Rule Compliance
+
+> See CLAUDE.md for Rules 3-4
+
+| Rule | Check | Status |
+|------|-------|--------|
+| **Rule 3: Lines** | 2 lines | PASS |
+| **Rule 3: Exempt** | N/A | N/A |
+| **Rule 4: Atomic** | Single logical unit | YES |
