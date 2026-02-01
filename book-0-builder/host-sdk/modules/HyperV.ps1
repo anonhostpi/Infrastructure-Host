@@ -253,13 +253,21 @@ New-Module -Name SDK.HyperV -ScriptBlock {
         SetNetworkAdapter = {
             param([string]$VMName, [hashtable]$Settings)
             $s = @{ VMName = $VMName }
-            foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) { $s[$key] = $Settings[$key] }
+            foreach ($key in $Settings.Keys) {
+                switch ($key) {
+                    { $_ -in @("MacAddressSpoofing") } { $s[$key] = $Settings[$key] }
+                }
+            }
             try { Set-VMNetworkAdapter @s -ErrorAction Stop; return $true } catch { return $false }
         }
         SetFirmware = {
             param([string]$VMName, [hashtable]$Settings)
             $s = @{ VMName = $VMName }
-            foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) { $s[$key] = $Settings[$key] }
+            foreach ($key in $Settings.Keys) {
+                switch ($key) {
+                    { $_ -in @("EnableSecureBoot","SecureBootTemplate") } { $s[$key] = $Settings[$key] }
+                }
+            }
             try { Set-VMFirmware @s -ErrorAction Stop; return $true } catch { return $false }
         }
         Optimize = {
