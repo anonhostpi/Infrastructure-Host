@@ -1,6 +1,6 @@
 # 6.14 OpenCode Fragment
 
-**Template:** `src/autoinstall/cloud-init/77-opencode.yaml.tpl`
+**Template:** `book-2-cloud/opencode/fragment.yaml.tpl`
 
 Installs and configures OpenCode, an open-source AI coding agent for terminal use.
 
@@ -89,7 +89,7 @@ runcmd:
 {% endif %}
 ```
 
-See the full template at `src/autoinstall/cloud-init/77-opencode.yaml.tpl`.
+See the full template at `book-2-cloud/opencode/fragment.yaml.tpl`.
 
 **Installation notes:**
 - Node.js is installed from NodeSource repository for unattended-upgrades support
@@ -97,7 +97,7 @@ See the full template at `src/autoinstall/cloud-init/77-opencode.yaml.tpl`.
 
 ## Configuration
 
-Create `src/config/opencode.config.yaml`:
+Create `book-2-cloud/opencode/config/opencode.config.yaml`:
 
 ```yaml
 opencode:
