@@ -1,7 +1,7 @@
 # Plan
 
 
-### Commit 1: `book-1-foundation/base/config/base.config.yaml.example` - Create merged base.config.yaml.example combining image and storage example configs
+### Commit 1: `book-1-foundation/base/config/base.config.yaml.example` - Create merged base.config.yaml.example combining image and storage example configs [COMPLETE]
 
 ### book-1-foundation.base.config.base.config.yaml.add-base-config-example
 
@@ -46,7 +46,7 @@ Create merged base.config.yaml.example combining image and storage example confi
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 2: `book-1-foundation/base/config/image.config.yaml.example` - Remove separate image.config.yaml.example, now merged into base.config.yaml.example
+### Commit 2: `book-1-foundation/base/config/image.config.yaml.example` - Remove separate image.config.yaml.example, now merged into base.config.yaml.example [COMPLETE]
 
 ### book-1-foundation.base.config.image.config.yaml.remove-image-config-example
 
@@ -81,7 +81,7 @@ Remove separate image.config.yaml.example, now merged into base.config.yaml.exam
 | **Rule 3: Exempt** | deletion | EXEMPT |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 3: `book-1-foundation/base/config/storage.config.yaml.example` - Remove separate storage.config.yaml.example, now merged into base.config.yaml.example
+### Commit 3: `book-1-foundation/base/config/storage.config.yaml.example` - Remove separate storage.config.yaml.example, now merged into base.config.yaml.example [COMPLETE]
 
 ### book-1-foundation.base.config.storage.config.yaml.remove-storage-config-example
 
