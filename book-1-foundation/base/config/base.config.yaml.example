@@ -1,0 +1,18 @@
+# Base Configuration
+# Copy to base.config.yaml and fill in your values
+# THIS FILE IS TRACKED IN GIT - base.config.yaml IS NOT
+
+image:
+  release: noble        # Ubuntu codename (noble=24.04, jammy=22.04)
+  type: live-server     # Image type
+  arch: amd64           # Architecture
+
+storage:
+  # direct = ext4, simplest option for disposable root filesystem
+  # VM storage with redundancy should use a separate ZFS pool on additional drives
+  layout: direct
+  sizing_policy: all
+  match:
+    size: largest
+    # Future: target specific NVMe slot via id_path
+    # id_path: pci-0000:01:00.0-nvme-1
