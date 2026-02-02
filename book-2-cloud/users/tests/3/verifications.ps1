@@ -20,6 +20,10 @@ return (New-Module -Name "Verify.Users" -ScriptBlock {
             param($Worker)
             $Worker.Test("6.3.2", "$username in sudo group", "groups $username", "\bsudo\b")
         }
+        "user has home directory" = {
+            param($Worker)
+            $Worker.Test("6.3.2", "$username has home directory", "test -d /home/$username && echo exists", "exists")
+        }
         "Sudoers file exists" = {
             param($Worker)
             $Worker.Test("6.3.3", "Sudoers file exists", "sudo test -f /etc/sudoers.d/$username", { $true })
