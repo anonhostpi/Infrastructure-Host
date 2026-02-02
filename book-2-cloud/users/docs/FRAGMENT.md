@@ -25,11 +25,12 @@ ssh_pwauth: true
 
 ## Why bootcmd Instead of users Directive?
 
-This fragment uses `bootcmd` instead of cloud-init's `users:` directive because:
+This fragment uses `bootcmd` with a base64-encoded helper script instead of cloud-init's `users:` directive because:
 
 1. **Early execution** - `bootcmd` runs before `write_files` with `defer: true`, ensuring the user exists when deferred files need to set ownership
 2. **Cloud provider compatibility** - The `users:` directive can conflict with cloud providers' default user setup (e.g., multipass creates an `ubuntu` user)
-3. **Idempotent** - The `if ! id -u` guard ensures the script only creates the user once, even though `bootcmd` runs on every boot
+3. **Idempotent** - The `if id -u` guard in `user-setup.sh` ensures the script only creates the user once, even though `bootcmd` runs on every boot
+4. **YAML safety** - The script is base64-encoded to avoid multiline string parsing issues with multipass/cloud-init
 
 ## Configuration Source
 
