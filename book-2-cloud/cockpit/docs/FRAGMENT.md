@@ -1,12 +1,12 @@
 # 6.11 Cockpit Fragment
 
-**Template:** `src/autoinstall/cloud-init/70-cockpit.yaml.tpl`
+**Template:** `book-2-cloud/cockpit/fragment.yaml.tpl`
 
 Configures Cockpit web-based management console with localhost-only access via SSH tunneling.
 
 ## Configuration
 
-Create `src/config/cockpit.config.yaml`:
+Create `config/cockpit.config.yaml` (copy from `cockpit.config.yaml.example`):
 
 ```yaml
 cockpit:
@@ -133,7 +133,7 @@ Then open in browser:
 https://localhost
 ```
 
-Login with the admin credentials from `src/config/identity.config.yaml`.
+Login with the admin credentials from `identity.config.yaml` (in the users fragment).
 
 ### SSH Config Snippet
 
