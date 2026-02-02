@@ -1,6 +1,6 @@
 # 6.1 Network Fragment
 
-**Template:** `src/autoinstall/cloud-init/10-network.yaml.tpl`
+**Template:** `fragment.yaml.tpl`
 
 Sets hostname and FQDN, and runs the network detection script on boot.
 
