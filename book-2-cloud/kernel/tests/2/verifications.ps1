@@ -16,11 +16,27 @@ return (New-Module -Name "Verify.KernelHardening" -ScriptBlock {
         }
         "SYN cookies enabled" = {
             param($Worker)
-            $Worker.Test("6.2.2", "SYN cookies enabled", "sysctl net.ipv4.tcp_syncookies", "= 1")
+            $Worker.Test("6.2.3", "SYN cookies enabled", "sysctl net.ipv4.tcp_syncookies", "= 1")
         }
         "ICMP redirects disabled" = {
             param($Worker)
-            $Worker.Test("6.2.2", "ICMP redirects disabled", "sysctl net.ipv4.conf.all.accept_redirects", "= 0")
+            $Worker.Test("6.2.4", "ICMP redirects disabled", "sysctl net.ipv4.conf.all.accept_redirects", "= 0")
+        }
+        "Source routing disabled" = {
+            param($Worker)
+            $Worker.Test("6.2.5", "Source routing disabled", "sysctl net.ipv4.conf.all.accept_source_route", "= 0")
+        }
+        "Martian logging enabled" = {
+            param($Worker)
+            $Worker.Test("6.2.6", "Martian logging enabled", "sysctl net.ipv4.conf.all.log_martians", "= 1")
+        }
+        "Kernel dmesg restricted" = {
+            param($Worker)
+            $Worker.Test("6.2.7", "Kernel dmesg restricted", "sysctl kernel.dmesg_restrict", "= 1")
+        }
+        "Kernel pointers hidden" = {
+            param($Worker)
+            $Worker.Test("6.2.8", "Kernel pointers hidden", "sysctl kernel.kptr_restrict", "= 2")
         }
     }
 
