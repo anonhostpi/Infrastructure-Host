@@ -1,7 +1,7 @@
 # Plan
 
 
-### Commit 1: `book-2-cloud/pkg-security/docs/FRAGMENT.md` - Fix stale template path reference from old src/autoinstall location to current fragment location
+### Commit 1: `book-2-cloud/pkg-security/docs/FRAGMENT.md` - Fix stale template path reference from old src/autoinstall location to current fragment location [COMPLETE]
 
 ### book-2-cloud.pkg-security.docs.FRAGMENT.fix-template-path
 
@@ -30,7 +30,7 @@ Fix stale template path reference from old src/autoinstall location to current f
 | **Rule 3: Exempt** | markdown | EXEMPT |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 2: `book-2-cloud/pkg-security/tests/TEST_PKG_SECURITY.md` - Fix stale template path and fragment docs link in test documentation
+### Commit 2: `book-2-cloud/pkg-security/tests/TEST_PKG_SECURITY.md` - Fix stale template path and fragment docs link in test documentation [COMPLETE]
 
 ### book-2-cloud.pkg-security.tests.TEST_PKG_SECURITY.fix-test-template-path
 
