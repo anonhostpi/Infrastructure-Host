@@ -32,6 +32,14 @@ return (New-Module -Name "Verify.Users" -ScriptBlock {
             param($Worker)
             $Worker.Test("6.3.4", "Root account locked", "sudo passwd -S root", "root L")
         }
+        "user-setup.log exists" = {
+            param($Worker)
+            $Worker.Test("6.3.5", "user-setup.log exists", "test -f /var/lib/cloud/scripts/user-setup/user-setup.log", { $true })
+        }
+        "user-setup.sh executed" = {
+            param($Worker)
+            $Worker.Test("6.3.5", "user-setup.sh executed", "cat /var/lib/cloud/scripts/user-setup/user-setup.log", "user-setup:")
+        }
     }
 
     Export-ModuleMember -Function @()
