@@ -10,4 +10,4 @@ This section covers network planning and configuration for bare-metal Ubuntu dep
 
 ## Overview
 
-Proper network planning ensures your servers are correctly configured and accessible after deployment. Network configuration is defined in `src/config/network.config.yaml` and rendered into scripts via Jinja2 templates.
+Proper network planning ensures your servers are correctly configured and accessible after deployment. Network configuration is defined in `config/network.config.yaml` and rendered into scripts via Jinja2 templates.
