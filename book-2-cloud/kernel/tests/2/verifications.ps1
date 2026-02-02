@@ -22,6 +22,10 @@ return (New-Module -Name "Verify.KernelHardening" -ScriptBlock {
             param($Worker)
             $Worker.Test("6.2.4", "ICMP redirects disabled", "sysctl net.ipv4.conf.all.accept_redirects", "= 0")
         }
+        "Source routing disabled" = {
+            param($Worker)
+            $Worker.Test("6.2.5", "Source routing disabled", "sysctl net.ipv4.conf.all.accept_source_route", "= 0")
+        }
     }
 
     Export-ModuleMember -Function @()
