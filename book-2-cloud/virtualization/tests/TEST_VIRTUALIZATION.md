@@ -1,7 +1,7 @@
 # Test 6.10: Virtualization Fragment
 
-**Template:** `src/autoinstall/cloud-init/60-virtualization.yaml.tpl`
-**Fragment Docs:** [6.10 Virtualization Fragment](../../CLOUD_INIT_CONFIGURATION/VIRTUALIZATION_FRAGMENT.md)
+**Template:** `book-2-cloud/virtualization/fragment.yaml.tpl`
+**Fragment Docs:** [Virtualization Fragment](../../docs/FRAGMENT.md)
 
 Tests KVM/libvirt installation, multipass, default network, and qemu hook.
 
