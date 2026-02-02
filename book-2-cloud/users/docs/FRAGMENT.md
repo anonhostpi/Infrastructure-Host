@@ -48,7 +48,7 @@ This fragment uses `bootcmd` instead of cloud-init's `users:` directive because:
 
 ## Configuration Source
 
-Create `src/config/identity.config.yaml`:
+Create `book-2-cloud/users/config/identity.config.yaml`:
 
 ```yaml
 identity:
