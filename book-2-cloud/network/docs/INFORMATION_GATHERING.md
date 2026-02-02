@@ -4,7 +4,7 @@ Before deployment, collect the following information for the server.
 
 ## Host Network Configuration
 
-Network configuration is stored in `src/config/network.config.yaml` (not tracked in git).
+Network configuration is stored in `config/network.config.yaml` (not tracked in git).
 
 | Field | Description |
 |-------|-------------|
@@ -16,7 +16,7 @@ Network configuration is stored in `src/config/network.config.yaml` (not tracked
 
 ## Configuration File
 
-Create `src/config/network.config.yaml` (example):
+Create `config/network.config.yaml` (example):
 
 ```yaml
 network:
@@ -44,7 +44,7 @@ static_ip: {{ network.ip_address | ip_only }}
 cidr: {{ network.ip_address | cidr_only }}
 ```
 
-See [3.1 BuildContext](../BUILD_SYSTEM/BUILD_CONTEXT.md) for configuration loading details.
+See [BuildContext](../../../book-0-builder/docs/BUILD_CONTEXT.md) for configuration loading details.
 
 ## Information Sources
 
@@ -62,4 +62,4 @@ export AUTOINSTALL_NETWORK_GATEWAY=10.0.0.1
 make cloud-init
 ```
 
-See [3.1 BuildContext - Environment Variable Overrides](../BUILD_SYSTEM/BUILD_CONTEXT.md#environment-variable-overrides) for details.
+See [BuildContext - Environment Variable Overrides](../../../book-0-builder/docs/BUILD_CONTEXT.md#environment-variable-overrides) for details.

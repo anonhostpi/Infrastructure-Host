@@ -24,7 +24,7 @@ Instead of DHCP discovery (which broadcasts and opens attack surface), the scrip
 
 ## Script Templates
 
-Scripts are Jinja2 templates in `src/scripts/` that render network values from `src/config/network.config.yaml`.
+Scripts are Jinja2 templates in `scripts/` that render network values from `config/network.config.yaml`.
 
 ### early-net.sh.tpl
 
@@ -244,7 +244,7 @@ This is expected. In production (bare metal), only our `90-static.yaml` exists.
 | `ip_only` | Extract IP from CIDR | `{{ network.ip_address \| ip_only }}` → `192.168.1.100` |
 | `cidr_only` | Extract prefix from CIDR | `{{ network.ip_address \| cidr_only }}` → `24` |
 
-See [3.2 Jinja2 Filters](../BUILD_SYSTEM/JINJA2_FILTERS.md) for full filter documentation.
+See [Jinja2 Filters](../../../book-0-builder/docs/JINJA2_FILTERS.md) for full filter documentation.
 
 ## Build Output
 

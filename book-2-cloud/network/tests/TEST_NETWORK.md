@@ -1,7 +1,7 @@
 # Test 6.1: Network Fragment
 
-**Template:** `src/autoinstall/cloud-init/10-network.yaml.tpl`
-**Fragment Docs:** [6.1 Network Fragment](../../CLOUD_INIT_CONFIGURATION/NETWORK_FRAGMENT.md)
+**Template:** `fragment.yaml.tpl`
+**Fragment Docs:** [Network Fragment](../docs/FRAGMENT.md)
 
 Tests hostname, FQDN, /etc/hosts management, and network script execution.
 
