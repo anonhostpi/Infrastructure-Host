@@ -1,7 +1,7 @@
 # Plan
 
 
-### Commit 1: `book-2-cloud/cockpit/docs/FRAGMENT.md` - Update three stale src/ paths to current fragment-relative paths
+### Commit 1: `book-2-cloud/cockpit/docs/FRAGMENT.md` - Update three stale src/ paths to current fragment-relative paths [COMPLETE]
 
 ### book-2-cloud.cockpit.docs.FRAGMENT.fix-stale-paths
 
@@ -36,7 +36,7 @@ Update three stale src/ paths to current fragment-relative paths
 | **Rule 3: Exempt** | markdown | EXEMPT |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 2: `book-2-cloud/cockpit/tests/TEST_COCKPIT.md` - Update stale template path and broken cross-link to FRAGMENT.md
+### Commit 2: `book-2-cloud/cockpit/tests/TEST_COCKPIT.md` - Update stale template path and broken cross-link to FRAGMENT.md [COMPLETE]
 
 ### book-2-cloud.cockpit.tests.TEST_COCKPIT.fix-test-doc-paths
 
