@@ -1,7 +1,7 @@
 # Plan
 
 
-### Commit 1: `book-2-cloud/claude-code/docs/FRAGMENT.md` - Update three stale path references from old src/ layout: template path, full template ref, and config path
+### Commit 1: `book-2-cloud/claude-code/docs/FRAGMENT.md` - Update three stale path references from old src/ layout: template path, full template ref, and config path [COMPLETE]
 
 ### book-2-cloud.claude-code.docs.FRAGMENT.fix-stale-paths
 
@@ -36,7 +36,7 @@ Update three stale path references from old src/ layout: template path, full tem
 | **Rule 3: Exempt** | markdown | EXEMPT |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 2: `book-2-cloud/claude-code/tests/TEST_CLAUDE_CODE.md` - Update stale template path and broken fragment docs link in test documentation
+### Commit 2: `book-2-cloud/claude-code/tests/TEST_CLAUDE_CODE.md` - Update stale template path and broken fragment docs link in test documentation [COMPLETE]
 
 ### book-2-cloud.claude-code.tests.TEST_CLAUDE_CODE.fix-test-stale-paths
 
