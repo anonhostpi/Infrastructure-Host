@@ -225,7 +225,7 @@ See the full template at `book-2-cloud/copilot-cli/fragment.yaml.tpl`.
 
 ## Configuration
 
-Create `src/config/copilot_cli.config.yaml`:
+Create `book-2-cloud/copilot-cli/config/copilot_cli.config.yaml`:
 
 ```yaml
 copilot_cli:
