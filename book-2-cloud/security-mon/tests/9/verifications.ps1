@@ -18,6 +18,14 @@ return (New-Module -Name "Verify.SecurityMonitoring" -ScriptBlock {
             param($Worker)
             $Worker.Test("6.9.3", "SSH jail configured", "sudo fail2ban-client status", "sshd")
         }
+        "SSHD-DDoS jail configured" = {
+            param($Worker)
+            $Worker.Test("6.9.4", "SSHD-DDoS jail configured", "test -f /etc/fail2ban/jail.d/sshd-ddos.conf && echo exists", "exists")
+        }
+        "Sudo jail configured" = {
+            param($Worker)
+            $Worker.Test("6.9.5", "Sudo jail configured", "test -f /etc/fail2ban/jail.d/sudo.conf && echo exists", "exists")
+        }
     }
 
     Export-ModuleMember -Function @()
