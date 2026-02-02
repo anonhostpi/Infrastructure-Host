@@ -1,7 +1,7 @@
 # Test 6.2: Kernel Hardening Fragment
 
-**Template:** `src/autoinstall/cloud-init/15-kernel.yaml.tpl`
-**Fragment Docs:** [6.2 Kernel Hardening Fragment](../../CLOUD_INIT_CONFIGURATION/KERNEL_HARDENING_FRAGMENT.md)
+**Template:** `book-2-cloud/kernel/fragment.yaml.tpl`
+**Fragment Docs:** [6.2 Kernel Hardening Fragment](../../docs/FRAGMENT.md)
 
 Tests sysctl security parameters.
 
