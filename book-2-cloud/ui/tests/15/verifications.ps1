@@ -30,6 +30,12 @@ return (New-Module -Name "Verify.UITouches" -ScriptBlock {
                 "test ! -x /etc/update-motd.d/10-help-text && test ! -x /etc/update-motd.d/50-motd-news && echo ok",
                 "ok")
         }
+        "Shell aliases file exists" = {
+            param($Worker)
+            $Worker.Test("6.15.5", "Shell aliases file exists",
+                "grep 'alias cat=' /etc/profile.d/aliases.sh",
+                "batcat")
+        }
     }
 
     Export-ModuleMember -Function @()
