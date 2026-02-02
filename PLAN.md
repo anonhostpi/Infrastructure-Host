@@ -1,7 +1,7 @@
 # Plan
 
 
-### Commit 1: `book-2-cloud/users/docs/FRAGMENT.md` - Update stale template path reference to new fragment location
+### Commit 1: `book-2-cloud/users/docs/FRAGMENT.md` - Update stale template path reference to new fragment location [COMPLETE]
 
 ### book-2-cloud.users.docs.FRAGMENT.update-template-path
 
@@ -30,7 +30,7 @@ Update stale template path reference to new fragment location
 | **Rule 3: Exempt** | markdown | EXEMPT |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 2: `book-2-cloud/users/docs/FRAGMENT.md` - Update config path reference from old src/ location to fragment config directory
+### Commit 2: `book-2-cloud/users/docs/FRAGMENT.md` - Update config path reference from old src/ location to fragment config directory [COMPLETE]
 
 ### book-2-cloud.users.docs.FRAGMENT.update-config-path
 
@@ -59,7 +59,7 @@ Update config path reference from old src/ location to fragment config directory
 | **Rule 3: Exempt** | markdown | EXEMPT |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 3: `book-2-cloud/users/docs/FRAGMENT.md` - Replace inline template example with actual base64-script approach used by fragment.yaml.tpl
+### Commit 3: `book-2-cloud/users/docs/FRAGMENT.md` - Replace inline template example with actual base64-script approach used by fragment.yaml.tpl [COMPLETE]
 
 ### book-2-cloud.users.docs.FRAGMENT.update-template-block
 
@@ -130,7 +130,7 @@ Replace inline template example with actual base64-script approach used by fragm
 | **Rule 3: Exempt** | markdown | EXEMPT |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 4: `book-2-cloud/users/docs/FRAGMENT.md` - Update rationale section to reflect base64-script approach instead of inline subshell
+### Commit 4: `book-2-cloud/users/docs/FRAGMENT.md` - Update rationale section to reflect base64-script approach instead of inline subshell [COMPLETE]
 
 ### book-2-cloud.users.docs.FRAGMENT.update-bootcmd-rationale
 
@@ -169,7 +169,7 @@ Update rationale section to reflect base64-script approach instead of inline sub
 | **Rule 3: Exempt** | markdown | EXEMPT |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 5: `book-2-cloud/users/docs/FRAGMENT.md` - Update cross-reference links to use relative paths within fragment docs
+### Commit 5: `book-2-cloud/users/docs/FRAGMENT.md` - Update cross-reference links to use relative paths within fragment docs [COMPLETE]
 
 ### book-2-cloud.users.docs.FRAGMENT.update-cross-refs
 
@@ -205,7 +205,7 @@ Update cross-reference links to use relative paths within fragment docs
 | **Rule 3: Exempt** | markdown | EXEMPT |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 6: `book-2-cloud/users/docs/FRAGMENT.md` - Update Jinja2 filter cross-reference to use generic pointer
+### Commit 6: `book-2-cloud/users/docs/FRAGMENT.md` - Update Jinja2 filter cross-reference to use generic pointer [COMPLETE]
 
 ### book-2-cloud.users.docs.FRAGMENT.update-filter-ref
 
@@ -234,7 +234,7 @@ Update Jinja2 filter cross-reference to use generic pointer
 | **Rule 3: Exempt** | markdown | EXEMPT |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 7: `book-2-cloud/users/tests/TEST_USERS.md` - Update stale path references in test documentation header
+### Commit 7: `book-2-cloud/users/tests/TEST_USERS.md` - Update stale path references in test documentation header [COMPLETE]
 
 ### book-2-cloud.users.tests.TEST_USERS.update-test-paths
 
@@ -265,7 +265,7 @@ Update stale path references in test documentation header
 | **Rule 3: Exempt** | markdown | EXEMPT |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 8: `book-2-cloud/users/tests/3/verifications.ps1` - Add home directory existence test to match TEST_USERS.md spec
+### Commit 8: `book-2-cloud/users/tests/3/verifications.ps1` - Add home directory existence test to match TEST_USERS.md spec [COMPLETE]
 
 ### book-2-cloud.users.tests.3.verifications.add-home-dir-test
 
@@ -301,7 +301,7 @@ Add home directory existence test to match TEST_USERS.md spec
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 9: `book-2-cloud/users/tests/3/verifications.ps1` - Add user-setup.log verification tests following network fragment pattern
+### Commit 9: `book-2-cloud/users/tests/3/verifications.ps1` - Add user-setup.log verification tests following network fragment pattern [COMPLETE]
 
 ### book-2-cloud.users.tests.3.verifications.add-log-tests
 
