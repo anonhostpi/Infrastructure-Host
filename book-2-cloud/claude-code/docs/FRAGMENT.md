@@ -1,6 +1,6 @@
 # 6.12 Claude Code Fragment
 
-**Template:** `src/autoinstall/cloud-init/75-claude-code.yaml.tpl`
+**Template:** `book-2-cloud/claude-code/fragment.yaml.tpl`
 
 Installs and configures Claude Code, Anthropic's official AI coding agent for terminal use.
 
@@ -93,7 +93,7 @@ runcmd:
 {% endif %}
 ```
 
-See the full template at `src/autoinstall/cloud-init/75-claude-code.yaml.tpl`.
+See the full template at `book-2-cloud/claude-code/fragment.yaml.tpl`.
 
 **Installation notes:**
 - Node.js is installed from NodeSource repository for unattended-upgrades support
@@ -103,7 +103,7 @@ See the full template at `src/autoinstall/cloud-init/75-claude-code.yaml.tpl`.
 
 ## Configuration
 
-Create `src/config/claude_code.config.yaml`:
+Create `config/claude_code.config.yaml`:
 
 ```yaml
 claude_code:
