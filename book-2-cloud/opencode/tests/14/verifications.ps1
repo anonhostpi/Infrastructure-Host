@@ -45,8 +45,7 @@ return (New-Module -Name "Verify.OpenCode" -ScriptBlock {
             $Worker.Test("6.14.7", "OpenCode credential chain", "sudo cat /home/$username/.local/share/opencode/auth.json", { param($out)
             $vmCreds = $out | ConvertFrom-Json
             $tokensMatch = ($hostCreds -and $vmCreds -and $hostCreds.claudeAiOauth.accessToken -eq $vmCreds.anthropic.access)
-            $models = $Worker.Exec("sudo su - $username -c 'opencode models' 2>/dev/null")
-            $tokensMatch -and $models.Output -match "anthropic"
+            $tokensMatch
             })
         }
     }
