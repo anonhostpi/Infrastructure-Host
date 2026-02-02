@@ -24,6 +24,12 @@ return (New-Module -Name "Verify.UITouches" -ScriptBlock {
                 "test -x /etc/update-motd.d/00-header && test -x /etc/update-motd.d/10-sysinfo && test -x /etc/update-motd.d/90-updates && echo ok",
                 "ok")
         }
+        "Ubuntu default MOTD disabled" = {
+            param($Worker)
+            $Worker.Test("6.15.4", "Ubuntu default MOTD disabled",
+                "test ! -x /etc/update-motd.d/10-help-text && test ! -x /etc/update-motd.d/50-motd-news && echo ok",
+                "ok")
+        }
     }
 
     Export-ModuleMember -Function @()
