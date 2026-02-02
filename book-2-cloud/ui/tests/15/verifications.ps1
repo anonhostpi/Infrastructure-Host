@@ -18,6 +18,12 @@ return (New-Module -Name "Verify.UITouches" -ScriptBlock {
                 "grep ENABLED /etc/default/motd-news",
                 "ENABLED=0")
         }
+        "Custom MOTD scripts present" = {
+            param($Worker)
+            $Worker.Test("6.15.3", "Custom MOTD scripts present",
+                "test -x /etc/update-motd.d/00-header && test -x /etc/update-motd.d/10-sysinfo && test -x /etc/update-motd.d/90-updates && echo ok",
+                "ok")
+        }
     }
 
     Export-ModuleMember -Function @()
