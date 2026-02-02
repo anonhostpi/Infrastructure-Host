@@ -6,13 +6,17 @@ return (New-Module -Name "Verify.UITouches" -ScriptBlock {
     . "$PSScriptRoot\..\..\..\..\book-0-builder\host-sdk\helpers\PowerShell.ps1"
 
     $mod.Tests = [ordered]@{
-        "MOTD directory exists" = {
+        "CLI packages installed" = {
             param($Worker)
-            $Worker.Test("6.15.1", "MOTD directory exists", "test -d /etc/update-motd.d", { $true })
+            $Worker.Test("6.15.1", "CLI packages installed",
+                "dpkg -l bat fd-find jq tree htop ncdu fastfetch 2>&1 | grep -c '^ii'",
+                { param($out) [int]$out -ge 7 })
         }
-        "MOTD scripts present" = {
+        "MOTD news disabled" = {
             param($Worker)
-            $Worker.Test("6.15.2", "MOTD scripts present", "ls /etc/update-motd.d/ | wc -l", { param($out) [int]$out -gt 0 })
+            $Worker.Test("6.15.2", "MOTD news disabled",
+                "grep ENABLED /etc/default/motd-news",
+                "ENABLED=0")
         }
     }
 
