@@ -1,7 +1,7 @@
 # Plan
 
 
-### Commit 1: `book-2-cloud/msmtp/docs/FRAGMENT.md` - Update stale template path and config path from old src/ layout to current fragment paths
+### Commit 1: `book-2-cloud/msmtp/docs/FRAGMENT.md` - Update stale template path and config path from old src/ layout to current fragment paths [COMPLETE]
 
 ### book-2-cloud.msmtp.docs.FRAGMENT.fix-stale-paths
 
@@ -33,7 +33,7 @@ Update stale template path and config path from old src/ layout to current fragm
 | **Rule 3: Exempt** | markdown | EXEMPT |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 2: `book-2-cloud/msmtp/tests/TEST_MSMTP.md` - Update stale template path and broken cross-link to FRAGMENT.md
+### Commit 2: `book-2-cloud/msmtp/tests/TEST_MSMTP.md` - Update stale template path and broken cross-link to FRAGMENT.md [COMPLETE]
 
 ### book-2-cloud.msmtp.tests.TEST_MSMTP.fix-test-doc-paths
 
