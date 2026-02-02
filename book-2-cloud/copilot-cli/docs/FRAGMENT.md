@@ -215,7 +215,7 @@ runcmd:
 {% endif %}
 ```
 
-See the full template at `src/autoinstall/cloud-init/76-copilot-cli.yaml.tpl`.
+See the full template at `book-2-cloud/copilot-cli/fragment.yaml.tpl`.
 
 **Installation notes:**
 - Node.js is installed from NodeSource repository for unattended-upgrades support
