@@ -18,6 +18,26 @@ return (New-Module -Name "Verify.SecurityMonitoring" -ScriptBlock {
             param($Worker)
             $Worker.Test("6.9.3", "SSH jail configured", "sudo fail2ban-client status", "sshd")
         }
+        "SSHD-DDoS jail configured" = {
+            param($Worker)
+            $Worker.Test("6.9.4", "SSHD-DDoS jail configured", "test -f /etc/fail2ban/jail.d/sshd-ddos.conf && echo exists", "exists")
+        }
+        "Sudo jail configured" = {
+            param($Worker)
+            $Worker.Test("6.9.5", "Sudo jail configured", "test -f /etc/fail2ban/jail.d/sudo.conf && echo exists", "exists")
+        }
+        "Recidive jail configured" = {
+            param($Worker)
+            $Worker.Test("6.9.6", "Recidive jail configured", "sudo fail2ban-client status recidive 2>/dev/null && echo active || echo inactive", "active")
+        }
+        "Email action configured" = {
+            param($Worker)
+            $Worker.Test("6.9.7", "Email action configured", "test -f /etc/fail2ban/action.d/msmtp-mail.conf && echo exists", "exists")
+        }
+        "Libvirt log rotation configured" = {
+            param($Worker)
+            $Worker.Test("6.9.8", "Libvirt log rotation configured", "test -f /etc/logrotate.d/libvirt && echo exists", "exists")
+        }
     }
 
     Export-ModuleMember -Function @()
