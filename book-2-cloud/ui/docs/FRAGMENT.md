@@ -1,6 +1,6 @@
 # 6.15 UI Touches Fragment
 
-**Template:** `src/autoinstall/cloud-init/90-ui.yaml.tpl`
+**Template:** `book-2-cloud/ui/fragment.yaml.tpl`
 
 Configures terminal experience, dynamic MOTD, and CLI productivity tools.
 
