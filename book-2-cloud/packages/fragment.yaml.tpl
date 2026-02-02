@@ -1,2 +1,2 @@
-# Network utility packages (used by bootcmd network script)
+# Base package list - other fragments append via deep merge
 packages: []
