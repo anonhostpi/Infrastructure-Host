@@ -26,6 +26,10 @@ return (New-Module -Name "Verify.KernelHardening" -ScriptBlock {
             param($Worker)
             $Worker.Test("6.2.5", "Source routing disabled", "sysctl net.ipv4.conf.all.accept_source_route", "= 0")
         }
+        "Martian logging enabled" = {
+            param($Worker)
+            $Worker.Test("6.2.6", "Martian logging enabled", "sysctl net.ipv4.conf.all.log_martians", "= 1")
+        }
     }
 
     Export-ModuleMember -Function @()
