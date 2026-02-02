@@ -1,7 +1,7 @@
 # Plan
 
 
-### Commit 1: `book-2-cloud/copilot-cli/docs/FRAGMENT.md` - Update stale template path reference from src/autoinstall/cloud-init/ to fragment-relative path
+### Commit 1: `book-2-cloud/copilot-cli/docs/FRAGMENT.md` - Update stale template path reference from src/autoinstall/cloud-init/ to fragment-relative path [COMPLETE]
 
 ### book-2-cloud.copilot-cli.docs.FRAGMENT.fix-template-path
 
@@ -30,7 +30,7 @@ Update stale template path reference from src/autoinstall/cloud-init/ to fragmen
 | **Rule 3: Exempt** | markdown | EXEMPT |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 2: `book-2-cloud/copilot-cli/docs/FRAGMENT.md` - Update second stale template path in template section
+### Commit 2: `book-2-cloud/copilot-cli/docs/FRAGMENT.md` - Update second stale template path in template section [COMPLETE]
 
 ### book-2-cloud.copilot-cli.docs.FRAGMENT.fix-see-full-template
 
@@ -59,7 +59,7 @@ Update second stale template path in template section
 | **Rule 3: Exempt** | markdown | EXEMPT |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 3: `book-2-cloud/copilot-cli/docs/FRAGMENT.md` - Update stale config path reference from src/config/ to fragment-relative path
+### Commit 3: `book-2-cloud/copilot-cli/docs/FRAGMENT.md` - Update stale config path reference from src/config/ to fragment-relative path [COMPLETE]
 
 ### book-2-cloud.copilot-cli.docs.FRAGMENT.fix-config-path
 
@@ -88,7 +88,7 @@ Update stale config path reference from src/config/ to fragment-relative path
 | **Rule 3: Exempt** | markdown | EXEMPT |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 4: `book-2-cloud/copilot-cli/tests/TEST_COPILOT_CLI.md` - Update stale template path reference in test documentation
+### Commit 4: `book-2-cloud/copilot-cli/tests/TEST_COPILOT_CLI.md` - Update stale template path reference in test documentation [COMPLETE]
 
 ### book-2-cloud.copilot-cli.tests.TEST_COPILOT_CLI.fix-test-template-path
 
@@ -117,7 +117,7 @@ Update stale template path reference in test documentation
 | **Rule 3: Exempt** | markdown | EXEMPT |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 5: `book-2-cloud/copilot-cli/tests/TEST_COPILOT_CLI.md` - Fix broken fragment docs link from old CLOUD_INIT_CONFIGURATION path to current docs location
+### Commit 5: `book-2-cloud/copilot-cli/tests/TEST_COPILOT_CLI.md` - Fix broken fragment docs link from old CLOUD_INIT_CONFIGURATION path to current docs location [COMPLETE]
 
 ### book-2-cloud.copilot-cli.tests.TEST_COPILOT_CLI.fix-fragment-docs-link
 
