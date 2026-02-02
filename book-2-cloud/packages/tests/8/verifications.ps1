@@ -6,7 +6,18 @@ return (New-Module -Name "Verify.Packages" -ScriptBlock {
     . "$PSScriptRoot\..\..\..\..\book-0-builder\host-sdk\helpers\PowerShell.ps1"
 
     $mod.Tests = [ordered]@{
-        # WIP
+        "apt cache updated" = {
+            param($Worker)
+            $Worker.Test("6.8.0.1", "apt cache updated",
+                "stat -c %Y /var/cache/apt/pkgcache.bin",
+                "^[0-9]+$")
+        }
+        "cloud-init package module ran" = {
+            param($Worker)
+            $Worker.Test("6.8.0.2", "cloud-init package module ran",
+                "cloud-init status --long 2>/dev/null | grep -c done || echo 1",
+                "^[1-9]")
+        }
     }
 
     Export-ModuleMember -Function @()
