@@ -1,5 +1,5 @@
 packages:
-  - neofetch
+  - fastfetch
   - bat
   - fd-find
   - jq
