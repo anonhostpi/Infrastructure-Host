@@ -63,7 +63,7 @@ The `sha512_hash` filter generates a secure password hash at build time:
 {{ identity.password | sha512_hash }}
 ```
 
-See [3.2 Jinja2 Filters](../BUILD_SYSTEM/JINJA2_FILTERS.md) for filter details.
+See `book-0-builder/builder-sdk/filters.py` for filter details.
 
 ## SSH Keys
 
