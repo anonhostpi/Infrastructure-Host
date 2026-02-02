@@ -1,6 +1,6 @@
 # 6.3 Users Fragment
 
-**Template:** `src/autoinstall/cloud-init/20-users.yaml.tpl`
+**Template:** `book-2-cloud/users/fragment.yaml.tpl`
 
 Configures user accounts from `identity.config.yaml`.
 
