@@ -269,8 +269,8 @@ New-Module -Name SDK.Multipass -ScriptBlock {
                 [string]$VMName
             )
             $info = $this.Info($VMName, "json")
-            if ($info -and $info.$VMName -and $info.$VMName.ipv4) {
-                return $info.$VMName.ipv4
+            if ($info -and $info."$VMName" -and $info."$VMName".ipv4) {
+                return $info."$VMName".ipv4
             }
             return @()
         }
@@ -295,8 +295,8 @@ New-Module -Name SDK.Multipass -ScriptBlock {
                 [string]$VMName
             )
             $info = $this.Info($VMName, "json")
-            if ($info -and $info.$VMName -and $info.$VMName.mounts) {
-                return $info.$VMName.mounts
+            if ($info -and $info."$VMName" -and $info."$VMName".mounts) {
+                return $info."$VMName".mounts
             }
             return @()
         }
