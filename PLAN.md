@@ -1,7 +1,7 @@
 # Plan
 
 
-### Commit 1: `book-2-cloud/network/docs/FRAGMENT.md` - Update stale template path from src/autoinstall/cloud-init/10-network.yaml.tpl to fragment.yaml.tpl
+### Commit 1: `book-2-cloud/network/docs/FRAGMENT.md` - Update stale template path from src/autoinstall/cloud-init/10-network.yaml.tpl to fragment.yaml.tpl [COMPLETE]
 
 ### book-2-cloud.network.docs.FRAGMENT.fix-fragment-template-path
 
@@ -32,7 +32,7 @@ Update stale template path from src/autoinstall/cloud-init/10-network.yaml.tpl t
 | **Rule 3: Exempt** | markdown | EXEMPT |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 2: `book-2-cloud/network/docs/FRAGMENT.md` - Update broken cross-reference links to use correct relative paths to sibling docs and book-0-builder docs
+### Commit 2: `book-2-cloud/network/docs/FRAGMENT.md` - Update broken cross-reference links to use correct relative paths to sibling docs and book-0-builder docs [COMPLETE]
 
 ### book-2-cloud.network.docs.FRAGMENT.fix-fragment-cross-refs
 
@@ -64,7 +64,7 @@ Update broken cross-reference links to use correct relative paths to sibling doc
 | **Rule 3: Exempt** | markdown | EXEMPT |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 3: `book-2-cloud/network/docs/OVERVIEW.md` - Update stale config path and fix cross-reference links to sibling docs
+### Commit 3: `book-2-cloud/network/docs/OVERVIEW.md` - Update stale config path and fix cross-reference links to sibling docs [COMPLETE]
 
 ### book-2-cloud.network.docs.OVERVIEW.fix-overview-config-path
 
@@ -93,7 +93,7 @@ Update stale config path and fix cross-reference links to sibling docs
 | **Rule 3: Exempt** | markdown | EXEMPT |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 4: `book-2-cloud/network/docs/OVERVIEW.md` - Fix broken cross-reference links to renamed sibling docs
+### Commit 4: `book-2-cloud/network/docs/OVERVIEW.md` - Fix broken cross-reference links to renamed sibling docs [COMPLETE]
 
 ### book-2-cloud.network.docs.OVERVIEW.fix-overview-links
 
@@ -126,7 +126,7 @@ Fix broken cross-reference links to renamed sibling docs
 | **Rule 3: Exempt** | markdown | EXEMPT |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 5: `book-2-cloud/network/docs/INFORMATION_GATHERING.md` - Update stale config paths from src/config/ to config/ and fix broken cross-reference links
+### Commit 5: `book-2-cloud/network/docs/INFORMATION_GATHERING.md` - Update stale config paths from src/config/ to config/ and fix broken cross-reference links [COMPLETE]
 
 ### book-2-cloud.network.docs.INFORMATION_GATHERING.fix-info-config-paths
 
@@ -164,7 +164,7 @@ Update stale config paths from src/config/ to config/ and fix broken cross-refer
 | **Rule 3: Exempt** | markdown | EXEMPT |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 6: `book-2-cloud/network/docs/SCRIPTS.md` - Update stale paths from src/scripts/ and src/config/ to scripts/ and config/, fix Jinja2 filters cross-ref
+### Commit 6: `book-2-cloud/network/docs/SCRIPTS.md` - Update stale paths from src/scripts/ and src/config/ to scripts/ and config/, fix Jinja2 filters cross-ref [COMPLETE]
 
 ### book-2-cloud.network.docs.SCRIPTS.fix-scripts-paths
 
@@ -196,7 +196,7 @@ Update stale paths from src/scripts/ and src/config/ to scripts/ and config/, fi
 | **Rule 3: Exempt** | markdown | EXEMPT |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 7: `book-2-cloud/network/tests/TEST_NETWORK.md` - Update stale template path and broken cross-reference link in test documentation
+### Commit 7: `book-2-cloud/network/tests/TEST_NETWORK.md` - Update stale template path and broken cross-reference link in test documentation [COMPLETE]
 
 ### book-2-cloud.network.tests.TEST_NETWORK.fix-test-doc-paths
 
