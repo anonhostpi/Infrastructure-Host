@@ -30,6 +30,10 @@ return (New-Module -Name "Verify.KernelHardening" -ScriptBlock {
             param($Worker)
             $Worker.Test("6.2.6", "Martian logging enabled", "sysctl net.ipv4.conf.all.log_martians", "= 1")
         }
+        "Kernel dmesg restricted" = {
+            param($Worker)
+            $Worker.Test("6.2.7", "Kernel dmesg restricted", "sysctl kernel.dmesg_restrict", "= 1")
+        }
     }
 
     Export-ModuleMember -Function @()
