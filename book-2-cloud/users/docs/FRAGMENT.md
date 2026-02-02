@@ -81,10 +81,10 @@ SSH authorized keys are optional. If provided in `identity.config.yaml`, they ar
 | `passwd -l root` | Lock root | Prevent direct root login |
 | `ssh_pwauth` | true | Allow SSH password authentication |
 
-**Note:** SSH password authentication is enabled here but can be hardened in [6.4 SSH Hardening](./SSH_HARDENING_FRAGMENT.md).
+**Note:** SSH password authentication is enabled here but can be hardened in the SSH fragment (`book-2-cloud/ssh/`).
 
 ## Group Membership
 
 The user is initially added only to the `sudo` group. Additional groups are added by other fragments:
 
-- `libvirt`, `kvm` - Added by [6.10 Virtualization](./VIRTUALIZATION_FRAGMENT.md)
+- `libvirt`, `kvm` - Added by the virtualization fragment (`book-2-cloud/virtualization/`)
