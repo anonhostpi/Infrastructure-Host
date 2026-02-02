@@ -26,6 +26,10 @@ return (New-Module -Name "Verify.SecurityMonitoring" -ScriptBlock {
             param($Worker)
             $Worker.Test("6.9.5", "Sudo jail configured", "test -f /etc/fail2ban/jail.d/sudo.conf && echo exists", "exists")
         }
+        "Recidive jail configured" = {
+            param($Worker)
+            $Worker.Test("6.9.6", "Recidive jail configured", "sudo fail2ban-client status recidive 2>/dev/null && echo active || echo inactive", "active")
+        }
     }
 
     Export-ModuleMember -Function @()
