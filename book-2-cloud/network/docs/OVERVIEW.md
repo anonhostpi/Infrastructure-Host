@@ -4,9 +4,9 @@ This section covers network planning and configuration for bare-metal Ubuntu dep
 
 ## Contents
 
-- [4.1 Network Information Gathering](./NETWORK_INFORMATION_GATHERING.md)
-- [4.2 Network Topology Considerations](./NETWORK_TOPOLOGY.md)
-- [4.3 Network Scripts](./NETWORK_SCRIPTS.md)
+- [Information Gathering](./INFORMATION_GATHERING.md)
+- [Topology Considerations](./TOPOLOGY.md)
+- [Network Scripts](./SCRIPTS.md)
 
 ## Overview
 
