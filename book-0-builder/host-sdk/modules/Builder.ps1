@@ -9,10 +9,10 @@ New-Module -Name SDK.Builder -ScriptBlock {
         $SDK
     )
 
-    . "$PSScriptRoot\helpers\PowerShell.ps1"
-    . "$PSScriptRoot\helpers\Config.ps1"
+    . "$PSScriptRoot\..\helpers\PowerShell.ps1"
 
     $mod = @{ SDK = $SDK }
+    $mod.Runners = @{}
 
     $Builder = New-Object PSObject -Property @{
         Packages = @(
@@ -37,35 +37,30 @@ New-Module -Name SDK.Builder -ScriptBlock {
                 Network = "Ethernet"
             }
         }
+        Artifacts = {
+            $path = Join-Path $mod.SDK.Root() "output/artifacts.yaml"
+            if (Test-Path $path) {
+                return Get-Content $path -Raw | ConvertFrom-Yaml
+            }
+            return $null
+        }
     }
     $Builder = $SDK.Multipass.Worker($Builder)
 
-    $Runner = New-Object PSObject -Property @{}
-    Add-ScriptProperties $Runner @{
-        Config = {
-            return $mod.SDK.Settings.Virtualization.Runner
-        }
-        Defaults = {
-            return @{
-                CPUs = 2
-                Memory = "4G"
-                Disk = "15G"
-                Network = "Ethernet"
-            }
-        }
-        Artifacts = {
-            If( Test-Path "$($mod.SDK.Root())/output/artifacts.yaml" ){
-                return Get-Content "$($mod.SDK.Root())/output/artifacts.yaml" -Raw | ConvertFrom-Yaml
-            }
-        }
-    }
-    $Runner = $SDK.Multipass.Worker($Runner)
-
     Add-ScriptMethods $Builder @{
+        Clean = {
+            $make = @("cd /home/ubuntu/infra-host", "make clean") -join " && "
+            return $this.Exec($make).Success
+        }
         Flush = {
-            $builder_destroyed = $mod.SDK.Builder.Destroy()
-            $runner_destroyed = $mod.SDK.Runner.Destroy()
-            return $builder_destroyed -and $runner_destroyed
+            foreach ($name in ($mod.Runners.Keys | ForEach-Object { $_ })) {
+                $runner = $mod.Runners[$name]
+                if ($runner -and $runner.Exists()) {
+                    $runner.Destroy()
+                }
+            }
+            $mod.Runners = @{}
+            return $this.Destroy()
         }
         InstallDependencies = {
             $apt = @(
@@ -83,14 +78,11 @@ New-Module -Name SDK.Builder -ScriptBlock {
             return $apt_result.Success -and $pip_result.Success
         }
         Build = {
-            $make = @(
-                "cd /home/ubuntu/infra-host"
-                "make all"
-            ) -join " && "
-
-            $make_result = $this.Exec($make)
-
-            return $make_result.Success
+            param([int]$Layer)
+            $this.Clean()  # Always clean before build
+            $target = if ($Layer) { "make cloud-init LAYER=$Layer" } else { "make all" }
+            $make = @("cd /home/ubuntu/infra-host", $target) -join " && "
+            return $this.Exec($make).Success
         }
         Stage = {
             $setup_success = $this.Setup($true)
@@ -112,10 +104,37 @@ New-Module -Name SDK.Builder -ScriptBlock {
             }
             return $true
         }
+        Register = {
+            param([string]$Name, $Worker)
+            $mod.Runners[$Name] = $Worker
+            return $Worker
+        }
+        Runner = {
+            param([hashtable]$Config, [string]$Backend = "Multipass", [int]$Layer = 0)
+            $config = @{}
+            foreach ($k in ($Config.Keys | ForEach-Object { $_ })) { $config[$k] = $Config[$k] }
+            $artifacts = $this.Artifacts
+            $artifactKey = if ($Backend -eq "Multipass") { "cloud_init" } else { "iso" }
+            if (-not $artifacts -or -not $artifacts."$artifactKey") {
+                $this.Build($Layer)
+                $artifacts = $this.Artifacts
+                if (-not $artifacts -or -not $artifacts."$artifactKey") {
+                    throw "No $artifactKey artifact found after build"
+                }
+            }
+            $configKey = if ($Backend -eq "Multipass") { "CloudInit" } else { "IsoPath" }
+            $remote = $artifacts."$artifactKey"
+            $local = Join-Path $mod.SDK.Root() "output" (Split-Path $remote -Leaf)
+            $this.Pull($remote, $local)
+            $config."$configKey" = $local
+            $worker = $mod.SDK."$Backend".Worker(@{ Config = $config })
+            $this.Register($config.Name, $worker)
+            $worker.Setup($true)
+            return $worker
+        }
     }
 
     $SDK.Extend("Builder", $Builder)
-    $SDK.Extend("Runner", $Runner)
 
     # Export nothing. This module only modifies the SDK object.
     Export-ModuleMember -Function @()

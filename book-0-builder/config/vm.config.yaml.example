@@ -27,3 +27,11 @@ vbox:
   memory: 4096
   cpus: 2
   disk_size: 40960  # MB (40GB for ZFS)
+
+# Hyper-V VM settings (for autoinstall ISO testing)
+hyperv:
+  name: "ubuntu-autoinstall-test-hv"
+  memory: 4096
+  cpus: 2
+  disk: 40960
+  network: "Ethernet 1"

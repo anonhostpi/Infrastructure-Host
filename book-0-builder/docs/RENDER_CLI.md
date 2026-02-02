@@ -16,7 +16,7 @@ python -m builder list-fragments
 Render templates to output files.
 
 ```bash
-python -m builder render <target> [input] -o <output> [-i FRAGMENT...] [-x FRAGMENT...]
+python -m builder render <target> [input] -o <output> [-l LAYER] [-i FRAGMENT...] [-x FRAGMENT...]
 ```
 
 ### list-fragments
@@ -40,7 +40,8 @@ python -m builder list-fragments
 | Option | Description |
 |--------|-------------|
 | `-o, --output` | Output file path (required) |
-| `-c, --config-dir` | Configuration directory (default: `src/config`) |
+| `-c, --config-dir` | Configuration directory (default: `book-0-builder/config`) |
+| `-l, --layer` | Include fragments up to build_layer N |
 | `-i, --include` | Include only specified fragments (can be repeated) |
 | `-x, --exclude` | Exclude specified fragments (can be repeated) |
 
@@ -53,14 +54,17 @@ python -m builder list-fragments
 # Render cloud-init (merges all fragments)
 python -m builder render cloud-init -o output/cloud-init.yaml
 
+# Render cloud-init up to a specific layer
+python -m builder render cloud-init -o output/cloud-init.yaml --layer 3
+
 # Render cloud-init excluding the network fragment (for testing)
-python -m builder render cloud-init -o output/cloud-init.yaml -x 10-network
+python -m builder render cloud-init -o output/cloud-init.yaml -x network
 
 # Render cloud-init with only users and SSH fragments
-python -m builder render cloud-init -o output/cloud-init.yaml -i 20-users -i 25-ssh
+python -m builder render cloud-init -o output/cloud-init.yaml -i users -i ssh
 
 # Render a script template
-python -m builder render script src/scripts/early-net.sh.tpl -o output/scripts/early-net.sh
+python -m builder render script book-1-foundation/base/scripts/early-net.sh.tpl -o output/scripts/early-net.sh
 
 # Render autoinstall user-data
 python -m builder render autoinstall -o output/user-data
@@ -74,9 +78,16 @@ The `-i/--include` and `-x/--exclude` options allow selective rendering of cloud
 - **Debugging** by excluding problematic fragments
 - **Creating minimal configs** for specific use cases
 
-Fragment names match the filename without path or extension:
-- `10-network` matches `src/autoinstall/cloud-init/10-network.yaml.tpl`
-- `20-users` matches `src/autoinstall/cloud-init/20-users.yaml.tpl`
+Fragment names are read from `build.yaml` files in each fragment directory:
+- `network` from `book-1-foundation/network/build.yaml`
+- `users` from `book-2-cloud/users/build.yaml`
+
+Each `build.yaml` contains:
+```yaml
+name: network
+build_order: 10
+build_layer: 1
+```
 
 ### Include vs Exclude
 

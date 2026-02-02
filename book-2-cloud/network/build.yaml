@@ -1,0 +1,5 @@
+name: network
+description: Static IP configuration via arping detection
+iso_required: true
+build_order: 10
+build_layer: 1

@@ -11,7 +11,7 @@ New-Module -Name SDK.Multipass -ScriptBlock {
 
     $mod = @{ SDK = $SDK }
 
-    . "$PSScriptRoot\helpers\PowerShell.ps1"
+    . "$PSScriptRoot\..\helpers\PowerShell.ps1"
 
     $mod.Configurator = @{
         Defaulter = {
@@ -75,6 +75,12 @@ New-Module -Name SDK.Multipass -ScriptBlock {
             Disk = {
                 return $this.Rendered.Disk
             }
+            Network = {
+                return $this.Rendered.Network
+            }
+            CloudInit = {
+                return $this.Rendered.CloudInit
+            }
         }
         Methods = @{
             #region: Worker VM Info
@@ -99,18 +105,12 @@ New-Module -Name SDK.Multipass -ScriptBlock {
                 $config = $this.Rendered
                 return $mod.SDK.Multipass.Create(
                     $this.Name,
-                    $null,
-                    $null,
+                    $config.CloudInit,
+                    $config.Network,
                     $config.CPUs,
                     $config.Memory,
                     $config.Disk
                 )
-            }
-            Ensure = {
-                if( -not $this.Exists() ) {
-                    return $this.Create()
-                }
-                return $true
             }
             Destroy = {
                 if( -not $this.Exists() ) { return $true }
@@ -136,26 +136,6 @@ New-Module -Name SDK.Multipass -ScriptBlock {
             UntilShutdown = {
                 param( [int] $TimeoutSeconds )
                 return $mod.SDK.Multipass.UntilShutdown($this.Name, $TimeoutSeconds)
-            }
-            
-            #region: Worker Cloud-Init
-            Status = {
-                return $mod.SDK.Multipass.Status($this.Name)
-            }
-            UntilInstalled = {
-                return $mod.SDK.Multipass.UntilInstalled($this.Name)
-            }
-            Setup = {
-                param( [bool]$FailOnNotInitialized )
-                $created = $this.Ensure()
-                if( -not $created ) {
-                    throw "Failed to create VM '$($this.Name)'"
-                }
-                $initialized = $this.UntilInstalled()
-                if( -not $initialized -and $FailOnNotInitialized ) {
-                    throw "Cloud-init failed for VM '$($this.Name)'"
-                }
-                return $initialized
             }
 
             #region: Worker File Sharing
@@ -231,6 +211,22 @@ New-Module -Name SDK.Multipass -ScriptBlock {
                 Success = $LASTEXITCODE -eq 0
             }
         }
+        Backend = {
+            $result = $this.Invoke("get", "local.driver")
+            if ($result.Success) { return ($result.Output | Out-String).Trim() }
+            return $null
+        }
+        Hypervisor = {
+            param([string]$VMName)
+            $backend = $this.Backend()
+            $map = @{ "hyperv" = "HyperV"; "virtualbox" = "Vbox" }
+            $sdkModule = $map[$backend]
+            if (-not $sdkModule) {
+                Write-Warning "Nested virtualization not supported for backend '$backend'"
+                return $false
+            }
+            return $mod.SDK."$sdkModule".Hypervisor($VMName)
+        }
         Worker = {
             param(
                 [Parameter(Mandatory = $true)]
@@ -246,7 +242,9 @@ New-Module -Name SDK.Multipass -ScriptBlock {
 
             Add-ScriptProperties $worker $mod.Worker.Properties
             Add-ScriptMethods $worker $mod.Worker.Methods
-            
+
+            $mod.SDK.Worker.Methods($worker)
+
             return $worker
         }
     }
@@ -271,8 +269,8 @@ New-Module -Name SDK.Multipass -ScriptBlock {
                 [string]$VMName
             )
             $info = $this.Info($VMName, "json")
-            if ($info -and $info.$VMName -and $info.$VMName.ipv4) {
-                return $info.$VMName.ipv4
+            if ($info -and $info."$VMName" -and $info."$VMName".ipv4) {
+                return $info."$VMName".ipv4
             }
             return @()
         }
@@ -291,22 +289,14 @@ New-Module -Name SDK.Multipass -ScriptBlock {
             }
             return $result.Output | ConvertFrom-Csv
         }
-        Status = {
-            param(
-                [Parameter(Mandatory = $true)]
-                [string]$VMName
-            )
-            $result = $this.Exec($VMName, "cloud-init status")
-            return $result.Output
-        }
         Mounts = {
             param(
                 [Parameter(Mandatory = $true)]
                 [string]$VMName
             )
             $info = $this.Info($VMName, "json")
-            if ($info -and $info.$VMName -and $info.$VMName.mounts) {
-                return $info.$VMName.mounts
+            if ($info -and $info."$VMName" -and $info."$VMName".mounts) {
+                return $info."$VMName".mounts
             }
             return @()
         }
@@ -351,14 +341,6 @@ New-Module -Name SDK.Multipass -ScriptBlock {
             )
             return $this.Invoke("start", $VMName).Success
         }
-        UntilInstalled = {
-            param(
-                [Parameter(Mandatory = $true)]
-                [string]$VMName
-            )
-            $result = $this.Exec($VMName, "cloud-init status --wait")
-            return $result.Success
-        }
         Shutdown = {
             param(
                 [Parameter(Mandatory = $true)]
@@ -402,7 +384,8 @@ New-Module -Name SDK.Multipass -ScriptBlock {
                 [int]$CPUs = 2,
                 [string]$Memory = "4G",
                 [string]$Disk = "40G",
-                [string]$Image = ""  # Empty uses default Ubuntu LTS
+                [string]$Image = "",  # Empty uses default Ubuntu LTS
+                [bool]$Hypervisor = $true
             )
 
             $launchArgs = @("launch", "--name", $VMName, "--cpus", $CPUs, "--memory", $Memory, "--disk", $Disk)
@@ -420,6 +403,9 @@ New-Module -Name SDK.Multipass -ScriptBlock {
             }
 
             $result = $this.Invoke($launchArgs)
+            if ($result.Success -and $Hypervisor) {
+                $this.Hypervisor($VMName)
+            }
             return $result.Success
         }
         Destroy = {

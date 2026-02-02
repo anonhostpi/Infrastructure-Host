@@ -23,7 +23,7 @@ name: ssh
 description: SSH server configuration and hardening
 iso_required: true
 build_order: 25
-build_layer: 3
+build_layer: 4
 ```
 
 Reason: Fragment metadata required for SDK discovery. `iso_required: true` because bare metal needs SSH for headless access.

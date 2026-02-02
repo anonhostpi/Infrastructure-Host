@@ -11,9 +11,108 @@ New-Module -Name SDK.Vbox -ScriptBlock {
 
     $mod = @{ SDK = $SDK }
 
-    . "$PSScriptRoot\helpers\PowerShell.ps1"
+    . "$PSScriptRoot\..\helpers\PowerShell.ps1"
+
+    $mod.Configurator = @{
+        Defaults = @{
+            CPUs = 2
+            Memory = 4096
+            Disk = 40960
+            SSHUser = $null
+            SSHHost = $null
+            SSHPort = 22
+        }
+    }
+
+    $mod.Worker = @{
+        Properties = @{
+            Rendered = {
+                $config = $this.Config
+                $defaults = if ($this.Defaults) { $this.Defaults } else { $mod.Configurator.Defaults }
+                $rendered = @{}
+                foreach ($key in ($defaults.Keys | ForEach-Object { $_ })) { $rendered[$key] = $defaults[$key] }
+                foreach ($key in ($config.Keys | ForEach-Object { $_ })) { $rendered[$key] = $config[$key] }
+                # Derive SSH settings from config files if not set
+                if (-not $rendered.SSHUser -or -not $rendered.SSHHost) {
+                    $identity = $mod.SDK.Settings.Load("book-2-cloud/users/config/identity.config.yaml")
+                    $network = $mod.SDK.Settings.Load("book-2-cloud/network/config/network.config.yaml")
+                    if (-not $rendered.SSHUser) { $rendered.SSHUser = $identity.identity.username }
+                    if (-not $rendered.SSHHost) {
+                        $ip = $network.network.ip_address -replace '/\d+$', ''
+                        $rendered.SSHHost = $ip
+                    }
+                }
+                if (-not $rendered.MediumPath) {
+                    $rendered.MediumPath = "$env:TEMP\$($rendered.Name).vdi"
+                }
+                $this | Add-Member -MemberType NoteProperty -Name Rendered -Value $rendered -Force
+                return $rendered
+            }
+            Name = { return $this.Rendered.Name }
+            CPUs = { return $this.Rendered.CPUs }
+            Memory = { return $this.Rendered.Memory }
+            Disk = { return $this.Rendered.Disk }
+            Network = { return $this.Rendered.Network }
+            IsoPath = { return $this.Rendered.IsoPath }
+            MediumPath = { return $this.Rendered.MediumPath }
+            SSHUser = { return $this.Rendered.SSHUser }
+            SSHHost = { return $this.Rendered.SSHHost }
+            SSHPort = { return $this.Rendered.SSHPort }
+        }
+        Methods = @{
+            Exists = { return $mod.SDK.Vbox.Exists($this.Name) }
+            Running = { return $mod.SDK.Vbox.Running($this.Name) }
+            Start = {
+                param([string]$Type = "headless")
+                return $mod.SDK.Vbox.Start($this.Name, $Type)
+            }
+            Shutdown = {
+                param([bool]$Force)
+                return $mod.SDK.Vbox.Shutdown($this.Name, $Force)
+            }
+            UntilShutdown = {
+                param([int]$TimeoutSeconds)
+                return $mod.SDK.Vbox.UntilShutdown($this.Name, $TimeoutSeconds)
+            }
+            Destroy = { return $mod.SDK.Vbox.Destroy($this.Name) }
+            Create = {
+                return $mod.SDK.Vbox.Create(
+                    $this.Name,
+                    $this.MediumPath,
+                    $this.IsoPath,
+                    $this.Network,
+                    "Ubuntu_64",
+                    "efi",
+                    "SATA",
+                    $this.Disk,
+                    $this.Memory,
+                    $this.CPUs
+                )
+            }
+        }
+    }
 
     $Vbox = New-Object PSObject
+
+    Add-ScriptMethods $Vbox @{
+        Worker = {
+            param(
+                [Parameter(Mandatory = $true)]
+                [ValidateScript({ $null -ne $_.Config -and $null -ne $_.Config.IsoPath })]
+                $Base
+            )
+            $worker = If ($Base -is [System.Collections.IDictionary]) {
+                New-Object PSObject -Property $Base
+            } Else { $Base }
+
+            Add-ScriptProperties $worker $mod.Worker.Properties
+            Add-ScriptMethods $worker $mod.Worker.Methods
+
+            $mod.SDK.Worker.Methods($worker)
+
+            return $worker
+        }
+    }
 
     #region: Main utilities
     Add-ScriptProperty $Vbox @{
@@ -391,7 +490,7 @@ New-Module -Name SDK.Vbox -ScriptBlock {
 
             $params = @("modifyvm", $VMName)
 
-            foreach( $key in $Settings.Keys ){
+            foreach( $key in ($Settings.Keys | ForEach-Object { $_ }) ){
                 $value = $Settings[$key]
                 $params += "--$key"
                 $params += "$value"
@@ -405,12 +504,12 @@ New-Module -Name SDK.Vbox -ScriptBlock {
                 [string] $VMName
             )
 
-            return $this.Configure($VMName, @{
+            return $this.SetProcessor($VMName, @{
                 "pae" = "on"
                 "nestedpaging" = "on"
                 "hwvirtex" = "on"
                 "largepages" = "on"
-            }) -and $this.Configure($VMName, @{
+            }) -and $this.SetProcessor($VMName, @{
                 "graphicscontroller" = "vmsvga"
                 "vram" = "16"
             })
@@ -421,9 +520,71 @@ New-Module -Name SDK.Vbox -ScriptBlock {
                 [string] $VMName
             )
 
-            return $this.Configure($VMName, @{
+            return $this.SetProcessor($VMName, @{
                 "nested-hw-virt" = "on"
             })
+        }
+        SetProcessor = {
+            param([string]$VMName, [hashtable]$Settings)
+            $s = @{}
+            foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) {
+                switch ($key) {
+                    "Count" { $s["cpus"] = $Settings[$key] }
+                    "ExposeVirtualizationExtensions" {
+                        $s["nested-hw-virt"] = if ($Settings[$key]) { "on" } else { "off" }
+                    }
+                    { $_ -in @("cpus","pae","nestedpaging","hwvirtex","largepages","nested-hw-virt","graphicscontroller","vram") } {
+                        $s[$key] = $Settings[$key]
+                    }
+                }
+            }
+            return $this.Configure($VMName, $s)
+        }
+        SetMemory = {
+            param([string]$VMName, [hashtable]$Settings)
+            $s = @{}
+            foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) {
+                switch ($key) {
+                    "MemoryMB" { $s["memory"] = $Settings[$key] }
+                    "MemoryGB" { $s["memory"] = $Settings[$key] * 1024 }
+                    "StartupBytes" { $s["memory"] = [math]::Floor($Settings[$key] / 1MB) }
+                    { $_ -in @("memory") } { $s[$key] = $Settings[$key] }
+                    "DynamicMemoryEnabled" {} # HyperV only
+                }
+            }
+            return $this.Configure($VMName, $s)
+        }
+        SetNetworkAdapter = {
+            param([string]$VMName, [hashtable]$Settings)
+            $s = @{}
+            foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) {
+                switch ($key) {
+                    { $_ -in @("nic1","bridgeadapter1") } { $s[$key] = $Settings[$key] }
+                    "MacAddressSpoofing" {
+                        if ($Settings[$key] -eq "On" -or $Settings[$key] -eq $true) {
+                            $s["nicpromisc1"] = "allow-all"
+                        }
+                    }
+                }
+            }
+            return $this.Configure($VMName, $s)
+        }
+        SetFirmware = {
+            param([string]$VMName, [hashtable]$Settings)
+            $s = @{}
+            foreach ($key in ($Settings.Keys | ForEach-Object { $_ })) {
+                switch ($key) {
+                    "Firmware" { $s["firmware"] = $Settings[$key] }
+                    { $_ -in @("firmware") } { $s[$key] = $Settings[$key] }
+                    "EnableSecureBoot" {
+                        if ($Settings[$key] -eq "On" -or $Settings[$key] -eq $true) {
+                            $s["firmware"] = "efi"
+                        }
+                    }
+                    "SecureBootTemplate" {} # No VBox equivalent
+                }
+            }
+            return $this.Configure($VMName, $s)
         }
     }
 
@@ -536,13 +697,13 @@ New-Module -Name SDK.Vbox -ScriptBlock {
                 )
 
                 if ($Optimize) {
-                    $configured = $this.Optimize($VMName) | Out-Null
+                    $configured = $this.Optimize($VMName)
                     if (-not $configured) {
                         throw "Failed to optimize VM '$VMName' after creation."
                     }
                 }
                 if ($Hypervisor) {
-                    $configured = $this.Hypervisor($VMName) | Out-Null
+                    $configured = $this.Hypervisor($VMName)
                     if (-not $configured) {
                         throw "Failed to enable nested virtualization for VM '$VMName' after creation."
                     }

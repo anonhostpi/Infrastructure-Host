@@ -218,7 +218,7 @@ After reboot, add SSH port forwarding and connect:
 # Wait for VM to be ready (cloud-init completion)
 Start-Sleep 60
 
-# Connect via SSH (use password from src/config/identity.config.yaml)
+# Connect via SSH (use password from book-2-cloud/users/config/identity.config.yaml)
 ssh -p 2222 -o StrictHostKeyChecking=no admin@localhost
 ```
 

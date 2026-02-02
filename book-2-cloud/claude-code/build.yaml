@@ -1,0 +1,5 @@
+name: claude-code
+description: Claude Code AI assistant CLI installation
+iso_required: false
+build_order: 75
+build_layer: 12

@@ -43,7 +43,7 @@ book-2-cloud/claude-code/
   description: Claude Code AI assistant CLI installation
   iso_required: false
   build_order: 75
-  build_layer: 7
+  build_layer: 12
   ```
 
 ### 2.2 Config Restructure (Fragments only - skip for Book 0)

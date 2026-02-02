@@ -31,10 +31,27 @@ def str_representer(dumper, data):
 yaml.add_representer(str, str_representer)
 
 
-def create_environment(template_dir='src'):
+def discover_fragments(base_dirs=None):
+    """Discover fragments by finding build.yaml files."""
+    if base_dirs is None:
+        base_dirs = ['book-1-foundation', 'book-2-cloud']
+
+    fragments = []
+    for base_dir in base_dirs:
+        for build_yaml in Path(base_dir).rglob('build.yaml'):
+            with open(build_yaml) as f:
+                meta = yaml.safe_load(f)
+            meta['_path'] = build_yaml.parent
+            fragments.append(meta)
+    return sorted(fragments, key=lambda f: f.get('build_order', 999))
+
+
+def create_environment(template_dirs=None):
     """Create Jinja2 environment with custom filters."""
+    if template_dirs is None:
+        template_dirs = ['book-1-foundation', 'book-2-cloud']
     env = Environment(
-        loader=FileSystemLoader(template_dir),
+        loader=FileSystemLoader(template_dirs),
         keep_trailing_newline=True,
     )
 
@@ -58,7 +75,7 @@ def get_environment():
     """Get or create the global Jinja2 environment."""
     global _env
     if _env is None:
-        _env = create_environment('src')
+        _env = create_environment()
     return _env
 
 
@@ -70,45 +87,31 @@ def render_text(ctx, template_path, **extra_context):
 
 
 def render_scripts(ctx):
-    """Render all script templates, return as dict."""
-    scripts_dir = Path('src/scripts')
+    """Render all script templates from discovered fragments."""
     scripts = {}
-
-    if not scripts_dir.exists():
-        return scripts
-
-    for tpl_path in scripts_dir.glob('*.tpl'):
-        # Keep original filename (e.g., "early-net.sh")
-        filename = tpl_path.name.removesuffix('.tpl')
-        # Use forward slashes for Jinja2 (cross-platform)
-        template_path = tpl_path.relative_to('src').as_posix()
-        rendered = render_text(ctx, template_path)
-        scripts[filename] = rendered
+    for fragment in discover_fragments():
+        scripts_dir = fragment['_path'] / 'scripts'
+        if not scripts_dir.exists():
+            continue
+        for tpl_path in scripts_dir.glob('*.sh.tpl'):
+            filename = tpl_path.name.removesuffix('.tpl')
+            template_path = tpl_path.as_posix()
+            rendered = render_text(ctx, template_path)
+            scripts[filename] = rendered
 
     return scripts
 
 
 def render_script(ctx, input_path, output_path):
     """Render a script template to output file."""
-    # Handle path relative to src/
-    if input_path.startswith('src/'):
-        template_path = input_path[4:]  # Remove 'src/' prefix
-    else:
-        template_path = input_path
-
+    template_path = input_path
     result = render_text(ctx, template_path)
     artifacts.write('scripts', Path(output_path).name, output_path, content=result)
 
 
 def get_available_fragments():
-    """Return list of available fragment names (without path or extension)."""
-    fragments_dir = Path('src/autoinstall/cloud-init')
-    if not fragments_dir.exists():
-        return []
-    return sorted([
-        p.name.removesuffix('.yaml.tpl')
-        for p in fragments_dir.glob('*.yaml.tpl')
-    ])
+    """Return list of available fragment names from discovered build.yaml files."""
+    return [f['name'] for f in discover_fragments()]
 
 
 class FragmentValidationError(Exception):
@@ -129,30 +132,30 @@ class FragmentValidationError(Exception):
         return '\n'.join(f"  {i+1:3d}: {line}" for i, line in enumerate(lines))
 
 
-def render_cloud_init(ctx, include=None, exclude=None):
+def render_cloud_init(ctx, include=None, exclude=None, layer=None, for_iso=False):
     """Render and merge cloud-init fragments, return as dict.
 
     Args:
         ctx: Build context
         include: List of fragment names to include (default: all)
         exclude: List of fragment names to exclude (default: none)
+        layer: Maximum build_layer to include (default: all)
+        for_iso: If True, always include iso_required fragments
 
-    Fragment names are matched without path or extension, e.g.:
-        "20-users" matches "src/autoinstall/cloud-init/20-users.yaml.tpl"
+    Fragment names are matched against the 'name' field in build.yaml.
 
     Raises:
         FragmentValidationError: If a fragment produces invalid YAML
     """
-    fragments_dir = Path('src/autoinstall/cloud-init')
     scripts = render_scripts(ctx)
-
     merged = {}
 
-    if not fragments_dir.exists():
-        return merged
+    for fragment in discover_fragments():
+        fragment_name = fragment['name']
+        tpl_path = fragment['_path'] / 'fragment.yaml.tpl'
 
-    for tpl_path in sorted(fragments_dir.glob('*.yaml.tpl')):
-        fragment_name = tpl_path.name.removesuffix('.yaml.tpl')
+        if not tpl_path.exists():
+            continue
 
         # Filter by include list (if specified)
         if include is not None and fragment_name not in include:
@@ -162,8 +165,20 @@ def render_cloud_init(ctx, include=None, exclude=None):
         if exclude is not None and fragment_name in exclude:
             continue
 
-        # Use forward slashes for Jinja2 (cross-platform)
-        template_path = tpl_path.relative_to('src').as_posix()
+        # Always include iso_required fragments for ISO builds
+        if for_iso and fragment.get('iso_required', False):
+            pass  # Don't filter this fragment
+        elif layer is not None:
+            # Filter by layer (if specified)
+            frag_layer = fragment.get('build_layer', 999)
+            # build_layer can be int or list of ints
+            if isinstance(frag_layer, list):
+                if not any(l <= layer for l in frag_layer):
+                    continue
+            elif frag_layer > layer:
+                continue
+
+        template_path = tpl_path.as_posix()
         rendered = render_text(ctx, template_path, scripts=scripts)
 
         # Validate YAML with helpful error message
@@ -178,7 +193,7 @@ def render_cloud_init(ctx, include=None, exclude=None):
     return merged
 
 
-def render_cloud_init_to_file(ctx, output_path, include=None, exclude=None):
+def render_cloud_init_to_file(ctx, output_path, include=None, exclude=None, layer=None, for_iso=False):
     """Render cloud-init to output file.
 
     Args:
@@ -186,8 +201,10 @@ def render_cloud_init_to_file(ctx, output_path, include=None, exclude=None):
         output_path: Path to write output
         include: List of fragment names to include (default: all)
         exclude: List of fragment names to exclude (default: none)
+        layer: Maximum build_layer to include (default: all)
+        for_iso: If True, always include iso_required fragments
     """
-    merged = render_cloud_init(ctx, include=include, exclude=exclude)
+    merged = render_cloud_init(ctx, include=include, exclude=exclude, layer=layer, for_iso=for_iso)
     artifacts.write(
         None, 'cloud_init', output_path,
         content='#cloud-config\n',
@@ -198,11 +215,12 @@ def render_cloud_init_to_file(ctx, output_path, include=None, exclude=None):
 def render_autoinstall(ctx):
     """Render autoinstall user-data, return as string."""
     scripts = render_scripts(ctx)
-    cloud_init = render_cloud_init(ctx)
+    # Autoinstall is always for ISO, so include iso_required fragments
+    cloud_init = render_cloud_init(ctx, for_iso=True)
 
     return render_text(
         ctx,
-        'autoinstall/base.yaml.tpl',
+        'book-1-foundation/base/autoinstall.yaml.tpl',
         scripts=scripts,
         cloud_init=cloud_init,
     )

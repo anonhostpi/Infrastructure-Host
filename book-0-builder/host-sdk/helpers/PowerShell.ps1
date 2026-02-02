@@ -43,7 +43,7 @@ New-Module -Name Helpers.PowerShell -ScriptBlock {
         if ($InputObject -is [System.Collections.IDictionary]) {
             # Convert dictionaries to ordered hashtable
             $orderedHashtable = [ordered]@{}
-            foreach ($key in $InputObject.Keys) {
+            foreach ($key in ($InputObject.Keys | ForEach-Object { $_ })) {
                 $orderedHashtable[$key] = If( $Shallow ) {
                     $InputObject[$key]
                 } ElseIf( $null -ne $InputObject[$key] ){

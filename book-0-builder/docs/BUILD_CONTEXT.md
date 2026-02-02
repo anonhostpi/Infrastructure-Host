@@ -13,7 +13,7 @@ import yaml
 
 class BuildContext:
     """
-    Loads all *.config.yaml files from src/config/ directory.
+    Loads all *.config.yaml files from book-*/*/config/ directories.
     Each file becomes a top-level key (filename before .config.yaml).
 
     Auto-unwrap: If a config has only one top-level key AND that key
@@ -23,7 +23,7 @@ class BuildContext:
     Environment variables override config values after loading.
     """
 
-    def __init__(self, configs_dir='src/config', env_prefix='AUTOINSTALL_'):
+    def __init__(self, config_dirs=None, env_prefix='AUTOINSTALL_'):
         self._data = {}
         self._paths = {}  # Maps normalized env name -> (path, original_path_str)
 
@@ -278,13 +278,13 @@ python -m builder render cloud-init -o output/cloud-init.yaml
 
 ```python
 # Default - only AUTOINSTALL_* env vars are considered
-ctx = BuildContext('src/config')
+ctx = BuildContext()
 
 # Custom prefix
-ctx = BuildContext('src/config', env_prefix='BUILD_')
+ctx = BuildContext(env_prefix='BUILD_')
 
 # No prefix - match all env vars (not recommended)
-ctx = BuildContext('src/config', env_prefix='')
+ctx = BuildContext(env_prefix='')
 ```
 
 ### Limitations
@@ -344,8 +344,8 @@ password: {{ identity.password | sha512_hash }}
 ```python
 from builder.context import BuildContext
 
-# Load all configs from src/config/
-ctx = BuildContext('src/config')
+# Load all configs from book-*/*/config/ directories
+ctx = BuildContext()
 
 # Access via attribute
 print(ctx.network.hostname)
@@ -360,13 +360,16 @@ template.render(**ctx.to_dict())
 
 ## Configuration File Discovery
 
-BuildContext automatically discovers all `*.config.yaml` files in the specified directory:
+BuildContext automatically discovers all `*.config.yaml` files in book-* directories:
 
 ```
-src/config/
-├── network.config.yaml    -> ctx.network.*
-├── identity.config.yaml   -> ctx.identity.*
-└── storage.config.yaml    -> ctx.storage.*
+book-1-foundation/
+├── network/config/network.config.yaml    -> ctx.network.*
+└── .../
+book-2-cloud/
+├── users/config/identity.config.yaml     -> ctx.identity.*
+├── packages/config/storage.config.yaml   -> ctx.storage.*
+└── .../
 ```
 
 Adding a new configuration file requires no code changes - it will be automatically loaded and available in templates.

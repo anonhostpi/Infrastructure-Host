@@ -26,10 +26,11 @@ New-Module -Name SDK -ScriptBlock {
                 [Parameter(Mandatory = $true)]
                 [string]$ModuleName,
                 [Parameter(Mandatory = $true)]
-                $ModuleObject
+                $ModuleObject,
+                $Target = $this
             )
 
-            $this | Add-Member -MemberType NoteProperty -Name $ModuleName -Value $ModuleObject -Force
+            $Target | Add-Member -MemberType NoteProperty -Name $ModuleName -Value $ModuleObject -Force
         }
         Job = {
             param(
@@ -45,7 +46,7 @@ New-Module -Name SDK -ScriptBlock {
                     [string] $SDKPath
                 )
 
-                foreach( $name in $EnvVars.Keys ){
+                foreach( $name in ($EnvVars.Keys | ForEach-Object { $_ }) ){
                     Set-Variable -Name $name -Value $EnvVars[$name] -Scope Global
                 }
 
@@ -70,12 +71,21 @@ New-Module -Name SDK -ScriptBlock {
         }
     }
 
-    & "$PSScriptRoot/Settings.ps1" -SDK $SDK
-    & "$PSScriptRoot/Network.ps1" -SDK $SDK
-    & "$PSScriptRoot/General.ps1" -SDK $SDK
-    & "$PSScriptRoot/Vbox.ps1" -SDK $SDK
-    & "$PSScriptRoot/Multipass.ps1" -SDK $SDK
-    & "$PSScriptRoot/Builder.ps1" -SDK $SDK
+    & "$PSScriptRoot/modules/Logger.ps1" -SDK $SDK
+    & "$PSScriptRoot/modules/Settings.ps1" -SDK $SDK
+    & "$PSScriptRoot/modules/Network.ps1" -SDK $SDK
+    & "$PSScriptRoot/modules/Worker.ps1" -SDK $SDK
+    & "$PSScriptRoot/modules/Vbox.ps1" -SDK $SDK
+    & "$PSScriptRoot/modules/HyperV.ps1" -SDK $SDK
+    & "$PSScriptRoot/modules/Multipass.ps1" -SDK $SDK
+    & "$PSScriptRoot/modules/Builder.ps1" -SDK $SDK
+    & "$PSScriptRoot/modules/Fragments.ps1" -SDK $SDK
+    & "$PSScriptRoot/modules/Testing.ps1" -SDK $SDK
+    & "$PSScriptRoot/modules/Verifications.ps1" -SDK $SDK
+    & "$PSScriptRoot/modules/CloudInit.ps1" -SDK $SDK
+    & "$PSScriptRoot/modules/CloudInitTest.ps1" -SDK $SDK
+    & "$PSScriptRoot/modules/Autoinstall.ps1" -SDK $SDK
+    & "$PSScriptRoot/modules/AutoinstallTest.ps1" -SDK $SDK
 
     Export-ModuleMember -Variable SDK
 } -ArgumentList ([bool] $Globalize) | Import-Module -Force

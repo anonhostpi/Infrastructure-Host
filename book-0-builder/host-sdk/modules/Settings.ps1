@@ -9,13 +9,20 @@ New-Module -Name SDK.Settings -ScriptBlock {
         $SDK
     )
 
-    . "$PSScriptRoot\helpers\PowerShell.ps1"
-    . "$PSScriptRoot\helpers\Config.ps1"
+    . "$PSScriptRoot\..\helpers\PowerShell.ps1"
+    . "$PSScriptRoot\..\helpers\Config.ps1"
 
     $mod = @{
         SDK = $SDK
         BuildConfig = Build-TestConfig
         VirtConfig = $null
+    }
+
+    function ConvertTo-PascalCase {
+        param([string]$Name)
+        return ($Name -split '[-_]' | ForEach-Object {
+            if ($_.Length -gt 0) { $_.Substring(0,1).ToUpper() + $_.Substring(1) } else { '' }
+        }) -join ''
     }
 
     $Settings = New-Object PSObject -Property @{
@@ -43,27 +50,34 @@ New-Module -Name SDK.Settings -ScriptBlock {
     }
 
     $mod.VirtConfig = $Settings.Load("vm.config.yaml")
+    $mod.LayersConfig = $Settings.Load("book-0-builder/config/build_layers.yaml")
 
     Add-ScriptProperties $Settings @{
         Virtualization = {
             return $mod.VirtConfig
         }
+        Layers = {
+            return $mod.LayersConfig
+        }
     }
 
+    # Build dynamic properties for each config key
+    # Properties use PascalCase (e.g., $SDK.Settings.Identity for 'identity' config)
     $keys = $mod.BuildConfig.Keys | ForEach-Object { $_ }
     $methods = @{}
 
     foreach( $key in $keys ) {
+        $configGetter = ConvertTo-PascalCase $key
         $src = @(
             "",
-            "`$key = '$key'",
+            "`$configOriginal = '$key'",
             {
-                return $mod.BuildConfig[$key]
+                return $mod.BuildConfig[$configOriginal]
             }.ToString(),
             ""
         ) -join "`n"
         $sb = iex "{ $src }"
-        $methods[$key] = $sb
+        $methods[$configGetter] = $sb
     }
     Add-ScriptProperties $Settings $methods
 

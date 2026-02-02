@@ -23,7 +23,7 @@ name: cockpit
 description: Cockpit web-based server management interface
 iso_required: false
 build_order: 70
-build_layer: 7
+build_layer: 11
 ```
 
 Reason: Fragment metadata required for SDK discovery.

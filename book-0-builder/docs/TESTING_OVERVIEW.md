@@ -74,7 +74,7 @@ See [3.4 Makefile Interface](../BUILD_SYSTEM/MAKEFILE_INTERFACE.md) for complete
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │  1. Configure (one-time)                                        │
-│     Create src/config/*.config.yaml and vm.config.ps1           │
+│     Create book-*/*/config/*.config.yaml and vm.config.yaml     │
 ├─────────────────────────────────────────────────────────────────┤
 │  2. Launch Builder VM                                           │
 │     multipass launch + mount repo                               │
@@ -98,18 +98,18 @@ See [3.4 Makefile Interface](../BUILD_SYSTEM/MAKEFILE_INTERFACE.md) for complete
 Configuration files are created **once** from examples and **persist** - they contain values from earlier chapters. **Do not delete or recreate them.**
 
 ```powershell
-# Required configs (in src/config/)
-cp src/config/network.config.yaml.example src/config/network.config.yaml
-cp src/config/identity.config.yaml.example src/config/identity.config.yaml
-cp src/config/storage.config.yaml.example src/config/storage.config.yaml
-cp src/config/image.config.yaml.example src/config/image.config.yaml
+# Required configs (in book-*/*/config/)
+cp book-1-foundation/network/config/network.config.yaml.example book-1-foundation/network/config/network.config.yaml
+cp book-2-cloud/users/config/identity.config.yaml.example book-2-cloud/users/config/identity.config.yaml
+cp book-2-cloud/packages/config/storage.config.yaml.example book-2-cloud/packages/config/storage.config.yaml
+cp book-0-builder/config/image.config.yaml.example book-0-builder/config/image.config.yaml
 
-# Optional configs (in src/config/)
-cp src/config/smtp.config.yaml.example src/config/smtp.config.yaml
-cp src/config/opencode.config.yaml.example src/config/opencode.config.yaml
+# Optional configs
+cp book-2-cloud/msmtp/config/smtp.config.yaml.example book-2-cloud/msmtp/config/smtp.config.yaml
+cp book-2-cloud/ai-cli/config/opencode.config.yaml.example book-2-cloud/ai-cli/config/opencode.config.yaml
 
 # VM test settings (in repo root)
-cp vm.config.ps1.example vm.config.ps1
+cp vm.config.yaml.example vm.config.yaml
 ```
 
 | File | Purpose | Reference |

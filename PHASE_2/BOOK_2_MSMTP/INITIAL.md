@@ -43,7 +43,7 @@ book-2-cloud/msmtp/
   description: SMTP relay configuration for system mail
   iso_required: false
   build_order: 45
-  build_layer: 5
+  build_layer: 7
   ```
 
 ### 2.2 Config Restructure (Fragments only - skip for Book 0)
