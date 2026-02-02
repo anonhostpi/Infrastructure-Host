@@ -30,6 +30,14 @@ return (New-Module -Name "Verify.SecurityMonitoring" -ScriptBlock {
             param($Worker)
             $Worker.Test("6.9.6", "Recidive jail configured", "sudo fail2ban-client status recidive 2>/dev/null && echo active || echo inactive", "active")
         }
+        "Email action configured" = {
+            param($Worker)
+            $Worker.Test("6.9.7", "Email action configured", "test -f /etc/fail2ban/action.d/msmtp-mail.conf && echo exists", "exists")
+        }
+        "Libvirt log rotation configured" = {
+            param($Worker)
+            $Worker.Test("6.9.8", "Libvirt log rotation configured", "test -f /etc/logrotate.d/libvirt && echo exists", "exists")
+        }
     }
 
     Export-ModuleMember -Function @()
