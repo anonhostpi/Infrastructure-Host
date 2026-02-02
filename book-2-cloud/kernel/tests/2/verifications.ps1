@@ -34,6 +34,10 @@ return (New-Module -Name "Verify.KernelHardening" -ScriptBlock {
             param($Worker)
             $Worker.Test("6.2.7", "Kernel dmesg restricted", "sysctl kernel.dmesg_restrict", "= 1")
         }
+        "Kernel pointers hidden" = {
+            param($Worker)
+            $Worker.Test("6.2.8", "Kernel pointers hidden", "sysctl kernel.kptr_restrict", "= 2")
+        }
     }
 
     Export-ModuleMember -Function @()
