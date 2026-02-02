@@ -1,6 +1,6 @@
 # Test 6.4: SSH Hardening Fragment
 
-**Template:** `src/autoinstall/cloud-init/25-ssh.yaml.tpl`
+**Template:** `book-2-cloud/ssh/fragment.yaml.tpl`
 **Fragment Docs:** [6.4 SSH Hardening Fragment](../../CLOUD_INIT_CONFIGURATION/SSH_HARDENING_FRAGMENT.md)
 
 Tests sshd hardening configuration.
@@ -21,7 +21,7 @@ cat /etc/ssh/sshd_config.d/99-hardening.conf
 
 ```bash
 # On VM: Get effective SSH config
-sudo sshd -T | grep -E "^permitrootlogin|^maxauthtries|^logingracetime|^permitemptypasswords|^challengeresponseauthentication"
+sudo sshd -T | grep -E "^permitrootlogin|^maxauthtries|^logingracetime|^permitemptypasswords|^kbdinteractiveauthentication"
 ```
 
 | Check | Command | Expected |
@@ -30,7 +30,7 @@ sudo sshd -T | grep -E "^permitrootlogin|^maxauthtries|^logingracetime|^permitem
 | Max auth tries | `sudo sshd -T \| grep maxauthtries` | 3 |
 | Login grace time | `sudo sshd -T \| grep logingracetime` | 20 |
 | Empty passwords | `sudo sshd -T \| grep permitemptypasswords` | no |
-| Challenge-response | `sudo sshd -T \| grep challengeresponseauthentication` | no |
+| Kbd-interactive | `sudo sshd -T \| grep kbdinteractiveauthentication` | no |
 
 ---
 

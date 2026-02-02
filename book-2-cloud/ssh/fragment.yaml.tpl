@@ -9,7 +9,7 @@ write_files:
       MaxAuthTries 3
       LoginGraceTime 20
       PermitEmptyPasswords no
-      ChallengeResponseAuthentication no
+      KbdInteractiveAuthentication no
 
       # Forwarding
       X11Forwarding no
