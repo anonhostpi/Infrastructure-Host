@@ -1,6 +1,6 @@
 # 6.13 Copilot CLI Fragment
 
-**Template:** `src/autoinstall/cloud-init/76-copilot-cli.yaml.tpl`
+**Template:** `book-2-cloud/copilot-cli/fragment.yaml.tpl`
 
 Installs and configures GitHub Copilot CLI, GitHub's official AI coding agent for terminal use.
 
