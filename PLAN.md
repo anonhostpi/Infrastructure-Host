@@ -1,7 +1,7 @@
 # Plan
 
 
-### Commit 1: `book-2-cloud/kernel/docs/FRAGMENT.md` - Update stale template path from old src/autoinstall layout to current fragment path
+### Commit 1: `book-2-cloud/kernel/docs/FRAGMENT.md` - Update stale template path from old src/autoinstall layout to current fragment path [COMPLETE]
 
 ### book-2-cloud.kernel.docs.FRAGMENT.fix-template-path
 
@@ -30,7 +30,7 @@ Update stale template path from old src/autoinstall layout to current fragment p
 | **Rule 3: Exempt** | markdown | EXEMPT |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 2: `book-2-cloud/kernel/tests/TEST_KERNEL.md` - Update stale template path and broken cross-link to FRAGMENT.md
+### Commit 2: `book-2-cloud/kernel/tests/TEST_KERNEL.md` - Update stale template path and broken cross-link to FRAGMENT.md [COMPLETE]
 
 ### book-2-cloud.kernel.tests.TEST_KERNEL.fix-test-doc-paths
 
@@ -61,7 +61,7 @@ Update stale template path and broken cross-link to FRAGMENT.md
 | **Rule 3: Exempt** | markdown | EXEMPT |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 3: `book-2-cloud/kernel/tests/2/verifications.ps1` - Fix duplicate 6.2.2 test IDs by assigning unique IDs to each test
+### Commit 3: `book-2-cloud/kernel/tests/2/verifications.ps1` - Fix duplicate 6.2.2 test IDs by assigning unique IDs to each test [COMPLETE]
 
 ### book-2-cloud.kernel.tests.2.verifications.fix-duplicate-test-ids
 
@@ -103,7 +103,7 @@ Fix duplicate 6.2.2 test IDs by assigning unique IDs to each test
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 4: `book-2-cloud/kernel/tests/2/verifications.ps1` - Add verification test for source routing disabled (ipv4)
+### Commit 4: `book-2-cloud/kernel/tests/2/verifications.ps1` - Add verification test for source routing disabled (ipv4) [COMPLETE]
 
 ### book-2-cloud.kernel.tests.2.verifications.add-source-routing-test
 
@@ -139,7 +139,7 @@ Add verification test for source routing disabled (ipv4)
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 5: `book-2-cloud/kernel/tests/2/verifications.ps1` - Add verification test for martian packet logging enabled
+### Commit 5: `book-2-cloud/kernel/tests/2/verifications.ps1` - Add verification test for martian packet logging enabled [COMPLETE]
 
 ### book-2-cloud.kernel.tests.2.verifications.add-martian-logging-test
 
@@ -175,7 +175,7 @@ Add verification test for martian packet logging enabled
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 6: `book-2-cloud/kernel/tests/2/verifications.ps1` - Add verification test for kernel dmesg_restrict
+### Commit 6: `book-2-cloud/kernel/tests/2/verifications.ps1` - Add verification test for kernel dmesg_restrict [COMPLETE]
 
 ### book-2-cloud.kernel.tests.2.verifications.add-dmesg-restrict-test
 
@@ -211,7 +211,7 @@ Add verification test for kernel dmesg_restrict
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 7: `book-2-cloud/kernel/tests/2/verifications.ps1` - Add verification test for kernel pointer restriction
+### Commit 7: `book-2-cloud/kernel/tests/2/verifications.ps1` - Add verification test for kernel pointer restriction [COMPLETE]
 
 ### book-2-cloud.kernel.tests.2.verifications.add-kptr-restrict-test
 
