@@ -1,7 +1,7 @@
 # Plan
 
 
-### Commit 1: `book-2-cloud/ssh/fragment.yaml.tpl` - Replace deprecated ChallengeResponseAuthentication with KbdInteractiveAuthentication for OpenSSH 9.x on Ubuntu 24.04
+### Commit 1: `book-2-cloud/ssh/fragment.yaml.tpl` - Replace deprecated ChallengeResponseAuthentication with KbdInteractiveAuthentication for OpenSSH 9.x on Ubuntu 24.04 [COMPLETE]
 
 ### book-2-cloud.ssh.fragment.yaml.fix-deprecated-directive
 
@@ -32,7 +32,7 @@ Replace deprecated ChallengeResponseAuthentication with KbdInteractiveAuthentica
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 2: `book-2-cloud/ssh/docs/FRAGMENT.md` - Update stale template path, replace ChallengeResponseAuthentication with KbdInteractiveAuthentication in code block and options table
+### Commit 2: `book-2-cloud/ssh/docs/FRAGMENT.md` - Update stale template path, replace ChallengeResponseAuthentication with KbdInteractiveAuthentication in code block and options table [COMPLETE]
 
 ### book-2-cloud.ssh.docs.FRAGMENT.update-fragment-docs
 
@@ -68,7 +68,7 @@ Update stale template path, replace ChallengeResponseAuthentication with KbdInte
 | **Rule 3: Exempt** | markdown | EXEMPT |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 3: `book-2-cloud/ssh/tests/TEST_SSH.md` - Update stale template path and replace challengeresponseauthentication with kbdinteractiveauthentication in test commands
+### Commit 3: `book-2-cloud/ssh/tests/TEST_SSH.md` - Update stale template path and replace challengeresponseauthentication with kbdinteractiveauthentication in test commands [COMPLETE]
 
 ### book-2-cloud.ssh.tests.TEST_SSH.update-test-docs
 
