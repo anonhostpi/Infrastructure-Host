@@ -1,6 +1,6 @@
 # Test 6.13: Copilot CLI Fragment
 
-**Template:** `src/autoinstall/cloud-init/76-copilot-cli.yaml.tpl`
+**Template:** `book-2-cloud/copilot-cli/fragment.yaml.tpl`
 **Fragment Docs:** [6.13 Copilot CLI Fragment](../../CLOUD_INIT_CONFIGURATION/COPILOT_CLI_FRAGMENT.md)
 
 Tests GitHub Copilot CLI installation and configuration.
