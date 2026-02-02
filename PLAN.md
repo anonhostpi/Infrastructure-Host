@@ -1,7 +1,7 @@
 # Plan
 
 
-### Commit 1: `book-2-cloud/opencode/tests/14/verifications.ps1` - Fix host credential property path in credential chain test from accessToken to claudeAiOauth.accessToken, and VM credential path from anthropic.accessToken to anthropic.access
+### Commit 1: `book-2-cloud/opencode/tests/14/verifications.ps1` - Fix host credential property path in credential chain test from accessToken to claudeAiOauth.accessToken, and VM credential path from anthropic.accessToken to anthropic.access [COMPLETE]
 
 ### book-2-cloud.opencode.tests.14.verifications.fix-credential-host-path
 
@@ -32,7 +32,7 @@ Fix host credential property path in credential chain test from accessToken to c
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 2: `book-2-cloud/opencode/tests/14/verifications.ps1` - Fix credential chain test model verification to check opencode models list instead of nonexistent sub-command
+### Commit 2: `book-2-cloud/opencode/tests/14/verifications.ps1` - Fix credential chain test model verification to check opencode models list instead of nonexistent sub-command [COMPLETE]
 
 ### book-2-cloud.opencode.tests.14.verifications.fix-credential-model-check
 
@@ -62,7 +62,7 @@ Fix credential chain test model verification to check opencode models list inste
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 3: `book-2-cloud/opencode/docs/FRAGMENT.md` - Fix three stale template path references from src/autoinstall/cloud-init/77-opencode.yaml.tpl to book-2-cloud/opencode/fragment.yaml.tpl, and one config path from src/config to book-2-cloud/opencode/config
+### Commit 3: `book-2-cloud/opencode/docs/FRAGMENT.md` - Fix three stale template path references from src/autoinstall/cloud-init/77-opencode.yaml.tpl to book-2-cloud/opencode/fragment.yaml.tpl, and one config path from src/config to book-2-cloud/opencode/config [COMPLETE]
 
 ### book-2-cloud.opencode.docs.FRAGMENT.fix-stale-template-paths
 
@@ -97,7 +97,7 @@ Fix three stale template path references from src/autoinstall/cloud-init/77-open
 | **Rule 3: Exempt** | markdown | EXEMPT |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 4: `book-2-cloud/opencode/tests/TEST_OPENCODE.md` - Fix stale template path and broken fragment docs link in TEST_OPENCODE.md
+### Commit 4: `book-2-cloud/opencode/tests/TEST_OPENCODE.md` - Fix stale template path and broken fragment docs link in TEST_OPENCODE.md [COMPLETE]
 
 ### book-2-cloud.opencode.tests.TEST_OPENCODE.fix-stale-test-doc-paths
 
@@ -128,7 +128,7 @@ Fix stale template path and broken fragment docs link in TEST_OPENCODE.md
 | **Rule 3: Exempt** | markdown | EXEMPT |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 5: `book-2-cloud/opencode/config/opencode.config.yaml.example` - Remove the install_method config key that is never referenced by the template
+### Commit 5: `book-2-cloud/opencode/config/opencode.config.yaml.example` - Remove the install_method config key that is never referenced by the template [COMPLETE]
 
 ### book-2-cloud.opencode.config.opencode.config.yaml.remove-dead-install-method
 
