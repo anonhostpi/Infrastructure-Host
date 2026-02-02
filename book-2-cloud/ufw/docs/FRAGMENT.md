@@ -1,6 +1,6 @@
 # 6.5 UFW Fragment
 
-**Template:** `src/autoinstall/cloud-init/30-ufw.yaml.tpl`
+**Template:** `book-2-cloud/ufw/fragment.yaml.tpl`
 
 Configures base firewall policy. Other fragments add their own rules.
 
