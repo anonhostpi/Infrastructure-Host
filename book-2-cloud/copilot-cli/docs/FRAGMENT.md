@@ -1,6 +1,6 @@
 # 6.13 Copilot CLI Fragment
 
-**Template:** `src/autoinstall/cloud-init/76-copilot-cli.yaml.tpl`
+**Template:** `book-2-cloud/copilot-cli/fragment.yaml.tpl`
 
 Installs and configures GitHub Copilot CLI, GitHub's official AI coding agent for terminal use.
 
@@ -215,7 +215,7 @@ runcmd:
 {% endif %}
 ```
 
-See the full template at `src/autoinstall/cloud-init/76-copilot-cli.yaml.tpl`.
+See the full template at `book-2-cloud/copilot-cli/fragment.yaml.tpl`.
 
 **Installation notes:**
 - Node.js is installed from NodeSource repository for unattended-upgrades support
@@ -225,7 +225,7 @@ See the full template at `src/autoinstall/cloud-init/76-copilot-cli.yaml.tpl`.
 
 ## Configuration
 
-Create `src/config/copilot_cli.config.yaml`:
+Create `book-2-cloud/copilot-cli/config/copilot_cli.config.yaml`:
 
 ```yaml
 copilot_cli:
