@@ -1,7 +1,7 @@
 # Plan
 
 
-### Commit 1: `book-2-cloud/pkg-upgrade/docs/FRAGMENT.md` - Add FRAGMENT.md documentation for the pkg-upgrade fragment describing its purpose, template structure, and runtime behavior
+### Commit 1: `book-2-cloud/pkg-upgrade/docs/FRAGMENT.md` - Add FRAGMENT.md documentation for the pkg-upgrade fragment describing its purpose, template structure, and runtime behavior [COMPLETE]
 
 ### book-2-cloud.pkg-upgrade.docs.FRAGMENT.add-fragment-docs
 
@@ -66,7 +66,7 @@ Add FRAGMENT.md documentation for the pkg-upgrade fragment describing its purpos
 | **Rule 3: Exempt** | markdown | EXEMPT |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 2: `book-2-cloud/pkg-upgrade/tests/16/verifications.ps1` - Add verifications.ps1 module shape with param, module wrapper, and Tests ordered dict
+### Commit 2: `book-2-cloud/pkg-upgrade/tests/16/verifications.ps1` - Add verifications.ps1 module shape with param, module wrapper, and Tests ordered dict [COMPLETE]
 
 ### book-2-cloud.pkg-upgrade.tests.16.verifications.add-verifications-shape
 
@@ -106,7 +106,7 @@ Add verifications.ps1 module shape with param, module wrapper, and Tests ordered
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 3: `book-2-cloud/pkg-upgrade/tests/16/verifications.ps1` - Add test verifying apt cache is clean after pkg-upgrade runs apt-get clean
+### Commit 3: `book-2-cloud/pkg-upgrade/tests/16/verifications.ps1` - Add test verifying apt cache is clean after pkg-upgrade runs apt-get clean [COMPLETE]
 
 ### book-2-cloud.pkg-upgrade.tests.16.verifications.add-apt-cache-test
 
@@ -142,7 +142,7 @@ Add test verifying apt cache is clean after pkg-upgrade runs apt-get clean
 | **Rule 3: Exempt** | N/A | N/A |
 | **Rule 4: Atomic** | Single logical unit | YES |
 
-### Commit 4: `book-2-cloud/pkg-upgrade/tests/16/verifications.ps1` - Add test verifying upgrade completion is logged in cloud-init output
+### Commit 4: `book-2-cloud/pkg-upgrade/tests/16/verifications.ps1` - Add test verifying upgrade completion is logged in cloud-init output [COMPLETE]
 
 ### book-2-cloud.pkg-upgrade.tests.16.verifications.add-upgrade-log-test
 
