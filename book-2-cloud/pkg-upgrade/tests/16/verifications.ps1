@@ -12,6 +12,12 @@ return (New-Module -Name "Verify.PackageUpgrade" -ScriptBlock {
                 "ls /var/cache/apt/archives/*.deb 2>/dev/null | wc -l",
                 "^0$")
         }
+        "upgrade logged" = {
+            param($Worker)
+            $Worker.Test("pkg-upgrade.2", "upgrade logged",
+                "grep -c 'System upgrade complete' /var/log/cloud-init-output.log",
+                "^[1-9]")
+        }
     }
 
     Export-ModuleMember -Function @()
