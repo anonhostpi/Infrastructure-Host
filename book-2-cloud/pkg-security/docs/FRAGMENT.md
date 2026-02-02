@@ -1,6 +1,6 @@
 # 6.8 Package Security Fragment
 
-**Template:** `src/autoinstall/cloud-init/50-pkg-security.yaml.tpl`
+**Template:** `book-2-cloud/pkg-security/fragment.yaml.tpl`
 
 Configures automatic package updates, unattended security upgrades, and unified package notification system with AI-powered summaries.
 
