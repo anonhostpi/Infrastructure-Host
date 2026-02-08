@@ -25,9 +25,6 @@ opencode:
   # Whether to install opencode during cloud-init
   enabled: true
 
-  # Installation method: npm or script
-  install_method: npm
-
   # Default model to use
   # Format: provider/model-id
   # Examples: anthropic/claude-sonnet-4-5, openai/gpt-4o
