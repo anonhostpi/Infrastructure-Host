@@ -1,7 +1,7 @@
 # Test 6.3: Users Fragment
 
-**Template:** `src/autoinstall/cloud-init/20-users.yaml.tpl`
-**Fragment Docs:** [6.3 Users Fragment](../../CLOUD_INIT_CONFIGURATION/USERS_FRAGMENT.md)
+**Template:** `book-2-cloud/users/fragment.yaml.tpl`
+**Fragment Docs:** [6.3 Users Fragment](../docs/FRAGMENT.md)
 
 Tests user creation, groups, sudo configuration, and SSH keys.
 
