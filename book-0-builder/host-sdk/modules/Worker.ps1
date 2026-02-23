@@ -35,8 +35,10 @@ New-Module -Name SDK.Worker -ScriptBlock {
                         return $testResult
                     }
                     catch {
-                        $mod.SDK.Log.Write("[FAIL] $Name - Exception: $_", "Red")
-                        $testResult = @{ Test = $TestId; Name = $Name; Pass = $false; Error = $_.ToString() }
+                        $ctx = $mod.SDK.Testing.Context
+                        $label = "$($ctx.Book) - $($ctx.Layer) - $($ctx.Fragment) - $Name"
+                        $mod.SDK.Log.Write("[FAIL] $label - Exception: $_", "Red")
+                        $testResult = @{ Test = $TestId; Book = $ctx.Book; Layer = $ctx.Layer; Fragment = $ctx.Fragment; Name = $Name; Pass = $false; Error = $_.ToString() }
                         $mod.SDK.Testing.Record($testResult)
                         return $testResult
                     }
