@@ -5,7 +5,7 @@ New-Module -Name SDK.Testing -ScriptBlock {
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\helpers\PowerShell.ps1"
 
-    $Testing = New-Object PSObject -Property @{ Results = @(); PassCount = 0; FailCount = 0 }
+    $Testing = New-Object PSObject -Property @{ Results = @(); PassCount = 0; FailCount = 0; Context = $null }
 
     Add-ScriptProperties $Testing @{
         All = {
@@ -18,6 +18,11 @@ New-Module -Name SDK.Testing -ScriptBlock {
             $this.Results = @()
             $this.PassCount = 0
             $this.FailCount = 0
+            $this.Context = $null
+        }
+        WithContext = {
+            param([hashtable]$Context)
+            $this.Context = $Context
         }
         Record = {
             param([hashtable]$Result)
