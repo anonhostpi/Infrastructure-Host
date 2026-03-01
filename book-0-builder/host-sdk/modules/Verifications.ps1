@@ -37,7 +37,15 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
             $order = $fragment.Order
             if (-not $mod.Tests[$Layer]) { $mod.Tests[$Layer] = @{} }
             if (-not $mod.Tests[$Layer][$Book]) { $mod.Tests[$Layer][$Book] = @{} }
-            $mod.Tests[$Layer][$Book][$order] = $tests
+            $layerName = $mod.SDK.Fragments.LayerName($Layer)
+            $mod.Tests[$Layer][$Book][$order] = @{
+                Tests   = $tests
+                Context = @{
+                    Book     = $Book
+                    Layer    = $layerName
+                    Fragment = $fragment.Name
+                }
+            }
         }
         Run = {
             param($Runner, [int]$Layer, $Book = $null)
