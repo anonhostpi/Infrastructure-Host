@@ -35,7 +35,17 @@ New-Module -Name SDK.Worker -ScriptBlock {
                         Output   = $Output
                         Error    = $Error
                     }
-                    # WIP: record and log implemented in next commit
+                    $mod.SDK.Testing.Record($testResult)
+                    if ($Pass) {
+                        $mod.SDK.Log.Write("[PASS] $label", "Green")
+                    }
+                    else {
+                        $mod.SDK.Log.Write("[FAIL] $label", "Red")
+                        if ($Error) {
+                            $mod.SDK.Log.Error("  Error: $Error")
+                        }
+                    }
+                    return $testResult
                 }
                 Test = {
                     param([string]$TestId, [string]$Name, [string]$Command, $ExpectedPattern)
