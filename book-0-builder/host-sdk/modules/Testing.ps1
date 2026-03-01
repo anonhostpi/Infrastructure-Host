@@ -20,10 +20,6 @@ New-Module -Name SDK.Testing -ScriptBlock {
             $this.FailCount = 0
             $this.Context = $null
         }
-        WithContext = {
-            param([hashtable]$Context)
-            $this.Context = $Context
-        }
         Record = {
             param([hashtable]$Result)
             $this.Results += $Result
