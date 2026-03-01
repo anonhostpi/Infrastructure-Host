@@ -15,6 +15,16 @@ New-Module -Name SDK.Worker -ScriptBlock {
                     if (-not $this.Exists()) { return $this.Create() }
                     return $true
                 }
+                RecordTest = {
+                    param(
+                        [bool]$Pass,
+                        [string]$TestId,
+                        [string]$Name,
+                        $Output,
+                        $Error
+                    )
+                    # WIP: body implemented in next commit
+                }
                 Test = {
                     param([string]$TestId, [string]$Name, [string]$Command, $ExpectedPattern)
                     $mod.SDK.Log.Debug("Running test: $Name")
