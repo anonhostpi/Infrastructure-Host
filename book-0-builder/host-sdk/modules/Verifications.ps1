@@ -56,11 +56,9 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 foreach ($b in $bookOrder) {
                     if (-not $mod.Tests[$l][$b]) { continue }
                     foreach ($order in ($mod.Tests[$l][$b].Keys | ForEach-Object { $_ } | Sort-Object)) {
-                        $frag = $mod.SDK.Fragments.Layers | Where-Object { $_.Order -eq $order } | Select-Object -First 1
-                        $layerName = $mod.SDK.Fragments.LayerName($l)
-                        $fragName = if ($frag) { $frag.Name } else { "unknown" }
-                        $mod.SDK.Testing.WithContext(@{ Book = $b; Layer = $layerName; Fragment = $fragName })
-                        $tests = $mod.Tests[$l][$b][$order]
+                        $batch = $mod.Tests[$l][$b][$order]
+                        $mod.SDK.Testing.Context = $batch.Context
+                        $tests = $batch.Tests
                         foreach ($name in ($tests.Keys | ForEach-Object { $_ })) {
                             & $tests[$name] $Runner
                         }
