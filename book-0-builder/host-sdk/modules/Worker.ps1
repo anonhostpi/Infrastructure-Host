@@ -23,7 +23,19 @@ New-Module -Name SDK.Worker -ScriptBlock {
                         $Output,
                         $Error
                     )
-                    # WIP: body implemented in next commit
+                    $ctx = $mod.SDK.Testing.Context
+                    $label = "$($ctx.Book) - $($ctx.Layer) - $($ctx.Fragment) - $Name"
+                    $testResult = @{
+                        Test     = $TestId
+                        Book     = $ctx.Book
+                        Layer    = $ctx.Layer
+                        Fragment = $ctx.Fragment
+                        Name     = $Name
+                        Pass     = $Pass
+                        Output   = $Output
+                        Error    = $Error
+                    }
+                    # WIP: record and log implemented in next commit
                 }
                 Test = {
                     param([string]$TestId, [string]$Name, [string]$Command, $ExpectedPattern)
