@@ -61,12 +61,7 @@ New-Module -Name SDK.Worker -ScriptBlock {
                         return $this.RecordTest($pass, $TestId, $Name, $result.Output, $result.Error)
                     }
                     catch {
-                        $ctx = $mod.SDK.Testing.Context
-                        $label = "$($ctx.Book) - $($ctx.Layer) - $($ctx.Fragment) - $Name"
-                        $mod.SDK.Log.Write("[FAIL] $label - Exception: $_", "Red")
-                        $testResult = @{ Test = $TestId; Book = $ctx.Book; Layer = $ctx.Layer; Fragment = $ctx.Fragment; Name = $Name; Pass = $false; Error = $_.ToString() }
-                        $mod.SDK.Testing.Record($testResult)
-                        return $testResult
+                        return $this.RecordTest($false, $TestId, $Name, $null, $_.ToString())
                     }
                 }
                 UntilInstalled = {
