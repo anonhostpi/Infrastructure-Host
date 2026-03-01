@@ -21,15 +21,15 @@ New-Module -Name SDK.Worker -ScriptBlock {
                         [string]$TestId,
                         [string]$Name,
                         $Output,
-                        $Error
+                        $Error,
+                        $Context
                     )
-                    $ctx = $mod.SDK.Testing.Context
-                    $label = "$($ctx.Book) - $($ctx.Layer) - $($ctx.Fragment) - $Name"
+                    $label = "$($Context.Book) - $($Context.Layer) - $($Context.Fragment) - $Name"
                     $testResult = @{
                         Test     = $TestId
-                        Book     = $ctx.Book
-                        Layer    = $ctx.Layer
-                        Fragment = $ctx.Fragment
+                        Book     = $Context.Book
+                        Layer    = $Context.Layer
+                        Fragment = $Context.Fragment
                         Name     = $Name
                         Pass     = $Pass
                         Output   = $Output
