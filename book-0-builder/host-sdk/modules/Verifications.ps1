@@ -57,10 +57,9 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                     if (-not $mod.Tests[$l][$b]) { continue }
                     foreach ($order in ($mod.Tests[$l][$b].Keys | ForEach-Object { $_ } | Sort-Object)) {
                         $batch = $mod.Tests[$l][$b][$order]
-                        $mod.SDK.Testing.Context = $batch.Context
                         $tests = $batch.Tests
                         foreach ($name in ($tests.Keys | ForEach-Object { $_ })) {
-                            & $tests[$name] $Runner
+                            & $tests[$name] $Runner $batch.Context
                         }
                     }
                 }
