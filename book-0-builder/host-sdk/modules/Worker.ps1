@@ -58,13 +58,7 @@ New-Module -Name SDK.Worker -ScriptBlock {
                         } else {
                             $pass = $result.Success -and ($joined -match $ExpectedPattern)
                         }
-                        $ctx = $mod.SDK.Testing.Context
-                        $label = "$($ctx.Book) - $($ctx.Layer) - $($ctx.Fragment) - $Name"
-                        $testResult = @{ Test = $TestId; Book = $ctx.Book; Layer = $ctx.Layer; Fragment = $ctx.Fragment; Name = $Name; Pass = $pass; Output = $result.Output; Error = $result.Error }
-                        $mod.SDK.Testing.Record($testResult)
-                        if ($pass) { $mod.SDK.Log.Write("[PASS] $label", "Green") }
-                        else { $mod.SDK.Log.Write("[FAIL] $label", "Red"); if ($result.Error) { $mod.SDK.Log.Error("  Error: $($result.Error)") } }
-                        return $testResult
+                        return $this.RecordTest($pass, $TestId, $Name, $result.Output, $result.Error)
                     }
                     catch {
                         $ctx = $mod.SDK.Testing.Context
