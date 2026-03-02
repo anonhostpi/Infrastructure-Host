@@ -22,20 +22,20 @@ New-Module -Name SDK.Worker -ScriptBlock {
                         [string]$Name,
                         $Output,
                         $Error,
-                        $Context
+                        $Tracker
                     )
-                    $label = "$($Context.Book) - $($Context.Layer) - $($Context.Fragment) - $Name"
+                    $label = "$($Tracker.Book) - $($Tracker.Layer) - $($Tracker.Fragment) - $Name"
                     $testResult = @{
                         Test     = $TestId
-                        Book     = $Context.Book
-                        Layer    = $Context.Layer
-                        Fragment = $Context.Fragment
+                        Book     = $Tracker.Book
+                        Layer    = $Tracker.Layer
+                        Fragment = $Tracker.Fragment
                         Name     = $Name
                         Pass     = $Pass
                         Output   = $Output
                         Error    = $Error
                     }
-                    $mod.SDK.Testing.Record($testResult)
+                    $Tracker.Record($testResult)
                     if ($Pass) {
                         $mod.SDK.Log.Write("[PASS] $label", "Green")
                     }
