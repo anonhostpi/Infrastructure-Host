@@ -1,6 +1,6 @@
 # 6.7 MSMTP Fragment
 
-**Template:** `src/autoinstall/cloud-init/45-msmtp.yaml.tpl`
+**Template:** `book-2-cloud/msmtp/fragment.yaml.tpl`
 
 Configures msmtp as a lightweight SMTP client for sending system notifications (fail2ban alerts, unattended-upgrade reports, etc.).
 
@@ -91,7 +91,7 @@ write_files:
 
 ## Configuration
 
-Create `src/config/smtp.config.yaml`:
+Create `book-2-cloud/msmtp/config/smtp.config.yaml`:
 
 ```yaml
 smtp:

@@ -1,7 +1,7 @@
 # Test 6.7: MSMTP Fragment
 
-**Template:** `src/autoinstall/cloud-init/45-msmtp.yaml.tpl`
-**Fragment Docs:** [6.7 MSMTP Fragment](../../CLOUD_INIT_CONFIGURATION/MSMTP_FRAGMENT.md)
+**Template:** `book-2-cloud/msmtp/fragment.yaml.tpl`
+**Fragment Docs:** [6.7 MSMTP Fragment](../docs/FRAGMENT.md)
 
 Tests msmtp installation, configuration files, and helper script.
 
