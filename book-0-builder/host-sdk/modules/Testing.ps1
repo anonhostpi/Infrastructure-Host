@@ -20,7 +20,11 @@ New-Module -Name SDK.Testing -ScriptBlock {
             $Target | Add-Member -MemberType NoteProperty -Name PassCount -Value 0   -Force
             $Target | Add-Member -MemberType NoteProperty -Name FailCount -Value 0   -Force
             Add-ScriptMethods $Target @{
-                Record  = { pass } # WIP
+                Record  = {
+                    param([hashtable]$Result)
+                    $this.Results += $Result
+                    if ($Result.Pass) { $this.PassCount++ } else { $this.FailCount++ }
+                }
                 Reset   = { pass } # WIP
                 Summary = { pass } # WIP
             }
