@@ -30,7 +30,14 @@ New-Module -Name SDK.Testing -ScriptBlock {
                     $this.PassCount = 0
                     $this.FailCount = 0
                 }
-                Summary = { pass } # WIP
+                Summary = {
+                    $mod.SDK.Log.Write("")
+                    $mod.SDK.Log.Write("--- $($this.Book) / $($this.Layer) / $($this.Fragment) ---", "Cyan")
+                    $mod.SDK.Log.Write("  Total:  $($this.PassCount + $this.FailCount)")
+                    $mod.SDK.Log.Write("  Passed: $($this.PassCount)", "Green")
+                    $failColor = if ($this.FailCount -gt 0) { "Red" } else { "Green" }
+                    $mod.SDK.Log.Write("  Failed: $($this.FailCount)", $failColor)
+                }
             }
             $this.Trackers += $Target
         }
