@@ -14,6 +14,18 @@ New-Module -Name SDK.Testing -ScriptBlock {
     }
 
     Add-ScriptMethods $Testing @{
+        Methods = {
+            param($Target)
+            $Target | Add-Member -MemberType NoteProperty -Name Results   -Value @() -Force
+            $Target | Add-Member -MemberType NoteProperty -Name PassCount -Value 0   -Force
+            $Target | Add-Member -MemberType NoteProperty -Name FailCount -Value 0   -Force
+            Add-ScriptMethods $Target @{
+                Record  = { pass } # WIP
+                Reset   = { pass } # WIP
+                Summary = { pass } # WIP
+            }
+            $this.Trackers += $Target
+        }
         Summary = {
             $mod.SDK.Log.Write("")
             $mod.SDK.Log.Write("========================================", "Cyan")
