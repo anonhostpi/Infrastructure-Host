@@ -48,7 +48,7 @@ New-Module -Name SDK.Worker -ScriptBlock {
                     return $testResult
                 }
                 Test = {
-                    param([string]$TestId, [string]$Name, [string]$Command, $ExpectedPattern, $Context)
+                    param([string]$TestId, [string]$Name, [string]$Command, $ExpectedPattern, $Tracker)
                     $mod.SDK.Log.Debug("Running test: $Name")
                     try {
                         $result = $this.Exec($Command)
@@ -58,10 +58,10 @@ New-Module -Name SDK.Worker -ScriptBlock {
                         } else {
                             $pass = $result.Success -and ($joined -match $ExpectedPattern)
                         }
-                        return $this.RecordTest($pass, $TestId, $Name, $result.Output, $result.Error, $Context)
+                        return $this.RecordTest($pass, $TestId, $Name, $result.Output, $result.Error, $Tracker)
                     }
                     catch {
-                        return $this.RecordTest($false, $TestId, $Name, $null, $_.ToString(), $Context)
+                        return $this.RecordTest($false, $TestId, $Name, $null, $_.ToString(), $Tracker)
                     }
                 }
                 UntilInstalled = {
