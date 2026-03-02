@@ -1,6 +1,6 @@
 # 6.6 System Settings Fragment
 
-**Template:** `src/autoinstall/cloud-init/40-system.yaml.tpl`
+**Template:** `book-2-cloud/system/fragment.yaml.tpl`
 
 Configures system-wide settings: locale, keyboard, and timezone.
 
@@ -34,7 +34,7 @@ export AUTOINSTALL_SYSTEM_TIMEZONE="America/New_York"
 make cloud-init
 ```
 
-See [3.1 BuildContext](../BUILD_SYSTEM/BUILD_CONTEXT.md) for environment variable overrides.
+See ARCHITECTURE.md for environment variable override details (`AUTOINSTALL_` prefix).
 
 ## Available Timezones
 

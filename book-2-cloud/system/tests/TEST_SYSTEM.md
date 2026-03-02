@@ -1,7 +1,7 @@
 # Test 6.6: System Settings Fragment
 
-**Template:** `src/autoinstall/cloud-init/40-system.yaml.tpl`
-**Fragment Docs:** [6.6 System Settings Fragment](../../CLOUD_INIT_CONFIGURATION/SYSTEM_SETTINGS_FRAGMENT.md)
+**Template:** `book-2-cloud/system/fragment.yaml.tpl`
+**Fragment Docs:** [6.6 System Settings Fragment](../docs/FRAGMENT.md)
 
 Tests locale, keyboard, and timezone configuration.
 
