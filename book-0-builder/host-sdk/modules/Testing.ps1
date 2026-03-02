@@ -39,7 +39,6 @@ New-Module -Name SDK.Testing -ScriptBlock {
                     $mod.SDK.Log.Write("  Failed: $($this.FailCount)", $failColor)
                 }
             }
-            $this.Trackers += $Target
         }
         Summary = {
             $totalPass = ($this.Trackers | Measure-Object -Property PassCount -Sum).Sum
