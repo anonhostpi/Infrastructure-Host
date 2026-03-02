@@ -5,7 +5,7 @@ New-Module -Name SDK.Testing -ScriptBlock {
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\helpers\PowerShell.ps1"
 
-    $Testing = New-Object PSObject -Property @{ Trackers = @() }
+    $Testing = New-Object PSObject
 
     Add-ScriptProperties $Testing @{
         All = {
