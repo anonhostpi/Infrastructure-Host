@@ -1,6 +1,6 @@
 # 6.4 SSH Hardening Fragment
 
-**Template:** `src/autoinstall/cloud-init/25-ssh.yaml.tpl`
+**Template:** `book-2-cloud/ssh/fragment.yaml.tpl`
 
 Hardens SSH server configuration.
 
@@ -18,7 +18,7 @@ write_files:
       MaxAuthTries 3
       LoginGraceTime 20
       PermitEmptyPasswords no
-      ChallengeResponseAuthentication no
+      KbdInteractiveAuthentication no
 
       # Forwarding
       X11Forwarding no
@@ -40,7 +40,7 @@ runcmd:
 | `MaxAuthTries` | 3 | Limit authentication attempts |
 | `LoginGraceTime` | 20 | Seconds to authenticate before disconnect |
 | `PermitEmptyPasswords` | no | Require passwords |
-| `ChallengeResponseAuthentication` | no | Disable keyboard-interactive auth (OTP/2FA) |
+| `KbdInteractiveAuthentication` | no | Disable keyboard-interactive auth (OTP/2FA) |
 | `X11Forwarding` | no | Disable X11 forwarding |
 | `AllowTcpForwarding` | yes | Allow TCP forwarding (needed for SSH tunnels) |
 | `ClientAliveInterval` | 300 | Timeout inactive sessions (5 min) |
