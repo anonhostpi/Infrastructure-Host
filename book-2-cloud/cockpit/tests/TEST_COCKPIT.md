@@ -1,7 +1,7 @@
 # Test 6.11: Cockpit Fragment
 
-**Template:** `src/autoinstall/cloud-init/70-cockpit.yaml.tpl`
-**Fragment Docs:** [6.11 Cockpit Fragment](../../CLOUD_INIT_CONFIGURATION/COCKPIT_FRAGMENT.md)
+**Template:** `book-2-cloud/cockpit/fragment.yaml.tpl`
+**Fragment Docs:** [6.11 Cockpit Fragment](../docs/FRAGMENT.md)
 
 Tests Cockpit web console installation, localhost binding, and SSH tunnel access.
 
