@@ -5,7 +5,7 @@ New-Module -Name SDK.Testing -ScriptBlock {
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\helpers\PowerShell.ps1"
 
-    $Testing = New-Object PSObject -Property @{ Results = @(); PassCount = 0; FailCount = 0 }
+    $Testing = New-Object PSObject -Property @{ Trackers = @() }
 
     Add-ScriptProperties $Testing @{
         All = {
@@ -14,16 +14,6 @@ New-Module -Name SDK.Testing -ScriptBlock {
     }
 
     Add-ScriptMethods $Testing @{
-        Reset = {
-            $this.Results = @()
-            $this.PassCount = 0
-            $this.FailCount = 0
-        }
-        Record = {
-            param([hashtable]$Result)
-            $this.Results += $Result
-            if ($Result.Pass) { $this.PassCount++ } else { $this.FailCount++ }
-        }
         Summary = {
             $mod.SDK.Log.Write("")
             $mod.SDK.Log.Write("========================================", "Cyan")
