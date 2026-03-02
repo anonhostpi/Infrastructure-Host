@@ -41,7 +41,23 @@ New-Module -Name SDK.Testing -ScriptBlock {
             }
             $this.Trackers += $Target
         }
-        Summary = { pass } # WIP
+        Summary = {
+            $totalPass = ($this.Trackers | Measure-Object -Property PassCount -Sum).Sum
+            $totalFail = ($this.Trackers | Measure-Object -Property FailCount -Sum).Sum
+            $mod.SDK.Log.Write("")
+            $mod.SDK.Log.Write("========================================", "Cyan")
+            $mod.SDK.Log.Write(" Test Summary", "Cyan")
+            $mod.SDK.Log.Write("========================================", "Cyan")
+            foreach ($tracker in $this.Trackers) {
+                if ($tracker.Results.Count -gt 0) { $tracker.Summary() }
+            }
+            $mod.SDK.Log.Write("----------------------------------------", "Cyan")
+            $mod.SDK.Log.Write("  Total:  $($totalPass + $totalFail)")
+            $mod.SDK.Log.Write("  Passed: $totalPass", "Green")
+            $failColor = if ($totalFail -gt 0) { "Red" } else { "Green" }
+            $mod.SDK.Log.Write("  Failed: $totalFail", $failColor)
+            $mod.SDK.Log.Write("========================================", "Cyan")
+        }
         Fragments = {
             param([int]$Layer)
             return $mod.SDK.Fragments.UpTo($Layer) | ForEach-Object { $_.Name }
