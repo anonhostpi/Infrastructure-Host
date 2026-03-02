@@ -1,6 +1,6 @@
 # 6.15 UI Touches Fragment
 
-**Template:** `src/autoinstall/cloud-init/90-ui.yaml.tpl`
+**Template:** `book-2-cloud/ui/fragment.yaml.tpl`
 
 Configures terminal experience, dynamic MOTD, and CLI productivity tools.
 
@@ -8,7 +8,7 @@ Configures terminal experience, dynamic MOTD, and CLI productivity tools.
 
 ```yaml
 packages:
-  - neofetch
+  - fastfetch
   - bat
   - fd-find
   - jq
@@ -123,14 +123,14 @@ write_files:
       alias vmkill='virsh destroy'
       alias vmconsole='virsh console'
 
-  # Neofetch on interactive login (optional)
-  - path: /etc/profile.d/neofetch.sh
+  # Fastfetch on interactive login (optional)
+  - path: /etc/profile.d/fastfetch.sh
     permissions: '0644'
     content: |
-      # Run neofetch on interactive login
+      # Run fastfetch on interactive login
       # Uncomment to enable:
-      # if [ -t 0 ] && command -v neofetch &> /dev/null; then
-      #   neofetch
+      # if [ -t 0 ] && command -v fastfetch &> /dev/null; then
+      #   fastfetch
       # fi
 
 runcmd:
@@ -213,7 +213,7 @@ These default Ubuntu MOTD scripts are disabled:
 | `tree` | `tree` | Directory tree visualization |
 | `htop` | `htop` | Interactive process viewer |
 | `ncdu` | `ncdu` | NCurses disk usage analyzer |
-| `neofetch` | `neofetch` | System info display |
+| `fastfetch` | `fastfetch` | System info display |
 
 ### Shell Aliases
 
