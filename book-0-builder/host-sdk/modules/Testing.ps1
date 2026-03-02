@@ -58,6 +58,10 @@ New-Module -Name SDK.Testing -ScriptBlock {
             $mod.SDK.Log.Write("  Failed: $totalFail", $failColor)
             $mod.SDK.Log.Write("========================================", "Cyan")
         }
+        Reset = {
+            foreach ($tracker in $this.Trackers) { $tracker.Reset() }
+            $this.Trackers = @()
+        }
         Fragments = {
             param([int]$Layer)
             return $mod.SDK.Fragments.UpTo($Layer) | ForEach-Object { $_.Name }
