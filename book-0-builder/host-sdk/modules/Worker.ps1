@@ -15,7 +15,7 @@ New-Module -Name SDK.Worker -ScriptBlock {
                     if (-not $this.Exists()) { return $this.Create() }
                     return $true
                 }
-                RecordTest = {
+                Record = {
                     param(
                         [bool]$Pass,
                         [string]$TestId,
@@ -58,10 +58,10 @@ New-Module -Name SDK.Worker -ScriptBlock {
                         } else {
                             $pass = $result.Success -and ($joined -match $ExpectedPattern)
                         }
-                        return $this.RecordTest($pass, $TestId, $Name, $result.Output, $result.Error, $Tracker)
+                        return $this.Record($pass, $TestId, $Name, $result.Output, $result.Error, $Tracker)
                     }
                     catch {
-                        return $this.RecordTest($false, $TestId, $Name, $null, $_.ToString(), $Tracker)
+                        return $this.Record($false, $TestId, $Name, $null, $_.ToString(), $Tracker)
                     }
                 }
                 UntilInstalled = {
