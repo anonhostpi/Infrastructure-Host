@@ -1,6 +1,6 @@
 # 6.2 Kernel Hardening Fragment
 
-**Template:** `src/autoinstall/cloud-init/15-kernel.yaml.tpl`
+**Template:** `book-2-cloud/kernel/fragment.yaml.tpl`
 
 Configures kernel security parameters via sysctl.
 
