@@ -1,6 +1,6 @@
-# 6.10 Virtualization Fragment
+# Virtualization Fragment
 
-**Template:** `src/autoinstall/cloud-init/60-virtualization.yaml.tpl`
+**Template:** `book-2-cloud/virtualization/fragment.yaml.tpl`
 
 Configures KVM/libvirt virtualization and multipass.
 
