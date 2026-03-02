@@ -1,7 +1,7 @@
 # Test 6.12: Claude Code Fragment
 
-**Template:** `src/autoinstall/cloud-init/75-claude-code.yaml.tpl`
-**Fragment Docs:** [6.12 Claude Code Fragment](../../CLOUD_INIT_CONFIGURATION/CLAUDE_CODE_FRAGMENT.md)
+**Template:** `book-2-cloud/claude-code/fragment.yaml.tpl`
+**Fragment Docs:** [6.12 Claude Code Fragment](../docs/FRAGMENT.md)
 
 Tests Anthropic's Claude Code CLI installation and configuration.
 
