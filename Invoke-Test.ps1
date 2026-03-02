@@ -27,6 +27,18 @@ if (-not $SkipCloudInit) {
         exit 1
     }
 }
-if (-not $SkipAutoinstall) { }
 
+# Book 1: Autoinstall tests (requires VirtualBox/HyperV, depends on Book 2)
+if (-not $SkipAutoinstall) {
+    Write-Host "`n--- Book 1: Autoinstall Tests ---" -ForegroundColor Cyan
+    & "$repoRoot\book-1-foundation\Invoke-AutoinstallTest.ps1" -SkipCleanup:$SkipCleanup
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Book 1 autoinstall tests failed" -ForegroundColor Red
+        exit 1
+    }
+}
+
+Write-Host "`n========================================" -ForegroundColor Green
+Write-Host " All tests passed" -ForegroundColor Green
+Write-Host "========================================" -ForegroundColor Green
 exit 0
