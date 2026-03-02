@@ -1,7 +1,7 @@
 # Test 6.14: OpenCode Fragment
 
-**Template:** `src/autoinstall/cloud-init/77-opencode.yaml.tpl`
-**Fragment Docs:** [6.14 OpenCode Fragment](../../CLOUD_INIT_CONFIGURATION/OPENCODE_FRAGMENT.md)
+**Template:** `book-2-cloud/opencode/fragment.yaml.tpl`
+**Fragment Docs:** [6.14 OpenCode Fragment](../docs/FRAGMENT.md)
 
 Tests OpenCode AI coding agent installation and configuration.
 
