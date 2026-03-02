@@ -1,6 +1,6 @@
 # 6.1 Network Fragment
 
-**Template:** `src/autoinstall/cloud-init/10-network.yaml.tpl`
+**Template:** `fragment.yaml.tpl`
 
 Sets hostname and FQDN, and runs the network detection script on boot.
 
@@ -29,7 +29,7 @@ bootcmd:
 
 ## bootcmd
 
-The `bootcmd` array runs the network detection script from [4.3 Network Scripts](../NETWORK_PLANNING/NETWORK_SCRIPTS.md). This script:
+The `bootcmd` array runs the network detection script from [Network Scripts](./SCRIPTS.md). This script:
 
 1. Detects multipass environment and protects NAT interface (for testing)
 2. Iterates over network interfaces
@@ -37,7 +37,7 @@ The `bootcmd` array runs the network detection script from [4.3 Network Scripts]
 4. Writes static IP configuration to `/etc/netplan/90-static.yaml`
 5. Validates connectivity with ping
 
-The script is injected via the `scripts` context (see [3.3 Render CLI](../BUILD_SYSTEM/RENDER_CLI.md)).
+The script is injected via the `scripts` context (see [Render CLI](../../../book-0-builder/docs/RENDER_CLI.md)).
 
 > **Note:** The script does NOT call `netplan apply` - this avoids disrupting other interfaces during boot. Cloud-init automatically applies netplan configs, and the static IP takes effect on next boot or when manually applied.
 
