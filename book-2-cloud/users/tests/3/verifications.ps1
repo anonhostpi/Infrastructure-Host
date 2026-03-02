@@ -20,6 +20,10 @@ return (New-Module -Name "Verify.Users" -ScriptBlock {
             param($Worker)
             $Worker.Test("6.3.2", "$username in sudo group", "groups $username", "\bsudo\b")
         }
+        "user has home directory" = {
+            param($Worker)
+            $Worker.Test("6.3.2", "$username has home directory", "test -d /home/$username && echo exists", "exists")
+        }
         "Sudoers file exists" = {
             param($Worker)
             $Worker.Test("6.3.3", "Sudoers file exists", "sudo test -f /etc/sudoers.d/$username", { $true })
@@ -27,6 +31,14 @@ return (New-Module -Name "Verify.Users" -ScriptBlock {
         "Root account locked" = {
             param($Worker)
             $Worker.Test("6.3.4", "Root account locked", "sudo passwd -S root", "root L")
+        }
+        "user-setup.log exists" = {
+            param($Worker)
+            $Worker.Test("6.3.5", "user-setup.log exists", "test -f /var/lib/cloud/scripts/user-setup/user-setup.log", { $true })
+        }
+        "user-setup.sh executed" = {
+            param($Worker)
+            $Worker.Test("6.3.5", "user-setup.sh executed", "cat /var/lib/cloud/scripts/user-setup/user-setup.log", "user-setup:")
         }
     }
 
