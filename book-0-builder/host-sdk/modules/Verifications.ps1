@@ -38,13 +38,15 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
             if (-not $mod.Tests[$Layer]) { $mod.Tests[$Layer] = @{} }
             if (-not $mod.Tests[$Layer][$Book]) { $mod.Tests[$Layer][$Book] = @{} }
             $layerName = $mod.SDK.Fragments.LayerName($Layer)
+            $tracker = New-Object PSObject -Property @{
+                Book     = $Book
+                Layer    = $layerName
+                Fragment = $fragment.Name
+            }
+            $mod.SDK.Testing.Methods($tracker)
             $mod.Tests[$Layer][$Book][$order] = @{
                 Tests   = $tests
-                Context = @{
-                    Book     = $Book
-                    Layer    = $layerName
-                    Fragment = $fragment.Name
-                }
+                Tracker = $tracker
             }
         }
         Run = {
