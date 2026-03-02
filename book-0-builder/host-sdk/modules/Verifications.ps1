@@ -37,7 +37,17 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
             $order = $fragment.Order
             if (-not $mod.Tests[$Layer]) { $mod.Tests[$Layer] = @{} }
             if (-not $mod.Tests[$Layer][$Book]) { $mod.Tests[$Layer][$Book] = @{} }
-            $mod.Tests[$Layer][$Book][$order] = $tests
+            $layerName = $mod.SDK.Fragments.LayerName($Layer)
+            $tracker = New-Object PSObject -Property @{
+                Book     = $Book
+                Layer    = $layerName
+                Fragment = $fragment.Name
+            }
+            $mod.SDK.Testing.Methods($tracker)
+            $mod.Tests[$Layer][$Book][$order] = @{
+                Tests   = $tests
+                Tracker = $tracker
+            }
         }
         Run = {
             param($Runner, [int]$Layer, $Book = $null)
@@ -48,9 +58,10 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                 foreach ($b in $bookOrder) {
                     if (-not $mod.Tests[$l][$b]) { continue }
                     foreach ($order in ($mod.Tests[$l][$b].Keys | ForEach-Object { $_ } | Sort-Object)) {
-                        $tests = $mod.Tests[$l][$b][$order]
+                        $batch = $mod.Tests[$l][$b][$order]
+                        $tests = $batch.Tests
                         foreach ($name in ($tests.Keys | ForEach-Object { $_ })) {
-                            & $tests[$name] $Runner
+                            & $tests[$name] $Runner $batch.Tracker
                         }
                     }
                 }

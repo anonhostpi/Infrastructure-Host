@@ -5,7 +5,7 @@ New-Module -Name SDK.Testing -ScriptBlock {
     $mod = @{ SDK = $SDK }
     . "$PSScriptRoot\..\helpers\PowerShell.ps1"
 
-    $Testing = New-Object PSObject -Property @{ Results = @(); PassCount = 0; FailCount = 0 }
+    $Testing = New-Object PSObject
 
     Add-ScriptProperties $Testing @{
         All = {
@@ -14,25 +14,31 @@ New-Module -Name SDK.Testing -ScriptBlock {
     }
 
     Add-ScriptMethods $Testing @{
-        Reset = {
-            $this.Results = @()
-            $this.PassCount = 0
-            $this.FailCount = 0
-        }
-        Record = {
-            param([hashtable]$Result)
-            $this.Results += $Result
-            if ($Result.Pass) { $this.PassCount++ } else { $this.FailCount++ }
-        }
-        Summary = {
-            $mod.SDK.Log.Write("")
-            $mod.SDK.Log.Write("========================================", "Cyan")
-            $mod.SDK.Log.Write(" Test Summary", "Cyan")
-            $mod.SDK.Log.Write("========================================", "Cyan")
-            $mod.SDK.Log.Write("  Total:  $($this.PassCount + $this.FailCount)")
-            $mod.SDK.Log.Write("  Passed: $($this.PassCount)", "Green")
-            $failColor = if ($this.FailCount -gt 0) { "Red" } else { "Green" }
-            $mod.SDK.Log.Write("  Failed: $($this.FailCount)", $failColor)
+        Methods = {
+            param($Target)
+            $Target | Add-Member -MemberType NoteProperty -Name Results   -Value @() -Force
+            $Target | Add-Member -MemberType NoteProperty -Name PassCount -Value 0   -Force
+            $Target | Add-Member -MemberType NoteProperty -Name FailCount -Value 0   -Force
+            Add-ScriptMethods $Target @{
+                Record  = {
+                    param([hashtable]$Result)
+                    $this.Results += $Result
+                    if ($Result.Pass) { $this.PassCount++ } else { $this.FailCount++ }
+                }
+                Reset   = {
+                    $this.Results   = @()
+                    $this.PassCount = 0
+                    $this.FailCount = 0
+                }
+                Summary = {
+                    $mod.SDK.Log.Write("")
+                    $mod.SDK.Log.Write("--- $($this.Book) / $($this.Layer) / $($this.Fragment) ---", "Cyan")
+                    $mod.SDK.Log.Write("  Total:  $($this.PassCount + $this.FailCount)")
+                    $mod.SDK.Log.Write("  Passed: $($this.PassCount)", "Green")
+                    $failColor = if ($this.FailCount -gt 0) { "Red" } else { "Green" }
+                    $mod.SDK.Log.Write("  Failed: $($this.FailCount)", $failColor)
+                }
+            }
         }
         Fragments = {
             param([int]$Layer)

@@ -15,8 +15,40 @@ New-Module -Name SDK.Worker -ScriptBlock {
                     if (-not $this.Exists()) { return $this.Create() }
                     return $true
                 }
+                Record = {
+                    param(
+                        [bool]$Pass,
+                        [string]$TestId,
+                        [string]$Name,
+                        $Output,
+                        $Error,
+                        $Tracker
+                    )
+                    $label = "$($Tracker.Book) - $($Tracker.Layer) - $($Tracker.Fragment) - $Name"
+                    $testResult = @{
+                        Test     = $TestId
+                        Book     = $Tracker.Book
+                        Layer    = $Tracker.Layer
+                        Fragment = $Tracker.Fragment
+                        Name     = $Name
+                        Pass     = $Pass
+                        Output   = $Output
+                        Error    = $Error
+                    }
+                    $Tracker.Record($testResult)
+                    if ($Pass) {
+                        $mod.SDK.Log.Write("[PASS] $label", "Green")
+                    }
+                    else {
+                        $mod.SDK.Log.Write("[FAIL] $label", "Red")
+                        if ($Error) {
+                            $mod.SDK.Log.Error("  Error: $Error")
+                        }
+                    }
+                    return $testResult
+                }
                 Test = {
-                    param([string]$TestId, [string]$Name, [string]$Command, $ExpectedPattern)
+                    param([string]$TestId, [string]$Name, [string]$Command, $ExpectedPattern, $Tracker)
                     $mod.SDK.Log.Debug("Running test: $Name")
                     try {
                         $result = $this.Exec($Command)
@@ -26,17 +58,10 @@ New-Module -Name SDK.Worker -ScriptBlock {
                         } else {
                             $pass = $result.Success -and ($joined -match $ExpectedPattern)
                         }
-                        $testResult = @{ Test = $TestId; Name = $Name; Pass = $pass; Output = $result.Output; Error = $result.Error }
-                        $mod.SDK.Testing.Record($testResult)
-                        if ($pass) { $mod.SDK.Log.Write("[PASS] $Name", "Green") }
-                        else { $mod.SDK.Log.Write("[FAIL] $Name", "Red"); if ($result.Error) { $mod.SDK.Log.Error("  Error: $($result.Error)") } }
-                        return $testResult
+                        return $this.Record($pass, $TestId, $Name, $result.Output, $result.Error, $Tracker)
                     }
                     catch {
-                        $mod.SDK.Log.Write("[FAIL] $Name - Exception: $_", "Red")
-                        $testResult = @{ Test = $TestId; Name = $Name; Pass = $false; Error = $_.ToString() }
-                        $mod.SDK.Testing.Record($testResult)
-                        return $testResult
+                        return $this.Record($false, $TestId, $Name, $null, $_.ToString(), $Tracker)
                     }
                 }
                 UntilInstalled = {
