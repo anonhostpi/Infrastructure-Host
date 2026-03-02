@@ -1,7 +1,7 @@
 # Test 6.8: Package Security Fragment
 
-**Template:** `src/autoinstall/cloud-init/50-pkg-security.yaml.tpl`
-**Fragment Docs:** [6.8 Package Security Fragment](../../CLOUD_INIT_CONFIGURATION/PACKAGE_SECURITY_FRAGMENT.md)
+**Template:** `book-2-cloud/pkg-security/fragment.yaml.tpl`
+**Fragment Docs:** [6.8 Package Security Fragment](../../docs/FRAGMENT.md)
 
 Tests unattended upgrades configuration.
 
