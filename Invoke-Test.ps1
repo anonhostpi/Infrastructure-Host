@@ -15,7 +15,18 @@ if (-not $SkipSDK) {
         exit 1
     }
 }
-if (-not $SkipCloudInit) { }
+
+# Book 2: Cloud-init fragment tests (requires multipass)
+if (-not $SkipCloudInit) {
+    Write-Host "`n--- Book 2: Cloud-Init Tests ---" -ForegroundColor Cyan
+    $cloudInitArgs = @{ SkipCleanup = $SkipCleanup }
+    if ($PSBoundParameters.ContainsKey('Layer')) { $cloudInitArgs.Layer = $Layer }
+    & "$repoRoot\book-2-cloud\Invoke-IncrementalCloudInitTest.ps1" @cloudInitArgs
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Book 2 cloud-init tests failed" -ForegroundColor Red
+        exit 1
+    }
+}
 if (-not $SkipAutoinstall) { }
 
 exit 0
