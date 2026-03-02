@@ -61,7 +61,7 @@ New-Module -Name SDK.Testing.Verifications -ScriptBlock {
                         $batch = $mod.Tests[$l][$b][$order]
                         $tests = $batch.Tests
                         foreach ($name in ($tests.Keys | ForEach-Object { $_ })) {
-                            & $tests[$name] $Runner $batch.Context
+                            & $tests[$name] $Runner $batch.Tracker
                         }
                     }
                 }
