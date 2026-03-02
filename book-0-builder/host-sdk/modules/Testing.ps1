@@ -25,7 +25,11 @@ New-Module -Name SDK.Testing -ScriptBlock {
                     $this.Results += $Result
                     if ($Result.Pass) { $this.PassCount++ } else { $this.FailCount++ }
                 }
-                Reset   = { pass } # WIP
+                Reset   = {
+                    $this.Results   = @()
+                    $this.PassCount = 0
+                    $this.FailCount = 0
+                }
                 Summary = { pass } # WIP
             }
             $this.Trackers += $Target
