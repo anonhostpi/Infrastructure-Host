@@ -90,22 +90,15 @@ def _sha512_crypt(password, salt, rounds):
         i -= 64
     s += ds[:i]
 
-    # Main loop
     c = a
     for i in range(rounds):
         ctx = hashlib.sha512()
-        if i & 1:
-            ctx.update(p)
-        else:
-            ctx.update(c)
-        if i % 3:
-            ctx.update(s)
-        if i % 7:
-            ctx.update(p)
-        if i & 1:
-            ctx.update(c)
-        else:
-            ctx.update(p)
+        if i & 1: ctx.update(p)
+        else: ctx.update(c)
+        if i % 3: ctx.update(s)
+        if i % 7: ctx.update(p)
+        if i & 1: ctx.update(c)
+        else: ctx.update(p)
         c = ctx.digest()
 
     # Encode result in base64-like format
