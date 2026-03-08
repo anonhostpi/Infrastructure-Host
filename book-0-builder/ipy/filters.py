@@ -102,4 +102,14 @@ def _sha512_crypt(password, salt, rounds):
         (15, 36, 57), (37, 58, 16), (59, 17, 38), (18, 39, 60), (40, 61, 19),
         (62, 20, 41), (63,)
     ]
-    pass  # WIP: encode loop
+    for triplet in order:
+        if len(triplet) == 3:
+            v = c[triplet[0]] << 16 | c[triplet[1]] << 8 | c[triplet[2]]
+            for _ in range(4):
+                result += b64chars[v & 0x3f]
+                v >>= 6
+        else:
+            v = c[triplet[0]]
+            result += b64chars[v & 0x3f]
+            result += b64chars[(v >> 6) & 0x3f]
+    return result
