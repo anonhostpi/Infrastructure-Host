@@ -3,7 +3,7 @@
 import hashlib
 import base64
 import os
-import yaml
+from ruamel.yaml import YAML
 
 
 def to_base64(value):

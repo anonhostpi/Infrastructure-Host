@@ -2,7 +2,7 @@
 
 import os
 from datetime import datetime, timezone
-import yaml
+from ruamel.yaml import YAML
 
 DEFAULT_PATH = 'output/artifacts.yaml'
 

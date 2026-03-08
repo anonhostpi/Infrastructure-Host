@@ -1,7 +1,7 @@
 """Template rendering functions for deployment artifacts."""
 
 import os
-import yaml
+from ruamel.yaml import YAML
 from jinja2 import Environment, FileSystemLoader
 
 from . import artifacts

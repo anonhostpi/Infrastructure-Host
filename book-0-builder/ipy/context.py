@@ -3,7 +3,7 @@
 import json
 import os
 import re
-import yaml
+from ruamel.yaml import YAML
 
 from .composer import deep_merge
 

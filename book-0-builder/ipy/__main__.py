@@ -122,7 +122,7 @@ def main():
         if args.action == 'show':
             data = artifacts.load(args.file)
             if data:
-                import yaml
+                from ruamel.yaml import YAML
                 print(yaml.dump(data, default_flow_style=False, sort_keys=False))
             else:
                 print('No artifacts found')
