@@ -59,23 +59,3 @@ def render_cloud_init(ctx, env, fragments):
                     merged = deep_merge(merged, data)
                 break
     return merged
-
-
-def render_autoinstall(ctx):
-    """Render autoinstall user-data, return as string."""
-    scripts = render_scripts(ctx)
-    # Autoinstall is always for ISO, so include iso_required fragments
-    cloud_init = render_cloud_init(ctx, for_iso=True)
-
-    return render_text(
-        ctx,
-        'book-1-foundation/base/autoinstall.yaml.tpl',
-        scripts=scripts,
-        cloud_init=cloud_init,
-    )
-
-
-def render_autoinstall_to_file(ctx, output_path):
-    """Render autoinstall to output file."""
-    result = render_autoinstall(ctx)
-    artifacts.write(None, 'autoinstall', output_path, content=result)
