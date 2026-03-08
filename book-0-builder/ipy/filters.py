@@ -35,5 +35,11 @@ def to_yaml(value):
     buf = io.StringIO()
     _y.dump(value, buf)
     return buf.getvalue().rstrip()
-def sha512_hash(password): pass  # WIP
-def _sha512_crypt(password, salt, rounds): pass  # WIP
+def sha512_hash(password):
+    """Generate SHA-512 password hash for /etc/shadow (cross-platform)."""
+    pass  # WIP
+
+
+def _sha512_crypt(password, salt, rounds):
+    """Implement SHA-512 crypt algorithm (glibc compatible)."""
+    pass  # WIP
