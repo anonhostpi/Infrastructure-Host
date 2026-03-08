@@ -122,19 +122,3 @@ def _sha512_crypt(password, salt, rounds):
             result += b64chars[(v >> 6) & 0x3f]
 
     return result
-
-
-def ip_only(cidr_notation):
-    """Extract IP from CIDR notation: 192.168.1.1/24 -> 192.168.1.1"""
-    return str(cidr_notation).split('/')[0]
-
-
-def cidr_only(cidr_notation):
-    """Extract prefix from CIDR notation: 192.168.1.1/24 -> 24"""
-    parts = str(cidr_notation).split('/')
-    return parts[1] if len(parts) > 1 else '24'
-
-
-def to_yaml(value):
-    """Convert dict/list to YAML string."""
-    return yaml.dump(value, default_flow_style=False, allow_unicode=True).rstrip()
