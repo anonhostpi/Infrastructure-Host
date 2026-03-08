@@ -10,19 +10,23 @@ import filters
 from composer import deep_merge
 
 
-def discover_fragments(base_dirs=None):
-    """Discover fragments by finding build.yaml files."""
+def discover_fragments(repo_root, base_dirs=None):
+    """Discover fragments by finding build.yaml files under repo_root."""
     if base_dirs is None:
         base_dirs = ['book-1-foundation', 'book-2-cloud']
 
     fragments = []
+    _y = YAML()
     for base_dir in base_dirs:
-        for build_yaml in Path(base_dir).rglob('build.yaml'):
-            with open(build_yaml) as f:
-                meta = yaml.safe_load(f)
-            meta['_path'] = build_yaml.parent
+        search = os.path.join(repo_root, base_dir)
+        for dirpath, _, files in os.walk(search):
+            if 'build.yaml' not in files:
+                continue
+            with open(os.path.join(dirpath, 'build.yaml')) as f:
+                meta = _y.load(f)
+            meta['_path'] = dirpath
             fragments.append(meta)
-    return sorted(fragments, key=lambda f: f.get('build_order', 999))
+    return sorted(fragments, key=lambda x: x.get('build_order', 999))
 
 
 def create_environment(template_dirs=None):
