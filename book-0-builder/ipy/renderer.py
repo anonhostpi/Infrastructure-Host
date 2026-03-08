@@ -50,18 +50,6 @@ def render_cloud_init(ctx, env, fragments):
         tpl_path = os.path.join(frag['_path'], 'fragment.yaml.tpl')
         if not os.path.exists(tpl_path):
             continue
-        template_path = tpl_path.as_posix()
-        rendered = render_text(ctx, template_path, scripts=scripts)
-
-        # Validate YAML with helpful error message
-        try:
-            fragment = yaml.safe_load(rendered)
-        except yaml.YAMLError as e:
-            raise FragmentValidationError(fragment_name, e, rendered) from e
-
-        if fragment:
-            merged = deep_merge(merged, fragment)
-
     return merged
 
 
