@@ -53,27 +53,19 @@ def _sha512_crypt(password, salt, rounds):
     password = password.encode('utf-8')
     salt = salt.encode('utf-8')
 
-    # Initial hash: password + salt + password
     b = hashlib.sha512(password + salt + password).digest()
-
-    # Hash A: password + salt + b (repeated for password length)
     a_ctx = hashlib.sha512()
     a_ctx.update(password + salt)
-
     pwd_len = len(password)
     i = pwd_len
     while i > 64:
         a_ctx.update(b)
         i -= 64
     a_ctx.update(b[:i])
-
-    # Alternate between password and b based on password length bits
     i = pwd_len
     while i > 0:
-        if i & 1:
-            a_ctx.update(b)
-        else:
-            a_ctx.update(password)
+        if i & 1: a_ctx.update(b)
+        else: a_ctx.update(password)
         i >>= 1
     a = a_ctx.digest()
 
