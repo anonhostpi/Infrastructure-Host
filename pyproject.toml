@@ -4,8 +4,8 @@ version = "1.0.0"
 description = "Build system for automatic Ubuntu deployment with bare-metal support"
 requires-python = ">=3.8"
 dependencies = [
-    "jinja2>=3.0",
-    "pyyaml>=6.0",
+    "jinja2>=2.10",
+    "ruamel.yaml>=0.16",
 ]
 
 [project.optional-dependencies]
@@ -21,4 +21,5 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
+where = ["book-0-builder"]
 include = ["builder*"]

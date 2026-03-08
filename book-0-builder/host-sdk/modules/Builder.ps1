@@ -17,7 +17,6 @@ New-Module -Name SDK.Builder -ScriptBlock {
     $Builder = New-Object PSObject -Property @{
         Packages = @(
             "python3-pip"
-            "python3-yaml"
             "python3-jinja2"
             "make"
             "xorriso"
