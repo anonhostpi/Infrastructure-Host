@@ -33,7 +33,7 @@ class BuildContext:
             for filepath in configs_path.glob('*.config.yaml'):
                 key = filepath.name.replace('.config.yaml', '')
                 with open(filepath) as f:
-                    content = yaml.safe_load(f)
+                    content = YAML().load(f)
                     # Auto-unwrap only if single key matches filename
                     if isinstance(content, dict) and len(content) == 1:
                         only_key = next(iter(content.keys()))

@@ -12,7 +12,7 @@ def load(path=DEFAULT_PATH):
     p = Path(path)
     if p.exists():
         with open(p) as f:
-            return yaml.safe_load(f) or {}
+            return YAML().load(f) or {}
     return {}
 
 

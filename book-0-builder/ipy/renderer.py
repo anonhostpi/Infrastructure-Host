@@ -40,7 +40,7 @@ def discover_fragments(base_dirs=None):
     for base_dir in base_dirs:
         for build_yaml in Path(base_dir).rglob('build.yaml'):
             with open(build_yaml) as f:
-                meta = yaml.safe_load(f)
+                meta = YAML().load(f)
             meta['_path'] = build_yaml.parent
             fragments.append(meta)
     return sorted(fragments, key=lambda f: f.get('build_order', 999))
@@ -183,7 +183,7 @@ def render_cloud_init(ctx, include=None, exclude=None, layer=None, for_iso=False
 
         # Validate YAML with helpful error message
         try:
-            fragment = yaml.safe_load(rendered)
+            fragment = YAML().load(rendered)
         except yaml.YAMLError as e:
             raise FragmentValidationError(fragment_name, e, rendered) from e
 
