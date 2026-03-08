@@ -8,4 +8,19 @@ def deep_merge(base, override):
     - Lists are extended (override appended to base)
     - Scalars are replaced by override
     """
-    pass  # WIP
+    if not isinstance(base, dict) or not isinstance(override, dict):
+        return override
+
+    result = base.copy()
+    for key, value in override.items():
+        if key in result:
+            if isinstance(result[key], dict) and isinstance(value, dict):
+                result[key] = deep_merge(result[key], value)
+            elif isinstance(result[key], list) and isinstance(value, list):
+                result[key] = result[key] + value
+            else:
+                result[key] = value
+        else:
+            result[key] = value
+
+    return result
