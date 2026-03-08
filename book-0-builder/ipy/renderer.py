@@ -10,27 +10,34 @@ from .composer import deep_merge
 
 
 
-def discover_fragments(base_dirs=None):
+def discover_fragments(repo_root=None, base_dirs=None):
     """Discover fragments by finding build.yaml files."""
     if base_dirs is None:
         base_dirs = ['book-1-foundation', 'book-2-cloud']
 
     fragments = []
     for base_dir in base_dirs:
-        for build_yaml in Path(base_dir).rglob('build.yaml'):
-            with open(build_yaml) as f:
+        search = os.path.join(repo_root, base_dir) if repo_root else base_dir
+        for dirpath, _, files in os.walk(search):
+            if 'build.yaml' not in files:
+                continue
+            with open(os.path.join(dirpath, 'build.yaml')) as f:
                 meta = YAML().load(f)
-            meta['_path'] = build_yaml.parent
+            meta['_path'] = dirpath
             fragments.append(meta)
     return sorted(fragments, key=lambda f: f.get('build_order', 999))
 
 
-def create_environment(template_dirs=None):
+def create_environment(repo_root=None, template_dirs=None):
     """Create Jinja2 environment with custom filters."""
     if template_dirs is None:
         template_dirs = ['book-1-foundation', 'book-2-cloud']
+    if repo_root:
+        abs_dirs = [os.path.join(repo_root, d) for d in template_dirs]
+    else:
+        abs_dirs = template_dirs
     env = Environment(
-        loader=FileSystemLoader(template_dirs),
+        loader=FileSystemLoader(abs_dirs),
         keep_trailing_newline=True,
     )
 
@@ -69,15 +76,17 @@ def render_scripts(ctx):
     """Render all script templates from discovered fragments."""
     scripts = {}
     for fragment in discover_fragments():
-        scripts_dir = fragment['_path'] / 'scripts'
-        if not scripts_dir.exists():
+        scripts_dir = os.path.join(str(fragment['_path']), 'scripts')
+        if not os.path.exists(scripts_dir):
             continue
-        for tpl_path in scripts_dir.glob('*.sh.tpl'):
-            filename = tpl_path.name.removesuffix('.tpl')
-            template_path = tpl_path.as_posix()
+        for fname in os.listdir(scripts_dir):
+            if not fname.endswith('.sh.tpl'):
+                continue
+            tpl_path = os.path.join(scripts_dir, fname)
+            filename = fname[:-4] if fname.endswith('.tpl') else fname
+            template_path = tpl_path.replace('\\', '/')
             rendered = render_text(ctx, template_path)
             scripts[filename] = rendered
-
     return scripts
 
 
@@ -85,7 +94,7 @@ def render_script(ctx, input_path, output_path):
     """Render a script template to output file."""
     template_path = input_path
     result = render_text(ctx, template_path)
-    artifacts.write('scripts', Path(output_path).name, output_path, content=result)
+    artifacts.write('scripts', os.path.basename(output_path), output_path, content=result)
 
 
 def get_available_fragments():
@@ -131,9 +140,9 @@ def render_cloud_init(ctx, include=None, exclude=None, layer=None, for_iso=False
 
     for fragment in discover_fragments():
         fragment_name = fragment['name']
-        tpl_path = fragment['_path'] / 'fragment.yaml.tpl'
+        tpl_path = os.path.join(str(fragment['_path']), 'fragment.yaml.tpl')
 
-        if not tpl_path.exists():
+        if not os.path.exists(tpl_path):
             continue
 
         # Filter by include list (if specified)
@@ -157,7 +166,7 @@ def render_cloud_init(ctx, include=None, exclude=None, layer=None, for_iso=False
             elif frag_layer > layer:
                 continue
 
-        template_path = tpl_path.as_posix()
+        template_path = tpl_path.replace('\\', '/')
         rendered = render_text(ctx, template_path, scripts=scripts)
 
         # Validate YAML with helpful error message
