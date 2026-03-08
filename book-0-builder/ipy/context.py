@@ -28,10 +28,12 @@ class BuildContext:
         self._paths = {}  # Maps normalized env name -> (path, original_path_str)
 
         # Load all config files
-        configs_path = Path(configs_dir)
-        if configs_path.exists():
-            for filepath in configs_path.glob('*.config.yaml'):
-                key = filepath.name.replace('.config.yaml', '')
+        if os.path.exists(configs_dir):
+            for fname in os.listdir(configs_dir):
+                if not fname.endswith('.config.yaml'):
+                    continue
+                filepath = os.path.join(configs_dir, fname)
+                key = fname.replace('.config.yaml', '')
                 with open(filepath) as f:
                     content = YAML().load(f)
                     # Auto-unwrap only if single key matches filename
@@ -88,7 +90,7 @@ class BuildContext:
         OpenCode auth is derived from Claude Code and Copilot CLI credentials
         (not loaded from host directly).
         """
-        home = Path.home()
+        home = os.path.expanduser('~')
 
         # Claude Code OAuth fallback
         self._apply_claude_code_fallback(home)
@@ -104,10 +106,10 @@ class BuildContext:
 
     def _apply_claude_code_fallback(self, home):
         """Load Claude Code OAuth credentials as fallback."""
-        creds_file = home / '.claude' / '.credentials.json'
-        state_file = home / '.claude.json'
+        creds_file = os.path.join(home, '.claude', '.credentials.json')
+        state_file = os.path.join(home, '.claude.json')
 
-        if not creds_file.exists() or not state_file.exists():
+        if not os.path.exists(creds_file) or not os.path.exists(state_file):
             return
 
         # Check if claude_code config exists and has auth.oauth already set
@@ -155,9 +157,9 @@ class BuildContext:
 
     def _apply_copilot_cli_fallback(self, home):
         """Load Copilot CLI OAuth credentials as fallback from config.json."""
-        config_file = home / '.copilot' / 'config.json'
+        config_file = os.path.join(home, '.copilot', 'config.json')
 
-        if not config_file.exists():
+        if not os.path.exists(config_file):
             return
 
         # Check if copilot_cli config exists and has auth already set
