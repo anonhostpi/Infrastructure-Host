@@ -172,7 +172,7 @@ def render_cloud_init(ctx, include=None, exclude=None, layer=None, for_iso=False
         # Validate YAML with helpful error message
         try:
             fragment = YAML().load(rendered)
-        except yaml.YAMLError as e:
+        except Exception as e:
             raise FragmentValidationError(fragment_name, e, rendered) from e
 
         if fragment:
@@ -196,7 +196,7 @@ def render_cloud_init_to_file(ctx, output_path, include=None, exclude=None, laye
     artifacts.write(
         None, 'cloud_init', output_path,
         content='#cloud-config\n',
-        writer=lambda f: yaml.dump(merged, f, default_flow_style=False, sort_keys=False, width=1000)
+        writer=lambda f: YAML().dump(merged, f)
     )
 
 
