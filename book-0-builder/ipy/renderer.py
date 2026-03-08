@@ -1,4 +1,4 @@
-"""Template rendering functions for deployment artifacts."""
+"""IronPython-compatible cloud-init renderer."""
 
 import sys
 import json
