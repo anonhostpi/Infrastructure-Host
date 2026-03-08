@@ -46,4 +46,21 @@ def sha512_hash(password):
 
 def _sha512_crypt(password, salt, rounds):
     """Implement SHA-512 crypt algorithm (glibc compatible)."""
-    pass  # WIP
+    password = password.encode('utf-8')
+    salt = salt.encode('utf-8')
+    b = hashlib.sha512(password + salt + password).digest()
+    a_ctx = hashlib.sha512()
+    a_ctx.update(password + salt)
+    pwd_len = len(password)
+    i = pwd_len
+    while i > 64:
+        a_ctx.update(b)
+        i -= 64
+    a_ctx.update(b[:i])
+    i = pwd_len
+    while i > 0:
+        if i & 1: a_ctx.update(b)
+        else: a_ctx.update(password)
+        i >>= 1
+    a = a_ctx.digest()
+    pass  # WIP: dp/ds/main loop
