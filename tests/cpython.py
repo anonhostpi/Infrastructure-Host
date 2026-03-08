@@ -1,4 +1,4 @@
-"""Test ipy package under CPython.
+"""Test builder package under CPython.
 
 Usage:
     cd <repo-root>
@@ -19,7 +19,7 @@ modules = ['composer', 'filters', 'artifacts', 'context', 'renderer']
 imported = {}
 for name in modules:
     try:
-        mod = __import__('ipy.' + name, fromlist=[name])
+        mod = __import__('builder.' + name, fromlist=[name])
         imported[name] = mod
         print('  ' + name + ': OK')
     except Exception as e:

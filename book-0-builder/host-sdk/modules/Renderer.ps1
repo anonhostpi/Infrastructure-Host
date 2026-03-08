@@ -13,8 +13,8 @@ New-Module -Name SDK.Renderer -ScriptBlock {
     Add-ScriptMethods $Renderer @{
         Init = {
             if ($null -eq $mod.Engine) {
-                $ipy_dir = Join-Path $mod.SDK.Root() "book-0-builder/ipy"
-                $mod.Engine = & "$ipy_dir/engine.ps1" -SDK $mod.SDK
+                $builder_dir = Join-Path $mod.SDK.Root() "book-0-builder/builder"
+                $mod.Engine = & "$builder_dir/engine.ps1" -SDK $mod.SDK
             }
             return $mod.Engine
         }
@@ -24,7 +24,7 @@ New-Module -Name SDK.Renderer -ScriptBlock {
             $book_dir = Join-Path $mod.SDK.Root() "book-0-builder"
             $repo_root = $mod.SDK.Root()
 
-            # Add ipy/ parent to search paths so engine can find the package
+            # Add builder/ parent to search paths so engine can find the package
             $paths = $engine.GetSearchPaths()
             if (-not $paths.Contains($book_dir)) {
                 $paths.Add($book_dir)
@@ -33,7 +33,7 @@ New-Module -Name SDK.Renderer -ScriptBlock {
 
             # Import the renderer module
             # ImportModule returns the top-level package scope; get the submodule from it
-            $pkgScope = [IronPython.Hosting.Python]::ImportModule($engine, "ipy.renderer")
+            $pkgScope = [IronPython.Hosting.Python]::ImportModule($engine, "builder.renderer")
             $scope = $pkgScope.GetVariable("renderer")
 
             # Build context and call the rendering pipeline

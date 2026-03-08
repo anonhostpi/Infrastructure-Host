@@ -52,16 +52,16 @@ foreach ($p in $engine.GetSearchPaths()) {
 Write-Host ''
 Write-Host "=== Level 1: Import Test ==="
 try {
-    # ImportModule("ipy.renderer") returns the top-level ipy package scope.
+    # ImportModule("builder.renderer") returns the top-level ipy package scope.
     # We need to get the renderer submodule from it.
-    $pkgScope = [IronPython.Hosting.Python]::ImportModule($engine, "ipy.renderer")
-    Write-Host "  ImportModule('ipy.renderer'): OK"
+    $pkgScope = [IronPython.Hosting.Python]::ImportModule($engine, "builder.renderer")
+    Write-Host "  ImportModule('builder.renderer'): OK"
 
     # Get the renderer submodule from the package scope
     $scope = $pkgScope.GetVariable("renderer")
     Write-Host "  GetVariable('renderer'): OK"
 } catch {
-    Write-Host "  ipy.renderer: FAIL - $_"
+    Write-Host "  builder.renderer: FAIL - $_"
     exit 1
 }
 
