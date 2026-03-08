@@ -50,6 +50,14 @@ def render_cloud_init(ctx, env, fragments):
         tpl_path = os.path.join(frag['_path'], 'fragment.yaml.tpl')
         if not os.path.exists(tpl_path):
             continue
+        for sp in env.loader.searchpath:
+            rel = os.path.relpath(tpl_path, sp)
+            if not rel.startswith('..'):
+                rendered = env.get_template(rel.replace('\\', '/')).render(**ctx)
+                data = _y.load(rendered)
+                if data:
+                    merged = deep_merge(merged, data)
+                break
     return merged
 
 
