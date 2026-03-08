@@ -11,7 +11,13 @@ New-Module -Name SDK.Renderer -ScriptBlock {
     $Renderer = New-Object PSObject
 
     Add-ScriptMethods $Renderer @{
-        Init = { }  # WIP
+        Init = {
+            if ($null -eq $mod.Engine) {
+                $ipy_dir = Join-Path $mod.SDK.Root() "book-0-builder/ipy"
+                $mod.Engine = & "$ipy_dir/engine.ps1" -SDK $mod.SDK
+            }
+            return $mod.Engine
+        }
         Render = { }  # WIP
     }
 
