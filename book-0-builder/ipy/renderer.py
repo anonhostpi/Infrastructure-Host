@@ -1,12 +1,10 @@
-"""Template rendering functions for deployment artifacts."""
+"""IronPython-compatible cloud-init renderer."""
 
-from pathlib import Path
-import yaml
+import sys, json, os
+from ruamel.yaml import YAML
 from jinja2 import Environment, FileSystemLoader
-
-from . import artifacts
-from . import filters
-from .composer import deep_merge
+import filters
+from composer import deep_merge
 
 
 # Custom YAML representer for multiline strings using literal block scalars
