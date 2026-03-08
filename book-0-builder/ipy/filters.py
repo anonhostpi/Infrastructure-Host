@@ -18,8 +18,22 @@ def shell_quote(value):
 def shell_array(items):
     """Convert list to bash array literal."""
     return '(' + ' '.join(shell_quote(i) for i in items) + ')'
-def ip_only(cidr_notation): pass  # WIP
-def cidr_only(cidr_notation): pass  # WIP
-def to_yaml(value): pass  # WIP
+def ip_only(cidr_notation):
+    """Extract IP from CIDR notation."""
+    return str(cidr_notation).split('/')[0]
+
+def cidr_only(cidr_notation):
+    """Extract prefix from CIDR notation."""
+    parts = str(cidr_notation).split('/')
+    return parts[1] if len(parts) > 1 else '24'
+
+def to_yaml(value):
+    """Convert dict/list to YAML string using ruamel.yaml."""
+    import io
+    _y = _YAML()
+    _y.default_flow_style = False
+    buf = io.StringIO()
+    _y.dump(value, buf)
+    return buf.getvalue().rstrip()
 def sha512_hash(password): pass  # WIP
 def _sha512_crypt(password, salt, rounds): pass  # WIP
