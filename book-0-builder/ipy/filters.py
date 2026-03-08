@@ -41,15 +41,11 @@ def to_yaml(value):
 
 def sha512_hash(password):
     """Generate SHA-512 password hash for /etc/shadow (cross-platform)."""
-    # Generate 16-byte random salt
     salt_bytes = os.urandom(16)
-    # Use base64 encoding (./0-9A-Za-z) for crypt-compatible salt
     salt = base64.b64encode(salt_bytes, altchars=b'./').decode('ascii')[:16]
-    # SHA-512 crypt uses 5000 rounds by default
     rounds = 5000
-    # Compute SHA-512 hash using the crypt algorithm
     hash_result = _sha512_crypt(password, salt, rounds)
-    return f'$6$rounds={rounds}${salt}${hash_result}'
+    return '$6$rounds=' + str(rounds) + '$' + salt + '$' + hash_result
 
 
 def _sha512_crypt(password, salt, rounds):
