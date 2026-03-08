@@ -37,7 +37,11 @@ def to_yaml(value):
     return buf.getvalue().rstrip()
 def sha512_hash(password):
     """Generate SHA-512 password hash for /etc/shadow (cross-platform)."""
-    pass  # WIP
+    salt_bytes = os.urandom(16)
+    salt = base64.b64encode(salt_bytes, altchars=b'./').decode('ascii')[:16]
+    rounds = 5000
+    hash_result = _sha512_crypt(password, salt, rounds)
+    return '$6$rounds=' + str(rounds) + '$' + salt + '$' + hash_result
 
 
 def _sha512_crypt(password, salt, rounds):
