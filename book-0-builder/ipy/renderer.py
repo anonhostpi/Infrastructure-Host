@@ -47,21 +47,6 @@ def create_environment(repo_root, template_dirs=None):
 
 
 
-def render_scripts(ctx):
-    """Render all script templates from discovered fragments."""
-    scripts = {}
-    for fragment in discover_fragments():
-        scripts_dir = fragment['_path'] / 'scripts'
-        if not scripts_dir.exists():
-            continue
-        for tpl_path in scripts_dir.glob('*.sh.tpl'):
-            filename = tpl_path.name.removesuffix('.tpl')
-            template_path = tpl_path.as_posix()
-            rendered = render_text(ctx, template_path)
-            scripts[filename] = rendered
-
-    return scripts
-
 
 def render_script(ctx, input_path, output_path):
     """Render a script template to output file."""
