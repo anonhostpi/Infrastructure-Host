@@ -26,7 +26,7 @@ def discover_fragments(repo_root, base_dirs=None):
                 meta = _y.load(f)
             meta['_path'] = dirpath
             fragments.append(meta)
-    return sorted(fragments, key=lambda x: x.get('build_order', 999))
+    return sorted(fragments, key=lambda f: f.get('build_order', 999))
 
 
 def create_environment(repo_root, template_dirs=None):
