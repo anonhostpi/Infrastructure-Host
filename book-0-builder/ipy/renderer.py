@@ -51,17 +51,6 @@ def render_cloud_init(ctx, env, fragments):
         if not os.path.exists(tpl_path):
             continue
 
-        # Filter by include list (if specified)
-        if include is not None and fragment_name not in include:
-            continue
-
-        # Filter by exclude list (if specified)
-        if exclude is not None and fragment_name in exclude:
-            continue
-
-        # Always include iso_required fragments for ISO builds
-        if for_iso and fragment.get('iso_required', False):
-            pass  # Don't filter this fragment
         elif layer is not None:
             # Filter by layer (if specified)
             frag_layer = fragment.get('build_layer', 999)
