@@ -63,4 +63,14 @@ def _sha512_crypt(password, salt, rounds):
         else: a_ctx.update(password)
         i >>= 1
     a = a_ctx.digest()
-    pass  # WIP: dp/ds/main loop
+    dp_ctx = hashlib.sha512()
+    for _ in range(pwd_len):
+        dp_ctx.update(password)
+    dp = dp_ctx.digest()
+    p = b''
+    i = pwd_len
+    while i > 64:
+        p += dp
+        i -= 64
+    p += dp[:i]
+    pass  # WIP: ds/main loop
