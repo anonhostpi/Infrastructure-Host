@@ -41,19 +41,6 @@ def create_environment(repo_root, template_dirs=None):
     return env
 
 
-
-def render_script(ctx, input_path, output_path):
-    """Render a script template to output file."""
-    template_path = input_path
-    result = render_text(ctx, template_path)
-    artifacts.write('scripts', Path(output_path).name, output_path, content=result)
-
-
-def get_available_fragments():
-    """Return list of available fragment names from discovered build.yaml files."""
-    return [f['name'] for f in discover_fragments()]
-
-
 class FragmentValidationError(Exception):
     """Raised when a cloud-init fragment produces invalid YAML."""
     def __init__(self, fragment_name, original_error, rendered_content):
