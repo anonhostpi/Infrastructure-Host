@@ -50,14 +50,11 @@ def create_environment(repo_root, template_dirs=None):
 
 def render_cloud_init(ctx, env, fragments):
     """Render and merge cloud-init fragments, return as dict."""
-    scripts = render_scripts(ctx)
     merged = {}
-
-    for fragment in discover_fragments():
-        fragment_name = fragment['name']
-        tpl_path = fragment['_path'] / 'fragment.yaml.tpl'
-
-        if not tpl_path.exists():
+    _y = YAML()
+    for frag in fragments:
+        tpl_path = os.path.join(frag['_path'], 'fragment.yaml.tpl')
+        if not os.path.exists(tpl_path):
             continue
 
         # Filter by include list (if specified)
