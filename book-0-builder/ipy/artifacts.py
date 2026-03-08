@@ -21,7 +21,9 @@ def save(artifacts, path=DEFAULT_PATH):
     artifacts['build_timestamp'] = datetime.now(timezone.utc).isoformat()
     Path(path).parent.mkdir(parents=True, exist_ok=True)
     with open(path, 'w', newline='\n') as f:
-        yaml.dump(artifacts, f, default_flow_style=False, sort_keys=False)
+        _y = YAML()
+        _y.default_flow_style = False
+        _y.dump(artifacts, f)
 
 
 def update(category, name, value, path=DEFAULT_PATH):

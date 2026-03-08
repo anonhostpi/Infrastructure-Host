@@ -147,4 +147,9 @@ def cidr_only(cidr_notation):
 
 def to_yaml(value):
     """Convert dict/list to YAML string."""
-    return yaml.dump(value, default_flow_style=False, allow_unicode=True).rstrip()
+    import io
+    _y = YAML()
+    _y.default_flow_style = False
+    buf = io.StringIO()
+    _y.dump(value, buf)
+    return buf.getvalue().rstrip()
