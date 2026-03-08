@@ -57,19 +57,6 @@ def render_cloud_init(ctx, env, fragments):
         if not os.path.exists(tpl_path):
             continue
 
-        # Always include iso_required fragments for ISO builds
-        if for_iso and fragment.get('iso_required', False):
-            pass  # Don't filter this fragment
-        elif layer is not None:
-            # Filter by layer (if specified)
-            frag_layer = fragment.get('build_layer', 999)
-            # build_layer can be int or list of ints
-            if isinstance(frag_layer, list):
-                if not any(l <= layer for l in frag_layer):
-                    continue
-            elif frag_layer > layer:
-                continue
-
         template_path = tpl_path.as_posix()
         rendered = render_text(ctx, template_path, scripts=scripts)
 
