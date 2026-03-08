@@ -59,3 +59,21 @@ def render_cloud_init(ctx, env, fragments):
                     merged = deep_merge(merged, data)
                 break
     return merged
+
+def main():
+    """Read JSON context from stdin, render cloud-init, write YAML to stdout."""
+    import io
+    raw = sys.stdin.read()
+    ctx = json.loads(raw)
+    repo_root = ctx.pop('__repo_root__')
+    env = create_environment(repo_root)
+    frags = discover_fragments(repo_root)
+    merged = render_cloud_init(ctx, env, frags)
+    _y = YAML()
+    _y.default_flow_style = False
+    buf = io.StringIO()
+    _y.dump(merged, buf)
+    sys.stdout.write('#cloud-config\n' + buf.getvalue())
+
+if __name__ == '__main__':
+    main()
