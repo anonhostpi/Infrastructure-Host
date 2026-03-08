@@ -69,27 +69,20 @@ def _sha512_crypt(password, salt, rounds):
         i >>= 1
     a = a_ctx.digest()
 
-    # DP: password repeated pwd_len times
     dp_ctx = hashlib.sha512()
     for _ in range(pwd_len):
         dp_ctx.update(password)
     dp = dp_ctx.digest()
-
-    # P: derived from DP
     p = b''
     i = pwd_len
     while i > 64:
         p += dp
         i -= 64
     p += dp[:i]
-
-    # DS: salt repeated (16 + a[0]) times
     ds_ctx = hashlib.sha512()
     for _ in range(16 + a[0]):
         ds_ctx.update(salt)
     ds = ds_ctx.digest()
-
-    # S: derived from DS
     s = b''
     i = len(salt)
     while i > 64:
