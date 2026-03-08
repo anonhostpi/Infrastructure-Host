@@ -22,7 +22,20 @@ def discover_fragments(repo_root, base_dirs=None):
                 meta['_path'] = dirpath
                 fragments.append(meta)
     return sorted(fragments, key=lambda x: x.get('build_order', 999))
-def create_environment(repo_root, template_dirs=None): pass  # WIP
+def create_environment(repo_root, template_dirs=None):
+    """Create Jinja2 environment with custom filters."""
+    if template_dirs is None:
+        template_dirs = ['book-1-foundation', 'book-2-cloud']
+    abs_dirs = [os.path.join(repo_root, d) for d in template_dirs]
+    env = Environment(loader=FileSystemLoader(abs_dirs), keep_trailing_newline=True)
+    env.filters['shell_quote'] = filters.shell_quote
+    env.filters['shell_array'] = filters.shell_array
+    env.filters['sha512_hash'] = filters.sha512_hash
+    env.filters['ip_only'] = filters.ip_only
+    env.filters['cidr_only'] = filters.cidr_only
+    env.filters['to_yaml'] = filters.to_yaml
+    env.filters['to_base64'] = filters.to_base64
+    return env
 def render_cloud_init(ctx, env, fragments): pass  # WIP
 def main(): pass  # WIP
 
