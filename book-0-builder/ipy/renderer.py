@@ -6,8 +6,8 @@ import os
 from ruamel.yaml import YAML
 from jinja2 import Environment, FileSystemLoader
 
-import filters
-from composer import deep_merge
+from . import filters
+from .composer import deep_merge
 
 
 def discover_fragments(repo_root, base_dirs=None):
