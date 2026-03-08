@@ -32,7 +32,9 @@ New-Module -Name SDK.Renderer -ScriptBlock {
             }
 
             # Import the renderer module
-            $scope = [IronPython.Hosting.Python]::ImportModule($engine, "ipy.renderer")
+            # ImportModule returns the top-level package scope; get the submodule from it
+            $pkgScope = [IronPython.Hosting.Python]::ImportModule($engine, "ipy.renderer")
+            $scope = $pkgScope.GetVariable("renderer")
 
             # Build context and call the rendering pipeline
             $ctx = $mod.SDK.Settings.BuildConfig.Clone()
@@ -40,9 +42,10 @@ New-Module -Name SDK.Renderer -ScriptBlock {
                 $ctx[$k] = $ExtraCtx[$k]
             }
 
-            $discover = $scope.GetVariable("discover_fragments")
-            $create_env = $scope.GetVariable("create_environment")
-            $render = $scope.GetVariable("render_cloud_init")
+            # GetMember works on Python module objects; GetVariable only works on ScriptScope
+            $discover = $engine.Operations.GetMember($scope, "discover_fragments")
+            $create_env = $engine.Operations.GetMember($scope, "create_environment")
+            $render = $engine.Operations.GetMember($scope, "render_cloud_init")
 
             $env = $engine.Operations.Invoke($create_env, $repo_root)
             $frags = $engine.Operations.Invoke($discover, $repo_root)
