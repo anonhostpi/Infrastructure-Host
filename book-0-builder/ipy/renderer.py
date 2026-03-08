@@ -48,26 +48,6 @@ def create_environment(repo_root, template_dirs=None):
 
 
 
-
-
-class FragmentValidationError(Exception):
-    """Raised when a cloud-init fragment produces invalid YAML."""
-    def __init__(self, fragment_name, original_error, rendered_content):
-        self.fragment_name = fragment_name
-        self.original_error = original_error
-        self.rendered_content = rendered_content
-        super().__init__(
-            f"Fragment '{fragment_name}' produced invalid YAML:\n"
-            f"  {original_error}\n"
-            f"Rendered content:\n{self._numbered_content()}"
-        )
-
-    def _numbered_content(self):
-        """Return rendered content with line numbers for debugging."""
-        lines = self.rendered_content.split('\n')
-        return '\n'.join(f"  {i+1:3d}: {line}" for i, line in enumerate(lines))
-
-
 def render_cloud_init(ctx, include=None, exclude=None, layer=None, for_iso=False):
     """Render and merge cloud-init fragments, return as dict.
 
