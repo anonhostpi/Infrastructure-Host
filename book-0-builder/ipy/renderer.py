@@ -13,7 +13,16 @@ def discover_fragments(repo_root, base_dirs=None):
         base_dirs = ['book-1-foundation', 'book-2-cloud']
     fragments = []
     _y = YAML()
-
+    for base_dir in base_dirs:
+        search = os.path.join(repo_root, base_dir)
+        for dirpath, _, files in os.walk(search):
+            if 'build.yaml' in files:
+                fpath = os.path.join(dirpath, 'build.yaml')
+                with open(fpath) as f:
+                    meta = _y.load(f)
+                meta['_path'] = dirpath
+                fragments.append(meta)
+    return sorted(fragments, key=lambda x: x.get('build_order', 999))
 
 def create_environment(template_dirs=None):
     """Create Jinja2 environment with custom filters."""
