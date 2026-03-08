@@ -42,21 +42,8 @@ def create_environment(repo_root, template_dirs=None):
 
 
 
-def render_cloud_init(ctx, include=None, exclude=None, layer=None, for_iso=False):
-    """Render and merge cloud-init fragments, return as dict.
-
-    Args:
-        ctx: Build context
-        include: List of fragment names to include (default: all)
-        exclude: List of fragment names to exclude (default: none)
-        layer: Maximum build_layer to include (default: all)
-        for_iso: If True, always include iso_required fragments
-
-    Fragment names are matched against the 'name' field in build.yaml.
-
-    Raises:
-        FragmentValidationError: If a fragment produces invalid YAML
-    """
+def render_cloud_init(ctx, env, fragments):
+    """Render and merge cloud-init fragments, return as dict."""
     scripts = render_scripts(ctx)
     merged = {}
 
