@@ -46,64 +46,22 @@ def create_environment(repo_root, template_dirs=None):
     return env
 
 
-def render_cloud_init(ctx, include=None, exclude=None, layer=None, for_iso=False):
-    """Render and merge cloud-init fragments, return as dict.
-
-    Args:
-        ctx: Build context
-        include: List of fragment names to include (default: all)
-        exclude: List of fragment names to exclude (default: none)
-        layer: Maximum build_layer to include (default: all)
-        for_iso: If True, always include iso_required fragments
-
-    Fragment names are matched against the 'name' field in build.yaml.
-
-    Raises:
-        FragmentValidationError: If a fragment produces invalid YAML
-    """
-    scripts = render_scripts(ctx)
+def render_cloud_init(ctx, env, fragments):
+    """Render and merge cloud-init fragments, return as dict."""
     merged = {}
-
-    for fragment in discover_fragments():
-        fragment_name = fragment['name']
-        tpl_path = fragment['_path'] / 'fragment.yaml.tpl'
-
-        if not tpl_path.exists():
+    _y = YAML()
+    for frag in fragments:
+        tpl_path = os.path.join(frag['_path'], 'fragment.yaml.tpl')
+        if not os.path.exists(tpl_path):
             continue
-
-        # Filter by include list (if specified)
-        if include is not None and fragment_name not in include:
-            continue
-
-        # Filter by exclude list (if specified)
-        if exclude is not None and fragment_name in exclude:
-            continue
-
-        # Always include iso_required fragments for ISO builds
-        if for_iso and fragment.get('iso_required', False):
-            pass  # Don't filter this fragment
-        elif layer is not None:
-            # Filter by layer (if specified)
-            frag_layer = fragment.get('build_layer', 999)
-            # build_layer can be int or list of ints
-            if isinstance(frag_layer, list):
-                if not any(l <= layer for l in frag_layer):
-                    continue
-            elif frag_layer > layer:
-                continue
-
-        template_path = tpl_path.as_posix()
-        rendered = render_text(ctx, template_path, scripts=scripts)
-
-        # Validate YAML with helpful error message
-        try:
-            fragment = yaml.safe_load(rendered)
-        except yaml.YAMLError as e:
-            raise FragmentValidationError(fragment_name, e, rendered) from e
-
-        if fragment:
-            merged = deep_merge(merged, fragment)
-
+        for sp in env.loader.searchpath:
+            rel = os.path.relpath(tpl_path, sp)
+            if not rel.startswith('..'):
+                rendered = env.get_template(rel.replace('\\', '/')).render(**ctx)
+                data = _y.load(rendered)
+                if data:
+                    merged = deep_merge(merged, data)
+                break
     return merged
 
 
