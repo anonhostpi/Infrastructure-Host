@@ -21,20 +21,34 @@ New-Module -Name SDK.Renderer -ScriptBlock {
         Render = {
             param([hashtable]$ExtraCtx = @{})
             $engine = $this.Init()
-            $ipy_dir = Join-Path $mod.SDK.Root() "book-0-builder/ipy"
+            $book_dir = Join-Path $mod.SDK.Root() "book-0-builder"
+            $repo_root = $mod.SDK.Root()
+
+            # Add ipy/ parent to search paths so engine can find the package
+            $paths = $engine.GetSearchPaths()
+            if (-not $paths.Contains($book_dir)) {
+                $paths.Add($book_dir)
+                $engine.SetSearchPaths($paths)
+            }
+
+            # Import the renderer module
+            $scope = [IronPython.Hosting.Python]::ImportModule($engine, "ipy.renderer")
+
+            # Build context and call the rendering pipeline
             $ctx = $mod.SDK.Settings.BuildConfig.Clone()
-            $ctx['__repo_root__'] = $mod.SDK.Root()
             foreach ($k in ($ExtraCtx.Keys | ForEach-Object { $_ })) {
                 $ctx[$k] = $ExtraCtx[$k]
             }
-            $json_ctx = $ctx | ConvertTo-Json -Depth 20
-            $result = $engine.Execute("
-import sys, os
-sys.path.insert(0, r'$ipy_dir')
-sys.stdin = __import__('io').StringIO($($json_ctx | ConvertTo-Json))
-exec(open(r'$ipy_dir/renderer.py').read())
-")
-            return $result
+
+            $discover = $scope.GetVariable("discover_fragments")
+            $create_env = $scope.GetVariable("create_environment")
+            $render = $scope.GetVariable("render_cloud_init")
+
+            $env = $engine.Operations.Invoke($create_env, $repo_root)
+            $frags = $engine.Operations.Invoke($discover, $repo_root)
+            $merged = $engine.Operations.Invoke($render, $ctx, $env, $frags)
+
+            return $merged
         }
     }
 
