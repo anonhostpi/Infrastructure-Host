@@ -93,4 +93,13 @@ def _sha512_crypt(password, salt, rounds):
         if i & 1: ctx.update(c)
         else: ctx.update(p)
         c = ctx.digest()
-    pass  # WIP: base64 encode
+    b64chars = './0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+    result = ''
+    order = [
+        (0, 21, 42), (22, 43, 1), (44, 2, 23), (3, 24, 45), (25, 46, 4),
+        (47, 5, 26), (6, 27, 48), (28, 49, 7), (50, 8, 29), (9, 30, 51),
+        (31, 52, 10), (53, 11, 32), (12, 33, 54), (34, 55, 13), (56, 14, 35),
+        (15, 36, 57), (37, 58, 16), (59, 17, 38), (18, 39, 60), (40, 61, 19),
+        (62, 20, 41), (63,)
+    ]
+    pass  # WIP: encode loop
