@@ -1,9 +1,10 @@
-"""Custom Jinja2 filters for template rendering."""
+"""Custom Jinja2 filters for template rendering (IronPython-compatible)."""
 
 import hashlib
 import base64
 import os
-import yaml
+
+from ruamel.yaml import YAML as _YAML
 
 
 def to_base64(value):
