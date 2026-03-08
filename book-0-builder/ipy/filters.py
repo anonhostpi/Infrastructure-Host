@@ -101,10 +101,8 @@ def _sha512_crypt(password, salt, rounds):
         else: ctx.update(p)
         c = ctx.digest()
 
-    # Encode result in base64-like format
     b64chars = './0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
     result = ''
-    # SHA-512 specific byte ordering
     order = [
         (0, 21, 42), (22, 43, 1), (44, 2, 23), (3, 24, 45), (25, 46, 4),
         (47, 5, 26), (6, 27, 48), (28, 49, 7), (50, 8, 29), (9, 30, 51),
