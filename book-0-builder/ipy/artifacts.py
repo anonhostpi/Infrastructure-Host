@@ -1,6 +1,6 @@
 """Build artifact tracking for output manifest."""
 
-from pathlib import Path
+import os
 from datetime import datetime, timezone
 import yaml
 

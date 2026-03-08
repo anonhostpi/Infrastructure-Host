@@ -1,6 +1,6 @@
 """Template rendering functions for deployment artifacts."""
 
-from pathlib import Path
+import os
 import yaml
 from jinja2 import Environment, FileSystemLoader
 
