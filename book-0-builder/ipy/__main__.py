@@ -114,7 +114,7 @@ def main():
             sys.exit(1)
         print('Available cloud-init fragments:')
         for f in fragments:
-            print(f'  {f}')
+            print('  ' + f)
         sys.exit(0)
 
     # Handle artifacts command
@@ -145,7 +145,7 @@ def main():
                 category, name = None, args.name
 
             artifacts.update(category, name, args.value, path=args.file)
-            print(f'Updated: {args.name} = {args.value}')
+            print('Updated: ' + args.name + ' = ' + args.value)
             sys.exit(0)
 
     # Handle render command
@@ -171,7 +171,7 @@ def main():
                   file=sys.stderr)
         render_autoinstall_to_file(ctx, args.output)
 
-    print(f'Generated: {args.output}')
+    print('Generated: ' + args.output)
 
 
 if __name__ == '__main__':

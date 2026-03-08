@@ -109,15 +109,15 @@ class FragmentValidationError(Exception):
         self.original_error = original_error
         self.rendered_content = rendered_content
         super().__init__(
-            f"Fragment '{fragment_name}' produced invalid YAML:\n"
-            f"  {original_error}\n"
-            f"Rendered content:\n{self._numbered_content()}"
+            "Fragment '" + fragment_name + "' produced invalid YAML:\n"
+            "  " + str(original_error) + "\n"
+            "Rendered content:\n" + self._numbered_content()
         )
 
     def _numbered_content(self):
         """Return rendered content with line numbers for debugging."""
         lines = self.rendered_content.split('\n')
-        return '\n'.join(f"  {i+1:3d}: {line}" for i, line in enumerate(lines))
+        return '\n'.join("  {:3d}: {}".format(i + 1, line) for i, line in enumerate(lines))
 
 
 def render_cloud_init(ctx, include=None, exclude=None, layer=None, for_iso=False):

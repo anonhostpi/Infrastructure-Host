@@ -295,7 +295,7 @@ class BuildContext:
             claude_model = claude_config.get('model', 'claude-sonnet-4-5-latest')
             # OpenCode uses format "anthropic/<model>"
             if '/' not in claude_model:
-                opencode_model = f"anthropic/{claude_model}"
+                opencode_model = "anthropic/" + claude_model
             else:
                 opencode_model = claude_model
 
@@ -309,7 +309,7 @@ class BuildContext:
         if isinstance(copilot_config, dict) and copilot_config.get('enabled', False):
             copilot_model = copilot_config.get('model', 'gpt-4')
             if '/' not in copilot_model:
-                opencode_model = f"github-copilot/{copilot_model}"
+                opencode_model = "github-copilot/" + copilot_model
             else:
                 opencode_model = copilot_model
 

@@ -31,7 +31,7 @@ def sha512_hash(password):
     rounds = 5000
     # Compute SHA-512 hash using the crypt algorithm
     hash_result = _sha512_crypt(password, salt, rounds)
-    return f'$6$rounds={rounds}${salt}${hash_result}'
+    return '$6$rounds=' + str(rounds) + '$' + salt + '$' + hash_result
 
 
 def _sha512_crypt(password, salt, rounds):
