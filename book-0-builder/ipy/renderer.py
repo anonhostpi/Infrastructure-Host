@@ -46,25 +46,6 @@ def create_environment(repo_root, template_dirs=None):
     return env
 
 
-# Global Jinja2 environment
-_env = None
-
-
-def get_environment():
-    """Get or create the global Jinja2 environment."""
-    global _env
-    if _env is None:
-        _env = create_environment()
-    return _env
-
-
-def render_text(ctx, template_path, **extra_context):
-    """Render a template, return as string."""
-    env = get_environment()
-    template = env.get_template(template_path)
-    return template.render(**ctx.to_dict(), **extra_context)
-
-
 def render_scripts(ctx):
     """Render all script templates from discovered fragments."""
     scripts = {}
