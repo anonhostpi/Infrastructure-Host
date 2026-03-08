@@ -73,4 +73,14 @@ def _sha512_crypt(password, salt, rounds):
         p += dp
         i -= 64
     p += dp[:i]
-    pass  # WIP: ds/main loop
+    ds_ctx = hashlib.sha512()
+    for _ in range(16 + a[0]):
+        ds_ctx.update(salt)
+    ds = ds_ctx.digest()
+    s = b''
+    i = len(salt)
+    while i > 64:
+        s += ds
+        i -= 64
+    s += ds[:i]
+    pass  # WIP: main loop
