@@ -7,10 +7,6 @@ import filters
 from composer import deep_merge
 
 
-# Register the custom representer
-yaml.add_representer(str, str_representer)
-
-
 def discover_fragments(base_dirs=None):
     """Discover fragments by finding build.yaml files."""
     if base_dirs is None:
