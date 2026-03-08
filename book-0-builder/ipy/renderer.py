@@ -67,24 +67,6 @@ def render_cloud_init(ctx, env, fragments):
     return merged
 
 
-def render_cloud_init_to_file(ctx, output_path, include=None, exclude=None, layer=None, for_iso=False):
-    """Render cloud-init to output file.
-
-    Args:
-        ctx: Build context
-        output_path: Path to write output
-        include: List of fragment names to include (default: all)
-        exclude: List of fragment names to exclude (default: none)
-        layer: Maximum build_layer to include (default: all)
-        for_iso: If True, always include iso_required fragments
-    """
-    merged = render_cloud_init(ctx, include=include, exclude=exclude, layer=layer, for_iso=for_iso)
-    artifacts.write(
-        None, 'cloud_init', output_path,
-        content='#cloud-config\n',
-        writer=lambda f: yaml.dump(merged, f, default_flow_style=False, sort_keys=False, width=1000)
-    )
-
 
 def render_autoinstall(ctx):
     """Render autoinstall user-data, return as string."""
