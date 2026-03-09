@@ -124,15 +124,16 @@ New-Module -Name SDK.Builder -ScriptBlock {
             if (-not $artifacts -or -not $artifacts."$artifactKey") {
                 $this.Build($Layer)
                 $artifacts = $this.Artifacts
-                if (-not $artifacts -or -not $artifacts."$artifactKey") {
-                    throw "No $artifactKey artifact found after build"
-                }
             }
             $configKey = if ($Backend -eq "Multipass") { "CloudInit" } else { "IsoPath" }
-            $remote = $artifacts."$artifactKey"
-            $local = Join-Path $mod.SDK.Root() "output" (Split-Path $remote -Leaf)
-            $this.Pull($remote, $local)
-            $config."$configKey" = $local
+            if ($Backend -eq "Multipass") {
+                $config."$configKey" = Join-Path $mod.SDK.Root() "output/cloud-init.yaml"
+            } else {
+                $remote = $artifacts."$artifactKey"
+                $local = Join-Path $mod.SDK.Root() "output" (Split-Path $remote -Leaf)
+                $this.Pull($remote, $local)
+                $config."$configKey" = $local
+            }
             $worker = $mod.SDK."$Backend".Worker(@{ Config = $config })
             $this.Register($config.Name, $worker)
             $worker.Setup($true)
