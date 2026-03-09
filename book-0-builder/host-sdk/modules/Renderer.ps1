@@ -37,6 +37,14 @@ New-Module -Name SDK.Renderer -ScriptBlock {
             $pyLayer = if ($Layer -gt 0) { $Layer } else { $null }
             return $mod.Engine.Operations.Invoke($render, $ctx, $null, $null, $pyLayer, $ForIso)
         }
+        RenderToFile = {
+            param([string]$OutputPath, [int]$Layer = 0)
+            $this.Init()
+            $ctx = $mod.Engine.Operations.Invoke($mod.BuildContextClass)
+            $renderFn = $mod.Engine.Operations.GetMember($mod.RendererMod, "render_cloud_init_to_file")
+            $pyLayer = if ($Layer -gt 0) { $Layer } else { $null }
+            $mod.Engine.Operations.Invoke($renderFn, $ctx, $OutputPath, $null, $null, $pyLayer)
+        }
     }
 
     $SDK.Extend("Renderer", $Renderer)
