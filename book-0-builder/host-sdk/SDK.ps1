@@ -78,7 +78,6 @@ New-Module -Name SDK -ScriptBlock {
     & "$PSScriptRoot/modules/Vbox.ps1" -SDK $SDK
     & "$PSScriptRoot/modules/HyperV.ps1" -SDK $SDK
     & "$PSScriptRoot/modules/Multipass.ps1" -SDK $SDK
-    & "$PSScriptRoot/modules/Renderer.ps1" -SDK $SDK
     & "$PSScriptRoot/modules/Builder.ps1" -SDK $SDK
     & "$PSScriptRoot/modules/Fragments.ps1" -SDK $SDK
     & "$PSScriptRoot/modules/Testing.ps1" -SDK $SDK
