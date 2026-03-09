@@ -5,7 +5,7 @@ param(
 
 New-Module -Name SDK.Renderer -ScriptBlock {
     param([Parameter(Mandatory = $true)] $SDK)
-    $mod = @{ SDK = $SDK; Engine = $null }
+    $mod = @{ SDK = $SDK; Engine = $null; RendererMod = $null; BuildContextClass = $null }
     . "$PSScriptRoot\..\helpers\PowerShell.ps1"
 
     $Renderer = New-Object PSObject
@@ -15,6 +15,17 @@ New-Module -Name SDK.Renderer -ScriptBlock {
             if ($null -eq $mod.Engine) {
                 $builder_dir = Join-Path $mod.SDK.Root() "book-0-builder/builder"
                 $mod.Engine = & "$builder_dir/engine.ps1" -SDK $mod.SDK
+                $book_dir = Join-Path $mod.SDK.Root() "book-0-builder"
+                $paths = $mod.Engine.GetSearchPaths()
+                if (-not $paths.Contains($book_dir)) {
+                    $paths.Add($book_dir)
+                    $mod.Engine.SetSearchPaths($paths)
+                }
+                $rPkg = [IronPython.Hosting.Python]::ImportModule($mod.Engine, "builder.renderer")
+                $mod.RendererMod = $rPkg.GetVariable("renderer")
+                $cPkg = [IronPython.Hosting.Python]::ImportModule($mod.Engine, "builder.context")
+                $cMod = $cPkg.GetVariable("context")
+                $mod.BuildContextClass = $mod.Engine.Operations.GetMember($cMod, "BuildContext")
             }
             return $mod.Engine
         }
