@@ -19,28 +19,18 @@ New-Module -Name SDK.Renderer -ScriptBlock {
             return $mod.Engine
         }
         Render = {
-            param([hashtable]$ExtraCtx = @{})
+            param([int]$Layer = 0, [bool]$ForIso = $false)
             $engine = $this.Init()
             $book_dir = Join-Path $mod.SDK.Root() "book-0-builder"
-            $repo_root = $mod.SDK.Root()
 
-            # Add builder/ parent to search paths so engine can find the package
             $paths = $engine.GetSearchPaths()
             if (-not $paths.Contains($book_dir)) {
                 $paths.Add($book_dir)
                 $engine.SetSearchPaths($paths)
             }
 
-            # Import the renderer module
-            # ImportModule returns the top-level package scope; get the submodule from it
             $pkgScope = [IronPython.Hosting.Python]::ImportModule($engine, "builder.renderer")
             $scope = $pkgScope.GetVariable("renderer")
-
-            # Build context and call the rendering pipeline
-            $ctx = $mod.SDK.Settings.BuildConfig.Clone()
-            foreach ($k in ($ExtraCtx.Keys | ForEach-Object { $_ })) {
-                $ctx[$k] = $ExtraCtx[$k]
-            }
 
             # GetMember works on Python module objects; GetVariable only works on ScriptScope
             $discover = $engine.Operations.GetMember($scope, "discover_fragments")
