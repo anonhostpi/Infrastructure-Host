@@ -45,6 +45,13 @@ New-Module -Name SDK.Renderer -ScriptBlock {
             $pyLayer = if ($Layer -gt 0) { $Layer } else { $null }
             $mod.Engine.Operations.Invoke($renderFn, $ctx, $OutputPath, $null, $null, $pyLayer)
         }
+        RenderAutoinstallToFile = {
+            param([string]$OutputPath)
+            $this.Init()
+            $ctx = $mod.Engine.Operations.Invoke($mod.BuildContextClass)
+            $renderFn = $mod.Engine.Operations.GetMember($mod.RendererMod, "render_autoinstall_to_file")
+            $mod.Engine.Operations.Invoke($renderFn, $ctx, $OutputPath)
+        }
     }
 
     $SDK.Extend("Renderer", $Renderer)
