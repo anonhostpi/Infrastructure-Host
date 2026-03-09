@@ -32,17 +32,10 @@ New-Module -Name SDK.Renderer -ScriptBlock {
         Render = {
             param([int]$Layer = 0, [bool]$ForIso = $false)
             $this.Init()
-
-            # GetMember works on Python module objects; GetVariable only works on ScriptScope
-            $discover = $mod.Engine.Operations.GetMember($mod.RendererMod, "discover_fragments")
-            $create_env = $engine.Operations.GetMember($scope, "create_environment")
-            $render = $engine.Operations.GetMember($scope, "render_cloud_init")
-
-            $env = $engine.Operations.Invoke($create_env, $repo_root)
-            $frags = $engine.Operations.Invoke($discover, $repo_root)
-            $merged = $engine.Operations.Invoke($render, $ctx, $env, $frags)
-
-            return $merged
+            $ctx = $mod.Engine.Operations.Invoke($mod.BuildContextClass)
+            $render = $mod.Engine.Operations.GetMember($mod.RendererMod, "render_cloud_init")
+            $pyLayer = if ($Layer -gt 0) { $Layer } else { $null }
+            return $mod.Engine.Operations.Invoke($render, $ctx, $null, $null, $pyLayer, $ForIso)
         }
     }
 
