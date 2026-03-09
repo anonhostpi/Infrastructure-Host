@@ -11,7 +11,7 @@ New-Module -Name SDK.Builder -ScriptBlock {
 
     . "$PSScriptRoot\..\helpers\PowerShell.ps1"
 
-    $mod = @{ SDK = $SDK; Engine = $null; RendererMod = $null; BuildContextClass = $null }
+    $mod = @{ SDK = $SDK; Engine = $null }
     $mod.Runners = @{}
 
     $Builder = New-Object PSObject -Property @{
@@ -37,7 +37,7 @@ New-Module -Name SDK.Builder -ScriptBlock {
             }
         }
         Artifacts = {
-            $path = Join-Path $mod.SDK.Root() "output/artifacts.yaml"
+            $path = "$($mod.SDK.Root())/output/artifacts.yaml"
             if (Test-Path $path) {
                 return Get-Content $path -Raw | ConvertFrom-Yaml
             }
@@ -47,46 +47,67 @@ New-Module -Name SDK.Builder -ScriptBlock {
     $Builder = $SDK.Multipass.Worker($Builder)
 
     Add-ScriptMethods $Builder @{
-        InitRenderer = {
+        Engine = {
             if ($null -eq $mod.Engine) {
-                $builder_dir = Join-Path $mod.SDK.Root() "book-0-builder/builder"
-                $mod.Engine = & "$builder_dir/engine.ps1" -SDK $mod.SDK
-                $book_dir = Join-Path $mod.SDK.Root() "book-0-builder"
+                # Bootstrap IronPython + packages
+                $nuget = "$($mod.SDK.Root())/book-0-builder/host-sdk/helpers/NuGet.ps1"
+                . $nuget
+                $mod.Engine = Install-IronPython
+
+                # Install required packages
+                Install-IpyPackage $mod.Engine "ruamel.yaml"
+                Install-IpyPackage $mod.Engine "jinja2"
+
+                # Add builder package to search paths
+                $book_dir = "$($mod.SDK.Root())/book-0-builder"
                 $paths = $mod.Engine.GetSearchPaths()
                 if (-not $paths.Contains($book_dir)) {
                     $paths.Add($book_dir)
                     $mod.Engine.SetSearchPaths($paths)
                 }
-                $rPkg = [IronPython.Hosting.Python]::ImportModule($mod.Engine, "builder.renderer")
-                $mod.RendererMod = $rPkg.GetVariable("renderer")
-                $cPkg = [IronPython.Hosting.Python]::ImportModule($mod.Engine, "builder.context")
-                $cMod = $cPkg.GetVariable("context")
-                $mod.BuildContextClass = $mod.Engine.Operations.GetMember($cMod, "BuildContext")
             }
             return $mod.Engine
         }
         Render = {
-            param([int]$Layer = 0, [bool]$ForIso = $false)
-            $this.InitRenderer()
-            $ctx = $mod.Engine.Operations.Invoke($mod.BuildContextClass)
-            $render = $mod.Engine.Operations.GetMember($mod.RendererMod, "render_cloud_init")
+            param(
+                [string]$OutputPath,
+                [int]$Layer = 0,
+                [bool]$ForIso = $false
+            )
+            $engine = $this.Engine()
+
+            $rPkg = [IronPython.Hosting.Python]::ImportModule($engine, "builder.renderer")
+            $renderer = $rPkg.GetVariable("renderer")
+            $cPkg = [IronPython.Hosting.Python]::ImportModule($engine, "builder.context")
+            $context = $cPkg.GetVariable("context")
+            $BuildContext = $engine.Operations.GetMember($context, "BuildContext")
+            $ctx = $engine.Operations.Invoke($BuildContext)
+
             $pyLayer = if ($Layer -gt 0) { $Layer } else { $null }
-            return $mod.Engine.Operations.Invoke($render, $ctx, $null, $null, $pyLayer, $ForIso)
-        }
-        RenderToFile = {
-            param([string]$OutputPath, [int]$Layer = 0)
-            $this.InitRenderer()
-            $ctx = $mod.Engine.Operations.Invoke($mod.BuildContextClass)
-            $renderFn = $mod.Engine.Operations.GetMember($mod.RendererMod, "render_cloud_init_to_file")
-            $pyLayer = if ($Layer -gt 0) { $Layer } else { $null }
-            $mod.Engine.Operations.Invoke($renderFn, $ctx, $OutputPath, $null, $null, $pyLayer)
+
+            if ($OutputPath) {
+                $renderFn = $engine.Operations.GetMember($renderer, "render_cloud_init_to_file")
+                $engine.Operations.Invoke($renderFn, $ctx, $OutputPath, $null, $null, $pyLayer)
+            } else {
+                $renderFn = $engine.Operations.GetMember($renderer, "render_cloud_init")
+                return $engine.Operations.Invoke($renderFn, $ctx, $null, $null, $pyLayer, $ForIso)
+            }
         }
         RenderAutoinstallToFile = {
-            param([string]$OutputPath)
-            $this.InitRenderer()
-            $ctx = $mod.Engine.Operations.Invoke($mod.BuildContextClass)
-            $renderFn = $mod.Engine.Operations.GetMember($mod.RendererMod, "render_autoinstall_to_file")
-            $mod.Engine.Operations.Invoke($renderFn, $ctx, $OutputPath)
+            param(
+                [string]$OutputPath
+            )
+            $engine = $this.Engine()
+
+            $rPkg = [IronPython.Hosting.Python]::ImportModule($engine, "builder.renderer")
+            $renderer = $rPkg.GetVariable("renderer")
+            $cPkg = [IronPython.Hosting.Python]::ImportModule($engine, "builder.context")
+            $context = $cPkg.GetVariable("context")
+            $BuildContext = $engine.Operations.GetMember($context, "BuildContext")
+            $ctx = $engine.Operations.Invoke($BuildContext)
+
+            $renderFn = $engine.Operations.GetMember($renderer, "render_autoinstall_to_file")
+            $engine.Operations.Invoke($renderFn, $ctx, $OutputPath)
         }
         Clean = {
             $make = @("cd /home/ubuntu/infra-host", "make clean") -join " && "
@@ -119,11 +140,11 @@ New-Module -Name SDK.Builder -ScriptBlock {
         }
         Build = {
             param([int]$Layer)
-            $outputDir = Join-Path $mod.SDK.Root() "output"
+            $outputDir = "$($mod.SDK.Root())/output"
             if (-not (Test-Path $outputDir)) { New-Item -ItemType Directory -Path $outputDir | Out-Null }
             if ($Layer) {
-                $output = Join-Path $outputDir "cloud-init.yaml"
-                $this.RenderToFile($output, $Layer)
+                $output = "$outputDir/cloud-init.yaml"
+                $this.Render($output, $Layer)
                 return $true
             }
             # Full build (make all) still requires VM
@@ -157,7 +178,11 @@ New-Module -Name SDK.Builder -ScriptBlock {
             return $Worker
         }
         Runner = {
-            param([hashtable]$Config, [string]$Backend = "Multipass", [int]$Layer = 0)
+            param(
+                [hashtable]$Config,
+                [string]$Backend = "Multipass",
+                [int]$Layer = 0
+            )
             $config = @{}
             foreach ($k in ($Config.Keys | ForEach-Object { $_ })) { $config[$k] = $Config[$k] }
             $artifacts = $this.Artifacts
@@ -168,13 +193,13 @@ New-Module -Name SDK.Builder -ScriptBlock {
             }
             $configKey = if ($Backend -eq "Multipass") { "CloudInit" } else { "IsoPath" }
             if ($Backend -eq "Multipass") {
-                $config."$configKey" = Join-Path $mod.SDK.Root() "output/cloud-init.yaml"
+                $local = $artifacts."$artifactKey"
             } else {
                 $remote = $artifacts."$artifactKey"
-                $local = Join-Path $mod.SDK.Root() "output" (Split-Path $remote -Leaf)
+                $local = "$($mod.SDK.Root())/output/$(Split-Path $remote -Leaf)"
                 $this.Pull($remote, $local)
-                $config."$configKey" = $local
             }
+            $config."$configKey" = $local
             $worker = $mod.SDK."$Backend".Worker(@{ Config = $config })
             $this.Register($config.Name, $worker)
             $worker.Setup($true)
