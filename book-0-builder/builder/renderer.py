@@ -181,7 +181,7 @@ def render_cloud_init(ctx, include=None, exclude=None, layer=None, for_iso=False
     return merged
 
 
-def render_cloud_init_to_file(ctx, output_path, include=None, exclude=None, layer=None, for_iso=False):
+def render_cloud_init_to_file(ctx, output_path, include=None, exclude=None, layer=None, for_iso=False, host='unknown'):
     """Render cloud-init to output file.
 
     Args:
@@ -191,12 +191,14 @@ def render_cloud_init_to_file(ctx, output_path, include=None, exclude=None, laye
         exclude: List of fragment names to exclude (default: none)
         layer: Maximum build_layer to include (default: all)
         for_iso: If True, always include iso_required fragments
+        host: Build host identifier ('worker' or 'host')
     """
     merged = render_cloud_init(ctx, include=include, exclude=exclude, layer=layer, for_iso=for_iso)
     artifacts.write(
         None, 'cloud_init', output_path,
         content='#cloud-config\n',
-        writer=lambda f: YAML().dump(merged, f)
+        writer=lambda f: YAML().dump(merged, f),
+        host=host
     )
 
 
@@ -224,7 +226,7 @@ def render_autoinstall(ctx, include=None, exclude=None, layer=None, for_iso=True
     return YAML().load(rendered)
 
 
-def render_autoinstall_to_file(ctx, output_path, include=None, exclude=None, layer=None, for_iso=True):
+def render_autoinstall_to_file(ctx, output_path, include=None, exclude=None, layer=None, for_iso=True, host='unknown'):
     """Render autoinstall to output file.
 
     Args:
@@ -234,6 +236,7 @@ def render_autoinstall_to_file(ctx, output_path, include=None, exclude=None, lay
         exclude: List of fragment names to exclude (default: none)
         layer: Maximum build_layer to include (default: all)
         for_iso: If True, always include iso_required fragments (default: True)
+        host: Build host identifier ('worker' or 'host')
     """
     merged = render_autoinstall(
         ctx, include=include, exclude=exclude, layer=layer, for_iso=for_iso
@@ -241,5 +244,6 @@ def render_autoinstall_to_file(ctx, output_path, include=None, exclude=None, lay
     artifacts.write(
         None, 'autoinstall', output_path,
         content='',
-        writer=lambda f: YAML().dump(merged, f)
+        writer=lambda f: YAML().dump(merged, f),
+        host=host
     )

@@ -67,6 +67,11 @@ def main():
         action='store_true',
         help='Building for ISO (always include iso_required fragments)'
     )
+    render_parser.add_argument(
+        '--host',
+        default='unknown',
+        help='Build host identifier (e.g., worker, host)'
+    )
 
     # list-fragments subcommand
     list_parser = subparsers.add_parser(
@@ -163,7 +168,8 @@ def main():
             include=args.include,
             exclude=args.exclude,
             layer=args.layer,
-            for_iso=getattr(args, 'for_iso', False)
+            for_iso=getattr(args, 'for_iso', False),
+            host=args.host
         )
     elif args.target == 'autoinstall':
         render_autoinstall_to_file(
@@ -172,7 +178,8 @@ def main():
             include=args.include,
             exclude=args.exclude,
             layer=args.layer,
-            for_iso=getattr(args, 'for_iso', True)
+            for_iso=getattr(args, 'for_iso', True),
+            host=args.host
         )
 
     print('Generated: ' + args.output)

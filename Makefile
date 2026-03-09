@@ -51,16 +51,16 @@ cloud-init: output/cloud-init.yaml
 
 output/cloud-init.yaml: $(FRAGMENTS) $(SCRIPTS) $(CONFIGS) $(BUILD_YAMLS)
 ifdef LAYER
-	python3 -m builder render cloud-init -o $@ --layer $(LAYER)
+	python3 -m builder render cloud-init -o $@ --layer $(LAYER) --host worker
 else
-	python3 -m builder render cloud-init -o $@ $(INCLUDE) $(EXCLUDE)
+	python3 -m builder render cloud-init -o $@ $(INCLUDE) $(EXCLUDE) --host worker
 endif
 
 # Generate autoinstall user-data (renders scripts + cloud-init internally)
 autoinstall: output/user-data
 
 output/user-data: $(FRAGMENTS) $(SCRIPTS) $(CONFIGS) $(BUILD_YAMLS)
-	python3 -m builder render autoinstall -o $@
+	python3 -m builder render autoinstall -o $@ --host worker
 
 # Build ISO (Modified ISO method - embeds user-data in Ubuntu ISO)
 # Run inside multipass VM where output/ is mounted

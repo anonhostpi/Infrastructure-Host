@@ -87,7 +87,7 @@ New-Module -Name SDK.Builder -ScriptBlock {
 
             if ($OutputPath) {
                 $renderFn = $engine.Operations.GetMember($renderer, "render_cloud_init_to_file")
-                $engine.Operations.Invoke($renderFn, $ctx, $OutputPath, $null, $null, $pyLayer)
+                $engine.Operations.Invoke($renderFn, $ctx, $OutputPath, $null, $null, $pyLayer, $false, "host")
             } else {
                 $renderFn = $engine.Operations.GetMember($renderer, "render_cloud_init")
                 return $engine.Operations.Invoke($renderFn, $ctx, $null, $null, $pyLayer, $ForIso)
@@ -112,7 +112,7 @@ New-Module -Name SDK.Builder -ScriptBlock {
 
             if ($OutputPath) {
                 $renderFn = $engine.Operations.GetMember($renderer, "render_autoinstall_to_file")
-                $engine.Operations.Invoke($renderFn, $ctx, $OutputPath, $null, $null, $pyLayer, $ForIso)
+                $engine.Operations.Invoke($renderFn, $ctx, $OutputPath, $null, $null, $pyLayer, $ForIso, "host")
             } else {
                 $renderFn = $engine.Operations.GetMember($renderer, "render_autoinstall")
                 return $engine.Operations.Invoke($renderFn, $ctx, $null, $null, $pyLayer, $ForIso)
