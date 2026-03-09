@@ -78,9 +78,16 @@ New-Module -Name SDK.Builder -ScriptBlock {
         }
         Build = {
             param([int]$Layer)
-            $this.Clean()  # Always clean before build
-            $target = if ($Layer) { "make cloud-init LAYER=$Layer" } else { "make all" }
-            $make = @("cd /home/ubuntu/infra-host", $target) -join " && "
+            $outputDir = Join-Path $mod.SDK.Root() "output"
+            if (-not (Test-Path $outputDir)) { New-Item -ItemType Directory -Path $outputDir | Out-Null }
+            if ($Layer) {
+                $output = Join-Path $outputDir "cloud-init.yaml"
+                $mod.SDK.Renderer.RenderToFile($output, $Layer)
+                return $true
+            }
+            # Full build (make all) still requires VM
+            $this.Clean()
+            $make = @("cd /home/ubuntu/infra-host", "make all") -join " && "
             return $this.Exec($make).Success
         }
         Stage = {
