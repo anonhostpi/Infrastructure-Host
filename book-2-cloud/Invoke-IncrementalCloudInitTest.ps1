@@ -8,7 +8,6 @@ $result = $SDK.CloudInit.Test.Run($Layer)
 # Cleanup
 if (-not $SkipCleanup) {
     $SDK.CloudInit.Cleanup()
-    $SDK.Builder.Destroy()
 }
 
 exit $(if ($result.Success) { 0 } else { 1 })
