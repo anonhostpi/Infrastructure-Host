@@ -1,30 +1,34 @@
 """Build artifact tracking for output manifest."""
 
-from pathlib import Path
+import os
 from datetime import datetime, timezone
-import yaml
+from ruamel.yaml import YAML
 
 DEFAULT_PATH = 'output/artifacts.yaml'
 
 
 def load(path=DEFAULT_PATH):
     """Load existing artifacts.yaml or return empty structure."""
-    p = Path(path)
-    if p.exists():
-        with open(p) as f:
-            return yaml.safe_load(f) or {}
+    if os.path.exists(path):
+        with open(path) as f:
+            return YAML().load(f) or {}
     return {}
 
 
-def save(artifacts, path=DEFAULT_PATH):
+def save(artifacts, path=DEFAULT_PATH, host='unknown'):
     """Save artifacts manifest to file."""
     artifacts['build_timestamp'] = datetime.now(timezone.utc).isoformat()
-    Path(path).parent.mkdir(parents=True, exist_ok=True)
+    artifacts['build_host'] = host
+    out_dir = os.path.dirname(path)
+    if out_dir:
+        os.makedirs(out_dir, exist_ok=True)
     with open(path, 'w', newline='\n') as f:
-        yaml.dump(artifacts, f, default_flow_style=False, sort_keys=False)
+        _y = YAML()
+        _y.default_flow_style = False
+        _y.dump(artifacts, f)
 
 
-def update(category, name, value, path=DEFAULT_PATH):
+def update(category, name, value, path=DEFAULT_PATH, host='unknown'):
     """Update a single artifact entry and save.
 
     Args:
@@ -32,6 +36,7 @@ def update(category, name, value, path=DEFAULT_PATH):
         name: Artifact name/key
         value: Artifact value (typically a path)
         path: Path to artifacts.yaml file
+        host: Build host identifier ('worker' or 'host')
     """
     artifacts = load(path)
     if category:
@@ -40,11 +45,11 @@ def update(category, name, value, path=DEFAULT_PATH):
         artifacts[category][name] = value
     else:
         artifacts[name] = value
-    save(artifacts, path)
+    save(artifacts, path, host=host)
     return artifacts
 
 
-def write(category, name, output_path, content=None, writer=None, artifacts_path=DEFAULT_PATH):
+def write(category, name, output_path, content=None, writer=None, artifacts_path=DEFAULT_PATH, host='unknown'):
     """Write an artifact file and track it.
 
     Args:
@@ -55,11 +60,14 @@ def write(category, name, output_path, content=None, writer=None, artifacts_path
         writer: Optional callback for additional writes, receives file handle
                 e.g., lambda f: yaml.dump(data, f, ...)
         artifacts_path: Path to artifacts.yaml file
+        host: Build host identifier ('worker' or 'host')
     """
-    Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+    out_dir = os.path.dirname(output_path)
+    if out_dir:
+        os.makedirs(out_dir, exist_ok=True)
     with open(output_path, 'w', newline='\n') as f:
         if content is not None:
             f.write(content)
         if writer is not None:
             writer(f)
-    update(category, name, output_path, path=artifacts_path)
+    update(category, name, output_path, path=artifacts_path, host=host)

@@ -3,7 +3,7 @@
 import hashlib
 import base64
 import os
-import yaml
+from ruamel.yaml import YAML
 
 
 def to_base64(value):
@@ -31,7 +31,7 @@ def sha512_hash(password):
     rounds = 5000
     # Compute SHA-512 hash using the crypt algorithm
     hash_result = _sha512_crypt(password, salt, rounds)
-    return f'$6$rounds={rounds}${salt}${hash_result}'
+    return '$6$rounds=' + str(rounds) + '$' + salt + '$' + hash_result
 
 
 def _sha512_crypt(password, salt, rounds):
@@ -147,4 +147,9 @@ def cidr_only(cidr_notation):
 
 def to_yaml(value):
     """Convert dict/list to YAML string."""
-    return yaml.dump(value, default_flow_style=False, allow_unicode=True).rstrip()
+    import io
+    _y = YAML()
+    _y.default_flow_style = False
+    buf = io.StringIO()
+    _y.dump(value, buf)
+    return buf.getvalue().rstrip()

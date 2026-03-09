@@ -67,6 +67,11 @@ def main():
         action='store_true',
         help='Building for ISO (always include iso_required fragments)'
     )
+    render_parser.add_argument(
+        '--host',
+        default='unknown',
+        help='Build host identifier (e.g., worker, host)'
+    )
 
     # list-fragments subcommand
     list_parser = subparsers.add_parser(
@@ -114,7 +119,7 @@ def main():
             sys.exit(1)
         print('Available cloud-init fragments:')
         for f in fragments:
-            print(f'  {f}')
+            print('  ' + f)
         sys.exit(0)
 
     # Handle artifacts command
@@ -122,8 +127,13 @@ def main():
         if args.action == 'show':
             data = artifacts.load(args.file)
             if data:
-                import yaml
-                print(yaml.dump(data, default_flow_style=False, sort_keys=False))
+                import io
+                from ruamel.yaml import YAML
+                _y = YAML()
+                _y.default_flow_style = False
+                buf = io.StringIO()
+                _y.dump(data, buf)
+                print(buf.getvalue())
             else:
                 print('No artifacts found')
             sys.exit(0)
@@ -140,7 +150,7 @@ def main():
                 category, name = None, args.name
 
             artifacts.update(category, name, args.value, path=args.file)
-            print(f'Updated: {args.name} = {args.value}')
+            print('Updated: ' + args.name + ' = ' + args.value)
             sys.exit(0)
 
     # Handle render command
@@ -158,15 +168,21 @@ def main():
             include=args.include,
             exclude=args.exclude,
             layer=args.layer,
-            for_iso=getattr(args, 'for_iso', False)
+            for_iso=getattr(args, 'for_iso', False),
+            host=args.host
         )
     elif args.target == 'autoinstall':
-        if args.include or args.exclude:
-            print('Warning: --include/--exclude only apply to cloud-init target',
-                  file=sys.stderr)
-        render_autoinstall_to_file(ctx, args.output)
+        render_autoinstall_to_file(
+            ctx,
+            args.output,
+            include=args.include,
+            exclude=args.exclude,
+            layer=args.layer,
+            for_iso=getattr(args, 'for_iso', True),
+            host=args.host
+        )
 
-    print(f'Generated: {args.output}')
+    print('Generated: ' + args.output)
 
 
 if __name__ == '__main__':
