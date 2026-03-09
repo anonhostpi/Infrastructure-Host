@@ -200,21 +200,46 @@ def render_cloud_init_to_file(ctx, output_path, include=None, exclude=None, laye
     )
 
 
-def render_autoinstall(ctx):
-    """Render autoinstall user-data, return as string."""
-    scripts = render_scripts(ctx)
-    # Autoinstall is always for ISO, so include iso_required fragments
-    cloud_init = render_cloud_init(ctx, for_iso=True)
+def render_autoinstall(ctx, include=None, exclude=None, layer=None, for_iso=True):
+    """Render autoinstall user-data, return as dict.
 
-    return render_text(
+    Args:
+        ctx: Build context
+        include: List of fragment names to include (default: all)
+        exclude: List of fragment names to exclude (default: none)
+        layer: Maximum build_layer to include (default: all)
+        for_iso: If True, always include iso_required fragments (default: True)
+    """
+    scripts = render_scripts(ctx)
+    cloud_init = render_cloud_init(
+        ctx, include=include, exclude=exclude, layer=layer, for_iso=for_iso
+    )
+
+    rendered = render_text(
         ctx,
         'book-1-foundation/base/autoinstall.yaml.tpl',
         scripts=scripts,
         cloud_init=cloud_init,
     )
+    return YAML().load(rendered)
 
 
-def render_autoinstall_to_file(ctx, output_path):
-    """Render autoinstall to output file."""
-    result = render_autoinstall(ctx)
-    artifacts.write(None, 'autoinstall', output_path, content=result)
+def render_autoinstall_to_file(ctx, output_path, include=None, exclude=None, layer=None, for_iso=True):
+    """Render autoinstall to output file.
+
+    Args:
+        ctx: Build context
+        output_path: Path to write output
+        include: List of fragment names to include (default: all)
+        exclude: List of fragment names to exclude (default: none)
+        layer: Maximum build_layer to include (default: all)
+        for_iso: If True, always include iso_required fragments (default: True)
+    """
+    merged = render_autoinstall(
+        ctx, include=include, exclude=exclude, layer=layer, for_iso=for_iso
+    )
+    artifacts.write(
+        None, 'autoinstall', output_path,
+        content='',
+        writer=lambda f: YAML().dump(merged, f)
+    )

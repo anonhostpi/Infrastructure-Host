@@ -68,7 +68,7 @@ New-Module -Name SDK.Builder -ScriptBlock {
             }
             return $mod.Engine
         }
-        Render = {
+        CreateCloudInit = {
             param(
                 [string]$OutputPath,
                 [int]$Layer = 0,
@@ -93,9 +93,11 @@ New-Module -Name SDK.Builder -ScriptBlock {
                 return $engine.Operations.Invoke($renderFn, $ctx, $null, $null, $pyLayer, $ForIso)
             }
         }
-        RenderAutoinstallToFile = {
+        CreateAutoinstall = {
             param(
-                [string]$OutputPath
+                [string]$OutputPath,
+                [int]$Layer = 0,
+                [bool]$ForIso = $true
             )
             $engine = $this.Engine()
 
@@ -106,8 +108,15 @@ New-Module -Name SDK.Builder -ScriptBlock {
             $BuildContext = $engine.Operations.GetMember($context, "BuildContext")
             $ctx = $engine.Operations.Invoke($BuildContext)
 
-            $renderFn = $engine.Operations.GetMember($renderer, "render_autoinstall_to_file")
-            $engine.Operations.Invoke($renderFn, $ctx, $OutputPath)
+            $pyLayer = if ($Layer -gt 0) { $Layer } else { $null }
+
+            if ($OutputPath) {
+                $renderFn = $engine.Operations.GetMember($renderer, "render_autoinstall_to_file")
+                $engine.Operations.Invoke($renderFn, $ctx, $OutputPath, $null, $null, $pyLayer, $ForIso)
+            } else {
+                $renderFn = $engine.Operations.GetMember($renderer, "render_autoinstall")
+                return $engine.Operations.Invoke($renderFn, $ctx, $null, $null, $pyLayer, $ForIso)
+            }
         }
         Clean = {
             $make = @("cd /home/ubuntu/infra-host", "make clean") -join " && "
@@ -144,7 +153,7 @@ New-Module -Name SDK.Builder -ScriptBlock {
             if (-not (Test-Path $outputDir)) { New-Item -ItemType Directory -Path $outputDir | Out-Null }
             if ($Layer) {
                 $output = "$outputDir/cloud-init.yaml"
-                $this.Render($output, $Layer)
+                $this.CreateCloudInit($output, $Layer)
                 return $true
             }
             # Full build (make all) still requires VM

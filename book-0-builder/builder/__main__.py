@@ -166,10 +166,14 @@ def main():
             for_iso=getattr(args, 'for_iso', False)
         )
     elif args.target == 'autoinstall':
-        if args.include or args.exclude:
-            print('Warning: --include/--exclude only apply to cloud-init target',
-                  file=sys.stderr)
-        render_autoinstall_to_file(ctx, args.output)
+        render_autoinstall_to_file(
+            ctx,
+            args.output,
+            include=args.include,
+            exclude=args.exclude,
+            layer=args.layer,
+            for_iso=getattr(args, 'for_iso', True)
+        )
 
     print('Generated: ' + args.output)
 
